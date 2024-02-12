@@ -1,5 +1,5 @@
 import numpy as np; 
-from scipy import interpolate, interp1d
+from scipy import interpolate
 from scipy.signal import find_peaks; 
 from math import factorial as fact
 from math import ceil
@@ -84,7 +84,7 @@ def spline(x, y, xs, kind='cubic'):
     """
     Compute the spline of y(x), return y(xs)
     """
-    f = interp1d(x, y, kind=kind, fill_value='extrapolate')
+    f = interpolate.interp1d(x, y, kind=kind, fill_value='extrapolate')
     return f(xs)
 
 def upoly_fits(r0,y0,nmin=1,nmax=5,n_extract=None, r_cutoff_low=None, r_cutoff_high=None, direction='in'):
