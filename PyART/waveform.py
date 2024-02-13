@@ -45,6 +45,9 @@ class Waveform(object):
     def hlm(self):
         return self._hlm
     @property
+    def psi4lm(self):
+        return self._psi4lm
+    @property
     def dyn(self):
         return self._dyn
     @property
@@ -59,7 +62,7 @@ class Waveform(object):
     def find_max(
                 self, 
                 mode   = '1', 
-                kind   = 'first-max-after-t',
+                kind   = 'last-peak',
                 umin   = 0,
                 height = 0.15
                 ):

@@ -8,6 +8,101 @@ import matplotlib.pyplot as plt
 
 ## Misc
 
+# Rotate a 3 vector using Euler angles
+def rotate3(vector,alpha,beta,gamma,invert=False):
+    '''
+    Rotate a 3 vector using Euler angles under conventions defined at:
+    https://en.wikipedia.org/wiki/Euler_angles
+    https://en.wikipedia.org/wiki/Rotation_matrix
+
+    Science reference: https://arxiv.org/pdf/1110.2965.pdf (Appendix)
+
+    Specifically, the Z1,Y2,Z3 ordering is used: https://wikimedia.org/api/rest_v1/media/math/render/svg/547e522037de6467d948ecf3f7409975fe849d07
+
+    *  alpha represents a rotation around the z axis
+    *  beta represents a rotation around the x' axis
+    *  gamma represents a rotation around the z'' axis
+
+    NOTE that in order to perform the inverse rotation, it is *not* enough to input different rotation angles. One must use the invert=True keyword. 
+    This takes the same angle inputs as the forward rotation, but correctly applies the transposed rotation matricies in the reversed order.
+
+    spxll'18
+    '''
+
+    # Import usefuls
+    from numpy import cos,sin,array,dot,ndarray,vstack
+
+    # Hangle angles as arrays
+    angles_are_arrays = isinstance(alpha,np.ndarray) and isinstance(beta,np.ndarray) and isinstance(gamma,np.ndarray)
+    if angles_are_arrays:
+        # Check for consistent array shapes
+        if not ( alpha.shape == beta.shape == gamma.shape ):
+            # Let the people know and halt
+            error( 'input angles as arrays must have identical array shapes' )
+
+    # Validate input(s)
+    if isinstance(vector,(list,tuple,ndarray)):
+        vector = array(vector)
+    else:
+        error('first input must be iterable compatible 3D vector; please check')
+
+
+    # Rotation around z''
+    Ra = array( [
+                    [cos(alpha),-sin(alpha),0],
+                    [sin(alpha),cos(alpha),0],
+                    [0,0,1]
+        ] )
+
+    # Rotation around y
+    Rb = array( [
+                    [cos(beta),0,sin(beta)],
+                    [0,1,0],
+                    [-sin(beta),0,cos(beta)]
+        ] )
+
+    # Rotation around z
+    Rg = array( [
+                    [cos(gamma),-sin(gamma),0],
+                    [sin(gamma),cos(gamma),0],
+                    [0,0,1]
+        ] )
+
+    # Perform the rotation
+    # ans = (  Ra * ( Rb * ( Rg * vector ) )  )
+    # NOTE that this is the same convention of equation A9 of Boyle et al : https://arxiv.org/pdf/1110.2965.pdf
+    R = dot(  Ra, dot(Rb,Rg)  )
+    if invert: R = R.T
+    ans = dot( R, vector )
+
+    # If angles are arrays, then format the input such that rows in ans correspond to rows in alpha, beta and gamma
+    if angles_are_arrays:
+        ans = vstack( ans ).T
+
+    return ans
+
+def reflect_unwrap( vec ):
+    '''
+    Reflect points in an array
+    '''
+
+    ans = np.array(vec)
+    for k in range(len(vec)):
+        if (k>0) and ( (k+1) < len(vec) ):
+            l = vec[k-1]
+            c = vec[k]
+            r = vec[k+1]
+            reflect = (np.sign(l)==np.sign(r)) and (np.sign(l)==-np.sign(c))
+            if reflect:
+                ans[k] *= -1
+    return ans
+
+def minmax_array(x, tol=1e-20):
+    """
+    Find the maximum and minimum of an array
+    """
+    return [min(x) - tol, max(x) + tol] 
+
 def nextpow2(x):
     """
     Return the next closest power of 2
@@ -86,6 +181,36 @@ def spline(x, y, xs, kind='cubic'):
     """
     f = interpolate.interp1d(x, y, kind=kind, fill_value='extrapolate')
     return f(xs)
+
+def spline_diff(t,y,k=3,n=1):
+    '''
+    Wrapper for InterpolatedUnivariateSpline derivative function
+    '''
+
+    #
+    from numpy import sum
+    from scipy.interpolate import InterpolatedUnivariateSpline as spline
+
+    # Calculate the desired number of derivatives
+    ans = spline(t,y.real,k=k).derivative(n=n)(t) \
+          + ( 1j*spline(t,y.imag,k=k).derivative(n=n)(t) if (sum(abs(y.imag))!=0) else 0 )
+
+    return ans
+
+#
+def spline_antidiff(t,y,k=3,n=1):
+    '''
+    Wrapper for InterpolatedUnivariateSpline antiderivative function
+    '''
+
+    #
+    from scipy.interpolate import InterpolatedUnivariateSpline as spline
+
+    # Calculate the desired number of integrals
+    ans = spline(t,y.real,k=k).antiderivative(n=n)(t) + ( 1j*spline(t,y.imag,k=k).antiderivative(n=n)(t) if isinstance(y[0],complex) else 0 )
+
+    # Return the answer
+    return ans
 
 def upoly_fits(r0,y0,nmin=1,nmax=5,n_extract=None, r_cutoff_low=None, r_cutoff_high=None, direction='in'):
     if n_extract     is None: n_extract     = nmax
@@ -239,6 +364,7 @@ def spinsphericalharm(s, l, m, phi, i):
     iY = np.sin(m*phi) * dWigner
     return rY + 1j*iY
 
+# Small wigner d matrices
 def wigner_d_function(l,m,s,i):
     """
     Compute wigner d functions, following Ref
@@ -255,6 +381,51 @@ def wigner_d_function(l,m,s,i):
         dWig = dWig+div*( pow(-1.,k) * pow(costheta,2*l+m-s-2*k) * pow(sintheta,2*k+s-m) )
     return (norm * dWig)
 
+# Calculate Widger D-Matrix Element
+def wdelement( ll,         # polar index (eigenvalue) of multipole to be rotated (set of m's for single ll )
+               mp,         # member of {all em for |em|<=l} -- potential projection spaceof m
+               mm,         # member of {all em for |em|<=l} -- the starting space of m
+               alpha,      # -.
+               beta,       #  |- Euler angles for rotation
+               gamma ):    # -'
+
+    #** James Healy 6/18/2012
+    #** wignerDelement
+    #*  calculates an element of the wignerD matrix
+    # Modified by llondon6 in 2012 and 2014
+    # Converted to python by spxll 2016
+    #
+    # This implementation apparently uses the formula given in:
+    # https://en.wikipedia.org/wiki/Wigner_D-matrix
+    #
+    # Specifically, this the formula located here: 
+    # https://wikimedia.org/api/rest_v1/media/math/render/svg/53fd7befce1972763f7f53f5bcf4dd158c324b55
+
+    #
+    if ( (type(alpha) is np.ndarray) and (type(beta) is np.ndarray) and (type(gamma) is np.ndarray) ):
+        alpha,beta,gamma = alpha.astype(float), beta.astype(float), gamma.astype(float)
+    else:
+        alpha,beta,gamma = float(alpha),float(beta),float(gamma)
+
+    coefficient = np.sqrt( fact(ll+mp)*fact(ll-mp)*fact(ll+mm)*fact(ll-mm))*np.exp( 1j*(mp*alpha+mm*gamma) )
+
+    total = 0
+    # find smin
+    if (mm-mp) >= 0      :  smin = mm - mp
+    else                 :  smin = 0
+    # find smax
+    if (ll+mm) > (ll-mp) : smax = ll-mp
+    else                 : smax = ll+mm
+
+    if smin <= smax:
+        for ss in range(smin,smax+1):
+            A = (-1)**(mp-mm+ss)
+            A *= np.cos(beta/2)**(2*ll+mm-mp-2*ss)  *  np.sin(beta/2)**(mp-mm+2*ss)
+            B = fact(ll+mm-ss) * fact(ss) * fact(mp-mm+ss) * fact(ll-mp-ss)
+            total += A/B
+
+    element = coefficient*total
+    return element
 
 ## Plot utils
 def save_plot(figname,show=True,save=False,verbose=False):

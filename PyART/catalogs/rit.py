@@ -4,20 +4,21 @@ import matplotlib.pyplot as plt
 import h5py 
 import glob
 
+from ..waveform import  Waveform
+
 # This class is used to load the RIT data and store it in a convenient way
-class RIT(object):
+class RIT(Waveform):
 
     def __init__(self,
                  basepath = '../dat/RIT/',
-                 psi_path = None, #'Psi4/ExtrapPsi4_RIT-eBBH-1632-n100-ecc/',
-                 h_path   = None, #'strain/ExtrapStrain_RIT-eBBH-1632-n100.h5',
-                 mtdt_path= None, #'metadata/RIT_eBBH_1632-n100-ecc_Metadata.txt',
+                 psi_path = None,
+                 h_path   = None,
+                 mtdt_path= None,
                  ell_emms = 'all'
                  ) -> None:
         
-        self.dyn    = {}
-        self.hlm    = {}
-        self.psi4lm = {}
+        super().__init__()
+
         self.t_psi  = None
         self.t_h    = None
         self.ell_emms = ell_emms
@@ -65,7 +66,7 @@ class RIT(object):
                 t,re,im,A,p,o = np.loadtxt(ff, unpack=True, skiprows=4, usecols=(0,1,2,3,4))
             d[(ell,emm)] = {'real':re, 'imag':im, 'A':A, 'p':p}
         
-        self.psi4lm = d
+        self._psi4lm = d
         self.t_psi  = t
         pass
 
@@ -94,8 +95,10 @@ class RIT(object):
             except KeyError:
                 pass
                     
-        self.hlm = d
-        self.t_h = th.astype(np.float64)
+        self._hlm = d
+        self.t_h  = th.astype(np.float64)
+        self._t   = self.t_h
+        self._u   = self.t_h
         pass
 
     def load_metadata(self, path):
@@ -160,7 +163,7 @@ class RIT(object):
         # Orb ang momentum
         L = J - S1 - S2
 
-        self.dyn['id'] = {
+        self._dyn['id'] = {
                             'm1':m1, 'm2':m2, 'M':M, 'X1':X1, 'X2':X2, 
                             'S1':S1, 'S2':S2, 'L0':L,
                             'J0':J
@@ -179,13 +182,6 @@ class RIT(object):
         return yn
 
 if __name__ == '__main__':
-
-    # psi_path = 'Psi4/ExtrapPsi4_RIT-BBH-0038-n100-id0/'
-    # h_path   = 'Strain/ExtrapStrain_RIT-BBH-0038-n100.h5'
-    # mtdt_path= 'metadata/RIT_BH_0038-n100-id0_Metadata.txt'
-
-    # psi_path= 'Psi4/ExtrapPsi4_RIT-eBBH-1592-n100-ecc/'
-    # h_path  = 'Strain/ExtrapStrain_RIT-eBBH-1592-n100.h5'
 
     psi_path= 'Psi4/ExtrapPsi4_RIT-eBBH-1634-n100-ecc/'
     h_path  = 'Strain/ExtrapStrain_RIT-eBBH-1634-n100.h5'
