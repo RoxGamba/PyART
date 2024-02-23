@@ -5,8 +5,8 @@ import numpy as np; import h5py; import json
 from scipy.signal import find_peaks
 
 # other imports
-from .utils import utils as ut
-from .utils import wf_utils as wf_ut
+from utils import utils as ut
+from utils import wf_utils as wf_ut
 
 class Waveform(object):
     """

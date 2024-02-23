@@ -66,6 +66,7 @@ def runcmd(cmd,workdir,out=None):
 # ------------------
 
 #TODO: test this
+#NOTE Simone: why here?
 def adm_to_eob(q_vec, p_vec, nu):
     """
     Convert q_ADM, p_ADM to EOB, 2PN trafo.
@@ -161,9 +162,11 @@ def cartesian_to_polar(q_c, p_c):
 # --------------------- 
 
 COMMENTS_IGNORE = ['#']
-METADATA_EXTENSION = ['.txt','.json']
-KEYMAP = {'m1': ['m1','M1_i','m_plus','initial-mass1','initial_mass1'],
-          'm2': ['m2','M2_i','m_minus','initial-mass2','initial_mass2'],
+METADATA_EXTENSION = ['.txt','.bbh','.json']
+
+# NOTE Simone: I think that this keymap is error-prone
+KEYMAP = {'m1': ['m1','M1_i','m_plus','initial-mass1','initial_mass1', 'initial-bh-puncture-adm-mass1'], # TODO: discuss these masses 
+          'm2': ['m2','M2_i','m_minus','initial-mass2','initial_mass2', 'initial-bh-puncture-adm-mass2'],
           'q' : ['q','mass-ratio','initial_mass_ratio'],
           'chi1z': ['chi1z','s1z','initial-bh-chi1z','initial_dimensionless_spin1'],
           'chi2z': ['chi2z','s2z','initial-bh-chi2z','initial_dimensionless_spin2'],
@@ -172,7 +175,7 @@ KEYMAP = {'m1': ['m1','M1_i','m_plus','initial-mass1','initial_mass1'],
           'af': ['af','a_f','final-chi','remnant_dimensionless_spin'],
           'Jf': ['Jf','J_f'], # = af/Mf**2
           'E0': ['E0','E_adm','initial-ADM-energy','initial_ADM_energy'],
-          'J0': ['J0','J_adm','initial-ADM-angular-momentum-z', 'initial_ADM_angular_momentum'],
+          'J0': ['J0','J_adm','initial-ADM-angular-momentum-z', 'initial_ADM_angular_momentum', 'initial-ADM-angular-momentumz'],
           'r0': ['r0','initial-separation','initial_separation'],
           'f0': ['f0','initial_orbital_frequency'],
           'fgw0': ['fgw0','freq-start-22'],
@@ -191,15 +194,18 @@ class Simulations():
 
     keymap : dictionary to map key names
     """
-    def __init__(self, path ='./', 
-                 metadata_ext = METADATA_EXTENSION,
+    def __init__(self, path      = './', 
+                 metadata_ext    = METADATA_EXTENSION,
                  comments_ignore = COMMENTS_IGNORE, 
-                 keymap = KEYMAP,
-                 sxs_unpack = True, 
-                 rit_ids_unpack = False,
+                 keymap          = KEYMAP,
+                 sxs_unpack      = True, 
+                 rit_ids_unpack  = False,
+                 icc_add_meta    = False,
+                 verbose         = False
         ):
-        self.path = path
-        self.files = list(itertools.chain.from_iterable(
+        self.path    = path
+        self.verbose = verbose
+        self.files   = list(itertools.chain.from_iterable(
             [glob.glob(path+'/**/*'+x,recursive=True) for x in metadata_ext]))
         self.comments_ignore = comments_ignore
 
@@ -212,12 +218,12 @@ class Simulations():
         for f in self.files:
             basename,ext = os.path.splitext(f)
             catalog = basename.split('/')[1]
-            if ext == '.txt':
+            if ext == '.txt' or ext=='.bbh':
                 d = self.read_txt(f)
             elif ext == '.json':
                 d = self.read_json(f)
             else:
-                print('Skip file {}, do not know how to read data from {}'.format(f,ext))
+                if verbose: print('Skip file {}, do not know how to read data from {}'.format(f,ext))
                 continue
             if not d: continue # dict is empty, do not store
 
@@ -232,16 +238,27 @@ class Simulations():
 
             if rit_ids_unpack and catalog == 'RIT':
                 self.rit_extract_punctures_id(d, d_ics)
-
-            print('Read file {} from catalog {}'.format(f,catalog))
+            
+            if icc_add_meta:
+                elems    = f.split('/') # path/to/catalog/simulation/parfile.bbh
+                sim_name = elems[-2] 
+                catalog  = elems[-3]
+                d['name']    = sim_name # NOTE: this introduce new keys for ICC catalog
+                d['CATALOG'] = catalog
+                d_path    = '/'+os.path.join(*elems[:-1])
+                d['path'] = d_path.replace('//','/')
+                d['M']    = float(d['initial-bh-puncture-adm-mass1']) + \
+                            float(d['initial-bh-puncture-adm-mass2'])
+            if verbose: print('Read file {} from catalog {}'.format(f,catalog))
 
         self.parse_metadata(keymap=keymap)
-
-    def info(self):
+    
+    def info(self, verbose=None):
+        if verbose is None: verbose = self.verbose
         catalog = [d['CATALOG'] for d in self.data]
-        print('CATALOG : DATASETS')
+        if verbose : print('CATALOG : DATASETS')
         for c in set(catalog):
-            print('{} : {}'.format(c,catalog.count(c)))
+            if verbose: print('{} : {}'.format(c,catalog.count(c)))
             
     def read_txt(self,fname):
         """
@@ -290,7 +307,7 @@ class Simulations():
                 except:
                     pass
 
-    def rit_tex_read_punctures_id(self, fname):
+    def rit_tex_read_punctures_id(self, fname, verbose=None):
         """
         Special method to read punctures ID in ADM coordinates
         from `rit_id_table.txt`
@@ -300,7 +317,7 @@ class Simulations():
         or
         Run, x_1/m, x_2/m, P_r/m, P_t/m, m^p_1/m, m^p_2/m, m^H_1/m, m^H_2/m, M_{\rm ADM}/m, e, N_{orb}
         """
-        
+        if verbose is None: verbose = self.verbose
         # read the ID file
         d = {}
         if os.path.isfile(fname):
@@ -317,14 +334,15 @@ class Simulations():
                     ics = self.cast_to_float(ids[1:], ReturnLast=False)
                     d[tag] = ics
         
-        print('Read RIT punctures ID from {}'.format(fname))
+        if verbose: print('Read RIT punctures ID from {}'.format(fname))
         return d
 
-    def rit_extract_punctures_id(self, db, id_db):
+    def rit_extract_punctures_id(self, db, id_db, verbose=None):
         """
         Special method to extract punctures ID in ADM coordinates
         from id_db and add it to simulation
         """
+        if verbose is None: verbose = self.verbose
         tag = db['catalog-tag']
         if tag in id_db.keys():
             ics = id_db[tag]
@@ -335,7 +353,7 @@ class Simulations():
             db['P_p'] = [ics[2]/nu, ics[3]/nu]
             db['P_m'] = [-ics[2]/nu, -ics[3]/nu]
         else:
-            print("\t No puncture ID avalilable for {}".format(tag))
+            if verbose: print("\t No puncture ID avalilable for {}".format(tag))
 
     def parse_metadata(self,keymap=KEYMAP):
         """
@@ -453,7 +471,7 @@ class Simulations():
         https://pypi.org/project/zenodo-get/
         """
 
-    def www_get(self,data=None,outdir='Data/',dryrun=False):
+    def www_get(self,data=None,outdir='Data/',dryrun=False, verbose=None):
         """
         Get data corresponding to the input metadata
         Websites and www get are set based on the CATALOG key
@@ -463,14 +481,15 @@ class Simulations():
         cmd = {'RIT': self.www_get_RIT,
                #'SXS': self.www_get_SXS,
         }
-        if data is None: data = self.data
+        if verbose is None: verbose = self.verbose
+        if data    is None: data = self.data
         for s in data:
             if s['CATALOG'] not in cmd.keys():
-                print('Skip {} : do not know how to get the data'.format())
+                if verbose: print('Skip {} : do not know how to get the data'.format())
                 continue
             for c in cmd[s['CATALOG']](s):
                 if dryrun: 
-                    print(c)
+                    if verbose: print(c)
                 else:
                     path_outdir = '{}/{}/{}/'.format(self.path,s['CATALOG'],outdir)
                     runcmd(c,path_outdir)

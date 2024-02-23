@@ -469,3 +469,5 @@ def local_vars_for_plots(self, **kwargs):
     elif len(loc.colors)!=loc.nsims:
         raise ValueError('size of colors incompatible with number of (local) simulations')
     return loc
+
+
