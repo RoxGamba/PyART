@@ -96,7 +96,7 @@ class Waveform(object):
         A_mrg    = Alm[peaks[i]]
         omg_mrg  = omg[peaks[i]]
         domg_mrg = domg[peaks[i]]
-        
+
         if return_idx:
             return u_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
         else:
@@ -152,10 +152,11 @@ class Waveform(object):
 
         E    = self.dyn['E']['total']
         J    = self.dyn['J']['total']
+
         eb   = (M_adm - E - m1 - m2) / (m1*m2/(m1+m2))
         jorb = (J_adm - J) / (m1*m2) 
 
-        return E, J
+        return eb, jorb
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
