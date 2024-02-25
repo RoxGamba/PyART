@@ -5,8 +5,8 @@ import numpy as np; import h5py; import json
 from scipy.signal import find_peaks
 
 # other imports
-from utils import utils as ut
-from utils import wf_utils as wf_ut
+from .utils import utils as ut
+from .utils import wf_utils as wf_ut
 
 class Waveform(object):
     """
@@ -61,15 +61,15 @@ class Waveform(object):
 
     def find_max(
                 self, 
-                mode   = '1', 
+                mode   = (2,2), 
                 kind   = 'last-peak',
                 umin   = 0,
-                height = 0.15
+                height = 0.15,
                 ):
         
         u   = self.u
-        p   = self.hlm[mode][1]
-        Alm = self.hlm[mode][0]
+        p   = self.hlm[mode]['p']
+        Alm = self.hlm[mode]['A']
 
         # compute omega
         omg      = np.zeros_like(p)
@@ -150,7 +150,10 @@ class Waveform(object):
         new_u = np.arange(self.u[0], self.u[-1], dT)
         
         for k in self.hlm.keys():
-            hlm_i[k] = [np.interp(new_u, self.u, self.hlm[k][0]),
-                        np.interp(new_u, self.u, self.hlm[k][1])]
+            hlm_i[k] = {"A"   : np.interp(new_u, self.u, self.hlm[k]["A"]),
+                        "p"   : np.interp(new_u, self.u, self.hlm[k]["p"]),
+                        "real": np.interp(new_u, self.u, self.hlm[k]["real"]),
+                        "imag": np.interp(new_u, self.u, self.hlm[k]["imag"])
+                        }
         
         return new_u, hlm_i

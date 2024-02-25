@@ -5,7 +5,9 @@ try:
 except ModuleNotFoundError:
     print("WARNING: TEOBResumS not installed.")
 
-class Waveform_EOB(): #Waveform_EOB(Waveform):
+from ..waveform import Waveform
+
+class Waveform_EOB(Waveform): #Waveform_EOB(Waveform):
     """
     Class to handle EOB waveforms
     """
@@ -52,11 +54,14 @@ class Waveform_EOB(): #Waveform_EOB(Waveform):
 # external function for dict creation
 def CreateDict(M=1., q=1, 
                chi1z=0., chi2z=0, 
+               chi1x=0., chi2x=0,
+               chi1y=0., chi2y=0,
                l1=0, l2=0, 
                iota=0, f0=0.0035, srate=4096., df = 1./128.,
                phi_ref = 0.,
                ecc = 1e-8, r_hyp = 0, H_hyp = 0, J_hyp=0, anomaly = np.pi,
                interp="yes", arg_out="yes", use_geom="yes", 
+               use_mode_lm=[1],
                cN3LO=None, a6c=None):
         """
         Create the dictionary of parameters for EOBRunPy
@@ -66,6 +71,12 @@ def CreateDict(M=1., q=1,
             'q'                  : q,
             'chi1'               : chi1z,
             'chi2'               : chi2z,
+            'chi1z'              : chi1z, 
+            'chi2z'              : chi2z,
+            'chi1x'              : chi1x,
+            'chi2x'              : chi2x,
+            'chi1y'              : chi1y,
+            'chi2y'              : chi2y,
             'LambdaAl2'          : l1,
             'LambdaBl2'          : l2,
             'distance'           : 1.,
@@ -76,23 +87,18 @@ def CreateDict(M=1., q=1,
             'srate_interp'       : srate,
             'inclination'        : iota,
             'output_hpc'         : "no",
-            'use_mode_lm'        : [0,1,2,3,4,5,6,7,8,13],    # List of modes to use
+            'use_mode_lm'        : use_mode_lm,    # List of modes to use
             'arg_out'            : arg_out,                   # output dynamics and hlm in addition to h+, hx
             'ecc'                : ecc,
             'r_hyp'              : r_hyp,
             'H_hyp'              : H_hyp,
             'j_hyp'              : J_hyp,
-            'coalescence_angle'  : np.pi/2. - phi_ref,
-            'ecc_freq'           : 2,
+            'coalescence_angle'  : phi_ref,
             'df'                 : df,
             'anomaly'            : anomaly,
-            'model'              : "Giotto"
+            'spin_flx'           : 'EOB',
+            'spin_interp_domain' : 0
         }
-
-        # We are not interested in precessing stuff for now (I think?)
-        pardic['chi1x'] = pardic['chi1y'] = 0.
-        pardic['chi2x'] = pardic['chi2y'] = 0.
-        pardic['chi1z'] = chi1z; pardic['chi2z'] = chi2z
 
         if a6c is not None:
             pardic['a6c'] = a6c

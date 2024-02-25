@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from simulations import Simulations
-from waveform    import Waveform
+from ..simulations import Simulations
+from ..waveform    import Waveform
 
 ################################
 # Class for a single waveform

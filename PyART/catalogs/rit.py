@@ -133,8 +133,6 @@ class RIT(Waveform):
             print("No metadata loaded")
             raise FileNotFoundError("No metadata read. Please load metadata first.")        
 
-        print(mtdt)
-
         try:
             chi1x = float(mtdt['initial-bh-chi1x']);  chi2x = float(mtdt['initial-bh-chi2x'])
             chi1y = float(mtdt['initial-bh-chi1y']);  chi2y = float(mtdt['initial-bh-chi2y'])

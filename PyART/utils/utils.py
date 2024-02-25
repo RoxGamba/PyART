@@ -8,6 +8,17 @@ import matplotlib.pyplot as plt
 
 ## Misc
 
+def rotate3_axis(vector,theta=0., axis = [0,0,1]):
+    """
+    Rotate a 3 vector around a provided axis of an angle theta
+    """
+    from scipy.spatial.transform import Rotation
+
+    zaxis    = np.array(axis)
+    r        = Rotation.from_rotvec(theta*zaxis)
+    vector_r =r.apply(vector)
+    return vector_r
+
 # Rotate a 3 vector using Euler angles
 def rotate3(vector,alpha,beta,gamma,invert=False):
     '''
@@ -469,5 +480,3 @@ def local_vars_for_plots(self, **kwargs):
     elif len(loc.colors)!=loc.nsims:
         raise ValueError('size of colors incompatible with number of (local) simulations')
     return loc
-
-
