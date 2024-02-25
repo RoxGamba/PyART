@@ -81,7 +81,7 @@ class Waveform(object):
         domg[1:] = np.diff(omg)/np.diff(u)
         
         # find peaks
-        peaks, _ = find_peaks(Alm, height=height)
+        peaks, props = find_peaks(Alm, height=height)
 
         if kind == 'first-max-after-t':
             for i in range(len(peaks)):
@@ -89,6 +89,10 @@ class Waveform(object):
                     break
         elif kind == 'last-peak':
             i = len(peaks) - 1
+            
+        elif kind == 'global':
+            Alms = props['peak_heights']
+            i    = np.argmax(Alms)
         else:
             raise ValueError("`kind' for merger not found")
 
