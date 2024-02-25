@@ -7,6 +7,18 @@ def mnfactor(m):
     """
     return 1 if m == 0 else 2
 
+# Various multipolar coefficients (mc) needed below
+def mc_f(l,m):
+    return np.sqrt(l*(l+1) - m*(m+1))
+def mc_a(l,m):
+    return np.sqrt((l-m)*(l+m+1))/(l*(l+1))
+def mc_b(l,m):
+    return np.sqrt(((l-2)*(l+2)*(l+m)*(l+m-1))/((2*l-1)*(2*l+1)))/(2*l)
+def mc_c(l,m):
+    return 2*m/(l*(l+1))
+def mc_d(l,m):
+    return np.sqrt(((l-2)*(l+2)*(l-m)*(l+m))/((2*l-1)*(2*l+1)))/l
+
 def mode_to_k(ell,emm):
     return int(ell*(ell-1)/2 + emm-2)
 

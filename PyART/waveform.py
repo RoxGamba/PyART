@@ -1,8 +1,9 @@
 # Classed to handle waveforms
 
 #standard imports
-import numpy as np; import h5py; import json
+import numpy as np;
 from scipy.signal import find_peaks
+from scipy import integrate
 
 # other imports
 from .utils import utils as ut
@@ -97,44 +98,6 @@ class Waveform(object):
 
         return u_mrg, A_mrg, omg_mrg, domg_mrg
 
-    def energetics_hlm(self, modes=['1']):
-        """
-        Compute the (E, J) from the multipoles
-        or the dynamics.
-        TODO: improve, see catalogs/processwave.py
-        """
-        u  = self.u
-        du = u[1] - u[0]
-        
-        E_GW_dot = {}
-        E_GW     = {}
-        J_GW_dot = {}
-        J_GW     = {}    
-
-        E_GW_dot_all = np.zeros_like(u)
-        E_GW_all     = np.zeros_like(u)
-        J_GW_dot_all = np.zeros_like(u)
-        J_GW_all     = np.zeros_like(u)
-
-        for mode in modes:
-            m      = wf_ut.k_to_emm(int(mode))
-            this_h = self.hlm[mode]
-            hlm    = this_h[0]*np.exp(-1j*this_h[1])
-            hlm_dot= ut.D02(u, hlm)
-
-            # energy and flux in single |mode| 
-            E_GW_dot[mode] = wf_ut.mnfactor(m)*1.0/(16.*np.pi) * np.abs(hlm_dot)**2 
-            E_GW[mode]     = wf_ut.mnfactor(m)*ut.integrate(E_GW_dot[mode]) * du
-            J_GW_dot[mode] = wf_ut.mnfactor(m)*1.0/(16.*np.pi) * m * np.imag(hlm * np.conj(hlm_dot)) 
-            J_GW[mode]     = wf_ut.mnfactor(m)*ut.integrate(J_GW_dot[mode]) * du
-
-            E_GW_dot_all += E_GW_dot[mode]
-            E_GW_all     += E_GW[mode]
-            J_GW_dot_all += J_GW_dot[mode]
-            J_GW_all     += J_GW[mode]
-        
-        return E_GW_all, E_GW_dot_all, J_GW_all, J_GW_dot_all
-
     def compute_hphc(self, phi=0, i=0, modes=['1']):
         """
         For aligned spins, compute hp and hc
@@ -153,7 +116,119 @@ class Waveform(object):
             hlm_i[k] = {"A"   : np.interp(new_u, self.u, self.hlm[k]["A"]),
                         "p"   : np.interp(new_u, self.u, self.hlm[k]["p"]),
                         "real": np.interp(new_u, self.u, self.hlm[k]["real"]),
-                        "imag": np.interp(new_u, self.u, self.hlm[k]["imag"])
+                        "imag": np.interp(new_u, self.u, self.hlm[k]["imag"]),
+                        'h'   : np.interp(new_u, self.u, self.hlm[k]['h']), 
                         }
         
         return new_u, hlm_i
+    
+    def dynamics_from_hlm(self, modes):
+        """
+        Compute GW energy and angular momentum fluxes from multipolar waveform
+        """
+
+        self.dhlm = {}
+        for mode in modes:
+            self.dhlm[mode]      = {}
+            self.dhlm[mode]['h'] = ut.D02(self.t, self.hlm[mode]['h'])
+
+        dynamicsdict = waveform2energetics(
+                        self.hlm, self.dhlm, self.t, modes,
+                        )
+
+        self._dyn = {**self._dyn, **dynamicsdict}
+        pass     
+
+
+def waveform2energetics(h, doth, t, modes, mnegative=False):
+    """
+    Compute GW energy and angular momentum from multipolar waveform
+    See e.g. https://arxiv.org/abs/0912.1285
+
+    * h[(l,m)]     : multipolar strain 
+    * doth[(l,m)]  : time-derivative of multipolar strain
+    * t            : time array
+    * modes        : (l,m) indexes
+    * mnegative    : if True, account for the factor 2 due to m<0 modes 
+    """    
+    oo16pi  = 1./(16*np.pi)
+
+    lmodes = [lm[0] for lm in modes]
+    mmodes = [lm[1] for lm in modes]
+    lmin = min(lmodes)
+
+    if lmin < 2:
+        raise ValueError("l>2")
+    if lmin != 2:
+        print("Warning: lmin > 2")
+        
+    mnfactor = np.ones_like(mmodes)
+    if mnegative:
+        mnfactor = [1 if m == 0 else 2 for m in mmodes]
+    else:
+        if all(m >= 0 for m in mmodes):
+            print("Warning: m>=0 but not accouting for it!")
+
+    # set up dictionaries
+    kys = ['dotE', 'E', 
+           'dotJ', 'J', 
+           'dotJz', 'dotJy', 'dotJx', 
+           'Jz', 'Jy', 'Jx', 
+           'dotP', 'P', 'dotPz', 'dotPy', 'dotPx', 'Pz', 'Py', 'Px'
+           ]
+
+    # all of the above will be stored in a dictionary
+    dictdyn = {}
+    for k in kys:
+        dictdyn[k] = {}
+        dictdyn[k]['total'] = 0.
+    
+    for k, (l,m) in enumerate(modes):
+
+        fact = mnfactor[k] * oo16pi
+        
+        # Energy
+        dictdyn['dotE'][(l,m)] = fact * np.abs(doth[(l,m)]['h'])**2 
+
+        # Angular momentum
+        dictdyn['dotJz'][(l,m)] = fact * m * np.imag(h[(l,m)]['h'] * np.conj(doth[(l,m)]['h']))
+
+        dothlm_1 = doth[(l,m-1)]['h'] if (l,m-1) in doth else 0*h[(l,m)]['h']
+        dothlm1  = doth[(l,m+1)]['h'] if (l,m+1) in doth else 0*h[(l,m)]['h']
+
+        dictdyn['dotJy'][(l,m)] = 0.5 * fact * \
+                                np.real( h[(l,m)]['h'] * (wf_ut.mc_f(l,m) * np.conj(dothlm1) - wf_ut.mc_f(l,-m) * np.conj(dothlm_1) ))
+        dictdyn['dotJx'][(l,m)] = 0.5 * fact * \
+                                np.real( h[(l,m)]['h'] * (wf_ut.mc_f(l,m) * np.conj(dothlm1) + wf_ut.mc_f(l,-m) * np.conj(dothlm_1) ))
+        dictdyn['dotJ'][(l,m)] = np.sqrt(dictdyn['dotJx'][(l,m)]**2 + 
+                                         dictdyn['dotJy'][(l,m)]**2 + 
+                                         dictdyn['dotJz'][(l,m)]**2
+                                        )
+
+        # Linear momentum
+        dothlm1   = doth[(l,m+1)]['h']   if (l,m+1)   in doth else 0*h[(l,m)]['h']
+        dothl_1m1 = doth[(l-1,m+1)]['h'] if (l-1,m+1) in doth else 0*h[(l,m)]['h']
+        dothl1m1  = doth[(l+1,m+1)]['h'] if (l+1,m+1) in doth else 0*h[(l,m)]['h']
+        dotl_1m   = doth[(l-1,m)]['h']   if (l-1,m)   in doth else 0*h[(l,m)]['h']
+        dothl1m   = doth[(l+1,m)]['h']   if (l+1,m)   in doth else 0*h[(l,m)]['h']
+        
+        dotPxiy = 2.0 * fact * doth[(l,m)]['h'] * \
+                (wf_ut.mc_a(l,m) * np.conj(dothlm1) + wf_ut.mc_b(l,-m) * np.conj(dothl_1m1) - wf_ut.mc_b(l+1,m+1) * np.conj(dothl1m1))
+        dictdyn['dotPy'][(l,m)] = np.imag(dotPxiy)
+        dictdyn['dotPx'][(l,m)] = np.real(dotPxiy)
+        dictdyn['dotPz'][(l,m)] = fact * np.imag( doth[(l,m)]['h'] * \
+                                (wf_ut.mc_c(l,m) * np.conj(doth[(l,m)]['h']) + wf_ut.mc_d(l,m) * np.conj(dotl_1m) + wf_ut.mc_d(l+1,m) * np.conj(dothl1m)) )
+
+        dictdyn['dotP'][(l,m)] = np.sqrt(dictdyn['dotPx'][(l,m)]**2 + 
+                                         dictdyn['dotPy'][(l,m)]**2 + 
+                                         dictdyn['dotPz'][(l,m)]**2
+                                        )
+        # Sum up and set dictionary
+        kks = ['E', 'J', 'Jz', 'Jy', 'Jx', 'P', 'Pz', 'Py', 'Px']
+        for kk in kks:
+            dotk = 'dot' + kk
+            this_mode    = integrate.cumtrapz(dictdyn[dotk][(l,m)],t,initial=0)
+            dictdyn[kk][(l,m)]    = this_mode
+            dictdyn[kk]['total'] += this_mode
+
+    return dictdyn
