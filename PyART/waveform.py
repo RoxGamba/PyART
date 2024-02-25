@@ -1,6 +1,6 @@
 # Classed to handle waveforms
 
-#standard imports
+# standard imports
 import numpy as np;
 from scipy.signal import find_peaks
 from scipy import integrate
@@ -137,8 +137,21 @@ class Waveform(object):
                         )
 
         self._dyn = {**self._dyn, **dynamicsdict}
-        pass     
+        pass
 
+    def ej_from_hlm(self, M_adm, J_adm, m1, m2, modes):
+        """
+        Compute GW energy and angular momentum from multipolar waveform
+        """
+
+        self.dynamics_from_hlm(modes)
+
+        E    = self.dyn['E']['total']
+        J    = self.dyn['J']['total']
+        eb   = (M_adm - E - m1 - m2) / (m1*m2/(m1+m2))
+        jorb = (J_adm - J) / (m1*m2) 
+
+        return E, J
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
