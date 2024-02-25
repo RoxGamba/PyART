@@ -158,13 +158,16 @@ class RIT(Waveform):
         Jz = float(mtdt['initial-ADM-angular-momentum-z'])
         J  = np.array([Jx, Jy, Jz])
 
+        E  = float(mtdt['initial-ADM-energy'])
+
         # Orb ang momentum
         L = J - S1 - S2
 
         self._dyn['id'] = {
                             'm1':m1, 'm2':m2, 'M':M, 'X1':X1, 'X2':X2, 
                             'S1':S1, 'S2':S2, 'L0':L,
-                            'J0':J
+                            'J0':J,
+                            'E0':E
                         }
         pass
 
