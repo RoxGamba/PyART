@@ -66,6 +66,7 @@ class Waveform(object):
                 kind   = 'last-peak',
                 umin   = 0,
                 height = 0.15,
+                return_idx = False
                 ):
         
         u   = self.u
@@ -95,8 +96,11 @@ class Waveform(object):
         A_mrg    = Alm[peaks[i]]
         omg_mrg  = omg[peaks[i]]
         domg_mrg = domg[peaks[i]]
-
-        return u_mrg, A_mrg, omg_mrg, domg_mrg
+        
+        if return_idx:
+            return u_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
+        else:
+            return u_mrg, A_mrg, omg_mrg, domg_mrg
 
     def compute_hphc(self, phi=0, i=0, modes=['1']):
         """
