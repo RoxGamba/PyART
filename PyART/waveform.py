@@ -157,10 +157,11 @@ class Waveform(object):
         E    = self.dyn['E']['total']
         J    = self.dyn['J']['total']
 
-        eb   = (M_adm - E - m1 - m2) / (m1*m2/(m1+m2))
-        jorb = (J_adm - J) / (m1*m2) 
+        e    = (M_adm - E)                             # not nu-normalized total energy
+        eb   = (M_adm - E - m1 - m2) / (m1*m2/(m1+m2)) # nu-normalized binding energy
+        jorb = (J_adm - J) / (m1*m2)
 
-        return eb, jorb
+        return eb, e, jorb
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
