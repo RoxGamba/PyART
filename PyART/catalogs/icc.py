@@ -8,6 +8,7 @@ from ..waveform    import Waveform, waveform2energetics
 
 from .processwave import Multipole
 from ..analysis.scattering_angle import ScatteringAngle
+from ..utils.utils import retarded_time 
 
 ################################
 # Class for a single waveform
@@ -51,7 +52,7 @@ class WaveIntegrated(Waveform):
         X0      = np.loadtxt(fname)
         t       = X0[:,0]
         self._t = t
-        self._u = t # FIXME
+        self._u = retarded_time(t,self.r_extr,M=self.M) 
         tlen = len(t)
         resize = False
         for mm in self.modes:

@@ -480,3 +480,9 @@ def local_vars_for_plots(self, **kwargs):
     elif len(loc.colors)!=loc.nsims:
         raise ValueError('size of colors incompatible with number of (local) simulations')
     return loc
+
+def retarded_time(t, r, M=1):
+    R = r * (1 + M/(2*r))**2
+    rstar = R + 2*M*np.log(R/(2*M) - 1)
+    return t - rstar
+
