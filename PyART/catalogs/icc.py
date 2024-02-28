@@ -38,7 +38,7 @@ class WaveIntegrated(Waveform):
         
         self.load_psi4()
         self.integrate_psi4(integr_opts)
-        self.compute_energetics() 
+        self.dynamics_from_hlm(self.modes)
         pass
 
     def psi4_name(self, l, m, r_extr=None):
@@ -112,9 +112,8 @@ class WaveIntegrated(Waveform):
         return {'real':wave.real, 'imag':wave.real, 'h':wave,
                 'A':np.abs(wave), 'p':-np.unwrap(np.angle(wave))}
 
-    def compute_energetics(self):
-        self.energetics = waveform2energetics(h=self._hlm, doth=self._dothlm, t=self._t, modes=self.modes, mnegative=False)
-        
+    #def compute_energetics(self):
+        #self.energetics = waveform2energetics(h=self._hlm, doth=self._dothlm, t=self._t, modes=self.modes, mnegative=False)
 
 ################################
 # Class for the ICC catalog
@@ -161,7 +160,6 @@ class Catalog(object):
                 sim_data            = lambda:0
                 sim_data.meta       = meta
                 sim_data.wave       = wave
-                sim_data.energetics = wave.energetics
                 sim_data.tracks     = tracks
                 sim_data.scat_info  = scat_info
                 data.append(sim_data)
