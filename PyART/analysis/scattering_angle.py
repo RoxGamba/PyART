@@ -1,10 +1,11 @@
 import numpy as np
 import os
-import hypfit
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import matplotlib
-import utils
+
+from .hypfit       import plot_fit, fit_quadratic, quadratic_to_canonical
+from ..utils.utils import upoly_fits
 
 matplotlib.rc('text', usetex=True)
 
@@ -142,12 +143,12 @@ class ScatteringAngle:
         r  = self.r
         th = self.th
 
-        fit_in = utils.upoly_fits(r, th, nmin=nmin, nmax=nmax, n_extract=n_extract, direction='in', 
+        fit_in = upoly_fits(r, th, nmin=nmin, nmax=nmax, n_extract=n_extract, direction='in', 
                                   r_cutoff_low=self.r_cutoff_in_low, r_cutoff_high=self.r_cutoff_in_high)
         b_in     = fit_in['coeffs']
         mask_in  = fit_in['mask']
         
-        fit_out  = utils.upoly_fits(r, th, nmin=nmin, nmax=nmax, n_extract=n_extract, direction='out', 
+        fit_out  = upoly_fits(r, th, nmin=nmin, nmax=nmax, n_extract=n_extract, direction='out', 
                                     r_cutoff_low=self.r_cutoff_out_low, r_cutoff_high=self.r_cutoff_out_high)
         b_out    = fit_out['coeffs']
         mask_out = fit_out['mask']
@@ -357,12 +358,15 @@ class ScatteringAngle:
                 r  = self.r_out
             x  = r*np.cos(th)
             y  = r*np.sin(th)
-            ABCDF = hypfit.fit_quadratic(x, y)
-            canonical = hypfit.quadratic_to_canonical(ABCDF)
+            #ABCDF = hypfit.fit_quadratic(x, y)
+            #canonical = hypfit.quadratic_to_canonical(ABCDF)
+            ABCDF     = fit_quadratic(x, y)
+            canonical = quadratic_to_canonical(ABCDF)
             if plot:
                 if plot_rlim is None:
                     plot_rlim = self.r_cutoff_out_high
-                hypfit.plot_fit(x, y, canonical, swap_ab=swap_ab, rlim=plot_rlim)
+                #hypfit.plot_fit(x, y, canonical, swap_ab=swap_ab, rlim=plot_rlim)
+                plot_fit(x, y, canonical, swap_ab=swap_ab, rlim=plot_rlim)
             A = ABCDF[0]
             B = ABCDF[1]
             C = ABCDF[2]

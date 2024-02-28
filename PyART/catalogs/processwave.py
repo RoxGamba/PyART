@@ -514,7 +514,6 @@ def processwave(**kwargs):
                  print(' * load l={} m={} col={} {}'.format(l,m,col_idx_re,col_idx_im))
             psi4_tmp = data[:,col_idx_re] + 1j*data[:,col_idx_im]
             mode = Multipole(l, m, t, psi4_tmp, args.mass, rad, args.outdir)
-            psi4[(l,m)] = psi4_tmp*rad
 
             if args.strain == 'FFI':
                 mode.fixed_freq_int(fcut=2*args.frequency/max(1,abs(m)),extrap_psi4=args.extrap_psi4)
@@ -526,6 +525,7 @@ def processwave(**kwargs):
                 mode.to_file()
             
             # Store this mode for later
+            psi4[(l,m)] = mode.psi
             h[(l,m)], dh[(l,m)], u[(l,m)] = mode.h, mode.dh, mode.u 
             phi[(l,m)], omg[(l,m)], amp[(l,m)] = mode.phi, mode.omg, mode.amp 
         

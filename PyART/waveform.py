@@ -22,6 +22,7 @@ class Waveform(object):
         self._hp     = None
         self._hc     = None
         self._hlm    = {}
+        self._dothlm = {}
         self._psi4lm = {}
         self._dyn    = {}
         self._kind   = None
@@ -45,6 +46,9 @@ class Waveform(object):
     @property
     def hlm(self):
         return self._hlm
+    @property
+    def dothlm(self):
+        return self._dothlm
     @property
     def psi4lm(self):
         return self._psi4lm
