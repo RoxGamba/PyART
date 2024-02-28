@@ -59,7 +59,6 @@ class RIT(Waveform):
             emm = int((ff.split('/')[-1]).split('_')[2][1:])
             if (ell, emm) not in modes:
                 continue
-            # print(f"Loading {ff}")
             try:
                 t,re,im,A,p = np.loadtxt(ff, unpack=True, skiprows=4, usecols=(0,1,2,3,4) )
             except Exception:
