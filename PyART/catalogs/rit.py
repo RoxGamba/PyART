@@ -181,6 +181,111 @@ class RIT(Waveform):
 
         return yn
 
+class Catalog(object):
+    def __init__(self, 
+                 basepath    = './',
+                 ell_emms    = 'all',
+                 ellmax      = 4,
+                 nonspinning = False, # load only nonspinning
+                 integr_opts = None,
+                 load_puncts = False,
+                 verbose     = False
+                 ) -> None:
+        
+        self.nonspinning  = nonspinning
+        self.integr_opts  = integr_opts
+        self.ellmax       = ellmax
+        self.ell_emms     = ell_emms
+        if self.ell_emms == 'all': 
+            self.modes = [(ell, emm) for ell in range(2,self.ellmax+1) for emm in range(-ell, ell+1)]
+        else:
+            self.modes = self.ell_emms # TODO: add check on input
+
+        self.data = []
+        self.catalog_meta = []
+
+        if integr_opts:
+            raise NotImplementedError("Integration options not implemented yet")
+        if load_puncts:
+            raise NotImplementedError("Punctures not implemented yet")
+        
+
+        # load all simulations in basepath
+        self.load_simulations_in_path(basepath, ell_emms, nonspinning, verbose=verbose)
+
+    def load_simulations_in_path(self, path, ell_emms, 
+                                 nonspinning = False,
+                                 eccentric   = True,
+                                 verbose     = False
+                                 ):
+        """
+        Load all simulations in path into self.data and all metadata into self.catalog_meta
+        """
+        import glob;
+        h5s  = glob.glob(path + "Data/*h5")
+        data = []
+
+        for f in h5s:
+            this_id   =  f.split('/')[-1].split('_')[1].split('-')[2]
+            this_n    =  f.split('/')[-1].split('_')[1].split('-')[3].split('.')[0]
+            if verbose:
+                print('Processing:', this_id, this_n)
+            if eccentric:
+                h_path    = 'Data/ExtrapStrain_RIT-eBBH-'+this_id+'-'+this_n+'.h5'
+                mtdt_path = 'Metadata/RIT:eBBH:'+this_id+'-'+this_n+'-ecc_Metadata.txt'
+            else:
+                raise NotImplementedError("Non eccentric not implemented yet")
+            wave      =  RIT(h_path=h_path, basepath=path, mtdt_path=mtdt_path, ell_emms=ell_emms)
+            mtdt      = wave.metadata
+
+            # checks: nonspinning
+            try:
+                chi1x = float(mtdt['initial-bh-chi1x']);  chi2x = float(mtdt['initial-bh-chi2x'])
+                chi1y = float(mtdt['initial-bh-chi1y']);  chi2y = float(mtdt['initial-bh-chi2y'])
+            except KeyError:
+                chi1x = 0.;  chi2x = 0.
+                chi1y = 0.;  chi2y = 0.
+            chi1z = float(mtdt['initial-bh-chi1z']);  chi2z = float(mtdt['initial-bh-chi2z'])
+            chi1  = np.array([chi1x, chi1y, chi1z]);
+            chi2  = np.array([chi2x, chi2y, chi2z])
+            if nonspinning:
+                if np.linalg.norm(chi1)+np.linalg.norm(chi1)>1e-3:
+                    continue
+
+            # chec: eccentric
+            if eccentric and float(wave.metadata['eccentricity']) < 1e-2:
+                continue
+
+            sim_data            = lambda:0
+            sim_data.meta       = wave.metadata
+            sim_data.wave       = wave
+            sim_data.tracks     = None
+            sim_data.scat_info  = None
+            self.catalog_meta.append(wave.metadata)
+            data.append(sim_data)
+
+        self.data = data
+
+    def idx_from_value(self,value,key='name',single_idx=True):
+        """ 
+        Return idx with metadata[idx][key]=value.
+        If single_idx is False, return list of indeces 
+        that satisfy the condition
+        """
+        idx_list = []
+        for idx, meta in enumerate(self.catalog_meta):
+            if meta[key]==value:
+                idx_list.append(idx)
+        if len(idx_list)==0: 
+            return None
+        if single_idx:
+            if len (idx_list)>1:
+                raise RuntimeError(f'Found more than one index for value={value} and key={key}')
+            else:
+                return idx_list[0]
+        else: 
+            return idx_list
+
 if __name__ == '__main__':
 
     psi_path= 'Psi4/ExtrapPsi4_RIT-eBBH-1634-n100-ecc/'
