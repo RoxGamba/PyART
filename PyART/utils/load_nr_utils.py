@@ -3,39 +3,32 @@
 import os, sys, numpy as np
 import matplotlib.pyplot as plt 
 
+from .wf_utils import get_multipole_dict
+
 class LoadPsi4(object):
-    def __init__(self, basepath='./', fmt='etk', mneg=True, lmmax=5, fname='wave.txt', resize=False, M=1, R=1):
+    def __init__(self, path='./', fmt='etk', modes=[(2,2)], fname='wave.txt', resize=False, M=1, R=1):
         """
         Load psi4 from file
         
         Parameters:
-          basepath : path where file(s) are stored
-          fmt      : format, like gra, etk etc.
-          mneg     : load m<0 modes (default is True)
-          lmmax    : load multipoles up to this values
-          fname    : name of the file to load. If you have a file for each multipole,
-                     then use the wildcard @L@ and @M@, e.g. 'psi4_l@L@_@M@.asc'
-          resize   : if True, handle files with different lenghts (not safe)
-          M        : rest mass
-          R        : extraction radius
+          path   : path where file(s) are stored
+          fmt    : format, like gra, etk etc.
+          modes  : modes to load
+          fname  : name of the file to load. If you have a file for each multipole,
+                   then use the wildcard @L@ and @M@, e.g. 'psi4_l@L@_@M@.asc'
+          resize : if True, handle files with different lenghts (not safe)
+          M      : rest mass
+          R      : extraction radius
         """
         #TODO: - norm_kind: normalize waveform according to fmt
          
-        self.basepath  = basepath
+        self.path  = path
         self.fmt       = fmt
-        self.mneg      = mneg
-        self.lmmax     = lmmax
+        self.modes     = modes
         self.fname     = fname        
         self.M         = M 
         self.R         = R
         self.resize    = False
-        # Get modes to load 
-        modes = []
-        for l in range(2,self.lmmax+1):
-            mmin = -l if self.mneg else 0
-            for m in range(mmin, l+1):
-                modes.append((l,m))
-        self.modes = modes 
 
         # load data
         d = {}
@@ -52,7 +45,7 @@ class LoadPsi4(object):
                 else:
                     previous_t = t
                 psi4 = (re+1j*im)*self.M*self.R
-                d[(l,m)] = self.get_multipole_dict(psi4)
+                d[(l,m)] = get_multipole_dict(psi4)
             if self.resize:
                 t, d = self.resize(t,d)
 
@@ -67,7 +60,7 @@ class LoadPsi4(object):
         return out.replace('@M@', f'{m:d}')
     
     def load_file(self,fname,safe=False):
-        fullname = os.path.join(self.basepath,fname)
+        fullname = os.path.join(self.path,fname)
         if not safe:
             return np.loadtxt(fullname)
         else:
@@ -79,14 +72,21 @@ class LoadPsi4(object):
                         lines.append(line)
             return np.array([line.strip().split() for line in lines], dtype=float)
     
-    def reim_from_multipole(self, X, fmt=None):
-        if fmt is None: fmt = self.fmt
+    def file_indices(self, fmt, l=None, m=None):
         if fmt=='etk':
-            t  = X[:,0]
-            re = X[:,1]
-            im = X[:,2]
+            indices_dict = {'t':0, 're':1, 'im':2}
+        elif fmt=='gra':
+            print('more complicated...')
         else:
             raise RuntimeError(f'Unknown format: {fmt}')
+        return indices_dict 
+
+    def reim_from_multipole(self, X, fmt=None):
+        if fmt is None: fmt = self.fmt
+        indices_dict = self.file_indices(fmt=fmt)
+        t  = X[:,indices_dict['t'] ]
+        re = X[:,indices_dict['re']]
+        im = X[:,indices_dict['im']]
         return re,im,t
     
     def resize(self,d,t):
@@ -103,12 +103,8 @@ class LoadPsi4(object):
                 d[mm][key] = val[:minlen]
         return t,d 
 
-    def get_multipole_dict(self, wave):
-        return {'real':wave.real, 'imag':wave.real, 'h':wave,
-                'A':np.abs(wave), 'p':-np.unwrap(np.angle(wave))}
-
 if __name__=="__main__":
-    x = LoadPsi4(basepath='/Users/simonealbanesi/repos/eob_nr_explore/data/scattering/BBH_hyp_D100_b10p3', 
+    x = LoadPsi4(path='/Users/simonealbanesi/repos/eob_nr_explore/data/scattering/BBH_hyp_D100_b10p3', 
                  fmt='etk', fname='mp_psi4_l@L@_m@M@_r100.00.asc', lmmax=4)
     print(x.psi4[(2,2)])
     plt.figure
