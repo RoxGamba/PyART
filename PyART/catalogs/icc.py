@@ -9,6 +9,7 @@ from ..waveform    import Waveform, waveform2energetics
 from .processwave import Multipole
 from ..analysis.scattering_angle import ScatteringAngle
 from ..utils.utils import retarded_time 
+from ..utils.load_nr_utils import LoadPsi4
 
 ################################
 # Class for a single waveform
@@ -23,70 +24,26 @@ class WaveIntegrated(Waveform):
                  integr_opts = None
                  ) -> None:
         super().__init__()
-        
         self.path    = path
         self.r_extr  = r_extr
         self.M       = M
         self.modes   = modes
-        
         if integr_opts is None:
-            integr_opts['method']      = 'FFI'
-            integr_opts['f0']          = 0.007
-            integr_opts['deg']         = 0
-            integr_opts['poly_int']    = None
-            integr_opts['extrap_psi4'] = False
-        
+            integr_opts = {'method':'FFI', 'f0':0.007, 'deg':0,
+                           'poly_int':None, 'extrap_psi4':False}
         self.load_psi4()
         self.integrate_psi4(integr_opts)
         self.dynamics_from_hlm(self.modes)
         pass
 
-    def psi4_name(self, l, m, r_extr=None):
-        if r_extr is None: r_extr = self.r_extr
-        return f'mp_psi4_l{l:d}_m{m:d}_r{r_extr:.2f}.asc'
-    
     def load_psi4(self):
-        d = {}
-        # start by getting time
-        fname   = os.path.join(self.path,self.psi4_name(l=2,m=2))
-        X0      = np.loadtxt(fname)
-        t       = X0[:,0]
-        self._t = t
-        self._u = retarded_time(t,self.r_extr,M=self.M) 
-        tlen = len(t)
-        resize = False
-        for mm in self.modes:
-            l, m = mm
-            fname = os.path.join(self.path,self.psi4_name(l=l,m=m))
-            if os.path.exists(fname):
-                # procedure to load also problematic files
-                lines = []
-                with open(fname, 'r') as file:
-                    for line in file.readlines():
-                        parts = line.strip().split()
-                        if len(parts)==3 and '#' not in line:
-                            lines.append(line)
-                X = np.array([line.strip().split() for line in lines], dtype=float)
-                
-                Xlen = len(X[:,0])
-                if Xlen!=tlen:
-                    minlen = min(Xlen,tlen)
-                    resize = True
-                t    = X[:,0]/self.M
-                psi4 = (X[:,1]+1j*X[:,2])*self.M*self.r_extr
-            else:
-                raise FileNotFoundError(f'{fname} not found')
-            d[(l,m)] = self.get_multipole_dict(psi4)
-        if resize:
-            self._t = self._t[:minlen]
-            self._u = self._u[:minlen]
-            for mm in self.modes:
-                l,m = mm
-                for key, val in d[(l,m)].items():
-                    d[(l,m)][key] = val[:minlen]
-        self._psi4lm = d
-        pass
-    
+         instance = LoadPsi4(basepath=self.path,lmmax=4,M=self.M,R=self.r_extr,resize=False,
+                             fname=f'mp_psi4_l@L@_m@M@_r{self.r_extr:.2f}.asc')
+         self._t      = instance.t
+         self._u      = retarded_time(self._t,self.r_extr,M=self.M)
+         self._psi4lm = instance.psi4
+         pass
+
     def integrate_psi4(self, integr_opts):
         method      = integr_opts['method']
         f0          = integr_opts['f0']
@@ -111,9 +68,6 @@ class WaveIntegrated(Waveform):
     def get_multipole_dict(self, wave):
         return {'real':wave.real, 'imag':wave.real, 'h':wave,
                 'A':np.abs(wave), 'p':-np.unwrap(np.angle(wave))}
-
-    #def compute_energetics(self):
-        #self.energetics = waveform2energetics(h=self._hlm, doth=self._dothlm, t=self._t, modes=self.modes, mnegative=False)
 
 ################################
 # Class for the ICC catalog
