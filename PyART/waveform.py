@@ -4,7 +4,6 @@
 import numpy as np;
 from scipy.signal import find_peaks
 from scipy import integrate
-import matplotlib.pyplot as plt 
 
 # other imports
 from .utils import utils         as ut
