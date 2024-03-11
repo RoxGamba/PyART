@@ -3,10 +3,8 @@
 import os, sys, numpy as np
 import matplotlib.pyplot as plt 
 
-from .wf_utils import get_multipole_dict
-
 class LoadPsi4(object):
-    def __init__(self, path='./', fmt='etk', modes=[(2,2)], fname='wave.txt', resize=False, M=1, R=1):
+    def __init__(self, path='./', fmt='etk', modes=[(2,2)], fname='wave.txt', resize=False):
         """
         Load psi4 from file
         
@@ -17,8 +15,6 @@ class LoadPsi4(object):
           fname  : name of the file to load. If you have a file for each multipole,
                    then use the wildcard @L@ and @M@, e.g. 'psi4_l@L@_@M@.asc'
           resize : if True, handle files with different lenghts (not safe)
-          M      : rest mass
-          R      : extraction radius
         """
         #TODO: - norm_kind: normalize waveform according to fmt
          
@@ -26,33 +22,41 @@ class LoadPsi4(object):
         self.fmt       = fmt
         self.modes     = modes
         self.fname     = fname        
-        self.M         = M 
-        self.R         = R
         self.resize    = False
 
         # load data
-        d = {}
+        indices_dict = self.get_indices_dict()
+        psi4 = {}
         if '@L@' in self.fname and '@M@' in self.fname:
             previous_t = None
             for mm in modes:
-                l, m = mm
-                fname    = self.psi4_lm_name(l,m)
-                X        = self.load_file(fname, safe=True)
-                re,im,t  = self.reim_from_multipole(X,fmt=self.fmt)
+                l, m  = mm
+                fname = self.psi4_lm_name(l,m)
+                Xlm   = self.load_file(fname, safe=True)
+                t     = Xlm[:,indices_dict[(l,m)]['t'] ] 
+                re    = Xlm[:,indices_dict[(l,m)]['re']] 
+                im    = Xlm[:,indices_dict[(l,m)]['im']] 
                 if previous_t is not None:
                     if len(t)!=len(previous_t) and not self.resize:
                         raise RuntimeError('Found times with different lenght')
                 else:
                     previous_t = t
-                psi4 = (re+1j*im)*self.M*self.R
-                d[(l,m)] = get_multipole_dict(psi4)
-            if self.resize:
-                t, d = self.resize(t,d)
+                psi4[(l,m)] = re+1j*im
 
         else:
-            print('To implement..')
+            X = self.load_file(fname, safe=False)
+            t = X[:,indices_dict[(2,2)]['t']]
+            for mm in self.modes:
+                l,m = mm
+                re  = X[:,indices_dict[mm]['re']]
+                im  = X[:,indices_dict[mm]['im']]
+                psi4[(l,m)] = re+1j*im
+            
+        if self.resize:
+            t, psi4 = self.resize(t,psi4)
+        
         self.t    = t        
-        self.psi4 = d
+        self.psi4 = psi4
         return 
     
     def psi4_lm_name(self, l, m):
@@ -72,36 +76,45 @@ class LoadPsi4(object):
                         lines.append(line)
             return np.array([line.strip().split() for line in lines], dtype=float)
     
-    def file_indices(self, fmt, l=None, m=None):
+    def get_indices_dict(self):
+        fmt = self.fmt
+        indices_dict = {}
         if fmt=='etk':
-            indices_dict = {'t':0, 're':1, 'im':2}
+            for mm in self.modes:
+                indices_dict[mm] = {'t':0, 're':1, 'im':2}
+        
         elif fmt=='gra':
-            print('more complicated...')
+            # get col indices up to l=10
+            col_indices = {}
+            c = 0
+            cstart = 2
+            for l in range(2, 11):
+                for m in range(-l, l+1):
+                    col_indices[(l,m)] = (cstart+c, cstart+c+1)
+                    c += 2
+            # now store the ones that we need
+            for mm in self.modes:
+                re_idx = col_indices[mm][0]
+                im_idx = col_indices[mm][1]
+                indices_dict[mm] = {'t':1, 're':re_idx, 'im':im_idx} 
+        
         else:
             raise RuntimeError(f'Unknown format: {fmt}')
+        
         return indices_dict 
-
-    def reim_from_multipole(self, X, fmt=None):
-        if fmt is None: fmt = self.fmt
-        indices_dict = self.file_indices(fmt=fmt)
-        t  = X[:,indices_dict['t'] ]
-        re = X[:,indices_dict['re']]
-        im = X[:,indices_dict['im']]
-        return re,im,t
     
-    def resize(self,d,t):
+    def resize(self,t,psi4):
         # find min lenght
         minlen = len(t)
         for mm in self.modes:
-            len_d = len(d[mm])
-            if len_d<minlen:
-                minlen = len_d
+            len_psi4 = len(psi4[mm])
+            if len_psi4<minlen:
+                minlen = len_psi4
         # resize t and psi4
         t = t[:minlen]
         for mm in self.modes:
-            for key, val in d[mm].items():
-                d[mm][key] = val[:minlen]
-        return t,d 
+            psi4[mm] = psi4[mm][:minlen]
+        return t,psi4
 
 if __name__=="__main__":
     x = LoadPsi4(path='/Users/simonealbanesi/repos/eob_nr_explore/data/scattering/BBH_hyp_D100_b10p3', 

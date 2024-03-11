@@ -4,6 +4,7 @@
 import numpy as np;
 from scipy.signal import find_peaks
 from scipy import integrate
+import matplotlib.pyplot as plt 
 
 # other imports
 from .utils import utils         as ut
@@ -272,10 +273,11 @@ class WaveIntegrated(Waveform):
     def __init__(self,
                  path        = './',
                  ellmax      = 4,
-                 r_extr      = 100,
+                 r_extr      = 1,
                  M           = 1,
                  modes       = [(2,2)],
                  integr_opts = {},
+                 fmt         = 'etk',
                  fname       = 'mp_psi4_l@L@_m@M@_r100.00.asc'
                  ) -> None:
         super().__init__()
@@ -284,6 +286,7 @@ class WaveIntegrated(Waveform):
         self.r_extr  = r_extr
         self.M       = M
         self.modes   = modes
+        self.fmt     = fmt
         self.fname   = fname
         
         self.load_psi4()
@@ -297,10 +300,10 @@ class WaveIntegrated(Waveform):
         pass
 
     def load_psi4(self):
-         instance     = nr_ut.LoadPsi4(path=self.path,modes=self.modes,M=self.M,R=self.r_extr,resize=False,fname=self.fname)
-         self._t      = instance.t
-         self._u      = ut.retarded_time(self._t,self.r_extr,M=self.M)
-         self._psi4lm = instance.psi4
+         instance = nr_ut.LoadPsi4(path=self.path,modes=self.modes,resize=False,fmt=self.fmt,fname=self.fname)
+         self._t  = instance.t/self.M
+         self._u  = ut.retarded_time(instance.t,self.r_extr,M=self.M)/self.M
+         self.psi4lm_file = instance.psi4
          pass
 
     def integrate_psi4(self, integr_opts):
@@ -312,14 +315,15 @@ class WaveIntegrated(Waveform):
 
         for mm in self.modes:
             l, m = mm
-            psi4 = self._psi4lm[(l,m)]['h'] #FIXME this h is confusing
-            mode = Multipole(l, m, self._t, psi4, mass=self.M, radius=1.0, path=None) #FIXME remove this path
+            psi4 = self.psi4lm_file[(l,m)]
+            mode = Multipole(l, m, self._t, psi4, mass=self.M, radius=self.r_extr, path=None) #FIXME remove this path
             if method=='FFI':
-                mode.fixed_freq_int(fcut=2*f0/max(1,abs(m)),extrap_psi4=extrap_psi4)
+                out=mode.fixed_freq_int(fcut=2*f0/max(1,abs(m)),extrap_psi4=extrap_psi4)
             elif method=='TDI':
-                mode.time_domain_int(deg=deg,poly_int=poly_int,extrap_psi4=extrap_psi4) 
+                out=mode.time_domain_int(deg=deg,poly_int=poly_int,extrap_psi4=extrap_psi4) 
             else:
                 raise RuntimeError('Unknown method: {:s}'.format(integration['method']))
+            self._psi4lm[(l,m)] = wf_ut.get_multipole_dict(mode.psi)
             self._dothlm[(l,m)] = wf_ut.get_multipole_dict(mode.dh)
             self._hlm[(l,m)]    = wf_ut.get_multipole_dict(mode.h)
         pass
