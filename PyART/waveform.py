@@ -9,7 +9,7 @@ from scipy import integrate
 from .utils import utils         as ut
 from .utils import wf_utils      as wf_ut
 from .utils import load_nr_utils as nr_ut
-from .catalogs.processwave import Multipole
+from .catalogs.integrate_multipole import Multipole
 
 class Waveform(object):
     """
@@ -315,7 +315,7 @@ class WaveIntegrated(Waveform):
         for mm in self.modes:
             l, m = mm
             psi4 = self.psi4lm_file[(l,m)]
-            mode = Multipole(l, m, self._t, psi4, mass=self.M, radius=self.r_extr, path=None) #FIXME remove this path
+            mode = Multipole(l, m, self._t, psi4, mass=self.M, radius=self.r_extr)
             if method=='FFI':
                 out=mode.fixed_freq_int(fcut=2*f0/max(1,abs(m)),extrap_psi4=extrap_psi4)
             elif method=='TDI':
