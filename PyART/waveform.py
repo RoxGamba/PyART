@@ -208,9 +208,9 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
 
     # all of the above will be stored in a dictionary
     dictdyn = {}
-    for k in kys:
-        dictdyn[k] = {}
-        dictdyn[k]['total'] = 0.
+    for ky in kys:
+        dictdyn[ky] = {}
+        dictdyn[ky]['total'] = 0.
     
     for k, (l,m) in enumerate(modes):
 
@@ -259,6 +259,9 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
             this_mode    = integrate.cumtrapz(dictdyn[dotk][(l,m)],t,initial=0)
             dictdyn[kk][(l,m)]    = this_mode
             dictdyn[kk]['total'] += this_mode
+        
+        for ky in kys:
+            dictdyn[ky]['total'] += dictdyn[ky][(l,m)] 
 
     return dictdyn
 
