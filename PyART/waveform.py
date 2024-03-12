@@ -257,11 +257,9 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
         for kk in kks:
             dotk = 'dot' + kk
             this_mode    = integrate.cumtrapz(dictdyn[dotk][(l,m)],t,initial=0)
-            dictdyn[kk][(l,m)]    = this_mode
-            dictdyn[kk]['total'] += this_mode
-        
-        for ky in kys:
-            dictdyn[ky]['total'] += dictdyn[ky][(l,m)] 
+            dictdyn[kk][(l,m)]      = this_mode
+            dictdyn[kk]['total']   += this_mode
+            dictdyn[dotk]['total'] += this_mode
 
     return dictdyn
 
@@ -303,8 +301,8 @@ class WaveIntegrated(Waveform):
 
     def load_psi4(self):
          instance = nr_ut.LoadPsi4(path=self.path,modes=self.modes,resize=False,fmt=self.fmt,fname=self.fname)
-         self._t  = instance.t/self.M
-         self._u  = ut.retarded_time(instance.t,self.r_extr,M=self.M)/self.M
+         self._t  = instance.t
+         self._u  = ut.retarded_time(instance.t,self.r_extr,M=self.M)
          self.psi4lm_file = instance.psi4
          pass
 
