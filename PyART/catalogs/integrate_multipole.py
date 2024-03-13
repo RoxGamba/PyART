@@ -59,6 +59,10 @@ class Multipole:
     def apply_window(self, window=[10,-10], walpha=3):
         if self.window_applied:
             raise RuntimeError('Time-window already applied!')
+        
+        if window is None:
+            return 
+
         walpha   = 3
         towindow = 50.0
         t      = self.t
@@ -74,11 +78,14 @@ class Multipole:
         # set signal equal to zero below threshold
         threshold = 1e-14
         amp   = np.abs(self.psi)
-        idx1  = np.where(amp>threshold)[0][0]
+        bool1 = amp>threshold
+        if any(bool1):
+            idx1  = np.where(bool1)[0][0]
+            self.psi[:idx1+1] = 0*self.psi[:idx1+1]
         bool2 = np.logical_and(amp<threshold, t>t[idx1+10])
-        idx2  = np.where(bool2)[0][0]
-        self.psi[:idx1+1] = 0*self.psi[:idx1+1]
-        self.psi[idx2:]   = 0*self.psi[idx2:]
+        if any(bool2):
+            idx2  = np.where(bool2)[0][0]
+            self.psi[idx2:]   = 0*self.psi[idx2:]
         self.window_applied = True
         return
 
@@ -96,10 +103,11 @@ class Multipole:
         """
         Fixed frequency double time integration
         """
-        if extrap_psi4:
-            self.extrapolate_psi4(integration='FFI',fcut=fcut)
         if window is not None:
             self.apply_window(window=window)
+        if extrap_psi4:
+            self.extrapolate_psi4(integration='FFI',fcut=fcut)
+        
         f = self.freq_interval(fcut=fcut)
         signal   = self.psi
         self.dh  = ifft(-1j*fft(signal)/(2*np.pi*f))
@@ -132,10 +140,10 @@ class Multipole:
         The polynomial is obtained fitting the whole signal if poly_int is none,
         otherwise consider only the interval specified; see remove_time_drift
         """
-        if extrap_psi4:
-            self.extrapolate_psi4(integration='TDI',deg=deg,poly_int=poly_int)
         if window is not None:
             self.apply_window(window=window)
+        if extrap_psi4:
+            self.extrapolate_psi4(integration='TDI',deg=deg,poly_int=poly_int)
         
         dh0 = integrate.cumtrapz(self.psi,self.t,initial=0)
         dh  = self.remove_time_drift(dh0,deg=deg,poly_int=poly_int)

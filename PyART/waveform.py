@@ -291,9 +291,13 @@ class WaveIntegrated(Waveform):
         
         self.load_psi4()
         
-        if not integr_opts:
-            integr_opts = {'method':'FFI', 'f0':0.007, 'deg':0,
-                           'poly_int':None, 'extrap_psi4':False}
+        if 'method'      not in integr_opts: integr_opts['method']      = 'FFI'
+        if 'f0'          not in integr_opts: integr_opts['f0']          = 0.007
+        if 'deg'         not in integr_opts: integr_opts['deg']         = 0
+        if 'poly_int'    not in integr_opts: integr_opts['poly_int']    = None
+        if 'extrap_psi4' not in integr_opts: integr_opts['extrap_psi4'] = False
+        if 'window'      not in integr_opts: integr_opts['window']      = None
+        
         self.integrate_psi4(integr_opts)
         
         self.dynamics_from_hlm(self.modes)
@@ -312,15 +316,16 @@ class WaveIntegrated(Waveform):
         deg         = integr_opts['deg']
         poly_int    = integr_opts['poly_int']
         extrap_psi4 = integr_opts['extrap_psi4']
+        window      = integr_opts['window']
 
         for mm in self.modes:
             l, m = mm
             psi4 = self.psi4lm_file[(l,m)]
             mode = Multipole(l, m, self._t, psi4, mass=self.M, radius=self.r_extr)
             if method=='FFI':
-                out=mode.fixed_freq_int(fcut=2*f0/max(1,abs(m)),extrap_psi4=extrap_psi4)
+                out=mode.fixed_freq_int(fcut=2*f0/max(1,abs(m)), extrap_psi4=extrap_psi4, window=window)
             elif method=='TDI':
-                out=mode.time_domain_int(deg=deg,poly_int=poly_int,extrap_psi4=extrap_psi4) 
+                out=mode.time_domain_int(deg=deg,poly_int=poly_int, extrap_psi4=extrap_psi4, window=window) 
             else:
                 raise RuntimeError('Unknown method: {:s}'.format(integration['method']))
             self._psi4lm[(l,m)] = wf_ut.get_multipole_dict(mode.psi)
