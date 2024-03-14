@@ -280,7 +280,7 @@ class WaveIntegrated(Waveform):
                  fmt         = 'etk',
                  fname       = 'mp_psi4_l@L@_m@M@_r100.00.asc',
                  integrand   = 'psi4',
-                 norm        = None
+                 norm        = None,
                  ) -> None:
         super().__init__()
         
@@ -301,10 +301,10 @@ class WaveIntegrated(Waveform):
         if 'window'      not in integr_opts: integr_opts['window']      = None
         
         self.load_wave()
-
-        self.integrate_wave(integr_opts)
         
         self.normalize_wave(norm=norm)
+
+        self.integrate_wave(integr_opts)
 
         self.dynamics_from_hlm(self.modes)
         pass
@@ -315,6 +315,32 @@ class WaveIntegrated(Waveform):
          self._u  = ut.retarded_time(instance.t,self.r_extr,M=self.M)
          self.wavelm_file = instance.wave
          pass
+    
+    def normalize_wave(self, norm=None):
+        """
+        Normalize psi4,doth and h. 
+        Example: norm='factor2_minusodd_minusm0'
+        Activate three flags: factor2, minusodd, minusm0
+        """
+        if norm is None:
+            return 
+        
+        opts = {'factor2':False, 'minusodd':False, 'minusm0':False, 'dividebyR':False} 
+        for elem in norm.split('_'):
+            opts[elem] = True
+        for lm in self.modes:
+            l,m = lm
+            factor = 1
+            if opts['factor2']:
+                factor *= 2
+            if opts['minusodd']:
+                factor *= (-1)**(l+m)
+            if opts['minusm0'] and m==0:
+                factor *= -1
+            if opts['dividebyR']:
+                factor *= 1/self.r_extr
+            self.wavelm_file[(l,m)] = self.wavelm_file[(l,m)]*factor
+        pass 
 
     def integrate_wave(self, integr_opts):
         for mm in self.modes:
@@ -328,33 +354,6 @@ class WaveIntegrated(Waveform):
             self._dothlm[(l,m)] = wf_ut.get_multipole_dict(mode.dh)
             self._hlm[(l,m)]    = wf_ut.get_multipole_dict(mode.h)
         pass
-    
-    def norm_multipole_dict(self, multipole, factor):
-        return wf_ut.get_multipole_dict(factor*multipole['h'])
 
-    def normalize_wave(self, norm=None):
-        """
-        Normalize psi4,doth and h. 
-        Example: norm='factor2_minusodd_minusm0'
-        Activate three flags: factor2, minusodd, minusm0
-        """
-        if norm is None:
-            return 
-        
-        opts = {'factor2':False, 'minusodd':False, 'minusm0':False} 
-        for elem in norm.split('_'):
-            opts[elem] = True
-        for lm in self.modes:
-            l,m = lm
-            factor = 1
-            if opts['factor2']:
-                factor *= 2
-            if opts['minusodd']:
-                factor *= (-1)**(l+m)
-            if opts['minusm0'] and m==0:
-                factor *= -1
-            self._psi4lm[(l,m)] = self.norm_multipole_dict(self._psi4lm[(l,m)],factor)
-            self._dothlm[(l,m)] = self.norm_multipole_dict(self._dothlm[(l,m)],factor)
-            self._hlm[(l,m)]    = self.norm_multipole_dict(self._hlm[(l,m)],   factor)
-        return 
+
 
