@@ -1,23 +1,32 @@
 #!/usr/bin/python
-
 import numpy as np
 from scipy.fftpack import fft, ifft, fftfreq
 from scipy import integrate    
+
+from ..utils.utils import D1 
 
 class Multipole:
     """
     Class for gravitational-wave multipole
     """
-    def __init__(self, l, m, t, data, mass, radius):
-        self.l, self.m = l, m
-        self.mass   = mass
-        self.radius = radius
+    def __init__(self, l, m, t, data, mass, radius, integrand='psi4'):
+        self.l         = l
+        self.m         = m
+        self.mass      = mass
+        self.radius    = radius
+        self.integrand = integrand
         self.t = t
         self.u = self.retarded_time()
 
-        self.psi = radius * data
-        self.dh  = np.array([])
-        self.h   = np.array([])
+        if self.integrand=='psi4':
+            self.psi = radius * data
+            self.dh  = np.array([])
+        elif self.integrand=='news':
+            self.psi = np.array([])
+            self.dh  = radius * data
+        else:
+            raise RuntimeError(f"Unknown integrand: {self.integrand}, use 'psi4' or 'news'")
+        self.h = np.array([])
         
         self.psi4_extrapolated = False 
         self.window_applied    = False
@@ -62,6 +71,11 @@ class Multipole:
         
         if window is None:
             return 
+        
+        if self.integrand=='psi4':
+            signal = self.psi
+        elif self.integrand=='news':
+            signal = self.dh
 
         walpha   = 3
         towindow = 50.0
@@ -72,21 +86,25 @@ class Multipole:
         w_t2   = t[-1] + window[1]
         sig1   = 1/(1 + np.exp(-walpha*(t-w_t1)) ) 
         sig2   = 1/(1 + np.exp(-walpha*(w_t2-t)) ) 
-        self.psi *= sig1
-        self.psi *= sig2
+        signal *= sig1
+        signal *= sig2
         
         # set signal equal to zero below threshold
-        threshold = 1e-14
-        amp   = np.abs(self.psi)
-        bool1 = amp>threshold
-        if any(bool1):
-            idx1  = np.where(bool1)[0][0]
-            self.psi[:idx1+1] = 0*self.psi[:idx1+1]
-        bool2 = np.logical_and(amp<threshold, t>t[idx1+10])
-        if any(bool2):
-            idx2  = np.where(bool2)[0][0]
-            self.psi[idx2:]   = 0*self.psi[idx2:]
-        self.window_applied = True
+#        threshold = 1e-14
+#        amp   = np.abs(signal)
+#        bool1 = amp>threshold
+#        if any(bool1):
+#            idx1  = np.where(bool1)[0][0]
+#            signal[:idx1+1] = 0*signal[:idx1+1]
+#        bool2 = np.logical_and(amp<threshold, t>t[idx1+10])
+#        if any(bool2):
+#            idx2  = np.where(bool2)[0][0]
+#            signal[idx2:] = 0*signal[idx2:]
+        
+        if self.integrand=='psi4':
+            self.psi = signal
+        elif self.integrand=='news':
+            self.dh = signal
         return
 
     def freq_interval(self, fcut=0, signal=None):
@@ -108,13 +126,14 @@ class Multipole:
         if extrap_psi4:
             self.extrapolate_psi4(integration='FFI',fcut=fcut)
         
-        f        = self.freq_interval(fcut=fcut)
         if dh is None:
-            signal   = self.psi
-            self.dh  = ifft(-1j*fft(signal)/(2*np.pi*f))
-            self.h   = ifft(-fft(signal)/(2*np.pi*f)**2)
+            signal  = self.psi
+            f       = self.freq_interval(fcut=fcut,signal=signal)
+            self.dh = ifft(-1j*fft(signal)/(2*np.pi*f))
+            self.h  = ifft(-fft(signal)/(2*np.pi*f)**2)
         else:
             self.dh = dh 
+            f       = self.freq_interval(fcut=fcut,signal=dh)
             self.h  = ifft(-1j*fft(dh)/(2*np.pi*f))
         return
 
@@ -150,7 +169,7 @@ class Multipole:
         if extrap_psi4:
             self.extrapolate_psi4(integration='TDI',deg=deg,poly_int=poly_int)
         
-        if dh in None:
+        if dh is None:
             dh0 = integrate.cumtrapz(self.psi,self.t,initial=0)
             dh  = self.remove_time_drift(dh0,deg=deg,poly_int=poly_int)
 
@@ -161,9 +180,9 @@ class Multipole:
         self.h  = h 
         return
 
-    def integrate_psi4(self, integr_opts={}):
+    def integrate_wave(self, integr_opts={}):
         """ 
-        Integrate psi4 according to specified methods
+        Integrate according to specified methods
         """
         method      = integr_opts['method']      if 'method'      in integr_opts else 'FFI'
         f0          = integr_opts['f0']          if 'f0'          in integr_opts else 0.007
@@ -172,13 +191,22 @@ class Multipole:
         extrap_psi4 = integr_opts['extrap_psi4'] if 'extrap_psi4' in integr_opts else False
         window      = integr_opts['window']      if 'window'      in integr_opts else None
         
+        if self.integrand=='psi4':
+            dh = None
+        elif self.integrand=='news':
+            dh = self.dh
+        
         # integrate psi4 and get self.dh and self.h
         if method=='FFI':
-            self.fixed_freq_int(fcut=2*f0/max(1,abs(self.m)), extrap_psi4=extrap_psi4, window=window)
+            self.fixed_freq_int(fcut=2*f0/max(1,abs(self.m)), extrap_psi4=extrap_psi4, window=window, dh=dh)
         elif method=='TDI':
-            self.time_domain_int(deg=deg, poly_int=poly_int, extrap_psi4=extrap_psi4, window=window) 
+            self.time_domain_int(deg=deg, poly_int=poly_int, extrap_psi4=extrap_psi4, window=window, dh=dh) 
         else:
             raise RuntimeError('Unknown method: {:s}'.format(integration['method']))
+
+        if self.integrand=='news':
+            self.psi = D1(self.dh,self.t,4)
+
         return self.h, self.dh
 
 

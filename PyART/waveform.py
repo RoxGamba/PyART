@@ -1,5 +1,5 @@
 # Classed to handle waveforms
-
+import matplotlib.pyplot as plt
 # standard imports
 import numpy as np;
 from scipy.signal import find_peaks
@@ -278,19 +278,21 @@ class WaveIntegrated(Waveform):
                  modes       = [(2,2)],
                  integr_opts = {},
                  fmt         = 'etk',
-                 fname       = 'mp_psi4_l@L@_m@M@_r100.00.asc'
+                 fname       = 'mp_psi4_l@L@_m@M@_r100.00.asc',
+                 integrand   = 'psi4',
+                 norm        = None
                  ) -> None:
         super().__init__()
         
-        self.path    = path
-        self.r_extr  = r_extr
-        self.M       = M
-        self.modes   = modes
-        self.fmt     = fmt
-        self.fname   = fname
-        
-        self.load_psi4()
-        
+        self.path      = path
+        self.r_extr    = r_extr
+        self.M         = M
+        self.modes     = modes
+        self.fmt       = fmt
+        self.fname     = fname
+        self.integrand = integrand.lower()
+        self.norm      = norm
+
         if 'method'      not in integr_opts: integr_opts['method']      = 'FFI'
         if 'f0'          not in integr_opts: integr_opts['f0']          = 0.007
         if 'deg'         not in integr_opts: integr_opts['deg']         = 0
@@ -298,29 +300,61 @@ class WaveIntegrated(Waveform):
         if 'extrap_psi4' not in integr_opts: integr_opts['extrap_psi4'] = False
         if 'window'      not in integr_opts: integr_opts['window']      = None
         
-        self.integrate_psi4(integr_opts)
+        self.load_wave()
+
+        self.integrate_wave(integr_opts)
         
+        self.normalize_wave(norm=norm)
+
         self.dynamics_from_hlm(self.modes)
         pass
 
-    def load_psi4(self):
+    def load_wave(self):
          instance = nr_ut.LoadWave(path=self.path,modes=self.modes,resize=False,fmt=self.fmt,fname=self.fname)
          self._t  = instance.t
          self._u  = ut.retarded_time(instance.t,self.r_extr,M=self.M)
-         self.psi4lm_file = instance.wave
+         self.wavelm_file = instance.wave
          pass
 
-    def integrate_psi4(self, integr_opts):
+    def integrate_wave(self, integr_opts):
         for mm in self.modes:
             l, m = mm
-            psi4 = self.psi4lm_file[(l,m)]
-            
-            mode = Multipole(l, m, self._t, psi4, mass=self.M, radius=self.r_extr)
-            mode.integrate_psi4(integr_opts=integr_opts)
+            psi4 = self.wavelm_file[(l,m)]
+                        
+            mode = Multipole(l, m, self._t, psi4, mass=self.M, radius=self.r_extr, integrand=self.integrand)
+            mode.integrate_wave(integr_opts=integr_opts)
             
             self._psi4lm[(l,m)] = wf_ut.get_multipole_dict(mode.psi)
             self._dothlm[(l,m)] = wf_ut.get_multipole_dict(mode.dh)
             self._hlm[(l,m)]    = wf_ut.get_multipole_dict(mode.h)
         pass
+    
+    def norm_multipole_dict(self, multipole, factor):
+        return wf_ut.get_multipole_dict(factor*multipole['h'])
 
+    def normalize_wave(self, norm=None):
+        """
+        Normalize psi4,doth and h. 
+        Example: norm='factor2_minusodd_minusm0'
+        Activate three flags: factor2, minusodd, minusm0
+        """
+        if norm is None:
+            return 
+        
+        opts = {'factor2':False, 'minusodd':False, 'minusm0':False} 
+        for elem in norm.split('_'):
+            opts[elem] = True
+        for lm in self.modes:
+            l,m = lm
+            factor = 1
+            if opts['factor2']:
+                factor *= 2
+            if opts['minusodd']:
+                factor *= (-1)**(l+m)
+            if opts['minusm0'] and m==0:
+                factor *= -1
+            self._psi4lm[(l,m)] = self.norm_multipole_dict(self._psi4lm[(l,m)],factor)
+            self._dothlm[(l,m)] = self.norm_multipole_dict(self._dothlm[(l,m)],factor)
+            self._hlm[(l,m)]    = self.norm_multipole_dict(self._hlm[(l,m)],   factor)
+        return 
 
