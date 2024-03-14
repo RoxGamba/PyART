@@ -304,30 +304,20 @@ class WaveIntegrated(Waveform):
         pass
 
     def load_psi4(self):
-         instance = nr_ut.LoadPsi4(path=self.path,modes=self.modes,resize=False,fmt=self.fmt,fname=self.fname)
+         instance = nr_ut.LoadWave(path=self.path,modes=self.modes,resize=False,fmt=self.fmt,fname=self.fname)
          self._t  = instance.t
          self._u  = ut.retarded_time(instance.t,self.r_extr,M=self.M)
-         self.psi4lm_file = instance.psi4
+         self.psi4lm_file = instance.wave
          pass
 
     def integrate_psi4(self, integr_opts):
-        method      = integr_opts['method']
-        f0          = integr_opts['f0']
-        deg         = integr_opts['deg']
-        poly_int    = integr_opts['poly_int']
-        extrap_psi4 = integr_opts['extrap_psi4']
-        window      = integr_opts['window']
-
         for mm in self.modes:
             l, m = mm
             psi4 = self.psi4lm_file[(l,m)]
+            
             mode = Multipole(l, m, self._t, psi4, mass=self.M, radius=self.r_extr)
-            if method=='FFI':
-                out=mode.fixed_freq_int(fcut=2*f0/max(1,abs(m)), extrap_psi4=extrap_psi4, window=window)
-            elif method=='TDI':
-                out=mode.time_domain_int(deg=deg,poly_int=poly_int, extrap_psi4=extrap_psi4, window=window) 
-            else:
-                raise RuntimeError('Unknown method: {:s}'.format(integration['method']))
+            mode.integrate_psi4(integr_opts=integr_opts)
+            
             self._psi4lm[(l,m)] = wf_ut.get_multipole_dict(mode.psi)
             self._dothlm[(l,m)] = wf_ut.get_multipole_dict(mode.dh)
             self._hlm[(l,m)]    = wf_ut.get_multipole_dict(mode.h)

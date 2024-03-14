@@ -99,7 +99,7 @@ class Multipole:
         f[idx_m] = -fcut
         return f
 
-    def fixed_freq_int(self, fcut=0, extrap_psi4=False, window=None):
+    def fixed_freq_int(self, fcut=0, extrap_psi4=False, window=None, dh=None):
         """
         Fixed frequency double time integration
         """
@@ -108,11 +108,16 @@ class Multipole:
         if extrap_psi4:
             self.extrapolate_psi4(integration='FFI',fcut=fcut)
         
-        f = self.freq_interval(fcut=fcut)
-        signal   = self.psi
-        self.dh  = ifft(-1j*fft(signal)/(2*np.pi*f))
-        self.h   = ifft(-fft(signal)/(2*np.pi*f)**2)
-    
+        f        = self.freq_interval(fcut=fcut)
+        if dh is None:
+            signal   = self.psi
+            self.dh  = ifft(-1j*fft(signal)/(2*np.pi*f))
+            self.h   = ifft(-fft(signal)/(2*np.pi*f)**2)
+        else:
+            self.dh = dh 
+            self.h  = ifft(-1j*fft(dh)/(2*np.pi*f))
+        return
+
     def remove_time_drift(self, signal, deg=-1, poly_int=None):
         """
         Remove drift in TD integration using a fit.
@@ -134,7 +139,7 @@ class Multipole:
             out -= np.polyval(p, self.t)       
         return out
 
-    def time_domain_int(self, deg=-1, poly_int=None, extrap_psi4=False, window=None):
+    def time_domain_int(self, deg=-1, poly_int=None, extrap_psi4=False, window=None, dh=None):
         """
         Time domain integration with polynomial correction
         The polynomial is obtained fitting the whole signal if poly_int is none,
@@ -145,13 +150,36 @@ class Multipole:
         if extrap_psi4:
             self.extrapolate_psi4(integration='TDI',deg=deg,poly_int=poly_int)
         
-        dh0 = integrate.cumtrapz(self.psi,self.t,initial=0)
-        dh  = self.remove_time_drift(dh0,deg=deg,poly_int=poly_int)
+        if dh in None:
+            dh0 = integrate.cumtrapz(self.psi,self.t,initial=0)
+            dh  = self.remove_time_drift(dh0,deg=deg,poly_int=poly_int)
 
         h0  = integrate.cumtrapz(dh,self.t,initial=0)
         h   = self.remove_time_drift(h0,deg=deg,poly_int=poly_int)
         
         self.dh = dh
         self.h  = h 
+        return
+
+    def integrate_psi4(self, integr_opts={}):
+        """ 
+        Integrate psi4 according to specified methods
+        """
+        method      = integr_opts['method']      if 'method'      in integr_opts else 'FFI'
+        f0          = integr_opts['f0']          if 'f0'          in integr_opts else 0.007
+        deg         = integr_opts['deg']         if 'deg'         in integr_opts else 0 
+        poly_int    = integr_opts['poly_int']    if 'poly_int'    in integr_opts else None
+        extrap_psi4 = integr_opts['extrap_psi4'] if 'extrap_psi4' in integr_opts else False
+        window      = integr_opts['window']      if 'window'      in integr_opts else None
+        
+        # integrate psi4 and get self.dh and self.h
+        if method=='FFI':
+            self.fixed_freq_int(fcut=2*f0/max(1,abs(self.m)), extrap_psi4=extrap_psi4, window=window)
+        elif method=='TDI':
+            self.time_domain_int(deg=deg, poly_int=poly_int, extrap_psi4=extrap_psi4, window=window) 
+        else:
+            raise RuntimeError('Unknown method: {:s}'.format(integration['method']))
+        return self.h, self.dh
+
 
 

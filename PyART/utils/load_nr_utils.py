@@ -3,10 +3,10 @@
 import os, sys, numpy as np
 import matplotlib.pyplot as plt 
 
-class LoadPsi4(object):
+class LoadWave(object):
     def __init__(self, path='./', fmt='etk', modes=[(2,2)], fname='wave.txt', resize=False):
         """
-        Load psi4 from file
+        Load wave from file
         
         Parameters:
           path   : path where file(s) are stored
@@ -18,7 +18,7 @@ class LoadPsi4(object):
         """
         #TODO: - norm_kind: normalize waveform according to fmt
          
-        self.path  = path
+        self.path      = path
         self.fmt       = fmt
         self.modes     = modes
         self.fname     = fname        
@@ -26,12 +26,12 @@ class LoadPsi4(object):
 
         # load data
         indices_dict = self.get_indices_dict()
-        psi4 = {}
+        wave = {}
         if '@L@' in self.fname and '@M@' in self.fname:
             previous_t = None
             for mm in modes:
                 l, m  = mm
-                fname = self.psi4_lm_name(l,m)
+                fname = self.wave_lm_name(l,m)
                 Xlm   = self.load_file(fname, safe=True)
                 t     = Xlm[:,indices_dict[(l,m)]['t'] ] 
                 re    = Xlm[:,indices_dict[(l,m)]['re']] 
@@ -41,7 +41,7 @@ class LoadPsi4(object):
                         raise RuntimeError('Found times with different lenght')
                 else:
                     previous_t = t
-                psi4[(l,m)] = re+1j*im
+                wave[(l,m)] = re+1j*im
 
         else:
             X = self.load_file(fname, safe=False)
@@ -50,16 +50,16 @@ class LoadPsi4(object):
                 l,m = mm
                 re  = X[:,indices_dict[mm]['re']]
                 im  = X[:,indices_dict[mm]['im']]
-                psi4[(l,m)] = re+1j*im
+                wave[(l,m)] = re+1j*im
             
         if self.resize:
-            t, psi4 = self.resize(t,psi4)
+            t, wave = self.resize(t,wave)
         
         self.t    = t        
-        self.psi4 = psi4
+        self.wave = wave
         return 
     
-    def psi4_lm_name(self, l, m):
+    def wave_lm_name(self, l, m):
         out = self.fname.replace('@L@', f'{l:d}')
         return out.replace('@M@', f'{m:d}')
     
@@ -103,25 +103,24 @@ class LoadPsi4(object):
         
         return indices_dict 
     
-    def resize(self,t,psi4):
+    def resize(self,t,wave):
         # find min lenght
         minlen = len(t)
         for mm in self.modes:
-            len_psi4 = len(psi4[mm])
-            if len_psi4<minlen:
-                minlen = len_psi4
-        # resize t and psi4
+            len_wave = len(wave[mm])
+            if len_wave<minlen:
+                minlen = len_wave
+        # resize t and wave
         t = t[:minlen]
         for mm in self.modes:
-            psi4[mm] = psi4[mm][:minlen]
-        return t,psi4
+            wave[mm] = wave[mm][:minlen]
+        return t,wave
 
 if __name__=="__main__":
-    x = LoadPsi4(path='/Users/simonealbanesi/repos/eob_nr_explore/data/scattering/BBH_hyp_D100_b10p3', 
-                 fmt='etk', fname='mp_psi4_l@L@_m@M@_r100.00.asc', lmmax=4)
-    print(x.psi4[(2,2)])
+    x = LoadWave(path='/Users/simonealbanesi/repos/eob_nr_explore/data/scattering/BBH_hyp_D100_b10p3', 
+                 fmt='etk', fname='mp_psi4_l@L@_m@M@_r100.00.asc', modes=[(2,2)])
     plt.figure
-    plt.plot(x.t, x.psi4[(2,2)]['real'])
+    plt.plot(x.t, x.wave[(2,2)].real)
     plt.show()
 
 
