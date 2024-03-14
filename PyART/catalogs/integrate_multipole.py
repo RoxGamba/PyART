@@ -22,7 +22,7 @@ class Multipole:
             self.psi = radius * data
             self.dh  = np.array([])
         elif self.integrand=='news':
-            self.psi = np.array([])
+            self.psi = np.array([]) 
             self.dh  = radius * data
         else:
             raise RuntimeError(f"Unknown integrand: {self.integrand}, use 'psi4' or 'news'")
@@ -52,7 +52,7 @@ class Multipole:
         psi0 = self.psi / r * R # self.psi = radius * data, see __init__
             
         if integration=='FFI':
-            f   = self.freq_interval(fcut=fcut)
+            f   = self.freq_interval(self.psi,fcut=fcut)
             dh0 = ifft(-1j*fft(psi0)/(2*np.pi*f))
         elif integration=='TDI':
             dh_tmp = integrate.cumtrapz(psi0,self.t,initial=0)
@@ -107,8 +107,7 @@ class Multipole:
             self.dh = signal
         return
 
-    def freq_interval(self, fcut=0, signal=None):
-        if signal is None: signal = self.psi
+    def freq_interval(self, signal, fcut=0):
         dt = np.diff(self.t)[0]
         f  = fftfreq(signal.shape[0], dt)
         idx_p = np.logical_and(f >= 0, f < fcut)
@@ -117,7 +116,7 @@ class Multipole:
         f[idx_m] = -fcut
         return f
 
-    def fixed_freq_int(self, fcut=0, extrap_psi4=False, window=None, dh=None):
+    def fixed_freq_int(self, fcut=0, extrap_psi4=False, window=None):
         """
         Fixed frequency double time integration
         """
@@ -126,15 +125,15 @@ class Multipole:
         if extrap_psi4:
             self.extrapolate_psi4(integration='FFI',fcut=fcut)
         
-        if dh is None:
+        if self.integrand=='psi4':
             signal  = self.psi
-            f       = self.freq_interval(fcut=fcut,signal=signal)
+            f       = self.freq_interval(signal,fcut=fcut)
             self.dh = ifft(-1j*fft(signal)/(2*np.pi*f))
             self.h  = ifft(-fft(signal)/(2*np.pi*f)**2)
         else:
-            self.dh = dh 
-            f       = self.freq_interval(fcut=fcut,signal=dh)
-            self.h  = ifft(-1j*fft(dh)/(2*np.pi*f))
+            signal  = self.dh 
+            f       = self.freq_interval(signal,fcut=fcut)
+            self.h  = ifft(-1j*fft(signal)/(2*np.pi*f))
         return
 
     def remove_time_drift(self, signal, deg=-1, poly_int=None):
@@ -158,7 +157,7 @@ class Multipole:
             out -= np.polyval(p, self.t)       
         return out
 
-    def time_domain_int(self, deg=-1, poly_int=None, extrap_psi4=False, window=None, dh=None):
+    def time_domain_int(self, deg=-1, poly_int=None, extrap_psi4=False, window=None):
         """
         Time domain integration with polynomial correction
         The polynomial is obtained fitting the whole signal if poly_int is none,
@@ -169,9 +168,11 @@ class Multipole:
         if extrap_psi4:
             self.extrapolate_psi4(integration='TDI',deg=deg,poly_int=poly_int)
         
-        if dh is None:
+        if self.integrand=='psi4':
             dh0 = integrate.cumtrapz(self.psi,self.t,initial=0)
             dh  = self.remove_time_drift(dh0,deg=deg,poly_int=poly_int)
+        else:
+            dh  = self.dh 
 
         h0  = integrate.cumtrapz(dh,self.t,initial=0)
         h   = self.remove_time_drift(h0,deg=deg,poly_int=poly_int)
@@ -191,19 +192,14 @@ class Multipole:
         extrap_psi4 = integr_opts['extrap_psi4'] if 'extrap_psi4' in integr_opts else False
         window      = integr_opts['window']      if 'window'      in integr_opts else None
         
-        if self.integrand=='psi4':
-            dh = None
-        elif self.integrand=='news':
-            dh = self.dh
-        
         # integrate psi4 and get self.dh and self.h
         if method=='FFI':
-            self.fixed_freq_int(fcut=2*f0/max(1,abs(self.m)), extrap_psi4=extrap_psi4, window=window, dh=dh)
+            self.fixed_freq_int(fcut=2*f0/max(1,abs(self.m)), extrap_psi4=extrap_psi4, window=window)
         elif method=='TDI':
-            self.time_domain_int(deg=deg, poly_int=poly_int, extrap_psi4=extrap_psi4, window=window, dh=dh) 
+            self.time_domain_int(deg=deg, poly_int=poly_int, extrap_psi4=extrap_psi4, window=window) 
         else:
             raise RuntimeError('Unknown method: {:s}'.format(integration['method']))
-
+        
         if self.integrand=='news':
             self.psi = D1(self.dh,self.t,4)
 
