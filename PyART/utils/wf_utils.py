@@ -78,6 +78,11 @@ def taper(t, h, M, alpha, tau, Msuns=1.):
     window = 0.5*(1.+np.tanh(tm*alpha-tau))
     return (window*h)
 
+def get_multipole_dict(wave):
+    return {'real':wave.real, 'imag':wave.real, 'h':wave,
+            'A':np.abs(wave), 'p':-np.unwrap(np.angle(wave))}
+
+
 ##########################
 #   Phasing, from watpy  #
 ##########################
