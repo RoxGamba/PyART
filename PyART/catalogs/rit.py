@@ -237,6 +237,7 @@ class Catalog(object):
                 raise NotImplementedError("Non eccentric not implemented yet")
             wave      =  RIT(h_path=h_path, basepath=path, mtdt_path=mtdt_path, ell_emms=ell_emms)
             mtdt      = wave.metadata
+            chi1z = float(mtdt['initial-bh-chi1z']);  chi2z = float(mtdt['initial-bh-chi2z'])
 
             # checks: nonspinning
             try:
@@ -249,10 +250,10 @@ class Catalog(object):
             chi1  = np.array([chi1x, chi1y, chi1z]);
             chi2  = np.array([chi2x, chi2y, chi2z])
             if nonspinning:
-                if np.linalg.norm(chi1)+np.linalg.norm(chi1)>1e-3:
+                if np.linalg.norm(chi1)+np.linalg.norm(chi2)>1e-3:
                     continue
 
-            # chec: eccentric
+            # check: eccentric
             if eccentric and float(wave.metadata['eccentricity']) < 1e-2:
                 continue
 
