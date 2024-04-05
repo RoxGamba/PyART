@@ -259,7 +259,7 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
             this_mode    = integrate.cumtrapz(dictdyn[dotk][(l,m)],t,initial=0)
             dictdyn[kk][(l,m)]      = this_mode
             dictdyn[kk]['total']   += this_mode
-            dictdyn[dotk]['total'] += this_mode
+            dictdyn[dotk]['total'] += dictdyn[dotk][(l,m)]
 
     return dictdyn
 
@@ -280,7 +280,7 @@ class WaveIntegrated(Waveform):
                  fmt         = 'etk',
                  fname       = 'mp_psi4_l@L@_m@M@_r100.00.asc',
                  integrand   = 'psi4',
-                 norm        = None,
+                 norm        = None
                  ) -> None:
         super().__init__()
         
@@ -318,9 +318,8 @@ class WaveIntegrated(Waveform):
     
     def normalize_wave(self, norm=None):
         """
-        Normalize psi4,doth and h. 
-        Example: norm='factor2_minusodd_minusm0'
-        Activate three flags: factor2, minusodd, minusm0
+        Normalize loaded waveform. 
+        For example, norm='factor2_minusodd_minusm0' activate three flags: factor2, minusodd, minusm0
         """
         if norm is None:
             return 
