@@ -11,6 +11,8 @@ from .utils import wf_utils      as wf_ut
 from .utils import load_nr_utils as nr_ut
 from .catalogs.integrate_multipole import Multipole
 
+import warnings 
+
 class Waveform(object):
     """
     Parent class to handle waveforms
@@ -136,18 +138,19 @@ class Waveform(object):
         
         return new_u, hlm_i
     
-    def dynamics_from_hlm(self, modes):
+    def dynamics_from_hlm(self, modes, warning=False):
         """
         Compute GW energy and angular momentum fluxes from multipolar waveform
         """
-
-        self.dhlm = {}
-        for mode in modes:
-            self.dhlm[mode]      = {}
-            self.dhlm[mode]['h'] = ut.D02(self.t, self.hlm[mode]['h'])
+        
+        if not self.dothlm:
+            if warning: warnings.warn('Warning: dothlm not found, computing derivatives of hlm')
+            for mode in modes:
+                self.dothlm[mode]      = {}
+                self.dothlm[mode]['h'] = ut.D02(self.t, self.hlm[mode]['h'])
 
         dynamicsdict = waveform2energetics(
-                        self.hlm, self.dhlm, self.t, modes,
+                        self.hlm, self.dothlm, self.t, modes,
                         )
 
         self._dyn = {**self._dyn, **dynamicsdict}
@@ -207,7 +210,7 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
     * mnegative    : if True, account for the factor 2 due to m<0 modes 
     """    
     oo16pi  = 1./(16*np.pi)
-
+    
     lmodes = [lm[0] for lm in modes]
     mmodes = [lm[1] for lm in modes]
     lmin = min(lmodes)
@@ -285,8 +288,8 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
             this_mode    = integrate.cumtrapz(dictdyn[dotk][(l,m)],t,initial=0)
             dictdyn[kk][(l,m)]      = this_mode
             dictdyn[kk]['total']   += this_mode
-            dictdyn[dotk]['total'] += this_mode
-
+            dictdyn[dotk]['total'] += dictdyn[dotk][(l,m)]
+    
     return dictdyn
 
 
@@ -306,7 +309,7 @@ class WaveIntegrated(Waveform):
                  fmt         = 'etk',
                  fname       = 'mp_psi4_l@L@_m@M@_r100.00.asc',
                  integrand   = 'psi4',
-                 norm        = None,
+                 norm        = None
                  ) -> None:
         super().__init__()
         
@@ -332,7 +335,7 @@ class WaveIntegrated(Waveform):
 
         self.integrate_wave(integr_opts)
 
-        self.dynamics_from_hlm(self.modes)
+        self.dynamics_from_hlm(self.modes,warning=True)
         pass
 
     def load_wave(self):
@@ -344,9 +347,8 @@ class WaveIntegrated(Waveform):
     
     def normalize_wave(self, norm=None):
         """
-        Normalize psi4,doth and h. 
-        Example: norm='factor2_minusodd_minusm0'
-        Activate three flags: factor2, minusodd, minusm0
+        Normalize loaded waveform. 
+        For example, norm='factor2_minusodd_minusm0' activate three flags: factor2, minusodd, minusm0
         """
         if norm is None:
             return 
