@@ -168,6 +168,32 @@ class Waveform(object):
         jorb = (J_adm - J) / (m1*m2)
 
         return eb, e, jorb
+    
+    def to_frequency(self, taper=True, pad=True):
+        """
+        Fourier transform the waveform from time to frequency domain
+        """
+        
+        dt = self.u[1] - self.u[0]
+        # window
+        if taper:
+            self._hp = ut.windowing(self.hp, alpha=0.1)
+            self._hc = ut.windowing(self.hc, alpha=0.1)
+        
+        if pad:
+            srate    = 1./dt
+            seglen   = ut.nextpow2(self.u)
+            dN       = (seglen - len(self.u)*srate)/srate
+            self._u  = np.arange(0., seglen, dt)
+            self._t  = np.arange(0., seglen, dt)
+            self._hp = ut.zero_pad_before(self.hp, dN, return_column=False)
+            self._hc = ut.zero_pad_before(self.hp, dN, return_column=False)
+            assert len(self.u) == len(self.hp)
+
+        self._f, self._hp = ut.fft(self.hp, dt)
+        self._f, self._hc = ut.fft(self.hc, dt)
+        self._domain = 'Frequency'
+        pass
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
