@@ -26,7 +26,7 @@ class Waveform_SXS(Waveform):
         self.level         = level
         self.cut           = cut_N
         self._kind         = 'SXS'
-
+        
         if level == None:
             # Default behavior: load only the highest level
             for lv in ['/Lev6','/Lev5','/Lev4', '/Lev3', '/Lev2', '/Lev1']:
@@ -40,7 +40,7 @@ class Waveform_SXS(Waveform):
 
         self.load_hlm()
         self.load_metadata()
-        self.compute_hphc()
+        #self.compute_hphc()
         pass
 
     def load_metadata(self):
