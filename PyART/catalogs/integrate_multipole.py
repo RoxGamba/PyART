@@ -83,7 +83,7 @@ class Multipole:
 
         # apply window
         #FIXME : this if-statement is error-prone, to improve
-        if window[0]>0 and window[1]<0:
+        if window[0]>=0 and window[1]<=0:
             w_t1   = window[0]
             w_t2   = t[-1] + window[1]
             sig1   = 1/(1 + np.exp(-walpha*(t-w_t1)) ) 
@@ -94,7 +94,9 @@ class Multipole:
             sig = 1/(1 + np.exp(-walpha*(window[0]-t)) ) + \
                   1/(1 + np.exp(-walpha*(t-window[1])) )
             signal *= sig 
-        
+        else:
+            raise RuntimeError('Invalid window option:: [{:f} {:f}]'.format(*window))
+
         # set signal equal to zero below threshold
 #        threshold = 1e-14
 #        amp   = np.abs(signal)
