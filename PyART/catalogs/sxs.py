@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np; import os
 import h5py; import json
 from ..waveform import  Waveform
 
@@ -13,7 +13,7 @@ class Waveform_SXS(Waveform):
     """
     def __init__(
                     self,
-                    path   ='../dat/SXS/SXS',
+                    path   ='../dat/SXS/',
                     ID     ='0001',
                     order  ="Extrapolated_N2.dir",
                     level = None,
@@ -21,26 +21,47 @@ class Waveform_SXS(Waveform):
                 ):
         super().__init__()
         self.ID            = ID
-        self.sxs_data_path = path+'_BBH_'+ID
+        self.sxs_data_path = os.path.join(path,'SXS_BBH_'+ID)
+
+        # if os.path.exists(self.sxs_data_path) == False:
+        #     print("The path ", self.sxs_data_path, " does not exist.")
+        #     print("Downloadin the simulation from the SXS catalog.")
+        #     self.download_simulation(ID)
+        
         self.order         = order
         self.level         = level
         self.cut           = cut_N
         self._kind         = 'SXS'
-        
+        self.nr            = None
         if level == None:
             # Default behavior: load only the highest level
             for lv in ['/Lev6','/Lev5','/Lev4', '/Lev3', '/Lev2', '/Lev1']:
                 try:
                     self.nr = h5py.File(self.sxs_data_path+lv+"/rhOverM_Asymptotic_GeometricUnits_CoM.h5")
                     break
-                except Exception: 
+                except Exception:
                     continue
         else:
             self.nr = h5py.File(self.sxs_data_path+level+"/rhOverM_Asymptotic_GeometricUnits_CoM.h5")
 
+        if self.nr == None:
+            raise FileNotFoundError("The waveform could not be loaded. Check the path (SXS_BBH_XXXX) and the level.")
+
         self.load_hlm()
         self.load_metadata()
         #self.compute_hphc()
+        pass
+
+    def download_simulation(self, ID='0001', src='BBH'):
+        """
+        Download the simulation from the SXS catalog; requires the sxs module
+        """
+        import sxs
+
+        nm      = 'SXS:'+src+':'+ID
+        print(sxs.sxs_directory("cache"))
+        _ = sxs.load(nm+'/Lev/'+"metadata.json")
+        _ = sxs.load(nm+'/Lev/'+"rhOverM_Asymptotic_GeometricUnits_CoM.h5")
         pass
 
     def load_metadata(self):
