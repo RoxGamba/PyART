@@ -45,12 +45,30 @@ class Waveform_EOB(Waveform): #Waveform_EOB(Waveform):
         else:
             t, hp,hc, hlm, dyn = EOB.EOBRunPy(self.pars)
             self._u   = t
-            self._hlm = hlm
+            hlm_conv  = convert_hlm(hlm)
+            self._hlm = hlm_conv
             self._dyn = dyn
             self._hp  = hp
             self._hc  = hc
         return 0
-    
+
+def convert_hlm(hlm):
+    from ..utils import wf_utils as wfu
+    """
+    Convert the hlm dictionary from k to (ell, emm) notation
+    """
+    hlm_conv = {}
+    for key in hlm.keys():
+        ell = wfu.k_to_ell(int(key))
+        emm = wfu.k_to_emm(int(key))
+        A   = hlm[key][0]
+        p   = hlm[key][1]
+        hlm_conv[(ell, emm)] = {'real': A*np.cos(p), 'imag': -1*A*np.sin(p),
+                                'A'   : A, 'p' : p,
+                                'h'   : A*np.exp(-1j*p)
+                                }
+    return hlm_conv
+
 # external function for dict creation
 def CreateDict(M=1., q=1, 
                chi1z=0., chi2z=0, 
@@ -88,7 +106,7 @@ def CreateDict(M=1., q=1,
             'inclination'        : iota,
             'output_hpc'         : "no",
             'use_mode_lm'        : use_mode_lm,    # List of modes to use
-            'arg_out'            : arg_out,                   # output dynamics and hlm in addition to h+, hx
+            'arg_out'            : arg_out,        # output dynamics and hlm in addition to h+, hx
             'ecc'                : ecc,
             'r_hyp'              : r_hyp,
             'H_hyp'              : H_hyp,
@@ -126,7 +144,6 @@ def TEOB_info(input_module,verbose=False):
     return module 
 
 if __name__ == '__main__':
-    import EOBRun_module
     module = TEOB_info(EOBRun_module,verbose=True)
     #for key,value in module.items():
     #    print(f'{key:10s} : {value}')
