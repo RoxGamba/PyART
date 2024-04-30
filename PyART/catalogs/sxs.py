@@ -128,6 +128,9 @@ class Waveform_SXS(Waveform):
             plm = np.unwrap(np.angle(h))[self.cut:]
             # save in dictionary
             key = (l, m)
-            dict_hlm[key] = [Alm, plm]
+            dict_hlm[key] =  {'real': Alm*np.cos(plm), 'imag': Alm*np.sin(plm),
+                              'A'   : Alm, 'p' : plm, 
+                              'h': h
+                              }
         self._hlm = dict_hlm
         pass

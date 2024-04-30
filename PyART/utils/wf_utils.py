@@ -48,15 +48,14 @@ def k_to_emm(k):
     return MINDEX[k]  
 
 
-def compute_hphc(hlm, phi=0, i=0, modes=['1']):
+def compute_hphc(hlm, phi=0, i=0, modes=[(2,2)]):
     """
     For aligned spins, assuming usual symmetry between hlm and hl-m
     """
     h = 0+1j*0
     for k in modes:
-        ki  = int(k)
-        ell = k_to_ell(ki)
-        emm = k_to_emm(ki)
+        ell = k[0]
+        emm = k[1]
         Alm = hlm[k][0]
         plm = hlm[k][1]
         Hp  = Alm*np.exp(-1j*plm)

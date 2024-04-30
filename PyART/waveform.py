@@ -114,7 +114,7 @@ class Waveform(object):
         else:
             return u_mrg, A_mrg, omg_mrg, domg_mrg
 
-    def compute_hphc(self, phi=0, i=0, modes=['1']):
+    def compute_hphc(self, phi=0, i=0, modes=[(2,2)]):
         """
         For aligned spins, compute hp and hc
         """
