@@ -17,16 +17,21 @@ class Waveform_SXS(Waveform):
                     ID     ='0001',
                     order  ="Extrapolated_N2.dir",
                     level = None,
-                    cut_N = 300
+                    cut_N = 300,
+                    download=False
                 ):
         super().__init__()
         self.ID            = ID
         self.sxs_data_path = os.path.join(path,'SXS_BBH_'+ID)
 
-        # if os.path.exists(self.sxs_data_path) == False:
-        #     print("The path ", self.sxs_data_path, " does not exist.")
-        #     print("Downloadin the simulation from the SXS catalog.")
-        #     self.download_simulation(ID)
+        if os.path.exists(self.sxs_data_path) == False:
+            if download:
+                print("The path ", self.sxs_data_path, " does not exist.")
+                print("Downloading the simulation from the SXS catalog.")
+                self.download_simulation(ID=ID, path=path)
+            else:
+                print("Use download=True to download the simulation from the SXS catalog.")
+                raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
         
         self.order         = order
         self.level         = level
@@ -49,19 +54,43 @@ class Waveform_SXS(Waveform):
 
         self.load_hlm()
         self.load_metadata()
-        #self.compute_hphc()
         pass
 
-    def download_simulation(self, ID='0001', src='BBH'):
+    def download_simulation(self, ID='0001', src='BBH',path=None):
         """
         Download the simulation from the SXS catalog; requires the sxs module
         """
         import sxs
 
-        nm      = 'SXS:'+src+':'+ID
-        print(sxs.sxs_directory("cache"))
-        _ = sxs.load(nm+'/Lev/'+"metadata.json")
-        _ = sxs.load(nm+'/Lev/'+"rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+        if path is not None:
+            print("Setting the download (cache) directory to ", path)
+            os.environ['SXSCACHEDIR'] = path
+
+        nm = 'SXS:'+src+':'+ID
+        _  = sxs.load(nm+'/Lev/'+"metadata.json")
+        _  = sxs.load(nm+'/Lev/'+"rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+        
+        # find folder(s) corresponding to the name, mkdir the new one
+        flds = [f for f in os.listdir(os.environ['SXSCACHEDIR']) if nm in f]
+        os.mkdir(os.path.join(path,'SXS_BBH_'+ID))
+
+        # move the files in the folders to the new folder
+        for fld in flds:
+            for lev in os.listdir(os.path.join(os.environ['SXSCACHEDIR'],fld)):
+                try: 
+                    # move each Lev folder
+                    print(os.path.join(os.environ['SXSCACHEDIR'],fld,lev),'-->',os.path.join(path,'SXS_BBH_'+ID,lev))
+                    os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,lev), os.path.join(path,'SXS_BBH_'+ID,lev))
+                except Exception:
+                    # Lev already exists, move the files
+                    for file in os.listdir(os.path.join(os.environ['SXSCACHEDIR'],fld,lev)):
+                        print(os.path.join(os.environ['SXSCACHEDIR'],fld,lev,file),'-->',os.path.join(path,'SXS_BBH_'+ID,lev,file))
+                        os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,lev,file), os.path.join(path,'SXS_BBH_'+ID,lev,file))
+                    os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld,lev))
+
+            # delete the empty folder
+            os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld))
+
         pass
 
     def load_metadata(self):
