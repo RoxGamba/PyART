@@ -492,6 +492,6 @@ def safe_sigmoid(x, walpha, clip=None):
     elif isinstance(clip, (int,float)):
         exponent = np.clip(-walpha*x, -clip, clip)
     else:
-        raise ValueError('Invalid clip value:', clip)
+        raise ValueError(f'Invalid clip value: {clip}')
     return 1/(1 + np.exp(exponent))
 
