@@ -3,7 +3,7 @@ import numpy as np
 from scipy.fftpack import fft, ifft, fftfreq
 from scipy import integrate    
 
-from ..utils.utils import D1 
+from ..utils.utils import D1, safe_sigmoid 
 
 class Multipole:
     """
@@ -64,7 +64,7 @@ class Multipole:
         self.psi = A*(psi0 - (l-1)*(l+2)*dh0/(2*R))
         self.psi4_extrapolated = True
         return
-
+    
     def apply_window(self, window=[10,-10], walpha=3):
         if self.window_applied:
             raise RuntimeError('Time-window already applied!')
@@ -82,17 +82,18 @@ class Multipole:
         t      = self.t
 
         # apply window
+        clip_val = np.log(1e+20)
         #FIXME : this if-statement is error-prone, to improve
         if window[0]>=0 and window[1]<=0:
             w_t1   = window[0]
             w_t2   = t[-1] + window[1]
-            sig1   = 1/(1 + np.exp(-walpha*(t-w_t1)) ) 
-            sig2   = 1/(1 + np.exp(-walpha*(w_t2-t)) ) 
+            sig1    = safe_sigmoid(t-w_t1, walpha=walpha, clip=clip_val)
+            sig2    = safe_sigmoid(w_t2-t, walpha=walpha, clip=clip_val)
             signal *= sig1
             signal *= sig2
         elif window[1]>window[0]:
-            sig = 1/(1 + np.exp(-walpha*(window[0]-t)) ) + \
-                  1/(1 + np.exp(-walpha*(t-window[1])) )
+            sig = safe_sigmoid(window[0]-t, walpha=walpha, clip=clip_val) + \
+                  safe_sigmoid(t-window[1], walpha=walpha, clip=clip_val)
             signal *= sig 
         else:
             raise RuntimeError('Invalid window option:: [{:f} {:f}]'.format(*window))
