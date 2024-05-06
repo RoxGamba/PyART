@@ -1,8 +1,7 @@
 import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
-import h5py 
-import glob
+import h5py, wget, glob, os 
 
 from ..waveform import  Waveform
 
@@ -16,15 +15,20 @@ class MAYA(Waveform):
 
     def __init__(self,
                  basepath = '/data/numrel/MAYA/',
-                 h_path   = None,
+                 id = None,
                  ell_emms = 'all'
                  ) -> None:
         
         super().__init__()
-
+        h5file = id.upper()+'.h5'
+        path = os.path.join(basepath, h5file)
+        # Download file in Maya Format from repository
+        if not glob.glob(path):
+            print(f'Downloading NR file {h5file}...')
+            wget.download('https://cgpstorage.ph.utexas.edu/maya_format/'+h5file, out=path)
         self.ell_emms = ell_emms
-        self.h_file   = h5py.File(basepath+h_path, 'r')
-        self.coalescence = Coalescence(basepath+h_path)
+        self.h_file   = h5py.File(path, 'r')
+        self.coalescence = Coalescence(path)
 
         self.load_h()
         self.metadata = self.load_metadata()
@@ -138,11 +142,7 @@ class MAYA(Waveform):
         return yn
 
 if __name__ == '__main__':
-
-    h_path  = 'MAYA1043.h5'
-
-    r = MAYA(h_path=h_path)
-
+    r = MAYA(id='MAYA1056')
     r.compute_initial_data()
     print(r.dyn['id'])
 
