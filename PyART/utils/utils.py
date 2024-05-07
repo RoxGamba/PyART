@@ -510,3 +510,12 @@ def retarded_time(t, r, M=1):
     rstar = R + 2*M*np.log(R/(2*M) - 1)
     return t - rstar
 
+def safe_sigmoid(x, walpha, clip=None):
+    if clip is None:
+        exponent = -walpha*x
+    elif isinstance(clip, (int,float)):
+        exponent = np.clip(-walpha*x, -clip, clip)
+    else:
+        raise ValueError(f'Invalid clip value: {clip}')
+    return 1/(1 + np.exp(exponent))
+
