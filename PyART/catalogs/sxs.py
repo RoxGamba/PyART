@@ -125,20 +125,57 @@ class Waveform_SXS(Waveform):
         else:
             horizon = h5py.File(self.sxs_data_path+self.level+"/Horizons.h5")
         
-        print(horizon['AhA.dir'].keys())
-
         chiA = horizon["AhA.dir/chiInertial.dat"]
         chiB = horizon["AhB.dir/chiInertial.dat"]
         xA   = horizon["AhA.dir/CoordCenterInertial.dat"]
         xB   = horizon["AhB.dir/CoordCenterInertial.dat"]
 
-        self._dyn['chi1'] = chiA
-        self._dyn['chi2'] = chiB
-        self.dyn['x1']    = xA
-        self.dyn['x2']    = xB
+        self._dyn['t']     = chiA[:,0]
+        self._dyn['chi1']  = chiA
+        self._dyn['chi2']  = chiB
+        self._dyn['x1']    = xA
+        self._dyn['x2']    = xB
 
         pass
 
+    def compute_spins_at_tref(self, tref):
+        """
+        Compute the parallel and perpendicular components of the spins w.r.t L 
+        at a reference time tref
+
+        Parameters
+        ----------
+        tref : float
+            Reference time
+        
+        Returns
+        -------
+        chi1_L, chi1_perp, chi2_L, chi2_perp : float
+            The parallel and perpendicular components of the spins at tref
+        """
+        d = self.dyn
+
+        # find the index of the reference time
+        idx = np.argmin(np.abs(d['t']-tref))
+        chi1_ref = d['chi1'][idx][1:]
+        chi2_ref = d['chi2'][idx][1:]
+        x1_ref   = d['x1'][idx][1:]       
+        x2_ref   = d['x2'][idx][1:]
+        
+        # time derivative of x1 and x2
+        x1_dot    = np.transpose([np.gradient(d['x1'][:,i], d['t']) for i in range(1,4)])
+        x2_dot    = np.transpose([np.gradient(d['x2'][:,i], d['t']) for i in range(1,4)])
+        x         = x1_ref - x2_ref
+        
+        x_dot     = [x1_dot[idx][i] - x2_dot[idx][i] for i in range(3)]
+        L_hat_ref = np.cross(x, x_dot)/np.linalg.norm(np.cross(x, x_dot))
+
+        # compute the spins projected on L_hat_ref
+        chi1_L = np.dot(chi1_ref, L_hat_ref)
+        chi2_L = np.dot(chi2_ref, L_hat_ref)
+        chi1_perp = np.linalg.norm(chi1_ref - chi1_L*L_hat_ref)
+        chi2_perp = np.linalg.norm(chi2_ref - chi2_L*L_hat_ref)
+        return chi1_L, chi1_perp, chi2_L, chi2_perp
 
     def load_hlm(self):
         order   = self.order
