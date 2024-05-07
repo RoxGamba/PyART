@@ -56,8 +56,8 @@ def compute_hphc(hlm, phi=0, i=0, modes=[(2,2)]):
     for k in modes:
         ell = k[0]
         emm = k[1]
-        Alm = hlm[k][0]
-        plm = hlm[k][1]
+        Alm = hlm[k]['A']
+        plm = hlm[k]['p']
         Hp  = Alm*np.exp(-1j*plm)
         Hn  = (-1)**ell*Alm*np.exp( 1j*plm)
 

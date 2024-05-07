@@ -1,10 +1,10 @@
 import numpy as np; 
 from scipy import interpolate
 from scipy.signal import find_peaks; 
+from scipy.signal.windows import tukey
 from math import factorial as fact
 from math import ceil
 import matplotlib.pyplot as plt
-
 
 ## Misc
 
@@ -125,6 +125,30 @@ def taper(t, h, M, alpha, tau):
     tm = t/(M*Msuns)
     window = 0.5*(1.+np.tanh(tm*alpha-tau))
     return (window*h)
+
+def windowing(h, alpha=0.1):
+    """ 
+    Windowing with Tukey window on a given strain (time-domain)
+    h     : strain to be tapered
+    alpha : Tukey filter slope parameter. Suggested value: alpha = 1/4/seglen
+    """
+    window  = tukey(len(h), alpha)
+    wfact   = np.mean(window**2)
+    return h*window, wfact
+
+def fft(h, dt):
+    N    = len(h)
+    hfft = np.fft.rfft(h) * dt
+    f    = np.fft.rfftfreq(N, d=dt)
+    return f , hfft
+
+def ifft(u , srate, seglen, t0=0.):
+    N       = int(srate*seglen)
+    s       = np.fft.irfft(u,N)
+    dt      = 1./srate
+    seglen  = N*dt
+    t       = np.arange(N)*dt + t0 - seglen/2.
+    return t , s*srate
 
 def find_nearest(array, value):
     array = np.asarray(array)
