@@ -6,11 +6,11 @@ matplotlib>=3.8.4
 pandas>=2.1.4
 
 # GW package dependencies
-pycbc>=2.4.0
-teobresums>=4.4.0
-gw-eccentricity>=1.0.4
-mayawaves>=2024.4.25
-lalsuite>=7.22
+# pycbc>=2.4.0
+# teobresums>=4.4.0
+# gw-eccentricity>=1.0.4
+# mayawaves>=2024.4.25
+# lalsuite>=7.22
 
 # Documentation
 sphinx>=4.2.0
