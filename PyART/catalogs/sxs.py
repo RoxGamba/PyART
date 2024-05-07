@@ -69,6 +69,7 @@ class Waveform_SXS(Waveform):
         nm = 'SXS:'+src+':'+ID
         _  = sxs.load(nm+'/Lev/'+"metadata.json")
         _  = sxs.load(nm+'/Lev/'+"rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+        _  = sxs.load(nm+'/Lev/'+"Horizons.h5")
         
         # find folder(s) corresponding to the name, mkdir the new one
         flds = [f for f in os.listdir(os.environ['SXSCACHEDIR']) if nm in f]
@@ -113,6 +114,32 @@ class Waveform_SXS(Waveform):
 
         pass
 
+    def load_horizon(self):
+        if self.level == None:
+            # Default behavior: load only the highest level
+            for lv in ['/Lev6','/Lev5','/Lev4', '/Lev3', '/Lev2', '/Lev1']:
+                try:
+                    horizon = h5py.File(self.sxs_data_path+lv+"/Horizons.h5")
+                except Exception:
+                    continue
+        else:
+            horizon = h5py.File(self.sxs_data_path+self.level+"/Horizons.h5")
+        
+        print(horizon['AhA.dir'].keys())
+
+        chiA = horizon["AhA.dir/chiInertial.dat"]
+        chiB = horizon["AhB.dir/chiInertial.dat"]
+        xA   = horizon["AhA.dir/CoordCenterInertial.dat"]
+        xB   = horizon["AhB.dir/CoordCenterInertial.dat"]
+
+        self._dyn['chi1'] = chiA
+        self._dyn['chi2'] = chiB
+        self.dyn['x1']    = xA
+        self.dyn['x2']    = xB
+
+        pass
+
+
     def load_hlm(self):
         order   = self.order
         modes   = [[l,m] for l in range(2,9) for m in range(1,l+1)]
@@ -130,7 +157,7 @@ class Waveform_SXS(Waveform):
             key = (l, m)
             dict_hlm[key] =  {'real': Alm*np.cos(plm), 'imag': Alm*np.sin(plm),
                               'A'   : Alm, 'p' : plm, 
-                              'h': h
+                              'h'   : h[self.cut:]
                               }
         self._hlm = dict_hlm
         pass
