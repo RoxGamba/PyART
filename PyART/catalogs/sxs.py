@@ -179,7 +179,7 @@ class Waveform_SXS(Waveform):
 
     def load_hlm(self):
         order   = self.order
-        modes   = [[l,m] for l in range(2,9) for m in range(1,l+1)]
+        modes = [[l, m] for l, m in product(range(2, 9), range(-8, 9)) if m!=0 and l >= np.abs(m)]
         self._u  = self.nr[order]['Y_l2_m2.dat'][:, 0][self.cut:]
         dict_hlm = {}
         for mode in modes:
