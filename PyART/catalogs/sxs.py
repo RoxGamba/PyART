@@ -32,12 +32,24 @@ class Waveform_SXS(Waveform):
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
+        else:
+            # This will check if the file actually exist or not even if the directory exist.
+            # If not I will download it for you
+            try:
+                for lv in ['/Lev6','/Lev5','/Lev4', '/Lev3', '/Lev2', '/Lev1']:
+                    self.nr = h5py.File(self.sxs_data_path+lv+"/rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+                    break
+            except:
+                print('File not found. Downloading it!')
+                self.download_simulation(ID=ID, path=path)            
         
         self.order         = order
         self.level         = level
         self.cut           = cut_N
         self._kind         = 'SXS'
         self.nr            = None
+
+
         if level == None:
             # Default behavior: load only the highest level
             for lv in ['/Lev6','/Lev5','/Lev4', '/Lev3', '/Lev2', '/Lev1']:
@@ -73,7 +85,8 @@ class Waveform_SXS(Waveform):
         
         # find folder(s) corresponding to the name, mkdir the new one
         flds = [f for f in os.listdir(os.environ['SXSCACHEDIR']) if nm in f]
-        os.mkdir(os.path.join(path,'SXS_BBH_'+ID))
+        if not os.path.exists(os.path.join(path,'SXS_BBH_'+ID)):
+            os.mkdir(os.path.join(path,'SXS_BBH_'+ID))
 
         # move the files in the folders to the new folder
         for fld in flds:
@@ -179,7 +192,9 @@ class Waveform_SXS(Waveform):
 
     def load_hlm(self):
         order   = self.order
+        from itertools import product
         modes = [[l, m] for l, m in product(range(2, 9), range(-8, 9)) if m!=0 and l >= np.abs(m)]
+
         self._u  = self.nr[order]['Y_l2_m2.dat'][:, 0][self.cut:]
         dict_hlm = {}
         for mode in modes:
