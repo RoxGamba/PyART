@@ -23,6 +23,12 @@ class Waveform_SXS(Waveform):
         super().__init__()
         self.ID            = ID
         self.sxs_data_path = os.path.join(path,'SXS_BBH_'+ID)
+        
+        self.order         = order
+        self.level         = level
+        self.cut           = cut_N
+        self._kind         = 'SXS'
+        self.nr            = None
 
         if os.path.exists(self.sxs_data_path) == False:
             if download:
@@ -32,42 +38,46 @@ class Waveform_SXS(Waveform):
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
-        else:
-            # This will check if the file actually exist or not even if the directory exist.
-            # If not I will download it for you
-            try:
-                for lv in ['/Lev6','/Lev5','/Lev4', '/Lev3', '/Lev2', '/Lev1']:
-                    self.nr = h5py.File(self.sxs_data_path+lv+"/rhOverM_Asymptotic_GeometricUnits_CoM.h5")
-                    break
-            except:
-                print('File not found. Downloading it!')
-                self.download_simulation(ID=ID, path=path)            
         
-        self.order         = order
-        self.level         = level
-        self.cut           = cut_N
-        self._kind         = 'SXS'
-        self.nr            = None
+        if isinstance(self.level, int):
+            fname = self.get_lev_fname(basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+            if os.path.exists(fname):
+                self.nr = h5py.File(fname)
+            else:
+                raise FileNotFoundError('SXS path found, but the requested level ({self.level:d}) is not available!')
 
-
-        if level == None:
-            # Default behavior: load only the highest level
-            for lv in ['/Lev6','/Lev5','/Lev4', '/Lev3', '/Lev2', '/Lev1']:
-                try:
-                    self.nr = h5py.File(self.sxs_data_path+lv+"/rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+        elif self.level is None:
+            ref_lv_max = 6
+            ref_lv_min = 1
+            #print('Searching highest level available')
+            for lvn in range(ref_lv_max,ref_lv_min,-1):
+                fname = self.get_lev_fname(level=lvn,basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+                if os.path.exists(fname):
+                    self.nr    = h5py.File(fname)
+                    self.level = lvn 
+                    print(f'Data loaded: {fname}')
                     break
-                except Exception:
-                    continue
+                elif lvn==ref_lv_min:
+                    raise RuntimeError('No data for ref-levels:[{ref_lv_min:d},{ref_lv_max:d}] found')
+        
         else:
-            self.nr = h5py.File(self.sxs_data_path+level+"/rhOverM_Asymptotic_GeometricUnits_CoM.h5")
-
-        if self.nr == None:
-            raise FileNotFoundError("The waveform could not be loaded. Check the path (SXS_BBH_XXXX) and the level.")
-
+            raise RuntimeError(f'Invalid input for level: {self.level}')
+        
         self.load_hlm()
         self.load_metadata()
         pass
-
+    
+    def get_lev_fname(self,level=None,basename=None):
+        """
+        Return file-name in a SXS-path with specified level,
+        e.g. /my/sxs/path/Lev4/my_basename
+        If basename is None, then return only /my/sxs/path/Lev4
+        """
+        if level is None: level = self.level
+        tojoin = [f'Lev{level:d}']
+        if isinstance(basename, str): tojoin.append(basename)
+        return os.path.join(self.sxs_data_path, *tojoin)
+    
     def download_simulation(self, ID='0001', src='BBH',path=None):
         """
         Download the simulation from the SXS catalog; requires the sxs module
@@ -106,38 +116,17 @@ class Waveform_SXS(Waveform):
             os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld))
 
         pass
-
+    
     def load_metadata(self):
-        if self.level == None:
-            # Default behavior: load only the highest level
-            for lv in ['/Lev6','/Lev5','/Lev4', '/Lev3', '/Lev2', '/Lev1']:
-                try:
-                    with open(self.sxs_data_path +lv+"/metadata.json", 'r') as file:
-                        metadata = json.load(file)
-                        file.close()
-                    self.metadata = metadata
-                    break
-                except Exception:
-                    continue
-        else:
-            with open(self.sxs_data_path +lv+"/metadata.json", 'r') as file:
-                metadata = json.load(file)
-                file.close()
-            self.metadata = metadata
-
+        with open(self.get_lev_fname(basename="metadata.json"), 'r') as file:
+            metadata = json.load(file)
+            file.close()
+        self.metadata = metadata
         pass
 
     def load_horizon(self):
-        if self.level == None:
-            # Default behavior: load only the highest level
-            for lv in ['/Lev6','/Lev5','/Lev4', '/Lev3', '/Lev2', '/Lev1']:
-                try:
-                    horizon = h5py.File(self.sxs_data_path+lv+"/Horizons.h5")
-                except Exception:
-                    continue
-        else:
-            horizon = h5py.File(self.sxs_data_path+self.level+"/Horizons.h5")
-        
+        horizon = h5py.File(self.get_lev_fname(basename="Horizons.h5"))
+    
         chiA = horizon["AhA.dir/chiInertial.dat"]
         chiB = horizon["AhB.dir/chiInertial.dat"]
         xA   = horizon["AhA.dir/CoordCenterInertial.dat"]
