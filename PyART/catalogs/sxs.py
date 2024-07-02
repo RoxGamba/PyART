@@ -33,7 +33,8 @@ class Waveform_SXS(Waveform):
         self.ellmax        = ellmax
         self._kind         = 'SXS'
         self.nr            = None
-        
+        self.domain        = 'Time'
+
         self.check_cut_consistency()
 
         if os.path.exists(self.sxs_data_path) == False:
@@ -225,7 +226,6 @@ class Waveform_SXS(Waveform):
                               }
         self._hlm = dict_hlm
         all_keys = self._hlm.keys()
-        self._hp, self._hc = compute_hphc(self.hlm, phi=0, i=0, modes=modes)
         pass
 
 

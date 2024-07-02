@@ -1,9 +1,13 @@
-# Classed to handle waveforms
-import matplotlib.pyplot as plt
+"""
+Classes to handle waveforms
+"""
+
 # standard imports
 import numpy as np;
 from scipy.signal import find_peaks
 from scipy import integrate
+import matplotlib.pyplot as plt
+import warnings 
 
 # other imports
 from .utils import utils         as ut
@@ -11,7 +15,6 @@ from .utils import wf_utils      as wf_ut
 from .utils import load_nr_utils as nr_ut
 from .catalogs.integrate_multipole import Multipole
 
-import warnings 
 
 class Waveform(object):
     """
@@ -63,12 +66,6 @@ class Waveform(object):
     def kind(self):
         return self._kind
     
-    # methods
-    # keys are (l,m), so this should not be used 
-    #def extract_hlm(self, ell, emm):
-    #    k = int(ell*(ell-1)/2 + emm-2) 
-    #    return self.hlm[str(k)][0], self.hlm[str(k)][1]
-
     def find_max(
                 self, 
                 mode   = (2,2), 

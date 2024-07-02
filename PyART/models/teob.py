@@ -42,6 +42,7 @@ class Waveform_EOB(Waveform): #Waveform_EOB(Waveform):
             self._dyn = dyn
             self._hp  = rhp-1j*ihp
             self._hc  = rhc-1j*ihc
+            self.domain = 'Freq'
         else:
             t, hp,hc, hlm, dyn = EOB.EOBRunPy(self.pars)
             self._u   = t
@@ -50,6 +51,7 @@ class Waveform_EOB(Waveform): #Waveform_EOB(Waveform):
             self._dyn = dyn
             self._hp  = hp
             self._hc  = hc
+            self.domain = 'Time'
         return 0
 
 def convert_hlm(hlm):

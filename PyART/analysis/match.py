@@ -39,9 +39,9 @@ class Matcher(object):
         self.match_f = mismatch_func
 
         # compute the mismatch
-        m = self.match_f(wf1,wf2,settings)
-
-        return m
+        m = self.match_f(wf1,wf2,self.settings)
+        print('Mismatch found:',  m)
+        return
 
     def __default_parameters__(self):
         """
@@ -77,17 +77,18 @@ class Matcher(object):
 
         # condition the waveforms (taper, resize, etc)
         if wf1.domain == 'Time':
-            h1 = condition_td_waveform(wf1.hp, settings['tlen'], settings['dt'])
+            h1 = condition_td_waveform(wf1.hp, settings['tlen'], settings)
         else:
             h1 = wf1.hp
         if wf2.domain == 'Time':
-            h2 = condition_td_waveform(wf2.hp, settings['tlen'], settings['dt'])
+            h2 = condition_td_waveform(wf2.hp, settings['tlen'], settings)
         else:
             h2 = wf2.hp
 
         assert len(h1) == len(h2)
         df   = 1.0 / h1.duration
-        flen = len(wf1)//2 + 1
+        #flen = len(wf1)//2 + 1
+        flen = len(h1)//2 + 1
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
 
         m,_  = optimized_match( h1, h2, 
@@ -108,8 +109,8 @@ class Matcher(object):
         iota = settings['iota']
         for coa_phase in settings['coa_phase']:
             sp,sx = wf1.compute_hphc(iota, coa_phase)
-            sp    = condition_td_waveform(sp, settings['tlen'], settings['dt'])
-            sx    = condition_td_waveform(sx, settings['tlen'], settings['dt'])
+            sp    = condition_td_waveform(sp, settings['tlen'], settings)
+            sx    = condition_td_waveform(sx, settings['tlen'], settings)
             spf   = sp.to_frequencyseries() 
             sxf   = sx.to_frequencyseries()
             psd   = self._get_psd(len(spf), spf.delta_f, settings['initial_frequency_mm'])
@@ -138,7 +139,7 @@ def condition_td_waveform(h, tlen, settings):
     """
     # taper the waveform
     if settings['taper']:
-        h = h #taper_waveform()
+        h = h #taper_waveform() # FIXME
     # make this a TimeSeries
     h = TimeSeries(h, settings['dt'])
     # resize the waveform
@@ -258,8 +259,9 @@ def higher_modes_match_k_phic(  s, wf,
 
     def to_minimize_dphi(x):
         hp, hc   = wf.compute_hphc(x, inc, modes=modes)
-        hps      = condition_td_waveform(hp, tlen, dT)
-        hxs      = condition_td_waveform(hc, tlen, dT)
+        settings = {'taper':True, 'dt':dT}
+        hps      = condition_td_waveform(hp, tlen, settings)
+        hxs      = condition_td_waveform(hc, tlen, settings)
         # To FD
         hpf = hps.to_frequencyseries()
         hcf = hxs.to_frequencyseries()       
