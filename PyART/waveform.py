@@ -64,9 +64,10 @@ class Waveform(object):
         return self._kind
     
     # methods
-    def extract_hlm(self, ell, emm):
-        k = int(ell*(ell-1)/2 + emm-2)
-        return self.hlm[str(k)][0], self.hlm[str(k)][1]
+    # keys are (l,m), so this should not be used 
+    #def extract_hlm(self, ell, emm):
+    #    k = int(ell*(ell-1)/2 + emm-2) 
+    #    return self.hlm[str(k)][0], self.hlm[str(k)][1]
 
     def find_max(
                 self, 
@@ -285,7 +286,7 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
         kks = ['E', 'J', 'Jz', 'Jy', 'Jx', 'P', 'Pz', 'Py', 'Px']
         for kk in kks:
             dotk = 'dot' + kk
-            this_mode    = integrate.cumtrapz(dictdyn[dotk][(l,m)],t,initial=0)
+            this_mode    = integrate.cumulative_trapezoid(dictdyn[dotk][(l,m)],t,initial=0)
             dictdyn[kk][(l,m)]      = this_mode
             dictdyn[kk]['total']   += this_mode
             dictdyn[dotk]['total'] += dictdyn[dotk][(l,m)]

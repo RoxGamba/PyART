@@ -1,6 +1,7 @@
 import numpy as np; import os
 import h5py; import json
 from ..waveform import  Waveform
+from ..utils.wf_utils import compute_hphc
 
 class Waveform_SXS(Waveform):
     """
@@ -13,22 +14,27 @@ class Waveform_SXS(Waveform):
     """
     def __init__(
                     self,
-                    path   ='../dat/SXS/',
-                    ID     ='0001',
-                    order  ="Extrapolated_N2.dir",
-                    level = None,
-                    cut_N = 300,
-                    download=False
+                    path     = '../dat/SXS/',
+                    ID       = '0001',
+                    order    = "Extrapolated_N2.dir",
+                    level    = None,
+                    cut_N    = None,
+                    cut_U    = None,
+                    ellmax   = 8,
+                    download = False
                 ):
         super().__init__()
         self.ID            = ID
         self.sxs_data_path = os.path.join(path,'SXS_BBH_'+ID)
-        
         self.order         = order
         self.level         = level
-        self.cut           = cut_N
+        self.cut_N         = cut_N 
+        self.cut_U         = cut_U
+        self.ellmax        = ellmax
         self._kind         = 'SXS'
         self.nr            = None
+        
+        self.check_cut_consistency()
 
         if os.path.exists(self.sxs_data_path) == False:
             if download:
@@ -49,13 +55,11 @@ class Waveform_SXS(Waveform):
         elif self.level is None:
             ref_lv_max = 6
             ref_lv_min = 1
-            #print('Searching highest level available')
             for lvn in range(ref_lv_max,ref_lv_min,-1):
                 fname = self.get_lev_fname(level=lvn,basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5")
                 if os.path.exists(fname):
                     self.nr    = h5py.File(fname)
                     self.level = lvn 
-                    print(f'Data loaded: {fname}')
                     break
                 elif lvn==ref_lv_min:
                     raise RuntimeError('No data for ref-levels:[{ref_lv_min:d},{ref_lv_max:d}] found')
@@ -67,6 +71,15 @@ class Waveform_SXS(Waveform):
         self.load_metadata()
         pass
     
+    def check_cut_consistency(self):
+        if self.cut_N is not None and self.cut_U is not None:
+            raise RuntimeError('Conflict between cut_N and cut_U!\n'
+                               'When initializing, only one between cut_N and cut_U should be given in input.\n'
+                               'The other one is temporarly set to None and (consistently) updated in self.load_hlm()')
+        elif self.cut_N is None and self.cut_U is None:
+            self.cut_N = 0
+        pass
+
     def get_lev_fname(self,level=None,basename=None):
         """
         Return file-name in a SXS-path with specified level,
@@ -179,12 +192,22 @@ class Waveform_SXS(Waveform):
         chi2_perp = np.linalg.norm(chi2_ref - chi2_L*L_hat_ref)
         return chi1_L, chi1_perp, chi2_L, chi2_perp
 
-    def load_hlm(self):
+    def load_hlm(self, ellmax=None):
+        if ellmax==None: ellmax=self.ellmax
         order   = self.order
-        from itertools import product
-        modes = [[l, m] for l, m in product(range(2, 9), range(-8, 9)) if m!=0 and l >= np.abs(m)]
 
-        self._u  = self.nr[order]['Y_l2_m2.dat'][:, 0][self.cut:]
+        from itertools import product
+        modes = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if m!=0 and l >= np.abs(m)]
+       
+        tmp_u = self.nr[order]['Y_l2_m2.dat'][:, 0]
+        
+        self.check_cut_consistency()
+        if self.cut_N is None: self.cut_N = np.argwhere(tmp_u>=self.cut_U)[0][0] 
+        if self.cut_U is None: self.cut_U = tmp_u[self.cut_N]
+        
+        self._u  = tmp_u[self.cut_N:]
+        self._t  = self._u # FIXME: should we use another time? 
+
         dict_hlm = {}
         for mode in modes:
             l    = mode[0]; m = mode[1]
@@ -192,13 +215,17 @@ class Waveform_SXS(Waveform):
             hlm  = self.nr[order][mode]
             h    = hlm[:, 1] + 1j * hlm[:, 2]
             # amp and phase
-            Alm = abs(h)[self.cut:]
-            plm = np.unwrap(np.angle(h))[self.cut:]
+            Alm = abs(h)[self.cut_N:]
+            plm = np.unwrap(np.angle(h))[self.cut_N:]
             # save in dictionary
             key = (l, m)
             dict_hlm[key] =  {'real': Alm*np.cos(plm), 'imag': Alm*np.sin(plm),
                               'A'   : Alm, 'p' : plm, 
-                              'h'   : h[self.cut:]
+                              'h'   : h[self.cut_N:]
                               }
         self._hlm = dict_hlm
+        all_keys = self._hlm.keys()
+        self._hp, self._hc = compute_hphc(self.hlm, phi=0, i=0, modes=modes)
         pass
+
+
