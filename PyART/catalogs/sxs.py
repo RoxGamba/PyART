@@ -154,7 +154,7 @@ class Waveform_SXS(Waveform):
         r0   = np.linalg.norm(pos1-pos2)
         afv  = np.array(ometa['remnant_dimensionless_spin'])
         metadata = {'name'     : ometa['alternative_names'][1], # i.e. store as name 'SXS:BBH:ID'
-                    'ref_time' : 0.0,
+                    'ref_time' : ometa['reference_time'],
                     # masses and spins 
                     'M1'       : M1,
                     'M2'       : M2,
