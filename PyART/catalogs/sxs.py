@@ -2,6 +2,7 @@ import numpy as np; import os
 import h5py; import json
 from ..waveform import  Waveform
 from ..utils.wf_utils import compute_hphc
+from .cat_utils import check_metadata
 
 class Waveform_SXS(Waveform):
     """
@@ -133,9 +134,56 @@ class Waveform_SXS(Waveform):
     
     def load_metadata(self):
         with open(self.get_lev_fname(basename="metadata.json"), 'r') as file:
-            metadata = json.load(file)
+            ometa = json.load(file) # original_metadata
             file.close()
-        self.metadata = metadata
+        self.ometadata = ometa # store also original metadata, for completeness
+        
+        # TODO : 1) check if these quantities are mass-rescaled or not
+        #        2) here we are using initial quantities, not ref. The
+        #           reason is that ADM integrals are not given at ref time
+        M1 = ometa['reference_mass1']
+        M2 = ometa['reference_mass2']
+        q  = M2/M1
+        if q<1:
+            q = 1/q
+        nu = q/(1+q)**2
+        hS1  = np.array(ometa['reference_dimensionless_spin1']) 
+        hS2  = np.array(ometa['reference_dimensionless_spin2']) 
+        pos1 = np.array(ometa['reference_position1'])
+        pos2 = np.array(ometa['reference_position2'])
+        r0   = np.linalg.norm(pos1-pos2)
+        afv  = np.array(ometa['remnant_dimensionless_spin'])
+        metadata = {'name'     : ometa['alternative_names'][1], # i.e. store as name 'SXS:BBH:ID'
+                    'ref_time' : 0.0,
+                    # masses and spins 
+                    'M1'       : M1,
+                    'M2'       : M2,
+                    'M'        : M1+M2,
+                    'q'        : q,
+                    'nu'       : nu,
+                    'hS1'      : hS1,
+                    'hS2'      : hS2,
+                    'chi1z'    : hS1[2],
+                    'chi2z'    : hS2[2],
+                    # positions
+                    'pos1'     : pos1,
+                    'pos2'     : pos2,
+                    'r0'       : r0,
+                    'e'        : ometa['reference_eccentricity'],
+                    # frequencies
+                    'f0v'      : np.array(ometa['reference_orbital_frequency']),
+                    'f0'       : ometa['reference_orbital_frequency'][2],
+                    # ADM quantities (INITIAL, not REF)
+                    'E0'       : ometa['initial_ADM_energy'],
+                    'P0'       : np.array(ometa['initial_ADM_linear_momentum']),
+                    'J0'       : np.array(ometa['initial_ADM_angular_momentum']),
+                    'Jz0'      :          ometa['initial_ADM_angular_momentum'][2],
+                    # remnant
+                    'Mf'       : ometa['remnant_mass'],
+                    'afv'      : afv,
+                    'af'       : afv[2],
+                   }
+        self.metadata = check_metadata(metadata,raise_err=True) 
         pass
 
     def load_horizon(self):
