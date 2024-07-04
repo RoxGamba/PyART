@@ -13,7 +13,7 @@ import warnings
 from .utils import utils         as ut
 from .utils import wf_utils      as wf_ut
 from .utils import load_nr_utils as nr_ut
-from .catalogs.integrate_multipole import Multipole
+from .analysis.integrate_multipole import Multipole
 
 
 class Waveform(object):
