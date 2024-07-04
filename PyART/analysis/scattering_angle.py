@@ -1,11 +1,10 @@
 import numpy as np
 import os
+import hypfit
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import matplotlib
-
-from .hypfit       import plot_fit, fit_quadratic, quadratic_to_canonical
-from ..utils.utils import upoly_fits
+import utils
 
 matplotlib.rc('text', usetex=True)
 
@@ -20,10 +19,10 @@ class ScatteringAngle:
         self.nmin             = 2
         self.nmax             = 10
         self.n_extract        = None
-        self.r_cutoff_in_low  = 20
-        self.r_cutoff_in_high = 100
-        self.r_cutoff_out_low = 20
-        self.r_cutoff_out_high= 100
+        self.r_cutoff_in_low  = 25
+        self.r_cutoff_in_high = 80
+        self.r_cutoff_out_low = 25
+        self.r_cutoff_out_high= None
         self.path             = None
         self.file_format      = 'GRA'
         self.punct0           = None
@@ -38,7 +37,7 @@ class ScatteringAngle:
                 raise ValueError(f'Unknown option: {key}')
 
         if self.n_extract is None:
-            self.n_extract = self.nmax
+            self.n_extract = self.nmax # safe if SVD is used
         
         nmin       = self.nmin
         nmax       = self.nmax
@@ -143,12 +142,12 @@ class ScatteringAngle:
         r  = self.r
         th = self.th
 
-        fit_in = upoly_fits(r, th, nmin=nmin, nmax=nmax, n_extract=n_extract, direction='in', 
+        fit_in = utils.upoly_fits(r, th, nmin=nmin, nmax=nmax, n_extract=n_extract, direction='in', 
                                   r_cutoff_low=self.r_cutoff_in_low, r_cutoff_high=self.r_cutoff_in_high)
         b_in     = fit_in['coeffs']
         mask_in  = fit_in['mask']
         
-        fit_out  = upoly_fits(r, th, nmin=nmin, nmax=nmax, n_extract=n_extract, direction='out', 
+        fit_out  = utils.upoly_fits(r, th, nmin=nmin, nmax=nmax, n_extract=n_extract, direction='out', 
                                     r_cutoff_low=self.r_cutoff_out_low, r_cutoff_high=self.r_cutoff_out_high)
         b_out    = fit_out['coeffs']
         mask_out = fit_out['mask']
@@ -156,20 +155,34 @@ class ScatteringAngle:
         self.fit_orders = fit_in['fit_orders']
         self.chi_array  = np.zeros((nmax-nmin+1,))
         
+        th_inf_in_vec  = np.zeros_like(self.chi_array)
+        th_inf_out_vec = np.zeros_like(self.chi_array)
         for n in self.fit_orders:
             chi_tmp, th_inf_in_tmp, th_inf_out_tmp = self.compute_chi_from_fit(b_in, b_out, n)
             self.chi_array[n-nmin] = chi_tmp
+            th_inf_in_vec[n-nmin]  = th_inf_in_tmp
+            th_inf_out_vec[n-nmin] = th_inf_out_tmp
+            #if n_extract is not None and n==n_extract:
             if n==n_extract:
                 chi        = chi_tmp
                 th_inf_in  = th_inf_in_tmp
                 th_inf_out = th_inf_out_tmp
-
+        #if n_extract is None:
+            #chi        = np.mean(self.chi_array)
+            #th_inf_in  = np.mean(th_inf_in_vec)
+            #th_inf_out = np.mean(th_inf_out_vec)
         fit_err_in  = (max(b_in[ -1,:])-min(b_in[ -1,:]))*180/np.pi
         fit_err_out = (max(b_out[-1,:])-min(b_out[-1,:]))*180/np.pi
         fit_err     = np.sqrt(fit_err_in**2+fit_err_out**2)
         
         if verbose:
             print('fit-orders       : {:d} - {:d}'.format(nmin, nmax))
+            print('r in  fit        : [{:.2f}, {:.2f}]'.format(self.r_cutoff_in_low,  self.r_cutoff_in_high))
+            if self.r_cutoff_out_high is None:
+                r_out_fit = r[-1]
+            else:
+                r_out_fit = self.r_cutoff_out_high
+            print('r out fit        : [{:.2f}, {:.2f}]'.format(self.r_cutoff_out_low, r_out_fit))
             print('theta inf in     : {:8.4f} +- {:6.4f}'.format(th_inf_in, fit_err_in))
             print('theta inf out    : {:8.4f} +- {:6.4f}'.format(th_inf_out, fit_err_out))
             print('scattering angle : {:8.4f} +- {:6.4f}'.format(chi, fit_err))
@@ -358,15 +371,12 @@ class ScatteringAngle:
                 r  = self.r_out
             x  = r*np.cos(th)
             y  = r*np.sin(th)
-            #ABCDF = hypfit.fit_quadratic(x, y)
-            #canonical = hypfit.quadratic_to_canonical(ABCDF)
-            ABCDF     = fit_quadratic(x, y)
-            canonical = quadratic_to_canonical(ABCDF)
+            ABCDF = hypfit.fit_quadratic(x, y)
+            canonical = hypfit.quadratic_to_canonical(ABCDF)
             if plot:
                 if plot_rlim is None:
                     plot_rlim = self.r_cutoff_out_high
-                #hypfit.plot_fit(x, y, canonical, swap_ab=swap_ab, rlim=plot_rlim)
-                plot_fit(x, y, canonical, swap_ab=swap_ab, rlim=plot_rlim)
+                hypfit.plot_fit(x, y, canonical, swap_ab=swap_ab, rlim=plot_rlim)
             A = ABCDF[0]
             B = ABCDF[1]
             C = ABCDF[2]
@@ -389,10 +399,11 @@ class ScatteringAngle:
 #        return v 
 
 def ComputeChiFrom2Sims(path_hres=None, path_lres=None, punct0_hres=None, punct1_hres=None, \
-                        punct0_lres=None, punct1_lres=None, **kwargs):
-    kwargs['verbose'] = False
-    scat_lres = ScatteringAngle(path=path_lres, punct0=punct0_lres, punct1=punct1_lres, **kwargs)
-    scat_hres = ScatteringAngle(path=path_hres, punct0=punct0_hres, punct1=punct1_hres, **kwargs)
+                        punct0_lres=None, punct1_lres=None, verbose=False, vverbose=False, **kwargs):
+    if vverbose:
+        verbose = True
+    scat_lres = ScatteringAngle(path=path_lres, punct0=punct0_lres, punct1=punct1_lres, verbose=vverbose, **kwargs)
+    scat_hres = ScatteringAngle(path=path_hres, punct0=punct0_hres, punct1=punct1_hres, verbose=vverbose, **kwargs)
 
     chi_hres     = scat_hres.chi;
     fit_err_hres = scat_hres.fit_err;
@@ -405,10 +416,11 @@ def ComputeChiFrom2Sims(path_hres=None, path_lres=None, punct0_hres=None, punct1
     res_err = np.abs(chi_hres-chi_lres)
     err     = np.sqrt(fit_err**2 + res_err**2)
     
-    print('fit-orders       : {:d} - {:d}'.format(scat_hres.nmin, scat_hres.nmax))
-    print('fit error        : {:6.4f}'.format(fit_err))
-    print('resolution error : {:6.4f}'.format(res_err))
-    print('scattering angle : {:8.4f} +- {:6.4f}\n'.format(chi, err))
+    if verbose:
+        print('fit-orders       : {:d} - {:d}'.format(scat_hres.nmin, scat_hres.nmax))
+        print('fit error        : {:6.4f}'.format(fit_err))
+        print('resolution error : {:6.4f}'.format(res_err))
+        print('scattering angle : {:8.4f} +- {:6.4f}\n'.format(chi, err))
     
     out = {}
     out['scat_lres'] = scat_lres
