@@ -36,8 +36,8 @@ test_path   = os.path.join(repo_path, 'checks/local_sxs/')
 sim1 = Waveform_SXS(path=test_path, ID=sxs_id, download=True, ellmax=7, cut_U=300) # from u=300
 sim2 = Waveform_SXS(path=test_path, ID=sxs_id, download=True, ellmax=7, cut_N=500) # from N=500
 
-#for key, value in sim1.ometadata.items():
-#    print(f'{key} : {value}')
+for key, value in sim1.metadata.items():
+    print(f'{key:15s} : {value}')
 
 # plot
 plt.figure()

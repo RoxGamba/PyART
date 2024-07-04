@@ -183,7 +183,10 @@ class Waveform_SXS(Waveform):
                     'afv'      : afv,
                     'af'       : afv[2],
                    }
-        self.metadata = check_metadata(metadata,raise_err=True) 
+        # check that all the required quantities are given,
+        # then store as attribute
+        check_metadata(metadata,raise_err=True) 
+        self.metadata = metadata 
         pass
 
     def load_horizon(self):
