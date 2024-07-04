@@ -69,8 +69,8 @@ class Waveform_SXS(Waveform):
         else:
             raise RuntimeError(f'Invalid input for level: {self.level}')
         
-        self.load_hlm()
         self.load_metadata()
+        self.load_hlm()
         pass
     
     def check_cut_consistency(self):
@@ -266,6 +266,7 @@ class Waveform_SXS(Waveform):
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm  = self.nr[order][mode]
             h    = hlm[:, 1] + 1j * hlm[:, 2]
+            h  /= self.metadata['nu']
             # amp and phase
             Alm = abs(h)[self.cut_N:]
             plm = np.unwrap(np.angle(h))[self.cut_N:]
