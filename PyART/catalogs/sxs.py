@@ -183,9 +183,9 @@ class Waveform_SXS(Waveform):
                     'afv'      : afv,
                     'af'       : afv[2],
                    }
-        # check that all the required quantities are given,
-        # then store as attribute
+        # check that all the required quantities are given 
         check_metadata(metadata,raise_err=True) 
+        # then store as attribute
         self.metadata = metadata 
         pass
 
@@ -265,8 +265,7 @@ class Waveform_SXS(Waveform):
             l    = mode[0]; m = mode[1]
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm  = self.nr[order][mode]
-            h    = hlm[:, 1] + 1j * hlm[:, 2]
-            h  /= self.metadata['nu']
+            h    = (hlm[:, 1] + 1j * hlm[:, 2])/self.metadata['nu']
             # amp and phase
             Alm = abs(h)[self.cut_N:]
             plm = np.unwrap(np.angle(h))[self.cut_N:]
