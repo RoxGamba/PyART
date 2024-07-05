@@ -43,9 +43,9 @@ for key, value in sim1.metadata.items():
 
 # interpolate
 u, hlm = sim1.interpolate_hlm(0.5)
-h22   = hlm[(2,2)]['h']
-phi22 = np.unwrap(np.angle(hlm[(2,2)]['h']))
-omg22 = ut.D1(phi22, u, 4)
+h22    = hlm[(2,2)]['h']
+phi22  = hlm[(2,2)]['p']
+omg22  = ut.D1(phi22, u, 4)
 
 # plot
 fig, axs = plt.subplots(2,2, figsize=(9,6))
@@ -54,6 +54,7 @@ axs[0,0].plot(sim2.u, sim2.hlm[(2,2)]['A'], label='cut_N=500', ls='--')
 axs[0,1].plot(sim1.u, sim1.hlm[(2,2)]['real'], label='original')
 axs[0,1].plot(u, h22.real, label='interp', ls='--')
 axs[1,0].plot(u, phi22, label='interp')
+#axs[1,0].plot(sim1.u, sim1.hlm[(2,2)]['p']-4*np.pi, label='original')
 axs[1,1].plot(u, omg22, label='interp')
 axs[1,1].set_ylim([0,1])
 for i in range(2):

@@ -127,8 +127,9 @@ class Waveform(object):
         new_u = np.arange(self.u[0], self.u[-1], dT)
         
         for k in self.hlm.keys():
-            iA = np.interp(new_u, self.u, self.hlm[k]["A"])
-            ip = np.interp(new_u, self.u, self.hlm[k]["p"])
+            h  = self.hlm[k]['h']
+            iA = np.interp(new_u, self.u, np.abs(h))
+            ip = np.interp(new_u, self.u, -np.unwrap(np.angle(h)))
             ih = iA*np.exp(-1j*ip)
             hlm_i[k] = {"A": iA, "p": ip, "h":ih, "real": ih.real, "imag": ih.imag}
         
