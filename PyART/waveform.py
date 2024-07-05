@@ -129,7 +129,7 @@ class Waveform(object):
         for k in self.hlm.keys():
             iA = np.interp(new_u, self.u, self.hlm[k]["A"])
             ip = np.interp(new_u, self.u, self.hlm[k]["p"])
-            ih = iA*np.exp(1j*ip)
+            ih = iA*np.exp(-1j*ip)
             hlm_i[k] = {"A": iA, "p": ip, "h":ih, "real": ih.real, "imag": ih.imag}
         
         return new_u, hlm_i
