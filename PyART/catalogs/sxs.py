@@ -247,6 +247,9 @@ class Waveform_SXS(Waveform):
     def load_hlm(self, ellmax=None):
         if ellmax==None: ellmax=self.ellmax
         order   = self.order
+        
+        if not hasattr(self, 'metadata'):
+            raise RuntimeError('Load metadata before loading hlm!')
 
         from itertools import product
         modes = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if m!=0 and l >= np.abs(m)]
@@ -268,7 +271,7 @@ class Waveform_SXS(Waveform):
             h    = (hlm[:, 1] + 1j * hlm[:, 2])/self.metadata['nu']
             # amp and phase
             Alm = abs(h)[self.cut_N:]
-            plm = np.unwrap(np.angle(h))[self.cut_N:]
+            plm = -np.unwrap(np.angle(h))[self.cut_N:]
             # save in dictionary
             key = (l, m)
             dict_hlm[key] =  {'real': Alm*np.cos(plm), 'imag': Alm*np.sin(plm),
