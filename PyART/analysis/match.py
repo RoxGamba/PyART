@@ -3,6 +3,7 @@ Stuff for mismatches, still need to port the parallelization,
 the precessing case and debug/test the code
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize_scalar, dual_annealing
 from ..utils import utils as ut
@@ -11,6 +12,8 @@ from ..utils import utils as ut
 from pycbc.filter import sigmasq, matched_filter_core, overlap_cplx, optimized_match
 from pycbc.types.timeseries import TimeSeries
 from pycbc.psd import  aLIGOZeroDetHighPower
+
+Msun =  4.925491025543575903411922162094833998e-6 # G/c^3 
 
 class Matcher(object):
     """
@@ -39,9 +42,46 @@ class Matcher(object):
         self.match_f = mismatch_func
 
         # compute the mismatch
+        wf1 = self._mass_rescale(wf1, isgeom=True) # TODO isgeom=False to test
+        wf2 = self._mass_rescale(wf2, isgeom=True)
+        self.settings['tlen'] = self._find_tlen(wf1, wf2)
         m = self.match_f(wf1,wf2,self.settings)
-        print('Mismatch found:',  m)
+        
+        self.mismatch = 1 - m
         return
+    
+    def _mass_rescale(self, wf, isgeom=True, kind='cubic'):
+        """
+        Rescale waveforms with the mass used in settings
+        and return TimeSeries.
+        If the waveform is not in geom-units, the simply
+        return the TimeSeries
+        """
+        dT = self.settings['dt']
+        if isgeom:
+            M       = self.settings['M'] 
+            dT_resc = dT/(M*Msun)
+            new_u   = np.arange(wf.u[0], wf.u[-1], dT_resc)
+            hp      = ut.spline(wf.u, wf.hp, new_u, kind=kind) 
+            hc      = ut.spline(wf.u, wf.hc, new_u, kind=kind) 
+            wf._hp  = hp
+            wf._hc  = hc
+            wf._hlm = None # to be safe 
+            wf._u   = new_u
+            wf._t   = new_u # FIXME: t should be probably removed
+        wf._hp = TimeSeries(wf.hp, dT)
+        wf._hc = TimeSeries(wf.hc, dT)
+        return wf 
+
+    def _find_tlen(self, wf1, wf2, resize_factor=16):
+        dT   = self.settings['dt']
+        h1   = TimeSeries(wf1.hp, dT)
+        h2   = TimeSeries(wf2.hp, dT)
+        LM   = max(len(h1), len(h2))
+        tl   = (LM-1)*dT
+        tN   = ut.nextpow2(resize_factor*tl)
+        tlen = int(tN/dT)
+        return tlen
 
     def __default_parameters__(self):
         """
@@ -74,23 +114,27 @@ class Matcher(object):
         Assume that h = h_+ contains the whole information.
         This is true for non-precessing systems with a single (ell, |m|)
         """
-
-        # condition the waveforms (taper, resize, etc)
+        h1 = wf1.hp
+        h2 = wf2.hp
+        
+        # condition TD waveforms (taper, resize, etc)
         if wf1.domain == 'Time':
-            h1 = condition_td_waveform(wf1.hp, settings['tlen'], settings)
-        else:
-            h1 = wf1.hp
+            h1 = condition_td_waveform(h1, settings)
         if wf2.domain == 'Time':
-            h2 = condition_td_waveform(wf2.hp, settings['tlen'], settings)
-        else:
-            h2 = wf2.hp
+            h2 = condition_td_waveform(h2, settings)
 
         assert len(h1) == len(h2)
         df   = 1.0 / h1.duration
         #flen = len(wf1)//2 + 1
         flen = len(h1)//2 + 1
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
-
+        
+        # DEBUG 
+        #plt.figure()
+        #plt.plot(h1, label='nr')
+        #plt.plot(h2, label='eob')
+        #plt.legend()
+        #plt.show()
         m,_  = optimized_match( h1, h2, 
                                 psd=psd, 
                                 low_frequency_cutoff=settings['initial_frequency_mm'], 
@@ -109,8 +153,8 @@ class Matcher(object):
         iota = settings['iota']
         for coa_phase in settings['coa_phase']:
             sp,sx = wf1.compute_hphc(iota, coa_phase)
-            sp    = condition_td_waveform(sp, settings['tlen'], settings)
-            sx    = condition_td_waveform(sx, settings['tlen'], settings)
+            sp    = condition_td_waveform(sp, settings)
+            sx    = condition_td_waveform(sx, settings)
             spf   = sp.to_frequencyseries() 
             sxf   = sx.to_frequencyseries()
             psd   = self._get_psd(len(spf), spf.delta_f, settings['initial_frequency_mm'])
@@ -120,7 +164,6 @@ class Matcher(object):
 
                 mm, _ = higher_modes_match_k_phic(
                     s, wf2, 
-                    settings['tlen'],
                     iota,
                     psd,
                     self.modes,
@@ -132,18 +175,27 @@ class Matcher(object):
         return mm
     
 ### other functions, not just code related to the class
+def taper_waveform(t, h, t1=-1, t2=-1, walpha_rescale=1):
+    walpha = 0.1/walpha_rescale
+    out = 1.0*h
+    clip_val = np.log(1e+20)
+    if t1>0: out *= ut.safe_sigmoid(    t    - t1, walpha=walpha,clip=clip_val)
+    if t2>0: out *= ut.safe_sigmoid(t[-1]-t2 - t , walpha=walpha,clip=clip_val)
+    return out
 
-def condition_td_waveform(h, tlen, settings):
+def condition_td_waveform(h, settings):
     """
     Condition the waveforms before computing the mismatch
     """
     # taper the waveform
     if settings['taper']:
-        h = h #taper_waveform() # FIXME
+        hlen = len(h)
+        t = np.linspace(0, hlen, num=hlen)
+        h = taper_waveform(t, h, t1=0.025*hlen, t2=-0.025*hlen, walpha_rescale=0.2)
     # make this a TimeSeries
     h = TimeSeries(h, settings['dt'])
     # resize the waveform
-    h.resize(tlen)
+    h.resize(settings['tlen'])
     return h
 
 def dual_annealing(func,bounds,maxfun=2000):
@@ -212,7 +264,6 @@ def sky_and_time_maxed_overlap_2(s, hp, hc, psd, low_freq, high_freq):
 
     num   = re_rhop2 - 2.*Ipc*re_rhop*re_rhoc + re_rhoc2
     den   = 1. - Ipc**2
-
     o = np.sqrt(max(num)/den)/np.sqrt(ss)
 
     if (o > 1.):
@@ -252,7 +303,7 @@ def time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, max_pol=True):
     return o
 
 def higher_modes_match_k_phic(  s, wf, 
-                                tlen, inc, psd, modes, 
+                                inc, psd, modes, 
                                 func=sky_and_time_maxed_overlap_2,
                                 dT=1./4096, fmin_mm=20,fmax=2048
                             ):
@@ -260,8 +311,8 @@ def higher_modes_match_k_phic(  s, wf,
     def to_minimize_dphi(x):
         hp, hc   = wf.compute_hphc(x, inc, modes=modes)
         settings = {'taper':True, 'dt':dT}
-        hps      = condition_td_waveform(hp, tlen, settings)
-        hxs      = condition_td_waveform(hc, tlen, settings)
+        hps      = condition_td_waveform(hp, settings)
+        hxs      = condition_td_waveform(hc, settings)
         # To FD
         hpf = hps.to_frequencyseries()
         hcf = hxs.to_frequencyseries()       
