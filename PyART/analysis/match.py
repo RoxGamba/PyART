@@ -18,7 +18,7 @@ Msun =  4.925491025543575903411922162094833998e-6 # G/c^3
 
 class Matcher(object):
     """
-    Class to compute the match between two waveforms
+    Class to compute the match between two waveforms.
     """
     def __init__(self,
                  WaveForm1,
@@ -52,13 +52,19 @@ class Matcher(object):
         return
     
     def _wave2locobj(self, WaveForm, isgeom=True):
+        """
+        Extract useful information from WaveForm class 
+        (see PyART/waveform.py) and store in a lambda-obj 
+        that will be used in this Matcher class
+        """
         if not hasattr(WaveForm, 'hp'):
             raise RuntimeError('hp not found! Compute it before calling Matcher')
         wf        = lambda:0 
         wf.domain = WaveForm.domain
         wf.f      = None # FIXME assume TD waveform at the moment
+        
         # Get updated time and hp/hc-TimeSeries
-        wf.u, wf.hp, wf.hc = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom) 
+        wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom) 
         return wf
 
     def _mass_rescaled_TimeSeries(self, u, hp, hc, isgeom=True, kind='cubic'):
@@ -73,12 +79,17 @@ class Matcher(object):
         if isgeom:
             M       = self.settings['M'] 
             dT_resc = dT/(M*Msun)
-            new_u = np.arange(u[0], u[-1], dT_resc)
+            new_u   = np.arange(u[0], u[-1], dT_resc)
             hp = ut.spline(u, hp, new_u, kind=kind) 
             hc = ut.spline(u, hc, new_u, kind=kind) 
-        return new_u, TimeSeries(hp, dT), TimeSeries(hc, dT)
+        return TimeSeries(hp, dT), TimeSeries(hc, dT), new_u
 
     def _find_tlen(self, wf1, wf2, resize_factor=16):
+        """
+        Given two local-waveform objects (see wave2locobj()),
+        return the time-length to use in TD-waveform
+        conditioning (before match computation)
+        """
         dT   = self.settings['dt']
         h1   = TimeSeries(wf1.hp, dT)
         h2   = TimeSeries(wf2.hp, dT)
@@ -95,12 +106,15 @@ class Matcher(object):
         return {
             'initial_frequency_mm' : 20.,
             'final_frequency_mm'   : 2048.,
-            'taper'                : True,
             'psd'                  : 'aLIGOZeroDetHighPower',
             'M'                    : 100.,
             'iota'                 : 0.,
             'coa_phase'            : np.linspace(0,2*np.pi,4),
             'eff_pols'             : np.linspace(0,np.pi,5),
+            'taper'                : True,
+            'taper_start'          : 0.05, # % of the waveform to taper at the beginning
+            'taper_end'            : 0.00, # % of the waveform to taper at the end
+            'taper_alpha'          : 0.01,  # sigmoid-parameter used in tapering
         }
     
     def _get_psd(self, flen, df, fmin):
@@ -130,7 +144,6 @@ class Matcher(object):
         
         assert len(h1) == len(h2)
         df   = 1.0 / h1.duration
-        #flen = len(wf1)//2 + 1
         flen = len(h1)//2 + 1
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
         
@@ -193,14 +206,6 @@ class Matcher(object):
         return mm
     
 ### other functions, not just code related to the class
-def taper_waveform(t, h, t1=-1, t2=-1, walpha_rescale=1):
-    walpha = 0.1/walpha_rescale
-    out = 1.0*h
-    clip_val = np.log(1e+20)
-    if t1>0: out *= ut.safe_sigmoid(    t    - t1, walpha=walpha,clip=clip_val)
-    if t2>0: out *= ut.safe_sigmoid(t[-1]-t2 - t , walpha=walpha,clip=clip_val)
-    return out
-
 def condition_td_waveform(h, settings):
     """
     Condition the waveforms before computing the mismatch.
@@ -209,8 +214,11 @@ def condition_td_waveform(h, settings):
     # taper the waveform
     if settings['taper']:
         hlen = len(h)
-        t = np.linspace(0, hlen, num=hlen)
-        h = taper_waveform(t, h, t1=0.05*hlen, t2=0, walpha_rescale=10)
+        t1    = settings['taper_start'] * hlen
+        t2    = settings['taper_end']   * hlen
+        alpha = settings['taper_alpha']
+        t = np.linspace(0, hlen-1, num=hlen)
+        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
     # resize
     h.resize(settings['tlen'])
     return h
