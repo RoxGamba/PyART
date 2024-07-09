@@ -13,6 +13,7 @@ from pycbc.filter import sigmasq, matched_filter_core, overlap_cplx, optimized_m
 from pycbc.types.timeseries import TimeSeries
 from pycbc.psd import  aLIGOZeroDetHighPower
 
+# TODO move units to  some utils
 Msun =  4.925491025543575903411922162094833998e-6 # G/c^3 
 
 class Matcher(object):
@@ -20,8 +21,8 @@ class Matcher(object):
     Class to compute the match between two waveforms
     """
     def __init__(self,
-                 wf1,
-                 wf2,
+                 WaveForm1,
+                 WaveForm2,
                  modes     = [(2,2)],
                  settings  = None
                  ) -> None:
@@ -29,7 +30,7 @@ class Matcher(object):
         self.modes    = modes
         self.settings = self.__default_parameters__()
         self.settings.update(settings)
-
+        
         # choose your function
         if settings['kind'] == 'single-mode':
             mismatch_func = self._compute_mm_single_mode
@@ -40,38 +41,42 @@ class Matcher(object):
         else:
             raise ValueError('kind not recognized')
         self.match_f = mismatch_func
-
-        # compute the mismatch
-        wf1 = self._mass_rescale(wf1, isgeom=True) # TODO isgeom=False to test
-        wf2 = self._mass_rescale(wf2, isgeom=True)
-        self.settings['tlen'] = self._find_tlen(wf1, wf2)
-        m = self.match_f(wf1,wf2,self.settings)
         
-        self.mismatch = 1 - m
+        # Get local objects with TimeSeries
+        wf1 = self._wave2locobj(WaveForm1)
+        wf2 = self._wave2locobj(WaveForm2)
+        # Compute tlen
+        self.settings['tlen'] = self._find_tlen(wf1, wf2)
+        # compute and stor the mismatch
+        self.mismatch = 1 - self.match_f(wf1,wf2,self.settings)
         return
     
-    def _mass_rescale(self, wf, isgeom=True, kind='cubic'):
+    def _wave2locobj(self, WaveForm, isgeom=True):
+        if not hasattr(WaveForm, 'hp'):
+            raise RuntimeError('hp not found! Compute it before calling Matcher')
+        wf        = lambda:0 
+        wf.domain = WaveForm.domain
+        wf.f      = None # FIXME assume TD waveform at the moment
+        # Get updated time and hp/hc-TimeSeries
+        wf.u, wf.hp, wf.hc = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom) 
+        return wf
+
+    def _mass_rescaled_TimeSeries(self, u, hp, hc, isgeom=True, kind='cubic'):
         """
         Rescale waveforms with the mass used in settings
         and return TimeSeries.
         If the waveform is not in geom-units, the simply
         return the TimeSeries
         """
+        # TODO : test isgeom==False
         dT = self.settings['dt']
         if isgeom:
             M       = self.settings['M'] 
             dT_resc = dT/(M*Msun)
-            new_u   = np.arange(wf.u[0], wf.u[-1], dT_resc)
-            hp      = ut.spline(wf.u, wf.hp, new_u, kind=kind) 
-            hc      = ut.spline(wf.u, wf.hc, new_u, kind=kind) 
-            wf._hp  = hp
-            wf._hc  = hc
-            wf._hlm = None # to be safe 
-            wf._u   = new_u
-            wf._t   = new_u # FIXME: t should be probably removed
-        wf._hp = TimeSeries(wf.hp, dT)
-        wf._hc = TimeSeries(wf.hc, dT)
-        return wf 
+            new_u = np.arange(u[0], u[-1], dT_resc)
+            hp = ut.spline(u, hp, new_u, kind=kind) 
+            hc = ut.spline(u, hc, new_u, kind=kind) 
+        return new_u, TimeSeries(hp, dT), TimeSeries(hc, dT)
 
     def _find_tlen(self, wf1, wf2, resize_factor=16):
         dT   = self.settings['dt']
@@ -122,19 +127,32 @@ class Matcher(object):
             h1 = condition_td_waveform(h1, settings)
         if wf2.domain == 'Time':
             h2 = condition_td_waveform(h2, settings)
-
+        
         assert len(h1) == len(h2)
         df   = 1.0 / h1.duration
         #flen = len(wf1)//2 + 1
         flen = len(h1)//2 + 1
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
         
-        # DEBUG 
-        #plt.figure()
-        #plt.plot(h1, label='nr')
-        #plt.plot(h2, label='eob')
-        #plt.legend()
-        #plt.show()
+        if False:
+            h1f = h1.to_frequencyseries()
+            h2f = h2.to_frequencyseries()
+            fig, axs = plt.subplots(2,1)
+            axs[0].plot(wf1.hp)
+            axs[0].plot(wf2.hp)
+            axs[0].plot(h1, label='nr', ls='--')
+            axs[0].plot(h2, label='eob', ls='--')
+            axs[0].legend()
+            axs[1].plot(h1f.sample_frequencies, abs(h1f))
+            axs[1].plot(h2f.sample_frequencies, abs(h2f))
+            axs[1].set_xlim(settings['initial_frequency_mm']-50,
+                            settings['final_frequency_mm']+50)
+            axs[1].axvline(settings['initial_frequency_mm'])
+            axs[1].axvline(settings['final_frequency_mm'])
+            axs[1].set_yscale('log')
+            axs[1].set_ylim([1e-5, 1e-1])
+            plt.show()
+            
         m,_  = optimized_match( h1, h2, 
                                 psd=psd, 
                                 low_frequency_cutoff=settings['initial_frequency_mm'], 
@@ -185,16 +203,15 @@ def taper_waveform(t, h, t1=-1, t2=-1, walpha_rescale=1):
 
 def condition_td_waveform(h, settings):
     """
-    Condition the waveforms before computing the mismatch
+    Condition the waveforms before computing the mismatch.
+    h is already a TimeSeries
     """
     # taper the waveform
     if settings['taper']:
         hlen = len(h)
         t = np.linspace(0, hlen, num=hlen)
-        h = taper_waveform(t, h, t1=0.025*hlen, t2=-0.025*hlen, walpha_rescale=0.2)
-    # make this a TimeSeries
-    h = TimeSeries(h, settings['dt'])
-    # resize the waveform
+        h = taper_waveform(t, h, t1=0.05*hlen, t2=0, walpha_rescale=10)
+    # resize
     h.resize(settings['tlen'])
     return h
 
