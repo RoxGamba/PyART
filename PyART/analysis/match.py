@@ -24,7 +24,8 @@ class Matcher(object):
                  WaveForm1,
                  WaveForm2,
                  modes     = [(2,2)],
-                 settings  = None
+                 settings  = None,
+                 pre_align = False,
                  ) -> None:
         
         self.modes    = modes
@@ -45,6 +46,11 @@ class Matcher(object):
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
+        
+        # align to improve subsequent tapering (applied before matching computation)
+        if pre_align: 
+            w1f, wf2 = self.pre_alignmet(wf1, wf2)
+        
         # Compute tlen
         self.settings['tlen'] = self._find_tlen(wf1, wf2)
         # compute and stor the mismatch
@@ -62,7 +68,8 @@ class Matcher(object):
         wf        = lambda:0 
         wf.domain = WaveForm.domain
         wf.f      = None # FIXME assume TD waveform at the moment
-        
+        wf.hlm    = WaveForm.hlm 
+
         # Get updated time and hp/hc-TimeSeries
         wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom) 
         return wf
@@ -83,6 +90,17 @@ class Matcher(object):
             hp = ut.spline(u, hp, new_u, kind=kind) 
             hc = ut.spline(u, hc, new_u, kind=kind) 
         return TimeSeries(hp, dT), TimeSeries(hc, dT), new_u
+    
+    def pre_alignment(wf1, wf2):
+        """
+        Align waveforms (TimeSeries) before feeding 
+        them to the conditioning/matching functions. 
+        This is needed to improve tapering-consistency
+        """
+        if not self.settings['taper']:
+            warnings.warn('Pre-alignment is not needed if no tapering is applied!')
+        # and now? 
+        return wf1, wf2
 
     def _find_tlen(self, wf1, wf2, resize_factor=16):
         """

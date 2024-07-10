@@ -22,7 +22,8 @@ class Waveform_SXS(Waveform):
                     cut_N    = None,
                     cut_U    = None,
                     ellmax   = 8,
-                    download = False
+                    download = False,
+                    load_m0  = False
                 ):
         super().__init__()
         self.ID            = ID
@@ -70,7 +71,7 @@ class Waveform_SXS(Waveform):
             raise RuntimeError(f'Invalid input for level: {self.level}')
         
         self.load_metadata()
-        self.load_hlm()
+        self.load_hlm(load_m0=load_m0)
         pass
     
     def check_cut_consistency(self):
@@ -244,7 +245,7 @@ class Waveform_SXS(Waveform):
         chi2_perp = np.linalg.norm(chi2_ref - chi2_L*L_hat_ref)
         return chi1_L, chi1_perp, chi2_L, chi2_perp
 
-    def load_hlm(self, ellmax=None):
+    def load_hlm(self, ellmax=None, load_m0=False):
         if ellmax==None: ellmax=self.ellmax
         order   = self.order
         
@@ -252,7 +253,8 @@ class Waveform_SXS(Waveform):
             raise RuntimeError('Load metadata before loading hlm!')
 
         from itertools import product
-        modes = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if m!=0 and l >= np.abs(m)]
+
+        modes = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if (m!=0 or load_m0) and l >= np.abs(m)]
        
         tmp_u = self.nr[order]['Y_l2_m2.dat'][:, 0]
         
