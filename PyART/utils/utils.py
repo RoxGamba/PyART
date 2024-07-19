@@ -122,9 +122,33 @@ def nextpow2(x):
 
 def taper(t, h, M, alpha, tau):
     " Taper a waveform using an hyperbolic tangent "
+    # TODO: not used in Matcher. Should we get rid of this?
+    raise RuntimeError('Deprecated?')
     tm = t/(M*Msuns)
     window = 0.5*(1.+np.tanh(tm*alpha-tau))
     return (window*h)
+
+def safe_sigmoid(x, alpha, clip=None):
+    """
+    Sigmoid function with clips on the exponent
+    """
+    if clip is None:
+        exponent = -alpha*x
+    elif isinstance(clip, (int,float)):
+        exponent = np.clip(-alpha*x, -clip, clip)
+    else:
+        raise ValueError(f'Invalid clip value: {clip}')
+    return 1/(1 + np.exp(exponent))
+
+def taper_waveform(t, h, t1=-1, t2=-1, alpha=1, clip_val=50):
+    """
+    Waveform tapering in Matcher-class.
+    The clip-value is applied to the sigmoid-exponent
+    """
+    out = 1.0*h
+    if t1>0: out *= safe_sigmoid(    t    - t1, alpha=alpha, clip=clip_val)
+    if t2>0: out *= safe_sigmoid(t[-1]-t2 - t , alpha=alpha, clip=clip_val)
+    return out
 
 def windowing(h, alpha=0.1):
     """ 
@@ -194,6 +218,9 @@ def delta_a_b(a, xa, b, xb, N=500):
     return x, delta_ab, a_n, b_n
 
 def vec_differences(x1,y1,x2,y2,a,b,dx,diff_kind='abs',fabs=False,interp_kind='cubic'):
+    """
+    Compute differences between arrays with different signs
+    """
     xs  = np.linspace(a,b,num=int((b-a)/dx))
     y1s = spline(x1,y1,xs,kind=interp_kind)
     y2s = spline(x2,y2,xs,kind=interp_kind)
@@ -218,9 +245,9 @@ def spline(x, y, xs, kind='cubic'):
     return f(xs)
 
 def spline_diff(t,y,k=3,n=1):
-    '''
+    """
     Wrapper for InterpolatedUnivariateSpline derivative function
-    '''
+    """
 
     #
     from numpy import sum
@@ -234,9 +261,9 @@ def spline_diff(t,y,k=3,n=1):
 
 #
 def spline_antidiff(t,y,k=3,n=1):
-    '''
+    """
     Wrapper for InterpolatedUnivariateSpline antiderivative function
-    '''
+    """
 
     #
     from scipy.interpolate import InterpolatedUnivariateSpline as spline
@@ -248,6 +275,10 @@ def spline_antidiff(t,y,k=3,n=1):
     return ans
 
 def upoly_fits(r0,y0,nmin=1,nmax=5,n_extract=None, r_cutoff_low=None, r_cutoff_high=None, direction='in'):
+    """
+    Fit quantities using u=1/r polynomials to extract
+    to infinity. Used, e.g., for scattering angles
+    """
     if n_extract     is None: n_extract     = nmax
     if r_cutoff_low  is None: r_cutoff_low  = min(r0)
     if r_cutoff_high is None: r_cutoff_high = max(r0)
@@ -287,12 +318,11 @@ def upoly_fits(r0,y0,nmin=1,nmax=5,n_extract=None, r_cutoff_low=None, r_cutoff_h
     return out
 
 def vprint(*args, verbose=True):
-    if verbose:
-        print(*args)
-
+    if verbose: print(*args)
 
 ## Waveform stuff, to be removed
 def interpolate_hlm(u, hlm, u_new, kind='cubic'):
+    raise RuntimeError('Deprecated!')
     phi  = -np.unwrap(np.arctan(hlm.imag/hlm.real)*2)/2
     re_i = spline(u, hlm.real,    u_new, kind=kind)
     im_i = spline(u, hlm.imag,    u_new, kind=kind)
@@ -509,13 +539,4 @@ def retarded_time(t, r, M=1):
     R = r * (1 + M/(2*r))**2
     rstar = R + 2*M*np.log(R/(2*M) - 1)
     return t - rstar
-
-def safe_sigmoid(x, walpha, clip=None):
-    if clip is None:
-        exponent = -walpha*x
-    elif isinstance(clip, (int,float)):
-        exponent = np.clip(-walpha*x, -clip, clip)
-    else:
-        raise ValueError(f'Invalid clip value: {clip}')
-    return 1/(1 + np.exp(exponent))
 

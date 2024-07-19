@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from ..simulations import Simulations
+from ..simulations import Simulations #TODO: remove dependence from this class
 from ..waveform    import Waveform, WaveIntegrated
 
 from ..analysis.scattering_angle import ScatteringAngle
-    
+
 ################################
 # Class for the ICC catalog
 ################################

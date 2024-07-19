@@ -1,17 +1,20 @@
-# Classed to handle waveforms
-import matplotlib.pyplot as plt
+"""
+Classes to handle waveforms
+"""
+
 # standard imports
 import numpy as np;
 from scipy.signal import find_peaks
 from scipy import integrate
+import matplotlib.pyplot as plt
+import warnings 
 
 # other imports
 from .utils import utils         as ut
 from .utils import wf_utils      as wf_ut
 from .utils import load_nr_utils as nr_ut
-from .catalogs.integrate_multipole import Multipole
+from .analysis.integrate_multipole import Multipole
 
-import warnings 
 
 class Waveform(object):
     """
@@ -63,11 +66,6 @@ class Waveform(object):
     def kind(self):
         return self._kind
     
-    # methods
-    def extract_hlm(self, ell, emm):
-        k = int(ell*(ell-1)/2 + emm-2)
-        return self.hlm[str(k)][0], self.hlm[str(k)][1]
-
     def find_max(
                 self, 
                 mode   = (2,2), 
@@ -129,12 +127,11 @@ class Waveform(object):
         new_u = np.arange(self.u[0], self.u[-1], dT)
         
         for k in self.hlm.keys():
-            hlm_i[k] = {"A"   : np.interp(new_u, self.u, self.hlm[k]["A"]),
-                        "p"   : np.interp(new_u, self.u, self.hlm[k]["p"]),
-                        "real": np.interp(new_u, self.u, self.hlm[k]["real"]),
-                        "imag": np.interp(new_u, self.u, self.hlm[k]["imag"]),
-                        'h'   : np.interp(new_u, self.u, self.hlm[k]['h']), 
-                        }
+            h  = self.hlm[k]['h']
+            iA = np.interp(new_u, self.u, np.abs(h))
+            ip = np.interp(new_u, self.u, -np.unwrap(np.angle(h)))
+            ih = iA*np.exp(-1j*ip)
+            hlm_i[k] = {"A": iA, "p": ip, "h":ih, "real": ih.real, "imag": ih.imag}
         
         return new_u, hlm_i
     
@@ -285,7 +282,7 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
         kks = ['E', 'J', 'Jz', 'Jy', 'Jx', 'P', 'Pz', 'Py', 'Px']
         for kk in kks:
             dotk = 'dot' + kk
-            this_mode    = integrate.cumtrapz(dictdyn[dotk][(l,m)],t,initial=0)
+            this_mode    = integrate.cumulative_trapezoid(dictdyn[dotk][(l,m)],t,initial=0)
             dictdyn[kk][(l,m)]      = this_mode
             dictdyn[kk]['total']   += this_mode
             dictdyn[dotk]['total'] += dictdyn[dotk][(l,m)]

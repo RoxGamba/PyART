@@ -87,8 +87,8 @@ class Multipole:
         if window[0]>=0 and window[1]<=0:
             w_t1   = window[0]
             w_t2   = t[-1] + window[1]
-            sig1    = safe_sigmoid(t-w_t1, walpha=walpha, clip=clip_val)
-            sig2    = safe_sigmoid(w_t2-t, walpha=walpha, clip=clip_val)
+            sig1    = safe_sigmoid(t-w_t1, alpha=walpha, clip=clip_val)
+            sig2    = safe_sigmoid(w_t2-t, alpha=walpha, clip=clip_val)
             signal *= sig1
             signal *= sig2
         elif window[1]>window[0]:

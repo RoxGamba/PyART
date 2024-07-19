@@ -60,7 +60,6 @@ def compute_hphc(hlm, phi=0, i=0, modes=[(2,2)]):
         plm = hlm[k]['p']
         Hp  = Alm*np.exp(-1j*plm)
         Hn  = (-1)**ell*Alm*np.exp( 1j*plm)
-
         Ylmp = ut.spinsphericalharm(-2, ell, emm, np.pi/2-phi, i)
         Ylmn = ut.spinsphericalharm(-2, ell,-emm, np.pi/2-phi, i)
         h   += Ylmp*Hp + Ylmn*Hn
