@@ -30,7 +30,7 @@ class Waveform_SXS(Waveform):
         self.sxs_data_path = os.path.join(path,'SXS_BBH_'+ID)
         self.order         = order
         self.level         = level
-        self.cut_N         = cut_N 
+        self.cut_N         = cut_N
         self.cut_U         = cut_U
         self.ellmax        = ellmax
         self._kind         = 'SXS'
@@ -38,7 +38,6 @@ class Waveform_SXS(Waveform):
         self.domain        = 'Time'
 
         self.check_cut_consistency()
-
         if os.path.exists(self.sxs_data_path) == False:
             if download:
                 print("The path ", self.sxs_data_path, " does not exist.")
@@ -287,5 +286,23 @@ class Waveform_SXS(Waveform):
         self._hlm = dict_hlm
         all_keys = self._hlm.keys()
         pass
+
+    def compute_psi4_from_hlm(self):
+        """
+        Compute the psi4lm by taking two time derivatives
+        of the hlm modes
+        """
+        dict_psi4lm = {}
+        t = self.u
+        for ky in self.hlm.keys():
+            h = self.hlm[ky]['h']
+            dh      = np.zeros_like(h)
+            ddh     = np.zeros_like(h)
+            dh[1:]  = np.diff(h)/np.diff(t)
+            ddh[1:] = np.diff(dh)/np.diff(t)
+            dict_psi4lm[ky] = {'A': abs(ddh), 'p': -np.unwrap(np.angle(ddh)),
+                               'real': ddh.real, 'imag': ddh.imag,
+                               'h': ddh}
+        self._psi4lm = dict_psi4lm
 
 

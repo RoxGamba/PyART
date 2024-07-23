@@ -16,12 +16,14 @@ class Waveform_GRA(Waveform):
             path,
             cut_N  = None,
             cut_U  = None,
+            modes = [(2,2)]
         ):
 
         super().__init__()
         self.path  = path
         self.cut_N = cut_N
         self.cut_U = cut_U
+        self.modes = modes
         pass
 
     def load_metadata(self):
@@ -86,4 +88,56 @@ class Waveform_GRA(Waveform):
             self.cut_N = 0
         pass
 
-    
+    def get_indices_dict(self):
+        """
+        Get the indices of the various cols in the data
+        """
+        # get col indices up to l=10
+        indices_dict = {}
+        col_indices = {}
+        c = 0
+        cstart = 2
+        for l in range(2, 11):
+            for m in range(-l, l+1):
+                col_indices[(l,m)] = (cstart+c, cstart+c+1)
+                c += 2
+        # now store the ones that we need
+        for mm in self.modes:
+            re_idx = col_indices[mm][0]
+            im_idx = col_indices[mm][1]
+            indices_dict[mm] = {'t':1, 're':re_idx, 'im':im_idx} 
+        
+        return indices_dict 
+
+    def load_psi4lm(self, path=None, fname=None):
+        """
+        Load the psi4lm modes. For now, assume that the data is in the format
+        of Athena's output.
+        """
+        if path is None: path = self.path
+        psi4lm_files = glob.glob(path + '/*.txt')
+        if len(psi4lm_files) == 0:
+            raise FileNotFoundError('No files found in the given path: {}'.format(path))
+        
+        fullname = os.path.join(path,fname)
+        indices_dict = self.get_indices_dict()
+        X = np.loadtxt(fullname)
+
+        # load and store the time 
+        # todo: use a different time array for psi4?
+        t = X[:,indices_dict[(2,2)]['t']]
+        self._t = t
+        self._u = t
+
+        dict_psi4lm = {}
+        for mm in self.modes:
+            re  = X[:,indices_dict[mm]['re']]
+            im  = X[:,indices_dict[mm]['im']]
+            Amp = np.sqrt(re**2 + im**2)
+            phi = np.arctan2(im, re)
+            dict_psi4lm[mm] = {'real': re, 'imag': im,
+                                'A'  : Amp, 'p'   : phi
+                                }
+        self._psi4lm = dict_psi4lm
+        pass
+
