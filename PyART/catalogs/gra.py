@@ -1,4 +1,4 @@
-import numpy as np; import os
+import numpy as np; import os; import h5py
 from ..waveform import  Waveform
 import glob as glob
 
@@ -14,25 +14,85 @@ class Waveform_GRA(Waveform):
     def __init__(
             self,
             path,
+            q      = 1, # to be removed once metadata is loaded
+            ellmax = 8,
             cut_N  = None,
             cut_U  = None,
             modes = [(2,2)]
         ):
 
         super().__init__()
-        self.path  = path
-        self.cut_N = cut_N
-        self.cut_U = cut_U
-        self.modes = modes
+        self.path   = path
+        self.cut_N  = cut_N
+        self.cut_U  = cut_U
+        self.modes  = modes
+        self.ellmax = ellmax
+
+        self.load_metadata(q)
+        self.load_hlm()
         pass
 
-    def load_metadata(self):
+    def load_metadata(self, q):
         """
         Load the metadata
         """
+        self.metadata = {
+            'q' : q,
+            'nu': q/(1+q)**2
+        }
         pass
 
-    def load_hlm(self):
+    def load_hlm(self, extrap='ext', ellmax=None, load_m0=False, r_ext=None):
+        """
+        Load the data from the h5 file
+        """
+        if ellmax==None: ellmax=self.ellmax
+        if r_ext==None: r_ext='100.00'
+
+        if extrap == 'ext':
+            h5_file = os.path.join(self.path, 'rh_Asymptotic_GeometricUnits.h5')
+        elif extrap == 'CCE':
+            h5_file = os.path.join(self.path, 'rh_CCE_GeometricUnits.h5')
+        elif extrap == 'finite':
+            h5_file = os.path.join(self.path, 'rh_FiniteRadii_GeometricUnits.h5')
+        else:
+            raise ValueError('extrap should be either "ext", "CCE" or "finite"')
+        
+        if not os.path.isfile(h5_file):
+            raise FileNotFoundError('No file found in the given path: {}'.format(self.path))
+        
+        nr    = h5py.File(h5_file, 'r')
+        tmp_u = nr[r_ext]['Y_l2_m2.dat'][:,0]
+
+        self.check_cut_consistency()
+        if self.cut_N is None: self.cut_N = np.argwhere(tmp_u>=self.cut_U)[0][0] 
+        if self.cut_U is None: self.cut_U = tmp_u[self.cut_N]
+
+        self._u  = tmp_u[self.cut_N:]
+        self._t  = self._u
+
+        from itertools import product
+        modes = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if (m!=0 or load_m0) and l >= np.abs(m)]
+
+        dict_hlm = {}
+        for mode in modes:
+            l    = mode[0]; m = mode[1]
+            mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
+            hlm  = nr[r_ext][mode]
+            h    = (hlm[:, 1] + 1j * hlm[:, 2])/self.metadata['nu']
+            # amp and phase
+            Alm = abs(h)[self.cut_N:]
+            plm = -np.unwrap(np.angle(h))[self.cut_N:]
+            # save in dictionary
+            key = (l, m)
+            dict_hlm[key] =  {'real': Alm*np.cos(plm), 'imag': Alm*np.sin(plm),
+                              'A'   : Alm, 'p' : plm, 
+                              'h'   : h[self.cut_N:]
+                              }
+        self._hlm = dict_hlm
+        pass
+
+    def load_hlm_old(self):
         """
         Load the data, assume the structure to be:
         # 1:tortoise_time 2:code_time 3:real 4:imag 5:phi 6:omega(=dphi/dt)[geom] 7:|amplitude| 8:freq[Hz]
@@ -71,12 +131,6 @@ class Waveform_GRA(Waveform):
                             }
 
         self._hlm = dict_hlm
-        pass
-
-    def dump_h5(self):
-        """
-        Dump the data to an hdf5 file
-        """
         pass
 
     def check_cut_consistency(self):
