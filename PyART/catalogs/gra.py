@@ -16,6 +16,7 @@ class Waveform_GRA(Waveform):
             path,
             q      = 1, # to be removed once metadata is loaded
             ellmax = 8,
+            ext    = 'ext',
             cut_N  = None,
             cut_U  = None,
             modes = [(2,2)]
@@ -27,6 +28,7 @@ class Waveform_GRA(Waveform):
         self.cut_U  = cut_U
         self.modes  = modes
         self.ellmax = ellmax
+        self.extrap = ext
 
         self.load_metadata(q)
         self.load_hlm()
