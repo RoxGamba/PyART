@@ -29,7 +29,7 @@ class Waveform_GRA(Waveform):
         self.modes  = modes
         self.ellmax = ellmax
         self.extrap = ext
-
+        self.domain = 'Time'
         self.load_metadata(q)
         self.load_hlm()
         pass
@@ -163,7 +163,7 @@ class Waveform_GRA(Waveform):
             im_idx = col_indices[mm][1]
             indices_dict[mm] = {'t':1, 're':re_idx, 'im':im_idx} 
         
-        return indices_dict 
+        return indices_dict
 
     def load_psi4lm(self, path=None, fname=None):
         """

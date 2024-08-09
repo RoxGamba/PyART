@@ -49,7 +49,7 @@ class Matcher(object):
         
         # align to improve subsequent tapering (applied before matching computation)
         if pre_align: 
-            w1f, wf2 = self.pre_alignmet(wf1, wf2)
+            wf1, wf2 = self.pre_alignmet(wf1, wf2)
         
         # Compute tlen
         self.settings['tlen'] = self._find_tlen(wf1, wf2)
@@ -69,7 +69,8 @@ class Matcher(object):
         wf.domain = WaveForm.domain
         wf.f      = None # FIXME assume TD waveform at the moment
         wf.hlm    = WaveForm.hlm 
-
+        wf.compute_hphc = WaveForm.compute_hphc
+        wf.t      = WaveForm.u # still store the original array
         # Get updated time and hp/hc-TimeSeries
         wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom) 
         return wf
@@ -125,6 +126,7 @@ class Matcher(object):
             'initial_frequency_mm' : 20.,
             'final_frequency_mm'   : 2048.,
             'psd'                  : 'aLIGOZeroDetHighPower',
+            'dt'                   : 1./4096,
             'M'                    : 100.,
             'iota'                 : 0.,
             'coa_phase'            : np.linspace(0,2*np.pi,4),
@@ -133,6 +135,8 @@ class Matcher(object):
             'taper_start'          : 0.05, # % of the waveform to taper at the beginning
             'taper_end'            : 0.00, # % of the waveform to taper at the end
             'taper_alpha'          : 0.01,  # sigmoid-parameter used in tapering
+            'debug'                : False,
+            'geom'                 : True
         }
     
     def _get_psd(self, flen, df, fmin):
@@ -165,7 +169,7 @@ class Matcher(object):
         flen = len(h1)//2 + 1
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
         
-        if False:
+        if settings['debug']:
             h1f = h1.to_frequencyseries()
             h2f = h2.to_frequencyseries()
             fig, axs = plt.subplots(2,1)
@@ -201,17 +205,18 @@ class Matcher(object):
 
         iota = settings['iota']
         for coa_phase in settings['coa_phase']:
-            sp,sx = wf1.compute_hphc(iota, coa_phase)
-            sp    = condition_td_waveform(sp, settings)
-            sx    = condition_td_waveform(sx, settings)
-            spf   = sp.to_frequencyseries() 
-            sxf   = sx.to_frequencyseries()
-            psd   = self._get_psd(len(spf), spf.delta_f, settings['initial_frequency_mm'])
+            sp,sx     = wf1.compute_hphc(iota, coa_phase)
+            sp, sx, _ = self._mass_rescaled_TimeSeries(wf1.t, sp, sx, isgeom=settings['geom']) 
+            sp        = condition_td_waveform(sp, settings)
+            sx        = condition_td_waveform(sx, settings)
+            spf       = sp.to_frequencyseries() 
+            sxf       = sx.to_frequencyseries()
+            psd       = self._get_psd(len(spf), spf.delta_f, settings['initial_frequency_mm'])
 
             for k in settings['eff_pols']:
                 s = np.cos(k)*spf + np.sin(k)*sxf
 
-                mm, _ = higher_modes_match_k_phic(
+                mm  = self.higher_modes_match_k_phic(
                     s, wf2, 
                     iota,
                     psd,
@@ -223,6 +228,46 @@ class Matcher(object):
             
         return mm
     
+    def higher_modes_match_k_phic(  
+                                self,  
+                                s, wf, 
+                                inc, psd, modes,
+                                geom=True, 
+                                #func=sky_and_time_maxed_overlap_2,
+                                dT=1./4096, fmin_mm=20,fmax=2048
+                            ):
+
+        def to_minimize_dphi(x):
+            hp, hc   = wf.compute_hphc(x, inc, modes=modes)
+            hp, hc, _= self._mass_rescaled_TimeSeries(wf.t, hp, hc, isgeom=geom)
+            settings = {'taper':False, 'dt':dT}
+            hps      = condition_td_waveform(hp, self.settings)
+            hxs      = condition_td_waveform(hc, self.settings)
+            # To FD
+            hpf = hps.to_frequencyseries()
+            hcf = hxs.to_frequencyseries()
+            return 1.-sky_and_time_maxed_overlap_2(s, hpf, hcf, psd,fmin_mm,fmax)
+
+        res_ms = minimize_scalar(
+                    to_minimize_dphi,
+                    method="bounded",
+                    bounds=(0, 2.*np.pi),
+                    options={'xatol':1e-15}
+                    )
+        res = to_minimize_dphi(res_ms.x)
+        #print('minimize_scalar:', res)
+        if  res > 1e-2:
+            # try also with (more expensive) dual annealing
+            # and choose the minimum
+            _, res_da = dual_annealing(
+                    to_minimize_dphi,
+                    [(0., 2.*np.pi)],
+                    maxfun=100
+                )
+            res = min(res, res_da)
+
+        return res
+        
 ### other functions, not just code related to the class
 def condition_td_waveform(h, settings):
     """
@@ -344,39 +389,3 @@ def time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, max_pol=True):
     if (o > 1.):
         o = 1.
     return o
-
-def higher_modes_match_k_phic(  s, wf, 
-                                inc, psd, modes, 
-                                func=sky_and_time_maxed_overlap_2,
-                                dT=1./4096, fmin_mm=20,fmax=2048
-                            ):
-
-    def to_minimize_dphi(x):
-        hp, hc   = wf.compute_hphc(x, inc, modes=modes)
-        settings = {'taper':True, 'dt':dT}
-        hps      = condition_td_waveform(hp, settings)
-        hxs      = condition_td_waveform(hc, settings)
-        # To FD
-        hpf = hps.to_frequencyseries()
-        hcf = hxs.to_frequencyseries()       
-        return 1.-func(s, hpf, hcf, psd,fmin_mm,fmax)
-
-    res_ms = minimize_scalar(
-                to_minimize_dphi,
-                method="bounded",
-                bounds=(0, 2.*np.pi),
-                options={'xatol':1e-15}
-                )
-    res = to_minimize_dphi(res_ms.x)
-    print('minimize_scalar:', res)
-    if  res > 1e-2:
-        # try also with (more expensive) dual annealing
-        # and choose the minimum
-        _, res_da = dual_annealing(
-                 to_minimize_dphi,
-                 [(0., 2.*np.pi)],
-                 maxfun=100
-             )
-        res = min(res, res_da)
-
-    return res

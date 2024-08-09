@@ -182,8 +182,8 @@ class Waveform(object):
         
         if pad:
             srate    = 1./dt
-            seglen   = ut.nextpow2(self.u)
-            dN       = (seglen - len(self.u)*srate)/srate
+            seglen   = ut.nextpow2(self.u[-1])
+            dN       = int((seglen - len(self.u)*srate)/srate)
             self._u  = np.arange(0., seglen, dt)
             self._t  = np.arange(0., seglen, dt)
             self._hp = ut.zero_pad_before(self.hp, dN, return_column=False)
