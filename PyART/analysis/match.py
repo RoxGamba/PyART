@@ -23,15 +23,14 @@ class Matcher(object):
     def __init__(self,
                  WaveForm1,
                  WaveForm2,
-                 modes     = [(2,2)],
                  settings  = None,
                  pre_align = False,
                  ) -> None:
         
-        self.modes    = modes
         self.settings = self.__default_parameters__()
         self.settings.update(settings)
-        
+        self.modes    = settings['modes']
+
         # choose your function
         if settings['kind'] == 'single-mode':
             mismatch_func = self._compute_mm_single_mode
@@ -52,7 +51,7 @@ class Matcher(object):
             wf1, wf2 = self.pre_alignmet(wf1, wf2)
         
         # Compute tlen
-        self.settings['tlen'] = self._find_tlen(wf1, wf2)
+        self.settings['tlen'] = self._find_tlen(wf1, wf2, resize_factor=settings['resize_factor'])
         # compute and stor the mismatch
         self.mismatch = 1 - self.match_f(wf1,wf2,self.settings)
         return
@@ -71,8 +70,18 @@ class Matcher(object):
         wf.hlm    = WaveForm.hlm 
         wf.compute_hphc = WaveForm.compute_hphc
         wf.t      = WaveForm.u # still store the original array
+
         # Get updated time and hp/hc-TimeSeries
-        wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom) 
+        wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
+
+        # also update the modes in a TimeSeries
+        wf.modes = {}
+        for k in WaveForm.hlm.keys():
+            re = WaveForm.hlm[k]['real']
+            im = WaveForm.hlm[k]['imag']
+            re_lm, im_lm, _ = self._mass_rescaled_TimeSeries(WaveForm.u, re, im, isgeom=isgeom)
+            wf.modes[k] = {'real':re_lm, 'imag':im_lm}
+
         return wf
 
     def _mass_rescaled_TimeSeries(self, u, hp, hc, isgeom=True, kind='cubic'):
@@ -103,7 +112,7 @@ class Matcher(object):
         # and now? 
         return wf1, wf2
 
-    def _find_tlen(self, wf1, wf2, resize_factor=16):
+    def _find_tlen(self, wf1, wf2, resize_factor=2):
         """
         Given two local-waveform objects (see wave2locobj()),
         return the time-length to use in TD-waveform
@@ -129,12 +138,13 @@ class Matcher(object):
             'dt'                   : 1./4096,
             'M'                    : 100.,
             'iota'                 : 0.,
-            'coa_phase'            : np.linspace(0,2*np.pi,4),
-            'eff_pols'             : np.linspace(0,np.pi,5),
+            'coa_phase'            : np.linspace(0,2*np.pi,1),
+            'eff_pols'             : np.linspace(0,np.pi,1),
             'taper'                : True,
             'taper_start'          : 0.05, # % of the waveform to taper at the beginning
             'taper_end'            : 0.00, # % of the waveform to taper at the end
             'taper_alpha'          : 0.01,  # sigmoid-parameter used in tapering
+            'resize_factor'        : 2,
             'debug'                : False,
             'geom'                 : True
         }
@@ -152,17 +162,24 @@ class Matcher(object):
     def _compute_mm_single_mode(self, wf1, wf2, settings):
         """
         Compute the mismatch between two waveforms with only a single mode.
-        Assume that h = h_+ contains the whole information.
+        Use either h+ (modes-or-pol = 'pol') or the mode itself (modes-or-pol = 'modes')
         This is true for non-precessing systems with a single (ell, |m|)
         """
-        h1 = wf1.hp
-        h2 = wf2.hp
+
+        if settings['modes-or-pol'] == 'pol':
+            h1_nc = wf1.hp
+            h2_nc = wf2.hp
+        elif settings['modes-or-pol'] == 'modes':
+            if len(settings['modes']) > 1:
+                raise ValueError('Only one mode is allowed in this function')
+            h1_nc = wf1.modes[settings['modes'][0]]['real']
+            h2_nc = wf2.modes[settings['modes'][0]]['real']
         
         # condition TD waveforms (taper, resize, etc)
         if wf1.domain == 'Time':
-            h1 = condition_td_waveform(h1, settings)
+            h1 = condition_td_waveform(h1_nc, settings)
         if wf2.domain == 'Time':
-            h2 = condition_td_waveform(h2, settings)
+            h2 = condition_td_waveform(h2_nc, settings)
         
         assert len(h1) == len(h2)
         df   = 1.0 / h1.duration
@@ -172,20 +189,22 @@ class Matcher(object):
         if settings['debug']:
             h1f = h1.to_frequencyseries()
             h2f = h2.to_frequencyseries()
-            fig, axs = plt.subplots(2,1)
-            axs[0].plot(wf1.hp)
-            axs[0].plot(wf2.hp)
-            axs[0].plot(h1, label='nr', ls='--')
-            axs[0].plot(h2, label='eob', ls='--')
+            _, axs = plt.subplots(2,1)
+            axs[0].plot(h1_nc.sample_times, h1_nc, c='k')
+            axs[0].plot(h2_nc.sample_times, h2_nc, c='r')
+            axs[0].plot(h1.sample_times, h1, label='wf1', ls='--',c='gray')
+            axs[0].plot(h2.sample_times, h2, label='wf2', ls='--',c='pink')
             axs[0].legend()
-            axs[1].plot(h1f.sample_frequencies, abs(h1f))
-            axs[1].plot(h2f.sample_frequencies, abs(h2f))
+            axs[1].plot(h1f.sample_frequencies, abs(h1f), c='k')
+            axs[1].plot(h2f.sample_frequencies, abs(h2f), c='r')
             axs[1].set_xlim(settings['initial_frequency_mm']-50,
                             settings['final_frequency_mm']+50)
-            axs[1].axvline(settings['initial_frequency_mm'])
-            axs[1].axvline(settings['final_frequency_mm'])
+            axs[1].axvline(settings['initial_frequency_mm'], c='gray', ls='--')
+            axs[1].axvline(settings['final_frequency_mm'],   c='gray', ls='--')
             axs[1].set_yscale('log')
-            axs[1].set_ylim([1e-5, 1e-1])
+            axy = axs[1].twinx()
+            axy.loglog(psd.sample_frequencies, np.sqrt(psd), color='b', label='asd')
+            #axs[1].set_ylim([1e-5, 1e-1])
             plt.show()
             
         m,_  = optimized_match( h1, h2, 
@@ -204,6 +223,7 @@ class Matcher(object):
         """
 
         iota = settings['iota']
+        mms = []
         for coa_phase in settings['coa_phase']:
             sp,sx     = wf1.compute_hphc(iota, coa_phase)
             sp, sx, _ = self._mass_rescaled_TimeSeries(wf1.t, sp, sx, isgeom=settings['geom']) 
@@ -225,28 +245,29 @@ class Matcher(object):
                     fmin_mm=settings['initial_frequency_mm'],
                     fmax=settings['final_frequency_mm']
                 )
-            
-        return mm
+                mms.append(mm)
+                print(mm)
+        return np.average(mm)
     
     def higher_modes_match_k_phic(  
                                 self,  
                                 s, wf, 
                                 inc, psd, modes,
-                                geom=True, 
-                                #func=sky_and_time_maxed_overlap_2,
-                                dT=1./4096, fmin_mm=20,fmax=2048
+                                dT=1./4096,
+                                fmin_mm=20.,
+                                fmax=2048., 
                             ):
 
         def to_minimize_dphi(x):
             hp, hc   = wf.compute_hphc(x, inc, modes=modes)
-            hp, hc, _= self._mass_rescaled_TimeSeries(wf.t, hp, hc, isgeom=geom)
-            settings = {'taper':False, 'dt':dT}
+            hp, hc, _= self._mass_rescaled_TimeSeries(wf.t, hp, hc, isgeom=self.settings['geom'])
             hps      = condition_td_waveform(hp, self.settings)
             hxs      = condition_td_waveform(hc, self.settings)
             # To FD
             hpf = hps.to_frequencyseries()
             hcf = hxs.to_frequencyseries()
-            return 1.-sky_and_time_maxed_overlap_2(s, hpf, hcf, psd,fmin_mm,fmax)
+            return 1.-sky_and_time_maxed_overlap_2(s, hpf, hcf, psd,self.settings['initial_frequency_mm'],
+                                                                    self.settings['final_frequency_mm'])
 
         res_ms = minimize_scalar(
                     to_minimize_dphi,
@@ -259,14 +280,14 @@ class Matcher(object):
         if  res > 1e-2:
             # try also with (more expensive) dual annealing
             # and choose the minimum
-            _, res_da = dual_annealing(
+            _, res_da = dual_annealing_wrap(
                     to_minimize_dphi,
                     [(0., 2.*np.pi)],
                     maxfun=100
                 )
             res = min(res, res_da)
 
-        return res
+        return 1. - res
         
 ### other functions, not just code related to the class
 def condition_td_waveform(h, settings):
@@ -286,7 +307,7 @@ def condition_td_waveform(h, settings):
     h.resize(settings['tlen'])
     return h
 
-def dual_annealing(func,bounds,maxfun=2000):
+def dual_annealing_wrap(func,bounds,maxfun=2000):
     result= dual_annealing(func, bounds, maxfun=maxfun)#, local_search_options={"method": "Nelder-Mead"})
     opt_pars,opt_val=result['x'],result['fun']
     return opt_pars, opt_val
