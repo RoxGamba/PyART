@@ -12,6 +12,7 @@ from ..utils import utils as ut
 from pycbc.filter import sigmasq, matched_filter_core, overlap_cplx, optimized_match
 from pycbc.types.timeseries import TimeSeries
 from pycbc.psd import  aLIGOZeroDetHighPower
+from pycbc.psd import  sensitivity_curve_lisa_semi_analytical
 
 # TODO move units to  some utils
 Msun =  4.925491025543575903411922162094833998e-6 # G/c^3 
@@ -155,7 +156,8 @@ class Matcher(object):
         """
         if self.settings['psd'] == 'aLIGOZeroDetHighPower':
             psd = aLIGOZeroDetHighPower(flen, df, fmin)
-        else:
+        elif self.settings['psd'] == 'LISA':
+            psd = sensitivity_curve_lisa_semi_analytical(flen, df, fmin)
             raise ValueError('psd not recognized')
         return psd
 
@@ -224,8 +226,9 @@ class Matcher(object):
 
         iota = settings['iota']
         mms = []
+
         for coa_phase in settings['coa_phase']:
-            sp,sx     = wf1.compute_hphc(iota, coa_phase)
+            sp,sx     = wf1.compute_hphc(coa_phase, iota, modes=self.modes)
             sp, sx, _ = self._mass_rescaled_TimeSeries(wf1.t, sp, sx, isgeom=settings['geom']) 
             sp        = condition_td_waveform(sp, settings)
             sx        = condition_td_waveform(sx, settings)
@@ -246,7 +249,6 @@ class Matcher(object):
                     fmax=settings['final_frequency_mm']
                 )
                 mms.append(mm)
-                print(mm)
         return np.average(mm)
     
     def higher_modes_match_k_phic(  
