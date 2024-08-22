@@ -158,6 +158,7 @@ class Matcher(object):
             psd = aLIGOZeroDetHighPower(flen, df, fmin)
         elif self.settings['psd'] == 'LISA':
             psd = sensitivity_curve_lisa_semi_analytical(flen, df, fmin)
+        else:
             raise ValueError('psd not recognized')
         return psd
 
@@ -207,6 +208,7 @@ class Matcher(object):
             axy = axs[1].twinx()
             axy.loglog(psd.sample_frequencies, np.sqrt(psd), color='b', label='asd')
             #axs[1].set_ylim([1e-5, 1e-1])
+            axy.set_xlim(settings['initial_frequency_mm']*0.95, settings['final_frequency_mm']*1.05)
             plt.show()
             
         m,_  = optimized_match( h1, h2, 
