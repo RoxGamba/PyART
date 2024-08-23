@@ -17,6 +17,7 @@ class Waveform_GRA(Waveform):
             q      = 1, # to be removed once metadata is loaded
             ellmax = 8,
             ext    = 'ext',
+            r_ext  = None,
             cut_N  = None,
             cut_U  = None,
             modes = [(2,2)]
@@ -30,8 +31,9 @@ class Waveform_GRA(Waveform):
         self.ellmax = ellmax
         self.extrap = ext
         self.domain = 'Time'
+        self.r_ext  = r_ext
         self.load_metadata(q)
-        self.load_hlm()
+        self.load_hlm(extrap=ext, ellmax=ellmax, r_ext=r_ext)
         pass
 
     def load_metadata(self, q):
@@ -61,7 +63,7 @@ class Waveform_GRA(Waveform):
             raise ValueError('extrap should be either "ext", "CCE" or "finite"')
         
         if not os.path.isfile(h5_file):
-            raise FileNotFoundError('No file found in the given path: {}'.format(self.path))
+            raise FileNotFoundError('No file found in the given path: {}'.format(h5_file))
         
         nr    = h5py.File(h5_file, 'r')
         tmp_u = nr[r_ext]['Y_l2_m2.dat'][:,0]
