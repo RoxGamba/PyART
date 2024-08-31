@@ -7,15 +7,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize_scalar, dual_annealing
 from ..utils import utils as ut
+from ..utils import Msun
 
 #PyCBC imports
-from pycbc.filter import sigmasq, matched_filter_core, overlap_cplx, optimized_match
-from pycbc.types.timeseries import TimeSeries
-from pycbc.psd import  aLIGOZeroDetHighPower
-from pycbc.psd import  sensitivity_curve_lisa_semi_analytical
-
-# TODO move units to  some utils
-Msun =  4.925491025543575903411922162094833998e-6 # G/c^3 
+from pycbc.filter import sigmasq, matched_filter_core, overlap_cplx, optimized_match, matched_filter
+from pycbc.types.timeseries import TimeSeries, FrequencySeries
+from pycbc.psd import aLIGOZeroDetHighPower, sensitivity_curve_lisa_semi_analytical
+from pycbc.psd.read import from_txt
 
 class Matcher(object):
     """
@@ -29,20 +27,18 @@ class Matcher(object):
                  ) -> None:
         
         self.settings = self.__default_parameters__()
-        self.settings.update(settings)
-        self.modes    = settings['modes']
+        if settings:
+            self.settings.update(settings)
+        self.modes = settings.get('modes', [])
 
-        # choose your function
+        # Choose the appropriate mismatch function
         if settings['kind'] == 'single-mode':
-            mismatch_func = self._compute_mm_single_mode
-        elif settings['kind'] == 'HM':
-            mismatch_func = self._compute_mm_hms
-        elif settings['kind'] == 'precessing':
-            mismatch_func = self._compute_mm_precessing
+            self.match_f = self._compute_mm_single_mode
+        elif settings['kind'].lower() == 'hm' or settings['kind'].lower() == 'precessing':
+            self.match_f = self._compute_mm_skymax
         else:
-            raise ValueError('kind not recognized')
-        self.match_f = mismatch_func
-        
+            raise ValueError(f"Kind '{settings['kind']}' not recognized")
+    
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
@@ -51,11 +47,10 @@ class Matcher(object):
         if pre_align: 
             wf1, wf2 = self.pre_alignmet(wf1, wf2)
         
-        # Compute tlen
+        # Determine time length for resizing
         self.settings['tlen'] = self._find_tlen(wf1, wf2, resize_factor=settings['resize_factor'])
-        # compute and stor the mismatch
+        # Compute and store the mismatch
         self.mismatch = 1 - self.match_f(wf1,wf2,self.settings)
-        return
     
     def _wave2locobj(self, WaveForm, isgeom=True):
         """
@@ -65,14 +60,15 @@ class Matcher(object):
         """
         if not hasattr(WaveForm, 'hp'):
             raise RuntimeError('hp not found! Compute it before calling Matcher')
-        wf        = lambda:0 
+        
+        wf = lambda: None
         wf.domain = WaveForm.domain
-        wf.f      = None # FIXME assume TD waveform at the moment
-        wf.hlm    = WaveForm.hlm 
+        wf.f = None  # Assume TD waveform at the moment
+        wf.hlm = WaveForm.hlm
         wf.compute_hphc = WaveForm.compute_hphc
-        wf.t      = WaveForm.u # still store the original array
-
-        # Get updated time and hp/hc-TimeSeries
+        wf.t = WaveForm.u
+        
+        # Get updated time and hp/hc-TimeSeries
         wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
 
         # also update the modes in a TimeSeries
@@ -92,7 +88,7 @@ class Matcher(object):
         If the waveform is not in geom-units, the simply
         return the TimeSeries
         """
-        # TODO : test isgeom==False
+        # TODO : test isgeom==False
         dT = self.settings['dt']
         if isgeom:
             M       = self.settings['M'] 
@@ -158,7 +154,12 @@ class Matcher(object):
             psd = aLIGOZeroDetHighPower(flen, df, fmin)
         elif self.settings['psd'] == 'LISA':
             psd = sensitivity_curve_lisa_semi_analytical(flen, df, fmin)
-        else:
+        elif self.settings['psd'] == 'flat':
+            psd = FrequencySeries(np.ones(flen), delta_f=df)
+        elif self.settings['psd'] == 'txt':
+            psd = from_txt(filename=self.settings['asd_file'],
+                           length=flen, delta_f=df, low_freq_cutoff=fmin, is_asd_file=True)
+        else:        
             raise ValueError('psd not recognized')
         return psd
 
@@ -189,28 +190,8 @@ class Matcher(object):
         flen = len(h1)//2 + 1
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
         
-        if settings['debug']:
-            h1f = h1.to_frequencyseries()
-            h2f = h2.to_frequencyseries()
-            _, axs = plt.subplots(2,1)
-            axs[0].plot(h1_nc.sample_times, h1_nc, c='k')
-            axs[0].plot(h2_nc.sample_times, h2_nc, c='r')
-            axs[0].plot(h1.sample_times, h1, label='wf1', ls='--',c='gray')
-            axs[0].plot(h2.sample_times, h2, label='wf2', ls='--',c='pink')
-            axs[0].legend()
-            axs[1].plot(h1f.sample_frequencies, abs(h1f), c='k')
-            axs[1].plot(h2f.sample_frequencies, abs(h2f), c='r')
-            axs[1].set_xlim(settings['initial_frequency_mm']-50,
-                            settings['final_frequency_mm']+50)
-            axs[1].axvline(settings['initial_frequency_mm'], c='gray', ls='--')
-            axs[1].axvline(settings['final_frequency_mm'],   c='gray', ls='--')
-            axs[1].set_yscale('log')
-            axy = axs[1].twinx()
-            axy.loglog(psd.sample_frequencies, np.sqrt(psd), color='b', label='asd')
-            #axs[1].set_ylim([1e-5, 1e-1])
-            axy.set_xlim(settings['initial_frequency_mm']*0.95, settings['final_frequency_mm']*1.05)
-            plt.show()
-            
+        if settings.get('debug', False):
+            self._debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings)            
         m,_  = optimized_match( h1, h2, 
                                 psd=psd, 
                                 low_frequency_cutoff=settings['initial_frequency_mm'], 
@@ -219,7 +200,42 @@ class Matcher(object):
 
         return m
 
-    def _compute_mm_hms(self, wf1, wf2, settings):
+    def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings):
+        """
+        Plot waveforms and PSD for debugging.
+        """
+        plt.figure(figsize=(15, 7))
+
+        plt.subplot(221)
+        plt.title('Real part of waveforms before conditioning')
+        plt.plot(h1_nc.sample_times, h1_nc, label='h1 unconditioned', color='blue', linestyle='dashed')
+        plt.plot(h2_nc.sample_times, h2_nc, label='h2 unconditioned', color='green', linestyle='dashed')
+        plt.legend()
+
+        plt.subplot(222)
+        plt.title('Real part of waveforms after conditioning')
+        plt.plot(h1.sample_times, h1, label='h1 conditioned', color='blue')
+        plt.plot(h2.sample_times, h2, label='h2 conditioned', color='green')
+        plt.legend()
+
+        plt.subplot(223)
+        plt.title('PSD used for match')
+        plt.loglog(psd.sample_frequencies, np.sqrt(psd.data* psd.sample_frequencies), label='PSD', color='black')
+        plt.legend()
+
+        plt.subplot(224)
+        plt.title('Overlap integrand between h1 and h2')
+        freq = np.linspace(settings['initial_frequency_mm'], settings['final_frequency_mm'], len(h1))
+        plt.plot(freq, abs(h1.data * h2.data), color='red')
+        plt.legend()
+
+        plt.tight_layout()
+        if settings.get('save', None):
+            plt.savefig(f'{settings['save']}', dpi=100, bbox_inches='tight')
+        else:
+            plt.show()        
+
+    def _compute_mm_skymax(self, wf1, wf2, settings):
         """
         Compute the match between two waveforms with higher modes.
         Use wf1 as a fixed target, and decompose wf2 in modes to find the
@@ -241,7 +257,7 @@ class Matcher(object):
             for k in settings['eff_pols']:
                 s = np.cos(k)*spf + np.sin(k)*sxf
 
-                mm  = self.higher_modes_match_k_phic(
+                mm  = self.skymax_match(
                     s, wf2, 
                     iota,
                     psd,
@@ -253,14 +269,12 @@ class Matcher(object):
                 mms.append(mm)
         return np.average(mm)
     
-    def higher_modes_match_k_phic(  
-                                self,  
-                                s, wf, 
-                                inc, psd, modes,
-                                dT=1./4096,
-                                fmin_mm=20.,
-                                fmax=2048., 
-                            ):
+    def skymax_match(self,  
+                     s, wf, 
+                     inc, psd, modes,
+                     dT=1./4096,
+                     fmin_mm=20.,
+                     fmax=2048.):
 
         def to_minimize_dphi(x):
             hp, hc   = wf.compute_hphc(x, inc, modes=modes)
@@ -270,8 +284,9 @@ class Matcher(object):
             # To FD
             hpf = hps.to_frequencyseries()
             hcf = hxs.to_frequencyseries()
-            return 1.-sky_and_time_maxed_overlap_2(s, hpf, hcf, psd,self.settings['initial_frequency_mm'],
-                                                                    self.settings['final_frequency_mm'])
+            return 1.-sky_and_time_maxed_overlap(s, hpf, hcf, 
+                                                    psd,self.settings['initial_frequency_mm'],
+                                                    self.settings['final_frequency_mm'], kind=self.settings['kind'])
 
         res_ms = minimize_scalar(
                     to_minimize_dphi,
@@ -316,69 +331,59 @@ def dual_annealing_wrap(func,bounds,maxfun=2000):
     opt_pars,opt_val=result['x'],result['fun']
     return opt_pars, opt_val
 
-
-def sky_and_time_maxed_overlap_1(s, hp, hc, psd, low_freq, high_freq):
+def sky_and_time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, kind='hm'):
     """
-    https://arxiv.org/abs/1603.02444
+    Equation 10 of https://arxiv.org/pdf/2207.01654
     """
-    ss   = sigmasq(s,  psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    hphp = sigmasq(hp, psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    hchc = sigmasq(hc, psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    hp  /= np.sqrt(hphp)
-    hc  /= np.sqrt(hchc)
-
-    rhop, _, nrm     = matched_filter_core(hp,s, psd = psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    rhop *= nrm
-    rhoc, _, nrm     = matched_filter_core(hc,s, psd = psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    rhoc *= nrm
+    signal_norm = s / np.sqrt(sigmasq(s, 
+                                      psd=psd, 
+                                      low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq))
+    hplus_norm = hp / np.sqrt(sigmasq(hp, 
+                                      psd=psd, 
+                                      low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq))
+    hcross_norm = hc / np.sqrt(sigmasq(hc, 
+                                       psd=psd,
+                                       low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq))
+    hphc_corr = np.real(overlap_cplx(hplus_norm, 
+                                        hcross_norm, 
+                                        psd=psd, 
+                                        low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq,
+                                        normalized=False))
+    Iplus = matched_filter(hplus_norm, 
+                            signal_norm, 
+                            psd=psd,
+                            sigmasq=1.,
+                            low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq,)
+    Icross = matched_filter(hcross_norm, 
+                            signal_norm, 
+                            psd=psd,
+                            sigmasq=1.,
+                            low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq,)
     
-    hphccorr       = overlap_cplx(hp, hc, psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)# matched_filter_core(hp,hc)
-    hphccorr       = np.real(hphccorr)
-    Ipc            = hphccorr
+    if kind.lower() == 'hm':
+        from pycbc.filter import compute_max_snr_over_sky_loc_stat_no_phase
+        det_stat = compute_max_snr_over_sky_loc_stat_no_phase(Iplus, 
+                                                                Icross, 
+                                                                hphccorr=hphc_corr,
+                                                                hpnorm=1.,
+                                                                hcnorm=1.,
+                                                                thresh=0.1,
+                                                                analyse_slice=slice(0, len(Iplus.data))
+                                                                )
+    elif kind.lower() == 'precessing':
+        from pycbc.filter import compute_max_snr_over_sky_loc_stat
+        det_stat = compute_max_snr_over_sky_loc_stat(Iplus, 
+                                                     Icross, 
+                                                     hphccorr=hphc_corr,
+                                                     hpnorm=1.,
+                                                     hcnorm=1.,
+                                                     thresh=0.1,
+                                                     analyse_slice=slice(0, len(Iplus.data)))
+    else:
+        raise ValueError('currently not implemented')
 
-    rhop2 = np.abs(rhop.data)**2
-    rhoc2 = np.abs(rhoc.data)**2
-    gamma = rhop.data * np.conjugate(rhoc.data)
-    gamma = np.real(gamma)
-
-    sqrt_part = np.sqrt((rhop2-rhoc2)**2 + 4*(Ipc*rhop2-gamma)*(Ipc*rhoc2-gamma))
-    num       = rhop2 - 2.*Ipc*gamma + rhoc2 + sqrt_part
-    den       = 1. - Ipc**2
-    
-    o = np.sqrt(max(num)/den/2.)/np.sqrt(ss)
-    if (o > 1.):
-         o = 1.
-
-    return o
-
-def sky_and_time_maxed_overlap_2(s, hp, hc, psd, low_freq, high_freq):
-    """
-    https://arxiv.org/pdf/1709.09181
-    """
-    
-    ss   = sigmasq(s,  psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    hphp = sigmasq(hp, psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    hchc = sigmasq(hc, psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    hp  /= np.sqrt(hphp)
-    hc  /= np.sqrt(hchc)
-
-    rhop, _, nrm     = matched_filter_core(hp,s, psd = psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    rhop *= nrm
-    rhoc, _, nrm     = matched_filter_core(hc,s, psd = psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    rhoc *= nrm
-    
-    hphccorr       = overlap_cplx(hp, hc, psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)# matched_filter_core(hp,hc)
-    Ipc            = np.real(hphccorr)
-    
-    re_rhop  = np.real(rhop.data)
-    re_rhoc  = np.real(rhoc.data) 
-    re_rhop2 = re_rhop**2
-    re_rhoc2 = re_rhoc**2
-
-    num   = re_rhop2 - 2.*Ipc*re_rhop*re_rhoc + re_rhoc2
-    den   = 1. - Ipc**2
-    o = np.sqrt(max(num)/den)/np.sqrt(ss)
-
+    i = np.argmax(det_stat.data)
+    o = det_stat[i]
     if (o > 1.):
         o = 1.
 
