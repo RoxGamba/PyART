@@ -5,7 +5,8 @@ from scipy.signal.windows import tukey
 from math import factorial as fact
 from math import ceil
 import matplotlib.pyplot as plt
-
+from astropy.constants import G, c, M_sun, pc
+Msun = G.value * M_sun.value / (c.value**3) # Solar mass
 ## Misc
 
 def rotate3_axis(vector,theta=0., axis = [0,0,1]):
