@@ -11,8 +11,7 @@ from ..utils import utils as ut
 #PyCBC imports
 from pycbc.filter import sigmasq, matched_filter_core, overlap_cplx, optimized_match
 from pycbc.types.timeseries import TimeSeries
-from pycbc.psd import  aLIGOZeroDetHighPower
-from pycbc.psd import  sensitivity_curve_lisa_semi_analytical
+from pycbc.psd import  aLIGOZeroDetHighPower, CosmicExplorerP1600143, sensitivity_curve_lisa_semi_analytical
 
 # TODO move units to  some utils
 Msun =  4.925491025543575903411922162094833998e-6 # G/c^3 
@@ -158,6 +157,8 @@ class Matcher(object):
             psd = aLIGOZeroDetHighPower(flen, df, fmin)
         elif self.settings['psd'] == 'LISA':
             psd = sensitivity_curve_lisa_semi_analytical(flen, df, fmin)
+        elif self.settings['psd'] == 'CE':
+            psd = CosmicExplorerP1600143(flen, df, fmin)
         else:
             raise ValueError('psd not recognized')
         return psd
