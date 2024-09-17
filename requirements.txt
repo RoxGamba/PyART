@@ -2,7 +2,7 @@
 numpy>=1.16.0,!=1.19.0
 scipy>=1.13.0
 rich>=13.7.0
-matplotlib>=3.8.4
+matplotlib>=3.7.3
 pandas>=2.1.4
 
 # GW package dependencies
