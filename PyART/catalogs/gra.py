@@ -46,7 +46,7 @@ class Waveform_GRA(Waveform):
         }
         pass
 
-    def load_hlm(self, extrap=self.extrap, ellmax=self.ellmax, load_m0=False, r_ext=self.r_ext):
+    def load_hlm(self, extrap='ext', ellmax=None, load_m0=False, r_ext=None):
         """
         Load the data from the h5 file
         """
