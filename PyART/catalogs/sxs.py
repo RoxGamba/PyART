@@ -1,7 +1,6 @@
 import numpy as np; import os
 import h5py; import json
 from ..waveform import  Waveform
-from ..utils.wf_utils import compute_hphc
 from .cat_utils import check_metadata
 
 class Waveform_SXS(Waveform):

@@ -14,7 +14,7 @@ class RIT(Waveform):
                  psi_path = None,
                  h_path   = None,
                  mtdt_path= None,
-                 ell_emms = 'all'
+                 ell_emms = 'all',
                  ) -> None:
         
         super().__init__()
@@ -180,12 +180,17 @@ class RIT(Waveform):
         yn = f(x_new)
 
         return yn
+    
+    def download_data(self):
+        
+        pass
 
 class Catalog(object):
     def __init__(self, 
                  basepath    = './',
                  ell_emms    = 'all',
                  ellmax      = 4,
+                 load_data   = False, # do not load wfs, just metadata
                  nonspinning = False, # load only nonspinning
                  integr_opts = None,
                  load_puncts = False,
@@ -213,7 +218,7 @@ class Catalog(object):
         # load all simulations in basepath
         self.load_simulations_in_path(basepath, ell_emms, nonspinning, verbose=verbose)
 
-    def load_simulations_in_path(self, path, ell_emms, 
+    def load_simulations_in_path(self, path, ell_emms,
                                  nonspinning = False,
                                  eccentric   = True,
                                  verbose     = False

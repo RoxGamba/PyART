@@ -66,6 +66,8 @@ class Waveform_GRA(Waveform):
             raise FileNotFoundError('No file found in the given path: {}'.format(h5_file))
         
         nr    = h5py.File(h5_file, 'r')
+        if r_ext not in nr.keys():
+            raise ValueError('r_ext not found in the h5 file. Available values are: {}'.format(nr.keys()))
         tmp_u = nr[r_ext]['Y_l2_m2.dat'][:,0]
 
         self.check_cut_consistency()
