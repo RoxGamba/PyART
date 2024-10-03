@@ -13,9 +13,10 @@ from ..utils    import os_utils as ou
 class Waveform_RIT(Waveform):
 
     def __init__(self,
-                 basepath = '../dat/RIT/',
+                 path     = '../dat/RIT/',
                  ID       = '0001',
                  download = False,
+                 basepath = None, # deprecated
                  psi_path = None, # deprecated
                  h_path   = None, # deprecated
                  mtdt_path= None, # deprecated
@@ -27,7 +28,7 @@ class Waveform_RIT(Waveform):
         
         super().__init__()
 
-        self.t_psi  = None
+        self.t_psi4 = None
         self.t_h    = None
         self.ell_emms = ell_emms
         self.metadata      = None
@@ -36,8 +37,12 @@ class Waveform_RIT(Waveform):
         if isinstance(ID, int):
             ID = f'{ID:04}'
         self.ID = ID
+        
+        if basepath is not None:
+            print("+++ Warning: 'basepath' is deprecated! Use 'path'")
+            path = basepath
 
-        sim_path = os.path.join(basepath, f'RIT_SXS_{ID}')
+        sim_path = os.path.join(path, f'RIT_BBH_{ID}')
         if not os.path.exists(sim_path):
             if download:
                 print(f"The path {sim_path} does not exist.")
@@ -51,7 +56,7 @@ class Waveform_RIT(Waveform):
         # metadata available
         if mtdt_path is not None:
             print('+++ Warning! Specifying mtdt_path in input is deprecated +++')
-            self.mtdt_path = os.path.join(basepath,mtdt_path)
+            self.mtdt_path = os.path.join(path,mtdt_path)
         else:
             self.mtdt_path = ou.find_fnames_with_token(self.sim_path, 'Metadata.txt')[0]
 
@@ -61,11 +66,11 @@ class Waveform_RIT(Waveform):
         # psi4 available
         if psi_path is not None:
             print('+++ Warning! Specifying psi_path in input deprecated +++')
-            self.psi_path  = os.path.join(basepath,psi_path)
-            self.mtdt_psi4 = os.path.join(basepath,psi_path,'Metadata')
+            self.psi_path  = os.path.join(path,psi_path)
+            self.mtdt_psi4 = os.path.join(path,psi_path,'Metadata')
         else:
             self.psi_path  = ou.find_dirs_with_token(self.sim_path, 'ExtrapPsi4')[0]
-            self.mtdt_psi4 = os.path.join(basepath, self.psi_path, 'Metadata')
+            self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
         
         if psi_load:
             self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
@@ -74,7 +79,7 @@ class Waveform_RIT(Waveform):
         # strain available
         if h_path is not None:
             print('+++ Warning! Specifying h_path in input is deprecated +++') 
-            h_path = os.path.join(basepath,h_path)
+            h_path = os.path.join(path,h_path)
         else:
             h_path = ou.find_fnames_with_token(self.sim_path, 'ExtrapStrain')[0]
 
@@ -187,7 +192,7 @@ class Waveform_RIT(Waveform):
             d[(ell,emm)] = {'real':re, 'imag':im, 'A':A, 'p':p, 'h': A*np.exp(-1j*p)}
         
         self._psi4lm = d
-        self.t_psi  = t
+        self.t_psi4 = t
         pass
 
     def load_h(self):
@@ -305,7 +310,7 @@ class Waveform_RIT(Waveform):
 
 class Catalog(object):
     def __init__(self, 
-                 basepath    = './',
+                 path    = './',
                  ell_emms    = 'all',
                  ellmax      = 4,
                  load_data   = False, # do not load wfs, just metadata
@@ -333,8 +338,8 @@ class Catalog(object):
             raise NotImplementedError("Punctures not implemented yet")
         
 
-        # load all simulations in basepath
-        self.load_simulations_in_path(basepath, ell_emms, nonspinning, verbose=verbose)
+        # load all simulations in path
+        self.load_simulations_in_path(path, ell_emms, nonspinning, verbose=verbose)
 
     def load_simulations_in_path(self, path, ell_emms,
                                  nonspinning = False,
@@ -358,8 +363,8 @@ class Catalog(object):
                 mtdt_path = 'Metadata/RIT:eBBH:'+this_id+'-'+this_n+'-ecc_Metadata.txt'
             else:
                 raise NotImplementedError("Non eccentric not implemented yet")
-            wave      =  RIT(h_path=h_path, basepath=path, mtdt_path=mtdt_path, ell_emms=ell_emms)
-            mtdt      = wave.metadata
+            wave  = Waveform_RIT(h_path=h_path, path=path, mtdt_path=mtdt_path, ell_emms=ell_emms)
+            mtdt  = wave.metadata
             chi1z = float(mtdt['initial-bh-chi1z']);  chi2z = float(mtdt['initial-bh-chi2z'])
 
             # checks: nonspinning
@@ -416,7 +421,7 @@ if __name__ == '__main__':
     h_path  = 'Strain/ExtrapStrain_RIT-eBBH-1634-n100.h5'
 
     mtdt_path = None
-    r = RIT(psi_path=psi_path, h_path=h_path, mtdt_path=mtdt_path)
+    r = Waveform_RIT(psi_path=psi_path, h_path=h_path, mtdt_path=mtdt_path)
 
     r.compute_initial_data()
     print(r.dyn['id'])
@@ -428,7 +433,7 @@ if __name__ == '__main__':
 
     # plot psi4
     for k in r.psi4lm.keys():
-        plt.plot(r.t_psi, r.psi4lm[k]['A'], label=k)
+        plt.plot(r.t_psi4, r.psi4lm[k]['A'], label=k)
     plt.legend(ncol=3)
     plt.show()
 

@@ -25,6 +25,8 @@ class Waveform_SXS(Waveform):
                     load_m0  = False
                 ):
         super().__init__()
+        if isinstance(ID, int):
+            ID = f'{ID:04}'
         self.ID            = ID
         self.sxs_data_path = os.path.join(path,'SXS_BBH_'+ID)
         self.order         = order
