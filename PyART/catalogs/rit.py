@@ -7,7 +7,7 @@ import os, json, requests, time
 from bs4 import BeautifulSoup
 
 from ..waveform import Waveform
-from ..utils    import os_utils as os_ut
+from ..utils    import os_utils as ou
 
 # This class is used to load the RIT data and store it in a convenient way
 class Waveform_RIT(Waveform):
@@ -16,9 +16,12 @@ class Waveform_RIT(Waveform):
                  basepath = '../dat/RIT/',
                  ID       = '0001',
                  download = False,
-                 psi_path = None,
-                 h_path   = None,
-                 mtdt_path= None,
+                 psi_path = None, # deprecated
+                 h_path   = None, # deprecated
+                 mtdt_path= None, # deprecated
+                 psi_load = True,
+                 h_load   = True,
+                 mtdt_load= True,
                  ell_emms = 'all',
                  ) -> None:
         
@@ -34,67 +37,99 @@ class Waveform_RIT(Waveform):
             ID = f'{ID:04}'
         self.ID = ID
 
-        rit_data_path = os.path.join(basepath, f'RIT_SXS_{ID}')
-        if not os.path.exists(rit_data_path):
+        sim_path = os.path.join(basepath, f'RIT_SXS_{ID}')
+        if not os.path.exists(sim_path):
             if download:
-                print(f"The path {rit_data_path} does not exist.")
+                print(f"The path {sim_path} does not exist.")
                 print("Downloading the simulation from the RIT catalog.")
-                self.download_data(ID=ID, path=rit_data_path)
+                self.download_data(ID=ID, path=sim_path)
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
-                raise FileNotFoundError(f"The path {rit_data_path} does not exist.")
-        self.rit_data_path = rit_data_path
+                raise FileNotFoundError(f"The path {sim_path} does not exist.")
+        self.sim_path = sim_path
 
         # metadata available
         if mtdt_path is not None:
-            self.mtdt_path = basepath+mtdt_path
-            self.metadata  = self.load_metadata(self.mtdt_path)
+            print('+++ Warning! Specifying mtdt_path in input is deprecated +++')
+            self.mtdt_path = os.path.join(basepath,mtdt_path)
+        else:
+            self.mtdt_path = ou.find_fnames_with_token(self.sim_path, 'Metadata.txt')[0]
+
+        if mtdt_load:
+            self.metadata = self.load_metadata(self.mtdt_path)
 
         # psi4 available
         if psi_path is not None:
-            self.psi_path      = basepath+psi_path
-            self.mtdt_psi4     = basepath+psi_path+'Metadata'
+            print('+++ Warning! Specifying psi_path in input deprecated +++')
+            self.psi_path  = os.path.join(basepath,psi_path)
+            self.mtdt_psi4 = os.path.join(basepath,psi_path,'Metadata')
+        else:
+            self.psi_path  = ou.find_dirs_with_token(self.sim_path, 'ExtrapPsi4')[0]
+            self.mtdt_psi4 = os.path.join(basepath, self.psi_path, 'Metadata')
+        
+        if psi_load:
             self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
             self.load_psi4()
         
         # strain available
         if h_path is not None:
-            self.h_file   = h5py.File(basepath+h_path, 'r')
-            self.load_h()
+            print('+++ Warning! Specifying h_path in input is deprecated +++') 
+            h_path = os.path.join(basepath,h_path)
+        else:
+            h_path = ou.find_fnames_with_token(self.sim_path, 'ExtrapStrain')[0]
 
+        if h_load:
+            self.h_file   = h5py.File(h_path, 'r')
+            self.load_h()
+        
         pass
     
     def download_data(self, ID, path='./', urls_json=None, dump_urls=True):
 
-        def get_id_from_url(url):
-            parts = url.split('-')
+        def get_id_from_url(url,sep='-'):
+            parts = url.split(sep)
             for i, part in enumerate(parts):
                 if 'BBH' in part:
-                    return int(parts[i+1])
+                    # 'cleaning' needed for Metadata*.txt fnames
+                    next_part = parts[i+1]
+                    next_part_cleaned = next_part.split('-')
+                    return int(next_part_cleaned[0])
             return None
         
-        script_path = os.path.dirname(__file__)
-        if urls_json is None:
+        file_path = os.path.dirname(__file__) # this is in the build/lib
+        repo_path = file_path.split('PyART/')[0]
+        script_path = os.path.join(repo_path, 'PyART/PyART/catalogs/')
+        if urls_json is None: # use default name
            urls_json = os.path.join(script_path,'rit_urls.json')
         elif not isinstance(urls_json, str): 
             raise RuntimeError('Invalid value for urls_json: {urls_json}')
 
         if os.path.exists(urls_json):
+            print(f'Loading urls from {urls_json}')
             with open(urls_json, 'r') as file:
                 urls_dict = json.load(file)
         else:
             catalog_url = 'https://ccrgpages.rit.edu/~RITCatalog/'
             print('JSON file with RIT urls not found, fetching and parsing catalog webpage:', catalog_url)
+            # fetch and parse catalog webpage
             response     = requests.get(catalog_url)
             html_content = response.text
             soup         = BeautifulSoup(html_content, 'html.parser')
             urls_dict = {}
+            # loop on hyper references 
             for link in soup.find_all('a', href=True):
                 href = link['href']
-                if 'Data/' in href:
-                    rit_id_int = get_id_from_url(href)
+                if 'Data/' in href or 'Metadata/' in href:
+                    # get ID from filename
+                    if 'Metadata/' in href:
+                        sep = ':'
+                    else:
+                        sep = '-'
+                    rit_id_int = get_id_from_url(href, sep=sep)
                     key = f'{rit_id_int:04}'
+                    # full url
                     sim_url = os.path.join(catalog_url, href)
+                    # add to dictionary
                     if key not in urls_dict:
                         urls_dict[key] = [sim_url]
                     else:
@@ -106,37 +141,40 @@ class Waveform_RIT(Waveform):
 
         print('-'*50, f'\nDownloading RIT:BBH:{ID}\n', '-'*50, sep='')
         tstart = time.perf_counter()
+        # ensure that the ID corresponds to an existing simulation
         if not ID in urls_dict:
             raise ValueError(f'No data found for ID:{ID}')
+        # if everything fine, creat simulation-dir and download data
         os.makedirs(path, exist_ok=True)
         for href in urls_dict[ID]:
-            os_ut.runcmd('curl -O '+href, workdir=path)
-            if 'tar.gz' in href:
+            ou.runcmd('wget '+href, workdir=path)
+            if 'tar.gz' in href: # if compressed, untar
                 elems = href.split('/')
                 fname = elems[-1]
-                os_ut.runcmd('tar -vxzf '+fname, workdir=path)
-                os_ut.runcmd('rm -rv '+fname,    workdir=path)
+                ou.runcmd('tar -vxzf '+fname, workdir=path)
+                ou.runcmd('rm -rv '+fname,    workdir=path) # remove compressed archive
                 
-                subdirs_ExtrapPsi4 = os_ut.find_dirs_with_subdirs(path, 'ExtrapPsi4')
+                # check if the ExtrapPsi4* dir is in the correct level
+                subdirs_ExtrapPsi4 = ou.find_dirs_with_subdirs(path, 'ExtrapPsi4')
                 subdir = subdirs_ExtrapPsi4[0]
-                if os_ut.is_subdir(path, subdir):
+                if ou.is_subdir(path, subdir): # if wron level, move to upper one
                     tomove = os.path.join(subdir, 'ExtrapPsi4*')
-                    os_ut.runcmd(f'mv -v {tomove} .', workdir=path)
-                    os_ut.runcmd(f'rmdir {subdir}',   workdir=path)
+                    ou.runcmd(f'mv -v {tomove} .', workdir=path)
+                    ou.runcmd(f'rmdir {subdir}',   workdir=path)
         print('>> Elapsed time: {:.3f} s\n'.format(time.perf_counter()-tstart))
                      
         pass
 
     def load_psi4(self):
 
-        files = glob.glob(self.psi_path + '*.asc')
+        files = glob.glob(os.path.join(self.psi_path, '*.asc'))
         d = {}
-
+        
         if self.ell_emms == 'all': 
             modes = [(ell, emm) for ell in range(2,6) for emm in range(-ell, ell+1)]
         else:
             modes = self.ell_emms
-
+        
         for ff in files:
             ell = int((ff.split('/')[-1]).split('_')[1][1:])
             emm = int((ff.split('/')[-1]).split('_')[2][1:])
