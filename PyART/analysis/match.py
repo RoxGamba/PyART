@@ -44,7 +44,7 @@ class Matcher(object):
         
         # align to improve subsequent tapering (applied before matching computation)
         if pre_align: 
-            wf1, wf2 = self.pre_alignmet(wf1, wf2)
+            wf1, wf2 = self.pre_alignment(wf1, wf2)
         
         # Determine time length for resizing
         self.settings['tlen'] = self._find_tlen(wf1, wf2, resize_factor=settings['resize_factor'])
@@ -97,7 +97,7 @@ class Matcher(object):
             hc = ut.spline(u, hc, new_u, kind=kind) 
         return TimeSeries(hp, dT), TimeSeries(hc, dT), new_u
     
-    def pre_alignment(wf1, wf2):
+    def pre_alignment(self, wf1, wf2):
         """
         Align waveforms (TimeSeries) before feeding 
         them to the conditioning/matching functions. 
@@ -206,28 +206,48 @@ class Matcher(object):
         """
         plt.figure(figsize=(15, 7))
 
-        plt.subplot(221)
+        plt.subplot(231)
         plt.title('Real part of waveforms before conditioning')
-        plt.plot(h1_nc.sample_times, h1_nc, label='h1 unconditioned', color='blue', linestyle='dashed')
-        plt.plot(h2_nc.sample_times, h2_nc, label='h2 unconditioned', color='green', linestyle='dashed')
+        plt.plot(h1_nc.sample_times, h1_nc, label='h1 unconditioned', color='blue', linestyle='-')
+        plt.plot(h2_nc.sample_times, h2_nc, label='h2 unconditioned', color='green', linestyle='-')
         plt.legend()
 
-        plt.subplot(222)
+        plt.subplot(232)
         plt.title('Real part of waveforms after conditioning')
         plt.plot(h1.sample_times, h1, label='h1 conditioned', color='blue')
         plt.plot(h2.sample_times, h2, label='h2 conditioned', color='green')
         plt.legend()
 
-        plt.subplot(223)
+        plt.subplot(234)
         plt.title('PSD used for match')
         plt.loglog(psd.sample_frequencies, np.sqrt(psd.data* psd.sample_frequencies), label='PSD', color='black')
         plt.legend()
 
-        plt.subplot(224)
+        plt.subplot(235)
         plt.title('Overlap integrand between h1 and h2')
         freq = np.linspace(settings['initial_frequency_mm'], settings['final_frequency_mm'], len(h1))
         plt.plot(freq, abs(h1.data * h2.data), color='red')
-
+        
+        hf1 = h1.to_frequencyseries()
+        f1  = hf1.get_sample_frequencies()
+        hf2 = h2.to_frequencyseries()
+        f2  = hf2.get_sample_frequencies()
+        Af1 = np.abs(hf1)
+        Af2 = np.abs(hf2)
+        for i in [3,6]:
+            plt.subplot(2,3,i)
+            plt.title('Fourier transforms (abs value)')
+            plt.plot(f1, Af1, c='blue',  label='FT h1')
+            plt.plot(f2, Af2, c='green', label='FT h2')
+            plt.axvline(settings['initial_frequency_mm'], lw=0.8, c='r')
+            plt.axvline(settings['final_frequency_mm'],   lw=0.8, c='r')
+            plt.grid()
+            plt.yscale('log')
+            #plt.ylim(1e-6, max(1.2*max(Af1),1.2*max(Af2),0.1))
+            plt.legend()
+            if i==3:
+                plt.xscale('log')
+                
         plt.tight_layout()
         if 'save' not in settings.keys():
             print("not saving")

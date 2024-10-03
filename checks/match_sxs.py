@@ -1,4 +1,4 @@
-import sys,os,subprocess,matplotlib
+import sys,os,argparse,subprocess,matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 from PyART.catalogs       import sxs
@@ -8,10 +8,26 @@ from PyART.utils import utils as ut
 
 matplotlib.rc('text', usetex=True)
 
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-id', '--sxs_id', default=180,              help="SXS ID")
+parser.add_argument('--mass_min',       type=float, default=10,  help="Minimum mass (Msun)") 
+parser.add_argument('--mass_max',       type=float, default=100, help="Minimum mass (Msun)") 
+parser.add_argument('-n', '--mass_num', type=int,   default=10,  help="Number of masses")
+parser.add_argument('--f1',             type=float, default=20,  help="Initial freq for mm")
+parser.add_argument('--f2',             type=float, default=2048,help="Final freq for mm")
+parser.add_argument('--taper_alpha',    type=float, default=0.01,help="Taper alpha")
+parser.add_argument('--taper_start',    type=float, default=0.05,help="Taper start")
+parser.add_argument('--taper_end',      type=float, default=0.00,help="Taper end")
+parser.add_argument('-d', '--debug', action='store_true',        help="Show debug plots")
+parser.add_argument('--no_plot', action='store_true',            help="Avoid mm-plot")
+args = parser.parse_args()
+
+
 repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], \
                              stdout=subprocess.PIPE).communicate()[0].rstrip().decode('utf-8')
-
-sxs_id   = '0180'
+sxs_id   = f'{args.sxs_id:04}' # e.g.0180
 sxs_path = os.path.join(repo_path, 'checks/local_sxs/')
 
 # load (or download) SXS data 
@@ -24,6 +40,16 @@ M     = nr.metadata['M']
 chi1z = nr.metadata['chi1z']
 chi2z = nr.metadata['chi2z']
 f0    = nr.metadata['f0']
+
+print('-----------------------------')
+print(f'Mismatch for SXS:{sxs_id}')
+print('-----------------------------')
+print(f'q     : {q:.5f}')
+print(f'M     : {M:.5f}')
+print(f'chi1z : {chi1z:.5f}')
+print(f'chi2z : {chi2z:.5f}')
+print(f'f0    : {f0:.5f}')
+print('-----------------------------')
 
 # compute corresponding EOB waveform
 Tmax    = 1e+4
@@ -59,19 +85,35 @@ eob = teob.Waveform_EOB(pars=eobpars)
 eob.compute_hphc()
 
 # compute (2,2) mismatches for different masses
-masses = np.linspace(10, 200, num=20)
+masses = np.linspace(args.mass_min, args.mass_max, num=args.mass_num)
 mm = masses*0.
 for i, M in enumerate(masses):
-    matcher = Matcher(nr, eob, settings={'kind':'single-mode', 'tlen':len(nr.u), 
-                      'dt':1/srate, 'M':M, 'resize_factor':16, 'modes-or-pol':'modes', 'modes':[(2,2)] })
+    matcher = Matcher(nr, eob, pre_align=True,
+                      settings={'kind':'single-mode', 
+                                'initial_frequency_mm':args.f1,
+                                'final_frequency_mm':args.f2,
+                                'tlen':len(nr.u), 
+                                'dt':1/srate, 
+                                'M':M, 
+                                'resize_factor':16, 
+                                'modes-or-pol':'modes', 
+                                'modes':[(2,2)],
+                                'taper_alpha':args.taper_alpha,
+                                'taper_start':args.taper_start,
+                                'taper_end':args.taper_end,
+                                'debug':args.debug,
+                                }
+                     )
     mm[i] = matcher.mismatch
     print(f'Mass, mm: {M:7.2f},  {mm[i]:.3e}')
 
-plt.figure(figsize=(9,6))
-plt.plot(masses, mm)
-plt.yscale('log')
-plt.xlabel(r'$M_\odot$', fontsize=25)
-plt.ylabel(r'$\bar{\cal{F}}$', fontsize=25)
-plt.grid()
-plt.show()
+if not args.no_plot and args.mass_num>1:
+    plt.figure(figsize=(9,6))
+    plt.plot(masses, mm)
+    plt.yscale('log')
+    plt.xlabel(r'$M_\odot$', fontsize=25)
+    plt.ylabel(r'$\bar{\cal{F}}$', fontsize=25)
+    plt.ylim(1e-4, 1e-1)
+    plt.grid()
+    plt.show()
 
