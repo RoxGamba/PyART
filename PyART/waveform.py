@@ -111,6 +111,33 @@ class Waveform(object):
             return u_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
         else:
             return u_mrg, A_mrg, omg_mrg, domg_mrg
+    
+    def cut(self, DeltaT, cut_hpc=True): 
+        """
+        Cut the waveform removing the 
+        first DeltaT M
+        """
+        u_from_zero = self.u-self.u[0]
+        if u_from_zero[-1]<DeltaT:
+            raise RuntimeError('Cutting too much, no points left!')
+
+        i0 = np.where(u_from_zero > DeltaT)[0][0]
+        self._u = self.u[i0:]
+        if self.t is not None:
+            self._t = self.t[i0:]
+
+        # resize hlm
+        for k in self.hlm.keys():
+            for sk in self.hlm[k].keys():
+                self._hlm[k][sk] = self.hlm[k][sk][i0:]
+
+        # resize polarizations 
+        if cut_hpc and self.hp is not None:
+            self._hp = self.hp[i0:]
+        if cut_hpc and self.hc is not None:
+            self._hc = self.hc[i0:]
+
+        return
 
     def compute_hphc(self, phi=0, i=0, modes=[(2,2)]):
         """
