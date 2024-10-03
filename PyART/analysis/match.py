@@ -37,7 +37,17 @@ class Matcher(object):
             self.match_f = self._compute_mm_skymax
         else:
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
-    
+        
+        if settings['cut_longer']:
+            tlen1 = WaveForm1.u[-1]-WaveForm1.u[0]
+            tlen2 = WaveForm2.u[-1]-WaveForm2.u[0]
+            DeltaT = abs(tlen2-tlen1)
+            if tlen1>tlen2:
+                WaveForm1.cut(DeltaT)
+            else:
+                WaveForm2.cut(DeltaT)
+                
+
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
@@ -143,6 +153,7 @@ class Matcher(object):
             'resize_factor'        : 2,
             'debug'                : False,
             'geom'                 : True,
+            'cut_longer'           : False, # cut longer waveform to match shorter one
         }
     
     def _get_psd(self, flen, df, fmin):
