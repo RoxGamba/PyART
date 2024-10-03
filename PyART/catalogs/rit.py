@@ -3,14 +3,19 @@ from scipy import interpolate
 import matplotlib.pyplot as plt
 import h5py 
 import glob
+import os, json, requests, time
+from bs4 import BeautifulSoup
 
-from ..waveform import  Waveform
+from ..waveform import Waveform
+from ..utils    import os_utils as os_ut
 
 # This class is used to load the RIT data and store it in a convenient way
-class RIT(Waveform):
+class Waveform_RIT(Waveform):
 
     def __init__(self,
                  basepath = '../dat/RIT/',
+                 ID       = '0001',
+                 download = False,
                  psi_path = None,
                  h_path   = None,
                  mtdt_path= None,
@@ -24,6 +29,21 @@ class RIT(Waveform):
         self.ell_emms = ell_emms
         self.metadata      = None
         self.metadata_psi4 = None
+
+        if isinstance(ID, int):
+            ID = f'{ID:04}'
+        self.ID = ID
+
+        rit_data_path = os.path.join(basepath, f'RIT_SXS_{ID}')
+        if not os.path.exists(rit_data_path):
+            if download:
+                print(f"The path {rit_data_path} does not exist.")
+                print("Downloading the simulation from the RIT catalog.")
+                self.download_data(ID=ID, path=rit_data_path)
+            else:
+                print("Use download=True to download the simulation from the SXS catalog.")
+                raise FileNotFoundError(f"The path {rit_data_path} does not exist.")
+        self.rit_data_path = rit_data_path
 
         # metadata available
         if mtdt_path is not None:
@@ -42,6 +62,69 @@ class RIT(Waveform):
             self.h_file   = h5py.File(basepath+h_path, 'r')
             self.load_h()
 
+        pass
+    
+    def download_data(self, ID, path='./', urls_json=None, dump_urls=True):
+
+        def get_id_from_url(url):
+            parts = url.split('-')
+            for i, part in enumerate(parts):
+                if 'BBH' in part:
+                    return int(parts[i+1])
+            return None
+        
+        script_path = os.path.dirname(__file__)
+        if urls_json is None:
+           urls_json = os.path.join(script_path,'rit_urls.json')
+        elif not isinstance(urls_json, str): 
+            raise RuntimeError('Invalid value for urls_json: {urls_json}')
+
+        if os.path.exists(urls_json):
+            with open(urls_json, 'r') as file:
+                urls_dict = json.load(file)
+        else:
+            catalog_url = 'https://ccrgpages.rit.edu/~RITCatalog/'
+            print('JSON file with RIT urls not found, fetching and parsing catalog webpage:', catalog_url)
+            response     = requests.get(catalog_url)
+            html_content = response.text
+            soup         = BeautifulSoup(html_content, 'html.parser')
+            urls_dict = {}
+            for link in soup.find_all('a', href=True):
+                href = link['href']
+                if 'Data/' in href:
+                    rit_id_int = get_id_from_url(href)
+                    key = f'{rit_id_int:04}'
+                    sim_url = os.path.join(catalog_url, href)
+                    if key not in urls_dict:
+                        urls_dict[key] = [sim_url]
+                    else:
+                        urls_dict[key].append(sim_url)
+            if dump_urls:
+                with open(urls_json, 'w') as json_file:
+                    json.dump(urls_dict, json_file, indent=4)
+                print('Created JSON file with RIT urls:', urls_json)
+
+        print('-'*50, f'\nDownloading RIT:BBH:{ID}\n', '-'*50, sep='')
+        tstart = time.perf_counter()
+        if not ID in urls_dict:
+            raise ValueError(f'No data found for ID:{ID}')
+        os.makedirs(path, exist_ok=True)
+        for href in urls_dict[ID]:
+            os_ut.runcmd('curl -O '+href, workdir=path)
+            if 'tar.gz' in href:
+                elems = href.split('/')
+                fname = elems[-1]
+                os_ut.runcmd('tar -vxzf '+fname, workdir=path)
+                os_ut.runcmd('rm -rv '+fname,    workdir=path)
+                
+                subdirs_ExtrapPsi4 = os_ut.find_dirs_with_subdirs(path, 'ExtrapPsi4')
+                subdir = subdirs_ExtrapPsi4[0]
+                if os_ut.is_subdir(path, subdir):
+                    tomove = os.path.join(subdir, 'ExtrapPsi4*')
+                    os_ut.runcmd(f'mv -v {tomove} .', workdir=path)
+                    os_ut.runcmd(f'rmdir {subdir}',   workdir=path)
+        print('>> Elapsed time: {:.3f} s\n'.format(time.perf_counter()-tstart))
+                     
         pass
 
     def load_psi4(self):
@@ -181,9 +264,6 @@ class RIT(Waveform):
 
         return yn
     
-    def download_data(self):
-        
-        pass
 
 class Catalog(object):
     def __init__(self, 

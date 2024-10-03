@@ -27,10 +27,10 @@ args = parser.parse_args()
 
 repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], \
                              stdout=subprocess.PIPE).communicate()[0].rstrip().decode('utf-8')
-sxs_id   = f'{args.sxs_id:04}' # e.g.0180
 sxs_path = os.path.join(repo_path, 'checks/local_sxs/')
 
 # load (or download) SXS data 
+sxs_id = f'{args.sxs_id:04}' # e.g.0180
 nr = sxs.Waveform_SXS(path=sxs_path, download=True, ID=sxs_id, order="Extrapolated_N3.dir", ellmax=7)
 nr.compute_hphc()
 
