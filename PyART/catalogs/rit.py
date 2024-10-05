@@ -249,6 +249,10 @@ class Waveform_RIT(Waveform):
                 ometa[key] = val
             
             kind = 'initial' # initial or relaxed (but no relaxed-separation in meta)
+            if kind=='initial':
+                ref_time = 0
+            elif kind=='relaxed':
+                ref_time = float(ometa['relaxed-time']) 
             M1   = float(ometa[f'{kind}-mass1'])
             M2   = float(ometa[f'{kind}-mass2'])
             q    = M2/M1
@@ -271,7 +275,7 @@ class Waveform_RIT(Waveform):
 
             af = float(ometa['final-chi'])
             meta = {'name'     : ometa['catalog-tag'], # i.e. store as name 'RIT:eBBH:1110'
-                    'ref_time' : float(ometa['relaxed-time']), # not specified in RIT metadata 
+                    'ref_time' : ref_time,
                     # masses and spins 
                     'm1'       : M1,
                     'm2'       : M2,
