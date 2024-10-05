@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 
 from ..waveform import Waveform
 from ..utils    import os_utils as ou
+from .cat_utils import check_metadata
 
 # This class is used to load the RIT data and store it in a convenient way
 class Waveform_RIT(Waveform):
@@ -61,7 +62,7 @@ class Waveform_RIT(Waveform):
             self.mtdt_path = ou.find_fnames_with_token(self.sim_path, 'Metadata.txt')[0]
 
         if mtdt_load:
-            self.metadata = self.load_metadata(self.mtdt_path)
+            self.metadata, self.ometadata = self.load_metadata(self.mtdt_path)
 
         # psi4 available
         if psi_path is not None:
@@ -73,7 +74,7 @@ class Waveform_RIT(Waveform):
             self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
         
         if psi_load:
-            self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
+            _, self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
             self.load_psi4()
         
         # strain available
@@ -227,9 +228,14 @@ class Waveform_RIT(Waveform):
         pass
 
     def load_metadata(self, path):
-
-        nm     = path
-        metadata = {}
+        """
+        load metadata for RIT catalog.
+        Meta with original keys are stored in ometadata,
+        metadata instead contain useful info with standard
+        naming (see e.g. SXS metadata)
+        """
+        nm    = path
+        ometa = {}
         with open(nm, 'r') as f:
 
             lines = [l for l in f.readlines() if l.strip()] # rm empty
@@ -240,9 +246,71 @@ class Waveform_RIT(Waveform):
                 #line = line.split("#", 1)[0]
                 key, val           = line.split("= ")
                 key                = key.strip()
-                metadata[key] = val
+                ometa[key] = val
+            
+            kind = 'initial' # initial or relaxed (but no relaxed-separation in meta)
+            M1   = float(ometa[f'{kind}-mass1'])
+            M2   = float(ometa[f'{kind}-mass2'])
+            q    = M2/M1
+            
+            def return_val_or_default(key,mydict,default=0.0):
+                if key in mydict:
+                    return float(mydict[key])
+                else:
+                    return default
 
-        return metadata 
+            chi1x = return_val_or_default(f'{kind}-chi1x',ometa)
+            chi1y = return_val_or_default(f'{kind}-chi1y',ometa)
+            chi1z = return_val_or_default(f'{kind}-chi1z',ometa)
+            chi2x = return_val_or_default(f'{kind}-chi2x',ometa)
+            chi2y = return_val_or_default(f'{kind}-chi2y',ometa)
+            chi2z = return_val_or_default(f'{kind}-chi2z',ometa)
+            
+            D  = float(ometa['initial-separation']) 
+            f0 = float(ometa['freq-start-22'])/2 # FIXME
+
+            af = float(ometa['final-chi'])
+            meta = {'name'     : ometa['catalog-tag'], # i.e. store as name 'RIT:eBBH:1110'
+                    'ref_time' : float(ometa['relaxed-time']), # not specified in RIT metadata 
+                    # masses and spins 
+                    'm1'       : M1,
+                    'm2'       : M2,
+                    'M'        : M1+M2,
+                    'q'        : M1/M2,
+                    'nu'       : q/(1+q)**2,
+                    'S1'       : np.array([chi1x,chi1y,chi1z])*M1*M1,
+                    'S2'       : np.array([chi2x,chi2y,chi2z])*M2*M2,
+                    'chi1x'    : chi1x,  # dimensionless
+                    'chi1y'    : chi1y,
+                    'chi1z'    : chi1z,
+                    'chi2x'    : chi2x,  # dimensionless
+                    'chi2y'    : chi2y,
+                    'chi2z'    : chi2z,
+                    # positions
+                    'pos1'     : np.array([0,0,-D/2]),
+                    'pos2'     : np.array([0,0, D/2]),
+                    'r0'       : D, 
+                    'e'        : float(ometa['eccentricity']),
+                     # frequencies
+                    'f0v'      : np.array([0,0,f0]), # FIXME: only for spin-aligned
+                    'f0'       : f0,
+                    # ADM quantities (INITIAL, not REF)
+                    'E0'       : float(ometa['initial-ADM-energy']),
+                    'P0'       : None,
+                    'J0'       : np.array([float(ometa['initial-ADM-angular-momentum-x']),
+                                           float(ometa['initial-ADM-angular-momentum-y']),
+                                           float(ometa['initial-ADM-angular-momentum-z'])]),
+                    'Jz0'      : float(ometa['initial-ADM-angular-momentum-z']),
+                    # remnant
+                    'Mf'       : float(ometa['final-mass']),
+                    'afv'      : np.array([0,0,af]),
+                    'af'       : af,
+                    }
+
+        # check that all the required quantities are given 
+        check_metadata(meta,raise_err=True) 
+        
+        return meta, ometa
 
 
     def compute_initial_data(self):

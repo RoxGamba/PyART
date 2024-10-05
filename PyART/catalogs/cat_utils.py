@@ -7,9 +7,11 @@ import warnings
 # required keys 
 KEYS = ['name', 
         'ref_time',       # reference time 
-        'M1', 'M2', 'M', 
+        'm1', 'm2', 'M', 
         'q', 'nu',  
-        'hS1', 'hS2',     # dimensionless spins (3-vector)
+        'S1', 'S2',       # spins (3-vector)
+        'chi1x', 'chi2x', # dimensionless spin x-components 
+        'chi1y', 'chi2y', # dimensionless spin y-components 
         'chi1z', 'chi2z', # dimensionless spin z-components 
         'r0',             # distance
         'e',              # eccentricity 

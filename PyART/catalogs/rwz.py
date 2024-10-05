@@ -2,7 +2,7 @@ import numpy as np; import os
 import h5py; import json
 from glob import glob
 from ..waveform import  Waveform
-from .cat_utils import check_metadata
+#from .cat_utils import check_metadata
 
 class Waveform_RWZ(Waveform):
     """

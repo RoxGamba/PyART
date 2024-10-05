@@ -145,9 +145,10 @@ class Waveform_SXS(Waveform):
         M1 = ometa['reference_mass1']
         M2 = ometa['reference_mass2']
         q  = M2/M1
-        if q<1:
-            q = 1/q
+        #if q<1:
+        #    q = 1/q
         nu = q/(1+q)**2
+        M  = M1 + M2
         hS1  = np.array(ometa['reference_dimensionless_spin1']) 
         hS2  = np.array(ometa['reference_dimensionless_spin2']) 
         pos1 = np.array(ometa['reference_position1'])
@@ -161,14 +162,18 @@ class Waveform_SXS(Waveform):
         metadata = {'name'     : name, # i.e. store as name 'SXS:BBH:ID'
                     'ref_time' : ometa['reference_time'],
                     # masses and spins 
-                    'M1'       : M1,
-                    'M2'       : M2,
-                    'M'        : M1+M2,
+                    'm1'       : M1,
+                    'm2'       : M2,
+                    'M'        : M,
                     'q'        : q,
                     'nu'       : nu,
-                    'hS1'      : hS1,
-                    'hS2'      : hS2,
+                    'S1'       : hS1*M1*M1, # [M2]
+                    'S2'       : hS2*M2*M2,
+                    'chi1x'    : hS1[0],  # dimensionless
+                    'chi1y'    : hS1[1],
                     'chi1z'    : hS1[2],
+                    'chi2x'    : hS2[0],  # dimensionless
+                    'chi2y'    : hS2[1],
                     'chi2z'    : hS2[2],
                     # positions
                     'pos1'     : pos1,
@@ -182,7 +187,7 @@ class Waveform_SXS(Waveform):
                     'E0'       : ometa['initial_ADM_energy'],
                     'P0'       : np.array(ometa['initial_ADM_linear_momentum']),
                     'J0'       : np.array(ometa['initial_ADM_angular_momentum']),
-                    'Jz0'      :          ometa['initial_ADM_angular_momentum'][2],
+                    'Jz0'      : ometa['initial_ADM_angular_momentum'][2],
                     # remnant
                     'Mf'       : ometa['remnant_mass'],
                     'afv'      : afv,
