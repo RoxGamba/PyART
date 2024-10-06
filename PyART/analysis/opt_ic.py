@@ -105,12 +105,16 @@ class Optimizer(object):
     
     def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False):
         if verbose is None: verbose = self.verbose
-        matcher = Matcher(self.ref_Waveform, eob_Waveform, pre_align=False,
-                          settings=self.mm_settings)
+        if eob_Waveform is not None:
+            matcher = Matcher(self.ref_Waveform, eob_Waveform, pre_align=False,
+                              settings=self.mm_settings)
+            mm = matcher.mismatch
+        else:
+            mm = 1.0
         if verbose and iter_loop:
             self.opt_iter += 1
-            print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(matcher.mismatch, self.opt_iter), end='\r')
-        return matcher.mismatch
+            print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm, self.opt_iter), end='\r')
+        return mm
     
     def __update_bounds(self):
         kx = self.ic_keys[0]
@@ -157,7 +161,7 @@ class Optimizer(object):
             random.seed(self.opt_seed)
             vx0  = random.uniform(bounds[0][0], bounds[0][1])
             vy0  = random.uniform(bounds[1][0], bounds[1][1])
-            vxy0 = np.arrays([vx0, vy0])
+            vxy0 = np.array([vx0, vy0])
         
         if verbose:
             mm0 = self.match_against_ref(self.generate_EOB(ICs={kx:vxy0[0], ky:vxy0[1]}),iter_loop=False)

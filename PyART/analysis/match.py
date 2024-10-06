@@ -43,10 +43,12 @@ class Matcher(object):
             tlen1 = WaveForm1.u[-1]-WaveForm1.u[0]
             tlen2 = WaveForm2.u[-1]-WaveForm2.u[0]
             DeltaT = tlen2-tlen1
+            #tmrg1,_,_,_ = WaveForm1.find_max()
+            #tmrg2,_,_,_ = WaveForm2.find_max()
+            #DeltaT = tmrg2-tmrg1
             if DeltaT>0:
                 WaveForm2.cut(DeltaT)
                 
-
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
@@ -154,7 +156,7 @@ class Matcher(object):
             'coa_phase'            : np.linspace(0,2*np.pi,1),
             'eff_pols'             : np.linspace(0,np.pi,1),
             'taper'                : True,
-            'taper_start'          : 0.05, # % of the waveform to taper at the beginning
+            'taper_start'          : 0.03, # % of the waveform to taper at the beginning
             'taper_end'            : 0.00, # % of the waveform to taper at the end
             'taper_alpha'          : 0.01,  # sigmoid-parameter used in tapering
             'resize_factor'        : 2,
@@ -353,16 +355,14 @@ def condition_td_waveform(h, settings):
     Condition the waveforms before computing the mismatch.
     h is already a TimeSeries
     """
-    # taper the waveform
+    tlen = settings['tlen']
+    h.resize(tlen)
     if settings['taper']:
-        hlen = len(h)
-        t1    = settings['taper_start'] * hlen
-        t2    = settings['taper_end']   * hlen
+        t1    = settings['taper_start'] * tlen
+        t2    = settings['taper_end']   * tlen
         alpha = settings['taper_alpha']
-        t = np.linspace(0, hlen-1, num=hlen)
+        t = np.linspace(0, tlen-1, num=tlen)
         h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
-    # resize
-    h.resize(settings['tlen'])
     return h
 
 def dual_annealing_wrap(func,bounds,maxfun=2000):

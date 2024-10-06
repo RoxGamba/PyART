@@ -17,7 +17,7 @@ KEYS = ['name',
         'e0',             # eccentricity 
         'E0', 'Jz0',      # ADM scalars 
         'P0', 'J0',       # ADM 3-vectors
-        'pph0',           #
+        'pph0',           # Lz/(mu*M)
         'pos1', 'pos2',   # position vectors
         'f0v',            # orbital freq (3-vector)
         'f0',             # orbital freq (float)) 
