@@ -100,7 +100,8 @@ for i, M in enumerate(masses):
     else:
         f0_mm = args.f1
     matcher = Matcher(nr, eob, pre_align=False,
-                      settings={'kind':'single-mode', 
+                      settings={
+                                #'kind':'single-mode', 
                                 'initial_frequency_mm':f0_mm,
                                 'final_frequency_mm':args.f2,
                                 'tlen':len(nr.u), 

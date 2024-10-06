@@ -29,22 +29,21 @@ class Matcher(object):
         if settings:
             self.settings.update(settings)
         self.modes = settings.get('modes', [])
+        del settings 
 
         # Choose the appropriate mismatch function
-        if settings['kind'] == 'single-mode':
+        if self.settings['kind'] == 'single-mode':
             self.match_f = self._compute_mm_single_mode
-        elif settings['kind'].lower() == 'hm':
+        elif self.settings['kind'].lower() == 'hm':
             self.match_f = self._compute_mm_skymax
         else:
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
         
-        if settings['cut']:
+        if self.settings['cut']:
             tlen1 = WaveForm1.u[-1]-WaveForm1.u[0]
             tlen2 = WaveForm2.u[-1]-WaveForm2.u[0]
-            DeltaT = abs(tlen2-tlen1)
-            if tlen1>tlen2:
-                WaveForm1.cut(DeltaT)
-            else:
+            DeltaT = tlen2-tlen1
+            if DeltaT>0:
                 WaveForm2.cut(DeltaT)
                 
 
@@ -57,7 +56,7 @@ class Matcher(object):
             wf1, wf2 = self.pre_alignment(wf1, wf2)
         
         # Determine time length for resizing
-        self.settings['tlen'] = self._find_tlen(wf1, wf2, resize_factor=settings['resize_factor'])
+        self.settings['tlen'] = self._find_tlen(wf1, wf2, resize_factor=self.settings['resize_factor'])
         # Compute and store the mismatch
         self.mismatch = 1 - self.match_f(wf1,wf2,self.settings)
     
@@ -161,7 +160,7 @@ class Matcher(object):
             'resize_factor'        : 2,
             'debug'                : False,
             'geom'                 : True,
-            'cut'                  : False, # cut longer waveform to match shorter one
+            'cut'                  : False, # cut waveform2 if longer than waveform1
         }
     
     def _get_psd(self, flen, df, fmin):

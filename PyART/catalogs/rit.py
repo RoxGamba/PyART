@@ -294,7 +294,7 @@ class Waveform_RIT(Waveform):
                     'pos1'     : np.array([0,0,-D/2]),
                     'pos2'     : np.array([0,0, D/2]),
                     'r0'       : D, 
-                    'e'        : float(ometa['eccentricity']),
+                    'e0'       : float(ometa['eccentricity']),
                      # frequencies
                     'f0v'      : np.array([0,0,f0]), # FIXME: only for spin-aligned
                     'f0'       : f0,

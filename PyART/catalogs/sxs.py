@@ -159,6 +159,16 @@ class Waveform_SXS(Waveform):
             name = ometa['alternative_names'][1]
         else:
             name = ometa['alternative_names']
+        
+        ecc = ometa['reference_eccentricity']
+        if isinstance(ecc, str): 
+            if '<' in ecc and 'e+00': # there are things like '<1.7e+00' in meta
+                ecc = 0.5
+            else:
+                ecc = 1e-5
+        else:
+            ecc = float(ecc)
+        
         metadata = {'name'     : name, # i.e. store as name 'SXS:BBH:ID'
                     'ref_time' : ometa['reference_time'],
                     # masses and spins 
@@ -179,7 +189,7 @@ class Waveform_SXS(Waveform):
                     'pos1'     : pos1,
                     'pos2'     : pos2,
                     'r0'       : r0,
-                    'e'        : ometa['reference_eccentricity'],
+                    'e0'       : ecc,
                     # frequencies
                     'f0v'      : np.array(ometa['reference_orbital_frequency'])/np.pi,
                     'f0'       : ometa['reference_orbital_frequency'][2]/np.pi,

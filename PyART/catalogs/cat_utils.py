@@ -14,7 +14,7 @@ KEYS = ['name',
         'chi1y', 'chi2y', # dimensionless spin y-components 
         'chi1z', 'chi2z', # dimensionless spin z-components 
         'r0',             # distance
-        'e',              # eccentricity 
+        'e0',             # eccentricity 
         'E0', 'Jz0',      # ADM scalars 
         'P0', 'J0',       # ADM 3-vectors
         'pos1', 'pos2',   # position vectors
