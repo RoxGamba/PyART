@@ -143,9 +143,9 @@ class Matcher(object):
         Default parameters for the mismatch calculation
         """
         return {
-            #'kind'                 : 'single-mode',
-            #'modes-or-pol'         : 'modes',
-            #'modes'                : [(2,2)],
+            'kind'                 : 'single-mode',
+            'modes-or-pol'         : 'modes',
+            'modes'                : [(2,2)],
             'initial_frequency_mm' : 20.,
             'final_frequency_mm'   : 2048.,
             'psd'                  : 'aLIGOZeroDetHighPower',
