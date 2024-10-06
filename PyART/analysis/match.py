@@ -268,8 +268,7 @@ class Matcher(object):
                 
         plt.tight_layout()
         if 'save' not in settings.keys():
-            print("not saving")
-        if 'save' not in settings.keys():
+            #print("not saving")
             plt.show()
         else:
             print("Saving to ", settings['save'])

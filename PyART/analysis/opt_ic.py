@@ -12,10 +12,11 @@ class Optimizer(object):
     """
     def __init__(self,
                  ref_Waveform,
-                 kind_ic     = 'e0f0',
+                 kind_ic     = 'e0f0', # implemented: e0f0, E0pph0
                  mm_settings = None,
                  verbose     = True,
-                 opt_bounds  = [[None,None],[None,None]]
+                 opt_bounds  = [[None,None],[None,None]],
+                 debug       = False,
                  ):
         
         self.ref_Waveform = ref_Waveform
@@ -25,12 +26,26 @@ class Optimizer(object):
         self.opt_seed     = 190521
         self.opt_bounds   = opt_bounds
         self.opt_maxfun   = 100
-        
+
+        # set up things according to IC-kind
         if kind_ic=='e0f0':
             e0_nr = self.ref_Waveform.metadata['e0']
             if e0_nr is None or e0_nr>=1:
                 if self.verbose: print('Invalid e0 in NR waveform! Overwriting with e0=0.5')
                 self.ref_Waveform.metadata['e0'] = 0.5
+            ic_keys = ['e0', 'f0']
+        elif kind_ic=='E0pph0':
+            ic_keys = ['E0', 'pph0']
+        else:
+            raise ValueError('Unknown IC kind: {kind_ic}')
+        self.ic_keys = ic_keys
+        
+        if verbose:
+            print('-'*70)
+            print(f'Running Optimizer')
+            print(f'Reference waveform : {ref_Waveform.metadata["name"]}')
+            print(f'variables of ICs   : {ic_keys[0]}, {ic_keys[1]}')
+            print('-'*70)
 
         # mismatch settings
         self.mm_settings  = Matcher.__default_parameters__(0) 
@@ -40,10 +55,13 @@ class Optimizer(object):
         if not self.mm_settings['cut'] and self.verbose:
             print('Warning: using the cut-option during optimization is strongly suggested!')
 
-        # only for testing
-        mm_opt, e0_opt, f0_opt = self.optimize_mismatch(keys=['e0', 'f0'], verbose=self.verbose)
-        self.opt_Waveform = self.generate_EOB(ICs={'e0':e0_opt, 'f0':f0_opt}) 
+        mm_opt, x_opt, y_opt = self.optimize_mismatch()
+        self.opt_Waveform = self.generate_EOB(ICs={ic_keys[0]:x_opt, ic_keys[1]:y_opt}) 
         self.opt_mismatch = mm_opt
+        
+        if debug:
+            self.mm_settings['debug'] = True
+            self.match_against_ref(self.opt_Waveform)
         pass
          
     def generate_EOB(self, ICs={'f0':None, 'e0':None}):
@@ -60,18 +78,29 @@ class Optimizer(object):
                 return ref_meta[key]
             else:
                 return ICs[key]
+        
         if self.kind_ic=='quasi-circ': # here only for testing
             sub_meta['f0'] = return_IC('f0')
+        
         elif self.kind_ic=='e0f0':
             sub_meta['ecc'] = return_IC('e0')
             sub_meta['f0']  = return_IC('f0')
+
+        elif self.kind_ic=='E0pph0':
+            sub_meta['H_hyp'] = return_IC('E0')
+            sub_meta['J_hyp'] = return_IC('pph0')
+            sub_meta['r_hyp'] = None # computed in CreateDict
+
         else: 
             raise ValueError(f'Unknown kind of ICs: {kind}')
         
         # return generated EOB waveform 
-        pars = CreateDict(**sub_meta)
-        eob_wave = Waveform_EOB(pars=pars)
-        eob_wave._u = eob_wave.u#-eob_wave.u[0] 
+        try:
+            pars        = CreateDict(**sub_meta)
+            eob_wave    = Waveform_EOB(pars=pars)
+            eob_wave._u = eob_wave.u#-eob_wave.u[0] 
+        except:
+            eob_wave = None
         return eob_wave
     
     def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False):
@@ -80,12 +109,12 @@ class Optimizer(object):
                           settings=self.mm_settings)
         if verbose and iter_loop:
             self.opt_iter += 1
-            print( '  >> mismatch - iter : {:.3e} - {:3d}'.format(matcher.mismatch, self.opt_iter), end='\r')
+            print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(matcher.mismatch, self.opt_iter), end='\r')
         return matcher.mismatch
     
-    def __update_bounds(self, keys):
-        kx = keys[0]
-        ky = keys[1]
+    def __update_bounds(self):
+        kx = self.ic_keys[0]
+        ky = self.ic_keys[1]
         vx_ref = self.ref_Waveform.metadata[kx]
         vy_ref = self.ref_Waveform.metadata[ky]
         default_bounds = [ [vx_ref*0.9, vx_ref*1.1],
@@ -95,19 +124,27 @@ class Optimizer(object):
                 if self.opt_bounds[i][j] is None:
                     self.opt_bounds[i][j] = default_bounds[i][j]
         return 
-
-    def optimize_mismatch(self, keys=['e0', 'f0'],verbose=None, use_ref_guess=True):
+    
+    def __func_to_minimize(self, vxy, verbose=None):
         if verbose is None: verbose = self.verbose
-        kx = keys[0]
-        ky = keys[1]
-        f = lambda vxy : self.match_against_ref(self.generate_EOB(ICs={kx:vxy[0], ky:vxy[1]}),
-                                                verbose=verbose, iter_loop=True)
+        kx = self.ic_keys[0]
+        ky = self.ic_keys[1]
+        eob_Waveform = self.generate_EOB(ICs={kx:vxy[0], ky:vxy[1]})
+        if eob_Waveform is not None:
+            mm = self.match_against_ref(eob_Waveform, verbose=self.verbose, iter_loop=True)
+        else:
+            mm = 1
+        return mm
+
+    def optimize_mismatch(self, use_ref_guess=True, verbose=None):
+        if verbose is None: verbose = self.verbose
+        kx = self.ic_keys[0]
+        ky = self.ic_keys[1]
         random.seed(self.opt_seed)
         vx_ref  = self.ref_Waveform.metadata[kx]
         vy_ref  = self.ref_Waveform.metadata[ky]
          
-        self.__update_bounds(keys=keys)
-        
+        self.__update_bounds()
         bounds = self.opt_bounds
         if vx_ref<bounds[0][0] and vx_ref>bounds[0][1]:
             print('Warning! Reference value for {:s} is outside searching interbal: [{:.2e},{:.2e}]'.format(ks,  bounds[0][0],  bounds[0][1]))
@@ -117,16 +154,20 @@ class Optimizer(object):
         if use_ref_guess:
             vxy0 = np.array([vx_ref,vy_ref])
         else:
+            random.seed(self.opt_seed)
             vx0  = random.uniform(bounds[0][0], bounds[0][1])
             vy0  = random.uniform(bounds[1][0], bounds[1][1])
             vxy0 = np.arrays([vx0, vy0])
         
         if verbose:
             mm0 = self.match_against_ref(self.generate_EOB(ICs={kx:vxy0[0], ky:vxy0[1]}),iter_loop=False)
-            print(f'Original  mismatch   : {mm0:.3e}')
-            print( 'Optimizing in        : {:s} in [{:.2e},{:.2e}]'.format(kx, bounds[0][0], bounds[0][1]))
-            print( '                     : {:s} in [{:.2e},{:.2e}]'.format(ky, bounds[1][0], bounds[1][1]))
-            print(f'Initial guess        : {vxy0[0]:.2e}, {vxy0[1]:.2e}')
+            print(f'Original  mismatch    : {mm0:.3e}')
+            print( 'Optimization interval : {:5s} in [{:.2e}, {:.2e}]'.format(kx, bounds[0][0], bounds[0][1]))
+            print( '                      : {:5s} in [{:.2e}, {:.2e}]'.format(ky, bounds[1][0], bounds[1][1]))
+            print(f'Initial guess         : {kx:5s} : {vxy0[0]:.15f}')
+            print(f'                        {ky:5s} : {vxy0[1]:.15f}')
+
+        f = lambda vxy : self.__func_to_minimize(vxy, verbose=verbose)
         opt_result = optimize.dual_annealing(f, maxfun=self.opt_maxfun, 
                                                 seed=self.opt_seed, x0=vxy0,
                                                 bounds=bounds)
@@ -134,8 +175,12 @@ class Optimizer(object):
         x_opt, y_opt = opt_pars[0], opt_pars[1]
         mm_opt = opt_result['fun']
         if verbose:
-            print( '  >> mismatch - iter : {:.3e} - {:3d}'.format(mm_opt, self.opt_iter), end='\r')
-            print(f'Optimized mismatch   : {mm_opt:.3e}')
-            print(f'Optimal ICs          : {kx}:{x_opt:.5f}')
-            print(f'                       {ky}:{y_opt:.3e}')
+            print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm_opt, self.opt_iter), end='\r')
+            print(f'Optimized mismatch    : {mm_opt:.3e}')
+            print(f'Optimal ICs           : {kx:5s} : {x_opt:.15f}')
+            print(f'                        {ky:5s} : {y_opt:.15f}')
         return mm_opt, x_opt, y_opt
+
+
+
+

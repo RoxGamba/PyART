@@ -1,5 +1,7 @@
 import os, subprocess
 import numpy as np
+from scipy.optimize import brentq
+
 try:
     import EOBRun_module as EOB
 except ModuleNotFoundError:
@@ -86,6 +88,15 @@ def CreateDict(M=1., q=1,
         """
         Create the dictionary of parameters for EOBRunPy
         """
+        if H_hyp>0 and J_hyp>0 and r_hyp is None:
+            if H_hyp>=1: 
+                r_hyp = 1000
+            else:
+                r_apa = search_apastron(q, chi1z, chi2z, J_hyp, H_hyp, step_size=0.1)
+                if r_apa is None:
+                    raise RuntimeError(f'Apastron not found, check initial conditon: E={H_hyp:.5f}, pph={J_hyp:.5f}')
+                r_hyp = r_apa - 1e-4 # small tol to avoid numerical issues
+             
         pardic = {
             'M'                  : M,
             'q'                  : q,
@@ -145,7 +156,58 @@ def TEOB_info(input_module,verbose=False):
             print(f'{key:10s} : {value}')
     return module 
 
+def SpinHamiltonian(r, pph, q, chi1, chi2, prstar=0.):
+    hatH   = EOB.eob_ham_s_py(r, q, pph, prstar, chi1, chi2)
+    nu     = q/(1+q)**2
+    E0     = nu*hatH[0]
+    return E0
+
+def RadialPotential(r,pph,q,chi1,chi2):
+    return np.array([SpinHamiltonian(ri, pph, q, chi1, chi2) for ri in r])
+    
+def bracketing(f,start,end,step_size):
+    bracketed_intervals = []
+    a  = start
+    b  = a + step_size
+    fa = f(a)
+    while b<=end:
+        fb = f(b)
+        if fa * fb < 0:
+            bracketed_intervals.append([a,b])
+            a  = b
+            fa = f(a)
+        b += step_size
+    bracketed_intervals.append([a,end])
+    return bracketed_intervals
+
+def search_apastron(q, chi1, chi2, pph, E, step_size=0.1):
+    def fzero(r):
+        V = SpinHamiltonian(r, pph, q, chi1, chi2)
+        return E-V
+    r_infty = 200
+    bracketed_intervals = bracketing(fzero, 2, r_infty, step_size=step_size)
+    approx_r_apa = bracketed_intervals[-1][0]
+    
+    # debug
+    #import matplotlib.pyplot as plt # for debug
+    #rvec = np.linspace(2, 200, num=1000)
+    #V = RadialPotential(rvec, pph, q, chi1 ,chi2)
+    #plt.figure
+    #plt.plot(rvec, V)
+    #plt.axhline(E)
+    #plt.show()
+     
+    if len(bracketed_intervals)<2:
+        r_apa = None
+    else:
+        r_apa = brentq(fzero, approx_r_apa-step_size, approx_r_apa+step_size)
+    return r_apa
+
+
+#---------------------
+# Span parameterspace
+
 if __name__ == '__main__':
-    module = TEOB_info(EOBRun_module,verbose=True)
+    module = TEOB_info(EOB,verbose=True)
     #for key,value in module.items():
     #    print(f'{key:10s} : {value}')

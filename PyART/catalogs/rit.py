@@ -34,6 +34,7 @@ class Waveform_RIT(Waveform):
         self.ell_emms = ell_emms
         self.metadata      = None
         self.metadata_psi4 = None
+        self.domain        = 'Time'
 
         if isinstance(ID, int):
             ID = f'{ID:04}'
@@ -205,7 +206,8 @@ class Waveform_RIT(Waveform):
             modes = [(ell, emm) for ell in range(2,6) for emm in range(-ell, ell+1)]
         else:
             modes = self.ell_emms
-
+        
+        nu = self.metadata['nu']
         for mm in modes:
             ell, emm = mm
             try:
@@ -216,6 +218,7 @@ class Waveform_RIT(Waveform):
                 # interp to common time array
                 A   = self.__interp_qnt__(A_u, A, th)
                 p   = self.__interp_qnt__(p_u, p, th)
+                A   = A/nu
                 d[(ell, emm)] = {'real' : A*np.cos(p), 'imag': -A*np.sin(p), 'A':A, 'p':p, 'h': A*np.exp(-1j*p)}
 
             except KeyError:
@@ -255,7 +258,9 @@ class Waveform_RIT(Waveform):
                 ref_time = float(ometa['relaxed-time']) 
             M1   = float(ometa[f'{kind}-mass1'])
             M2   = float(ometa[f'{kind}-mass2'])
-            q    = M2/M1
+            M    = M1+M2
+            q    = M1/M2
+            nu   = q/(1+q)**2
             
             def return_val_or_default(key,mydict,default=0.0):
                 if key in mydict:
@@ -273,17 +278,25 @@ class Waveform_RIT(Waveform):
             D  = float(ometa['initial-separation']) 
             f0 = float(ometa['freq-start-22'])/2 # FIXME
 
+            J0 = np.array([float(ometa['initial-ADM-angular-momentum-x']),
+                           float(ometa['initial-ADM-angular-momentum-y']),
+                           float(ometa['initial-ADM-angular-momentum-z'])])
+            S1 = np.array([chi1x,chi1y,chi1z])*M1*M1
+            S2 = np.array([chi2x,chi2y,chi2z])*M2*M2
+            L0 = J0-S1-S2
+            pph0 = L0[2]/(M*M*nu)
+
             af = float(ometa['final-chi'])
             meta = {'name'     : ometa['catalog-tag'], # i.e. store as name 'RIT:eBBH:1110'
                     'ref_time' : ref_time,
                     # masses and spins 
                     'm1'       : M1,
                     'm2'       : M2,
-                    'M'        : M1+M2,
-                    'q'        : M1/M2,
-                    'nu'       : q/(1+q)**2,
-                    'S1'       : np.array([chi1x,chi1y,chi1z])*M1*M1,
-                    'S2'       : np.array([chi2x,chi2y,chi2z])*M2*M2,
+                    'M'        : M,
+                    'q'        : q,
+                    'nu'       : nu,
+                    'S1'       : S1,
+                    'S2'       : S2,
                     'chi1x'    : chi1x,  # dimensionless
                     'chi1y'    : chi1y,
                     'chi1z'    : chi1z,
@@ -291,8 +304,8 @@ class Waveform_RIT(Waveform):
                     'chi2y'    : chi2y,
                     'chi2z'    : chi2z,
                     # positions
-                    'pos1'     : np.array([0,0,-D/2]),
-                    'pos2'     : np.array([0,0, D/2]),
+                    'pos1'     : np.array([0,0,+D/2]),
+                    'pos2'     : np.array([0,0,-D/2]),
                     'r0'       : D, 
                     'e0'       : float(ometa['eccentricity']),
                      # frequencies
@@ -301,10 +314,9 @@ class Waveform_RIT(Waveform):
                     # ADM quantities (INITIAL, not REF)
                     'E0'       : float(ometa['initial-ADM-energy']),
                     'P0'       : None,
-                    'J0'       : np.array([float(ometa['initial-ADM-angular-momentum-x']),
-                                           float(ometa['initial-ADM-angular-momentum-y']),
-                                           float(ometa['initial-ADM-angular-momentum-z'])]),
-                    'Jz0'      : float(ometa['initial-ADM-angular-momentum-z']),
+                    'J0'       : J0,
+                    'Jz0'      : J0[2],
+                    'pph0'     : pph0,
                     # remnant
                     'Mf'       : float(ometa['final-mass']),
                     'afv'      : np.array([0,0,af]),

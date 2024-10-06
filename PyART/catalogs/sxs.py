@@ -169,6 +169,10 @@ class Waveform_SXS(Waveform):
         else:
             ecc = float(ecc)
         
+        J0   = np.array(ometa['initial_ADM_angular_momentum'])
+        Lz   = J0 - hS1*M1*M1 - hS2*M2*M2
+        pph0 = Lz[2]/(M*M*nu) 
+
         metadata = {'name'     : name, # i.e. store as name 'SXS:BBH:ID'
                     'ref_time' : ometa['reference_time'],
                     # masses and spins 
@@ -196,8 +200,9 @@ class Waveform_SXS(Waveform):
                     # ADM quantities (INITIAL, not REF)
                     'E0'       : ometa['initial_ADM_energy'],
                     'P0'       : np.array(ometa['initial_ADM_linear_momentum']),
-                    'J0'       : np.array(ometa['initial_ADM_angular_momentum']),
-                    'Jz0'      : ometa['initial_ADM_angular_momentum'][2],
+                    'J0'       : J0,
+                    'Jz0'      : J0[2],
+                    'pph0'     : pph0,
                     # remnant
                     'Mf'       : ometa['remnant_mass'],
                     'afv'      : afv,

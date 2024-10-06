@@ -1,4 +1,4 @@
-import os, subprocess
+import os
 
 def runcmd(cmd,workdir,out=None):
     """
