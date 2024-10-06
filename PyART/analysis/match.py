@@ -38,7 +38,7 @@ class Matcher(object):
         else:
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
         
-        if settings['cut_longer']:
+        if settings['cut']:
             tlen1 = WaveForm1.u[-1]-WaveForm1.u[0]
             tlen2 = WaveForm2.u[-1]-WaveForm2.u[0]
             DeltaT = abs(tlen2-tlen1)
@@ -74,20 +74,21 @@ class Matcher(object):
         wf.domain = WaveForm.domain
         wf.f = None  # Assume TD waveform at the moment
         wf.hlm = WaveForm.hlm
-        wf.compute_hphc = WaveForm.compute_hphc
         wf.t = WaveForm.u
         
-        # Get updated time and hp/hc-TimeSeries
-        wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
+        if self.settings['modes-or-pol']=='pol':
+            # Get updated time and hp/hc-TimeSeries
+            if not hasattr(Waveform, 'hp'):
+                WaveForm.compute_hphc()
+                wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
 
         # also update the modes in a TimeSeries
         wf.modes = {}
         for k in WaveForm.hlm.keys():
             re = WaveForm.hlm[k]['real']
             im = WaveForm.hlm[k]['imag']
-            re_lm, im_lm, _ = self._mass_rescaled_TimeSeries(WaveForm.u, re, im, isgeom=isgeom)
+            re_lm, im_lm, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, re, im, isgeom=isgeom)
             wf.modes[k] = {'real':re_lm, 'imag':im_lm}
-
         return wf
 
     def _mass_rescaled_TimeSeries(self, u, hp, hc, isgeom=True, kind='cubic'):
@@ -125,8 +126,12 @@ class Matcher(object):
         conditioning (before match computation)
         """
         dT   = self.settings['dt']
-        h1   = TimeSeries(wf1.hp, dT)
-        h2   = TimeSeries(wf2.hp, dT)
+        if self.settings['modes-or-pol']=='pol':
+            h1 = TimeSeries(wf1.hp, dT)
+            h2 = TimeSeries(wf2.hp, dT)
+        else:
+            h1 = TimeSeries(wf1.modes[(2,2)]['real'], dT)
+            h2 = TimeSeries(wf2.modes[(2,2)]['real'], dT)
         LM   = max(len(h1), len(h2))
         tl   = (LM-1)*dT
         tN   = ut.nextpow2(resize_factor*tl)
@@ -138,6 +143,9 @@ class Matcher(object):
         Default parameters for the mismatch calculation
         """
         return {
+            #'kind'                 : 'single-mode',
+            #'modes-or-pol'         : 'modes',
+            #'modes'                : [(2,2)],
             'initial_frequency_mm' : 20.,
             'final_frequency_mm'   : 2048.,
             'psd'                  : 'aLIGOZeroDetHighPower',
@@ -153,7 +161,7 @@ class Matcher(object):
             'resize_factor'        : 2,
             'debug'                : False,
             'geom'                 : True,
-            'cut_longer'           : False, # cut longer waveform to match shorter one
+            'cut'                  : False, # cut longer waveform to match shorter one
         }
     
     def _get_psd(self, flen, df, fmin):

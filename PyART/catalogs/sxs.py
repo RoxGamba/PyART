@@ -181,8 +181,8 @@ class Waveform_SXS(Waveform):
                     'r0'       : r0,
                     'e'        : ometa['reference_eccentricity'],
                     # frequencies
-                    'f0v'      : np.array(ometa['reference_orbital_frequency']),
-                    'f0'       : ometa['reference_orbital_frequency'][2],
+                    'f0v'      : np.array(ometa['reference_orbital_frequency'])/np.pi,
+                    'f0'       : ometa['reference_orbital_frequency'][2]/np.pi,
                     # ADM quantities (INITIAL, not REF)
                     'E0'       : ometa['initial_ADM_energy'],
                     'P0'       : np.array(ometa['initial_ADM_linear_momentum']),

@@ -32,7 +32,7 @@ sxs_path = os.path.join(repo_path, 'checks/local_sxs/')
 # load (or download) SXS data 
 sxs_id = f'{args.sxs_id:04}' # e.g.0180
 nr = sxs.Waveform_SXS(path=sxs_path, download=True, ID=sxs_id, order="Extrapolated_N3.dir", ellmax=7)
-nr.compute_hphc()
+#nr.compute_hphc()
 
 # read SXS-meta
 q     = nr.metadata['q']
@@ -62,7 +62,7 @@ eobpars = {
             'LambdaAl2'          : 0.,
             'LambdaBl2'          : 0.,
             'distance'           : 1.,
-            'initial_frequency'  : 0.9*f0/np.pi, # magic number for 0180: 0.988*f0/np.pi,
+            'initial_frequency'  : 0.9*f0, # magic number for 0180: 0.988*f0,
             'use_geometric_units': "yes" ,
             'interp_uniform_grid': "yes",
             'domain'             : 0,
@@ -82,7 +82,7 @@ eobpars = {
             'spin_interp_domain' : 0
             }
 eob = teob.Waveform_EOB(pars=eobpars)
-eob.compute_hphc()
+#eob.compute_hphc()
 
 #nr_mrg,_,_,_  = nr.find_max() 
 #eob_mrg,_,_,_ = eob.find_max() 
@@ -96,8 +96,7 @@ masses = np.linspace(args.mass_min, args.mass_max, num=args.mass_num)
 mm = masses*0.
 for i, M in enumerate(masses):
     if args.f1 is None:
-        f0_nr = f0/np.pi
-        f0_mm = 1.25*f0_nr/(M*ut.Msun)
+        f0_mm = 1.25*f0/(M*ut.Msun)
     else:
         f0_mm = args.f1
     matcher = Matcher(nr, eob, pre_align=False,
@@ -113,7 +112,7 @@ for i, M in enumerate(masses):
                                 'taper_alpha':args.taper_alpha,
                                 'taper_start':args.taper_start,
                                 'taper_end':args.taper_end,
-                                'cut_longer':args.cut,
+                                'cut':args.cut,
                                 'debug':args.debug,
                                 }
                      )

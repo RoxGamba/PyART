@@ -7,7 +7,7 @@ except ModuleNotFoundError:
 
 from ..waveform import Waveform
 
-class Waveform_EOB(Waveform): #Waveform_EOB(Waveform):
+class Waveform_EOB(Waveform):
     """
     Class to handle EOB waveforms
     """
