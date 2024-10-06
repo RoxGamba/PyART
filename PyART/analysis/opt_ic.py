@@ -25,6 +25,12 @@ class Optimizer(object):
         self.opt_seed     = 190521
         self.opt_bounds   = opt_bounds
         self.opt_maxfun   = 100
+        
+        if kind_ic=='e0f0':
+            e0_nr = self.ref_Waveform.metadata['e0']
+            if e0_nr is None or e0_nr>=1:
+                if self.verbose: print('Invalid e0 in NR waveform! Overwriting with e0=0.5')
+                self.ref_Waveform.metadata['e0'] = 0.5
 
         # mismatch settings
         self.mm_settings  = Matcher.__default_parameters__(0) 
@@ -99,7 +105,7 @@ class Optimizer(object):
         random.seed(self.opt_seed)
         vx_ref  = self.ref_Waveform.metadata[kx]
         vy_ref  = self.ref_Waveform.metadata[ky]
-        
+         
         self.__update_bounds(keys=keys)
         
         bounds = self.opt_bounds

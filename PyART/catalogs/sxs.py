@@ -163,7 +163,7 @@ class Waveform_SXS(Waveform):
         ecc = ometa['reference_eccentricity']
         if isinstance(ecc, str): 
             if '<' in ecc and 'e+00': # there are things like '<1.7e+00' in meta
-                ecc = 0.5
+                ecc = None
             else:
                 ecc = 1e-5
         else:
