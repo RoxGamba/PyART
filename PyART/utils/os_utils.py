@@ -1,4 +1,4 @@
-import os
+import os, subprocess
 
 def runcmd(cmd,workdir,out=None):
     """
@@ -56,5 +56,6 @@ def find_dirs_with_token(basedir, token):
                 dirpath = os.path.join(root, mydir)
                 matching_dirs.append(dirpath)
     return matching_dirs
+
 
 
