@@ -20,19 +20,25 @@ parser.add_argument('-c', '--catalog', required=True, type=str,
                                  choices=['rit','sxs'],       help='Catalog')
 parser.add_argument('-i', '--id', default=None,  type=int,    help='Simulatoion ID. If not specified, download hard-coded ID list')
 parser.add_argument('-d', '--download', action='store_true',  help='Eventually download data')
-parser.add_argument('--mm_vs_M',      action='store_true',    help='Show plot mm vs M plot')
+parser.add_argument('--kind_ic', choices=['e0f0', 'E0pph0'], 
+                                 default='E0pph0',            help='ICs type')
+parser.add_argument('--debug_plot',   action='store_true',    help='Show debug plot')
+parser.add_argument('--mm_vs_M',      action='store_true',    help='Show plot mm vs M')
 
 args = parser.parse_args()
 
+if args.kind_ic=='e0f0':
+    bounds = [[0,0.7], [None, None]]
+else:
+    bounds = [[0.9,1], [3.8,4.4]]
+
 if args.catalog=='rit':
     ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id)
-    Optimizer(ebbh, kind_ic='e0f0',   mm_settings=mm_settings, opt_bounds=[[0,0.7], [None, None]], debug=True)
-    opt = Optimizer(ebbh, kind_ic='E0pph0', mm_settings=mm_settings, opt_bounds=[[0.9,1], [3.8,4.4]],    debug=True)
+    opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings, opt_bounds=bounds, debug=args.debug_plot)
 
 elif args.catalog=='sxs':
     ebbh = Waveform_SXS(path=sxs_path, download=args.download, ID=args.id, order="Extrapolated_N3.dir", ellmax=7)
-    Optimizer(ebbh, kind_ic='e0f0',   mm_settings=mm_settings, opt_bounds=[[0,0.7], [None, None]])
-    opt = Optimizer(ebbh, kind_ic='E0pph0', mm_settings=mm_settings, opt_bounds=[[0.9,1], [3.8,4.4]])
+    opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings, opt_bounds=bounds, debug=args.debug_plot)
 
 else:
     raise ValueError(f'Unknown catalog: {args.catalog}')

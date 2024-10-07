@@ -123,7 +123,7 @@ class Waveform(object):
             raise RuntimeError('Cutting too much, no points left!')
 
         if from_the_end:
-            i0 = np.where(u_from_zero > self.u[-1]-DeltaT)[0][0]
+            i0 = np.where(u_from_zero > u_from_zero[-1]-DeltaT)[0][0]
             tslice = slice(None, i0)
         else:
             i0 = np.where(u_from_zero > DeltaT)[0][0]
