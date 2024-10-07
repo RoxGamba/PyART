@@ -40,12 +40,12 @@ class Matcher(object):
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
         
         if self.settings['cut']:
-            tlen1 = WaveForm1.u[-1]-WaveForm1.u[0]
-            tlen2 = WaveForm2.u[-1]-WaveForm2.u[0]
-            DeltaT = tlen2-tlen1
-            #tmrg1,_,_,_ = WaveForm1.find_max()
-            #tmrg2,_,_,_ = WaveForm2.find_max()
-            #DeltaT = tmrg2-tmrg1
+            #tlen1 = WaveForm1.u[-1]-WaveForm1.u[0]
+            #tlen2 = WaveForm2.u[-1]-WaveForm2.u[0]
+            #DeltaT = tlen2-tlen1
+            tmrg1,_,_,_ = WaveForm1.find_max()-WaveForm1.u[0]
+            tmrg2,_,_,_ = WaveForm2.find_max()-WaveForm2.u[0]
+            DeltaT = tmrg2-tmrg1
             if DeltaT>0:
                 WaveForm2.cut(DeltaT)
                 

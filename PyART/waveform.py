@@ -112,30 +112,37 @@ class Waveform(object):
         else:
             return u_mrg, A_mrg, omg_mrg, domg_mrg
     
-    def cut(self, DeltaT, cut_hpc=True): 
+    def cut(self, DeltaT, cut_hpc=True, from_the_end=False): 
         """
         Cut the waveform removing the 
-        first DeltaT M
+        first DeltaT M 
+        (or last if from_the_end=True)
         """
         u_from_zero = self.u-self.u[0]
         if u_from_zero[-1]<DeltaT:
             raise RuntimeError('Cutting too much, no points left!')
 
-        i0 = np.where(u_from_zero > DeltaT)[0][0]
-        self._u = self.u[i0:]
+        if from_the_end:
+            i0 = np.where(u_from_zero > self.u[-1]-DeltaT)[0][0]
+            tslice = slice(None, i0)
+        else:
+            i0 = np.where(u_from_zero > DeltaT)[0][0]
+            tslice = slice(i0, None)
+            
+        self._u = self.u[tslice]
         if self.t is not None:
-            self._t = self.t[i0:]
+            self._t = self.t[tslice]
 
         # resize hlm
         for k in self.hlm.keys():
             for sk in self.hlm[k].keys():
-                self._hlm[k][sk] = self.hlm[k][sk][i0:]
+                self._hlm[k][sk] = self.hlm[k][sk][tslice]
 
         # resize polarizations 
         if cut_hpc and self.hp is not None:
-            self._hp = self.hp[i0:]
+            self._hp = self.hp[tslice]
         if cut_hpc and self.hc is not None:
-            self._hc = self.hc[i0:]
+            self._hc = self.hc[tslice]
 
         return
 
