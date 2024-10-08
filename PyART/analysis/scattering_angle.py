@@ -1,10 +1,10 @@
 import numpy as np
 import os
-import hypfit
+#import hypfit
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import matplotlib
-import utils
+from ..utils import utils
 
 matplotlib.rc('text', usetex=True)
 
@@ -359,36 +359,36 @@ class ScatteringAngle:
         self.save_plot(show=show,save=save,figname=figname)
         return 
     
-    def test_hypfit(self, plot=False, swap_ab=True, plot_rlim=None, verbose=None):
-        if verbose is None: verbose = self.verbose
-        angles = np.zeros((2,2))
-        for i in range(2):
-            if i==0:
-                th = self.th_in
-                r  = self.r_in
-            else: 
-                th = self.th_out
-                r  = self.r_out
-            x  = r*np.cos(th)
-            y  = r*np.sin(th)
-            ABCDF = hypfit.fit_quadratic(x, y)
-            canonical = hypfit.quadratic_to_canonical(ABCDF)
-            if plot:
-                if plot_rlim is None:
-                    plot_rlim = self.r_cutoff_out_high
-                hypfit.plot_fit(x, y, canonical, swap_ab=swap_ab, rlim=plot_rlim)
-            A = ABCDF[0]
-            B = ABCDF[1]
-            C = ABCDF[2]
-            sqrt_delta = np.sqrt(B*B-A*C)
-            m1 = A/(-B + sqrt_delta ) # angular coeff of asympt 
-            m2 = A/(-B - sqrt_delta ) 
-            angles[i,:] = np.arctan(np.array([m1,m2]))/2/np.pi*360
-        chi = angles[1,0]-angles[0,1]
-        if verbose:
-            print('chi hyp-extracted : {:.4f}'.format(chi))
-        return chi
-
+#    def test_hypfit(self, plot=False, swap_ab=True, plot_rlim=None, verbose=None):
+#        if verbose is None: verbose = self.verbose
+#        angles = np.zeros((2,2))
+#        for i in range(2):
+#            if i==0:
+#                th = self.th_in
+#                r  = self.r_in
+#            else: 
+#                th = self.th_out
+#                r  = self.r_out
+#            x  = r*np.cos(th)
+#            y  = r*np.sin(th)
+#            ABCDF = hypfit.fit_quadratic(x, y)
+#            canonical = hypfit.quadratic_to_canonical(ABCDF)
+#            if plot:
+#                if plot_rlim is None:
+#                    plot_rlim = self.r_cutoff_out_high
+#                hypfit.plot_fit(x, y, canonical, swap_ab=swap_ab, rlim=plot_rlim)
+#            A = ABCDF[0]
+#            B = ABCDF[1]
+#            C = ABCDF[2]
+#            sqrt_delta = np.sqrt(B*B-A*C)
+#            m1 = A/(-B + sqrt_delta ) # angular coeff of asympt 
+#            m2 = A/(-B - sqrt_delta ) 
+#            angles[i,:] = np.arctan(np.array([m1,m2]))/2/np.pi*360
+#        chi = angles[1,0]-angles[0,1]
+#        if verbose:
+#            print('chi hyp-extracted : {:.4f}'.format(chi))
+#        return chi
+#
 #    def __zero_pad_before(self, array, N, return_column=True):
 #        n = len(array)
 #        v = np.zeros((N,))

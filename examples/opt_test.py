@@ -30,8 +30,8 @@ args = parser.parse_args()
 if args.kind_ic=='e0f0':
     bounds = [[0,0.7], [None, None]]
 else:
-    bounds = [[0.98,1.00], [3.9,6]]
-
+    #bounds = [[0.98,1.00], [3.9,6]]
+    bounds = [[None,None], [None,None]]
 if args.catalog=='rit':
     ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id)
 elif args.catalog=='sxs':

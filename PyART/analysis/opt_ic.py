@@ -123,8 +123,9 @@ class Optimizer(object):
         ky = self.ic_keys[1]
         vx_ref = self.ref_Waveform.metadata[kx]
         vy_ref = self.ref_Waveform.metadata[ky]
-        default_bounds = [ [vx_ref*0.9, vx_ref*1.1],
-                           [vy_ref*0.9, vy_ref*1.1] ]
+        eps = 1e-2
+        default_bounds = [ [vx_ref*(1-eps), vx_ref*(1+eps)],
+                           [vy_ref*(1-eps), vy_ref*(1+eps)] ]
         for i in range(2):
             for j in range(2):
                 if self.opt_bounds[i][j] is None:
