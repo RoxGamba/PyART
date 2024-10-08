@@ -1,6 +1,8 @@
 import os, subprocess
 import numpy as np
 from scipy.optimize import brentq
+from scipy.signal   import find_peaks
+import matplotlib.pyplot as plt
 
 try:
     import EOBRun_module as EOB
@@ -89,14 +91,15 @@ def CreateDict(M=1., q=1,
         Create the dictionary of parameters for EOBRunPy
         """
         if H_hyp>0 and J_hyp>0 and r_hyp is None:
-            if H_hyp>=1: 
+            if H_hyp>1: 
                 r_hyp = 1000
             else:
+                #PotentialPlot(H_hyp,J_hyp,q,chi1z,chi2z)
                 r_apa = search_apastron(q, chi1z, chi2z, J_hyp, H_hyp, step_size=0.1)
                 if r_apa is None:
                     raise RuntimeError(f'Apastron not found, check initial conditon: E={H_hyp:.5f}, pph={J_hyp:.5f}')
-                r_hyp = r_apa - 1e-4 # small tol to avoid numerical issues
-             
+                r_hyp = r_apa - 1e-2 # small tol to avoid numerical issues
+
         pardic = {
             'M'                  : M,
             'q'                  : q,
@@ -180,6 +183,15 @@ def bracketing(f,start,end,step_size):
     bracketed_intervals.append([a,end])
     return bracketed_intervals
 
+def PotentialMinimum(rvec,pph,q,chi1,chi2):
+    V = RadialPotential(rvec,pph,q,chi1,chi2)
+    peaks, _ = find_peaks(-V, height=-1)
+    if len(peaks)>0:
+        Vmin = V[peaks[0]]
+    else:
+        Vmin = 1 
+    return Vmin
+
 def search_apastron(q, chi1, chi2, pph, E, step_size=0.1):
     def fzero(r):
         V = SpinHamiltonian(r, pph, q, chi1, chi2)
@@ -187,7 +199,6 @@ def search_apastron(q, chi1, chi2, pph, E, step_size=0.1):
     r_infty = 200
     bracketed_intervals = bracketing(fzero, 2, r_infty, step_size=step_size)
     approx_r_apa = bracketed_intervals[-1][0]
-    
     # debug
     #import matplotlib.pyplot as plt # for debug
     #rvec = np.linspace(2, 200, num=1000)
@@ -196,13 +207,25 @@ def search_apastron(q, chi1, chi2, pph, E, step_size=0.1):
     #plt.plot(rvec, V)
     #plt.axhline(E)
     #plt.show()
-     
-    if len(bracketed_intervals)<2:
+    if len(bracketed_intervals)<3:
         r_apa = None
     else:
         r_apa = brentq(fzero, approx_r_apa-step_size, approx_r_apa+step_size)
     return r_apa
 
+def PotentialPlot(E0,pph0,q,chi1,chi2):
+    rvec  = np.linspace(2,100,num=1000)
+    V     = RadialPotential(rvec, pph0, q, chi1, chi2) 
+    r_apa = search_apastron(q,chi1,chi2,pph0,E0)
+    Vmin  = PotentialMinimum(rvec,pph0,q,chi1,chi2)
+    plt.figure()
+    plt.title(f'E0={E0:.5f}, pph0={pph0:.5f}')
+    plt.plot(rvec, V)
+    plt.axhline(E0, c='r')
+    plt.axvline(r_apa, c='g')
+    plt.axhline(Vmin,  c='c')
+    plt.show()
+    return
 
 #---------------------
 # Span parameterspace

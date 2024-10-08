@@ -317,6 +317,7 @@ class Waveform_RIT(Waveform):
                     'J0'       : J0,
                     'Jz0'      : J0[2],
                     'pph0'     : pph0,
+                    'E0byM'    : float(ometa['initial-ADM-energy'])/M,
                     # remnant
                     'Mf'       : float(ometa['final-mass']),
                     'afv'      : np.array([0,0,af]),

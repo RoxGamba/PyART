@@ -202,6 +202,7 @@ class Waveform_SXS(Waveform):
                     'P0'       : np.array(ometa['initial_ADM_linear_momentum']),
                     'J0'       : J0,
                     'Jz0'      : J0[2],
+                    'E0byM'    : ometa['initial_ADM_energy']/M,
                     'pph0'     : pph0,
                     # remnant
                     'Mf'       : ometa['remnant_mass'],

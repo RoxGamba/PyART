@@ -30,25 +30,27 @@ args = parser.parse_args()
 if args.kind_ic=='e0f0':
     bounds = [[0,0.7], [None, None]]
 else:
-    bounds = [[0.9,1], [3.8,4.4]]
+    bounds = [[0.98,1.00], [3.9,6]]
 
 if args.catalog=='rit':
     ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id)
-    opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings, opt_bounds=bounds, debug=args.debug_plot)
-
 elif args.catalog=='sxs':
     ebbh = Waveform_SXS(path=sxs_path, download=args.download, ID=args.id, order="Extrapolated_N3.dir", ellmax=7)
-    opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings, opt_bounds=bounds, debug=args.debug_plot)
-
 else:
     raise ValueError(f'Unknown catalog: {args.catalog}')
+
+for k in ebbh.metadata:
+    print(f'{k:10s} : {ebbh.metadata[k]}')
+
+ebbh.cut(300)
+opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings, opt_bounds=bounds, debug=args.debug_plot)
 
 if args.mm_vs_M:
     masses = np.linspace(20, 200, num=19)
     mm = masses*0.
     for i, M in enumerate(masses):
         mm_settings['M'] = M
-        matcher = Matcher(sxs_ebbh, opt.opt_Waveform, settings=mm_settings)
+        matcher = Matcher(ebbh, opt.opt_Waveform, settings=mm_settings)
         mm[i] = matcher.mismatch
         print(f'mass:{M:8.2f}, mm: {mm[i]:.3e}')
     plt.figure(figsize=(9,6))
@@ -59,7 +61,6 @@ if args.mm_vs_M:
     plt.ylim(1e-4, 1e-1)
     plt.grid()
     plt.show()
-
 
     #mm_settings['debug'] = True
     #matcher = Matcher(ebbh, opt.opt_Waveform, settings=mm_settings)

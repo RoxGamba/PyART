@@ -2,6 +2,7 @@ import numpy as np
 from  .match import Matcher 
 from ..models.teob import Waveform_EOB
 from ..models.teob import CreateDict
+from ..models.teob import PotentialMinimum
 import random
 from scipy import optimize 
 
@@ -35,7 +36,7 @@ class Optimizer(object):
                 self.ref_Waveform.metadata['e0'] = 0.5
             ic_keys = ['e0', 'f0']
         elif kind_ic=='E0pph0':
-            ic_keys = ['E0', 'pph0']
+            ic_keys = ['E0byM', 'pph0']
         else:
             raise ValueError('Unknown IC kind: {kind_ic}')
         self.ic_keys = ic_keys
@@ -87,7 +88,7 @@ class Optimizer(object):
             sub_meta['f0']  = return_IC('f0')
 
         elif self.kind_ic=='E0pph0':
-            sub_meta['H_hyp'] = return_IC('E0')
+            sub_meta['H_hyp'] = return_IC('E0byM')
             sub_meta['J_hyp'] = return_IC('pph0')
             sub_meta['r_hyp'] = None # computed in CreateDict
 
@@ -98,8 +99,9 @@ class Optimizer(object):
         try:
             pars        = CreateDict(**sub_meta)
             eob_wave    = Waveform_EOB(pars=pars)
-            eob_wave._u = eob_wave.u#-eob_wave.u[0] 
-        except:
+            eob_wave._u = eob_wave.u#-eob_wave.u[0]
+        except Exception as e:
+            #print(f'Error occured in EOB wave generation:\n{e}')
             eob_wave = None
         return eob_wave
     
@@ -137,7 +139,18 @@ class Optimizer(object):
         if eob_Waveform is not None:
             mm = self.match_against_ref(eob_Waveform, verbose=self.verbose, iter_loop=True)
         else:
-            mm = 1
+            if self.kind_ic=='E0pph0':
+                pph0 = vxy[1]
+                ref_meta = self.ref_Waveform.metadata
+                q    = ref_meta['q']
+                chi1 = ref_meta['chi1z']
+                chi2 = ref_meta['chi2z']
+                rvec = np.linspace(2,20,num=200)
+                Vmin = PotentialMinimum(rvec,pph0,q,chi1,chi2)
+                dV   = Vmin-vxy[0]
+            else:
+                dV = 0
+            mm = 1 + dV
         return mm
 
     def optimize_mismatch(self, use_ref_guess=True, verbose=None):
