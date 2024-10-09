@@ -2,10 +2,11 @@ import os, json, re
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..waveform    import Waveform, WaveIntegrated
+from ..waveform    import Waveform#, WaveIntegrated
 #from ..analysis.scattering_angle import ScatteringAngle
 from ..utils import os_utils as os_ut
 from ..utils import wf_utils as wf_ut
+from ..utils.utils import D1
 
 class Waveform_ICC(Waveform):
     """
@@ -18,7 +19,7 @@ class Waveform_ICC(Waveform):
                  ID          = '0001',
                  ellmax      = 8,
                  integrate   = False,
-                 integr_opts = {'f0':0.001},  # options to integrate Psi4
+                 integr_opts = {'f0':0.001, 'window':[20,-20]},  # options to integrate Psi4
                  #load_puncts = True,
                  ):
         super().__init__()
@@ -53,6 +54,7 @@ class Waveform_ICC(Waveform):
                 self.cut(DeltaT_end, from_the_end=True)
         else:
             self.load_hlm()
+        
         pass
 
     def load_meta(self):
@@ -155,6 +157,13 @@ class Waveform_ICC(Waveform):
         self._hlm = dict_hlm
         if self.u is not None:
             self._u = self.u-self.u[0]
+        # compute dothlm
+        dothlm = {}
+        for k in self.hlm:
+            hlm  = self.hlm[k]['h']
+            dhlm = D1(hlm, self.u, 4)
+            dothlm[k] = wf_ut.get_multipole_dict(dhlm)
+        self._dothlm = dothlm 
         pass
 
 ################################
