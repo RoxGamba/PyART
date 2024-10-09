@@ -13,7 +13,7 @@ import warnings
 from .utils import utils         as ut
 from .utils import wf_utils      as wf_ut
 from .utils import load_nr_utils as nr_ut
-#from .analysis.integrate_multipole import Multipole
+
 from .analysis.integrate_wave import IntegrateMultipole
 
 
@@ -374,94 +374,95 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
 
 
 ####################################
-#class WaveIntegrated(Waveform):
-#    """
-#    Child class to get NR psi4 and integrate to obtain dh and h
-#    """
-#
-#    def __init__(self,
-#                 path        = './',
-#                 ellmax      = 4,
-#                 r_extr      = 1,
-#                 M           = 1,
-#                 modes       = [(2,2)],
-#                 integr_opts = {},
-#                 fmt         = 'etk',
-#                 fname       = 'mp_psi4_l@L@_m@M@_r100.00.asc',
-#                 integrand   = 'psi4',
-#                 norm        = None
-#                 ) -> None:
-#        super().__init__()
-#        
-#        self.path      = path
-#        self.r_extr    = r_extr
-#        self.M         = M
-#        self.modes     = modes
-#        self.fmt       = fmt
-#        self.fname     = fname
-#        self.integrand = integrand.lower()
-#        self.norm      = norm
-#
-#        if 'method'      not in integr_opts: integr_opts['method']      = 'FFI'
-#        if 'f0'          not in integr_opts: integr_opts['f0']          = 0.007
-#        if 'deg'         not in integr_opts: integr_opts['deg']         = 0
-#        if 'poly_int'    not in integr_opts: integr_opts['poly_int']    = None
-#        if 'extrap_psi4' not in integr_opts: integr_opts['extrap_psi4'] = False
-#        if 'window'      not in integr_opts: integr_opts['window']      = None
-#        
-#        self.load_wave()
-#        
-#        self.normalize_wave(norm=norm)
-#
-#        self.integrate_wave(integr_opts)
-#
-#        self.dynamics_from_hlm(self.modes,warning=True)
-#        pass
-#
-#    def load_wave(self):
-#         instance = nr_ut.LoadWave(path=self.path,modes=self.modes,resize=False,fmt=self.fmt,fname=self.fname)
-#         self._t  = instance.t
-#         self._u  = ut.retarded_time(instance.t,self.r_extr,M=self.M)
-#         self.wavelm_file = instance.wave
-#         pass
-#    
-#    def normalize_wave(self, norm=None):
-#        """
-#        Normalize loaded waveform. 
-#        For example, norm='factor2_minusodd_minusm0' activate three flags: factor2, minusodd, minusm0
-#        """
-#        if norm is None:
-#            return 
-#        
-#        opts = {'factor2':False, 'minusodd':False, 'minusm0':False, 'dividebyR':False} 
-#        for elem in norm.split('_'):
-#            opts[elem] = True
-#        for lm in self.modes:
-#            l,m = lm
-#            factor = 1
-#            if opts['factor2']:
-#                factor *= 2
-#            if opts['minusodd']:
-#                factor *= (-1)**(l+m)
-#            if opts['minusm0'] and m==0:
-#                factor *= -1
-#            if opts['dividebyR']:
-#                factor *= 1/self.r_extr
-#            self.wavelm_file[(l,m)] = self.wavelm_file[(l,m)]*factor
-#        pass 
-#
-#    def integrate_wave(self, integr_opts):
-#        for mm in self.modes:
-#            l, m = mm
-#            psi4 = self.wavelm_file[(l,m)]
-#                        
-#            mode = Multipole(l, m, self._t, psi4, mass=self.M, radius=self.r_extr, integrand=self.integrand)
-#            mode.integrate_wave(integr_opts=integr_opts)
-#            
-#            self._psi4lm[(l,m)] = wf_ut.get_multipole_dict(mode.psi)
-#            self._dothlm[(l,m)] = wf_ut.get_multipole_dict(mode.dh)
-#            self._hlm[(l,m)]    = wf_ut.get_multipole_dict(mode.h)
-#        pass
-#
-#
+class WaveIntegrated(Waveform):
+    """
+    Child class to get NR psi4 and integrate to obtain dh and h
+    """
+
+    def __init__(self,
+                 path        = './',
+                 ellmax      = 4,
+                 r_extr      = 1,
+                 M           = 1,
+                 modes       = [(2,2)],
+                 integr_opts = {},
+                 fmt         = 'etk',
+                 fname       = 'mp_psi4_l@L@_m@M@_r100.00.asc',
+                 integrand   = 'psi4',
+                 norm        = None
+                 ) -> None:
+        super().__init__()
+        
+        self.path      = path
+        self.r_extr    = r_extr
+        self.M         = M
+        self.modes     = modes
+        self.fmt       = fmt
+        self.fname     = fname
+        self.integrand = integrand.lower()
+        self.norm      = norm
+
+        if 'method'      not in integr_opts: integr_opts['method']      = 'FFI'
+        if 'f0'          not in integr_opts: integr_opts['f0']          = 0.007
+        if 'deg'         not in integr_opts: integr_opts['deg']         = 0
+        if 'poly_int'    not in integr_opts: integr_opts['poly_int']    = None
+        if 'extrap_psi4' not in integr_opts: integr_opts['extrap_psi4'] = False
+        if 'window'      not in integr_opts: integr_opts['window']      = None
+        
+        self.load_wave()
+        
+        self.normalize_wave(norm=norm)
+
+        self.integrate_wave(integr_opts)
+
+        self.dynamics_from_hlm(self.modes,warning=True)
+        pass
+
+    def load_wave(self):
+         instance = nr_ut.LoadWave(path=self.path,modes=self.modes,resize=False,fmt=self.fmt,fname=self.fname)
+         self._t  = instance.t
+         self._u  = ut.retarded_time(instance.t,self.r_extr,M=self.M)
+         self.wavelm_file = instance.wave
+         pass
+    
+    def normalize_wave(self, norm=None):
+        """
+        Normalize loaded waveform. 
+        For example, norm='factor2_minusodd_minusm0' activate three flags: factor2, minusodd, minusm0
+        """
+        if norm is None:
+            return 
+        
+        opts = {'factor2':False, 'minusodd':False, 'minusm0':False, 'dividebyR':False} 
+        for elem in norm.split('_'):
+            opts[elem] = True
+        for lm in self.modes:
+            l,m = lm
+            factor = 1
+            if opts['factor2']:
+                factor *= 2
+            if opts['minusodd']:
+                factor *= (-1)**(l+m)
+            if opts['minusm0'] and m==0:
+                factor *= -1
+            if opts['dividebyR']:
+                factor *= 1/self.r_extr
+            self.wavelm_file[(l,m)] = self.wavelm_file[(l,m)]*factor
+        pass 
+
+    def integrate_wave(self, integr_opts):
+        for mm in self.modes:
+            l, m = mm
+            psi4 = self.wavelm_file[(l,m)]
+            mode = IntegrateMultipole(l, m, self._t, self.wavelm_file[(l,m)], 
+                                      mass=self.M,radius=self.r_extr, 
+                                      **integr_opts,
+                                      integrand=self.integrand
+                                     )
+            self._psi4lm[(l,m)] = wf_ut.get_multipole_dict(mode.psi4)
+            self._dothlm[(l,m)] = wf_ut.get_multipole_dict(mode.dh)
+            self._hlm[(l,m)]    = wf_ut.get_multipole_dict(mode.h)
+        pass
+
+
 #
