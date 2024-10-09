@@ -29,7 +29,7 @@ class Waveform_RIT(Waveform):
         
         super().__init__()
 
-        self.t_psi4 = None
+        #self.t_psi4 = None # now property of parent class Waveform
         self.t_h    = None
         self.ell_emms = ell_emms
         self.metadata      = None
@@ -194,7 +194,7 @@ class Waveform_RIT(Waveform):
             d[(ell,emm)] = {'real':re, 'imag':im, 'A':A, 'p':p, 'h': A*np.exp(-1j*p)}
         
         self._psi4lm = d
-        self.t_psi4 = t
+        self._t_psi4 = t
         pass
 
     def load_h(self):
