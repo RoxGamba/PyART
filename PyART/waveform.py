@@ -23,8 +23,9 @@ class Waveform(object):
     """
 
     def __init__(self):
-        self._t      = None
+        self._t      = None # I would like to kill this
         self._u      = None
+        self._t_psi4 = None
         self._f      = None
         self._hp     = None
         self._hc     = None
@@ -41,6 +42,9 @@ class Waveform(object):
     @property
     def u(self):
         return self._u
+    @property
+    def t_psi4(self):
+        return self._t_psi4
     @property
     def f(self):
         return self._f
@@ -112,11 +116,13 @@ class Waveform(object):
         else:
             return u_mrg, A_mrg, omg_mrg, domg_mrg
     
-    def cut(self, DeltaT, cut_hpc=True, from_the_end=False): 
+    def cut(self, DeltaT, cut_hpc=True, from_the_end=False, allw=False,
+                  cut_dothlm=True, cut_psi4lm=True): 
         """
-        Cut the waveform removing the 
+        Cut the waveform (hlm) removing the 
         first DeltaT M 
         (or last if from_the_end=True)
+        Store old retarded time in self.u0
         """
         u_from_zero = self.u-self.u[0]
         if u_from_zero[-1]<DeltaT:
@@ -128,15 +134,27 @@ class Waveform(object):
         else:
             i0 = np.where(u_from_zero > DeltaT)[0][0]
             tslice = slice(i0, None)
-            
+        
+        self.u0 = self.u
         self._u = self.u[tslice]
         if self.t is not None:
             self._t = self.t[tslice]
+        
+        def cut_all_modes(wave):
+            if wave: 
+                for k in wave.keys():
+                    for sk in wave[k].keys():
+                        wave[k][sk] = wave[k][sk][tslice]
+            return wave
 
         # resize hlm
-        for k in self.hlm.keys():
-            for sk in self.hlm[k].keys():
-                self._hlm[k][sk] = self.hlm[k][sk][tslice]
+        self._hlm = cut_all_modes(self.hlm)
+        if cut_dothlm:
+            self._dothlm = cut_all_modes(self.dothlm)
+        if cut_psi4lm:
+            self._psi4lm = cut_all_modes(self.psi4lm)
+            if self.t_psi4 is None:
+                self._t_psi4 = self.t_psi4[tslice]
 
         # resize polarizations 
         if cut_hpc and self.hp is not None:
@@ -227,6 +245,32 @@ class Waveform(object):
         self._f, self._hp = ut.fft(self.hp, dt)
         self._f, self._hc = ut.fft(self.hc, dt)
         self._domain = 'Frequency'
+        pass
+    
+    def integrate_psi4(self, t_psi4, radius, integr_opts={}, modes=None, M=1):
+        """
+        Method to integrate psi4 extracted at finite distance
+        """
+        if 'method'      not in integr_opts: integr_opts['method']      = 'FFI'
+        if 'f0'          not in integr_opts: integr_opts['f0']          = 0.007
+        if 'deg'         not in integr_opts: integr_opts['deg']         = 0
+        if 'poly_int'    not in integr_opts: integr_opts['poly_int']    = None
+        if 'extrap_psi4' not in integr_opts: integr_opts['extrap_psi4'] = False
+        if 'window'      not in integr_opts: integr_opts['window']      = None
+        if modes is None:
+            modes = self.psi4lm.keys()
+        dothlm = {}
+        hlm    = {}
+        for lm in modes:
+            l, m = lm
+            mode = Multipole(l, m, t_psi4, self.psi4lm[lm]['h'], 
+                             mass=M, radius=radius, integrand='psi4')
+            mode.integrate_wave(integr_opts=integr_opts)
+            dothlm[lm] = wf_ut.get_multipole_dict(mode.dh)
+            hlm[lm]    = wf_ut.get_multipole_dict(mode.h)
+        self._u      = mode.u
+        self._hlm    = hlm
+        self._dothlm = dothlm
         pass
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):

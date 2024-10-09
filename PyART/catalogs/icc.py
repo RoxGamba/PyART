@@ -17,15 +17,17 @@ class Waveform_ICC(Waveform):
                  path        = './',
                  ID          = '0001',
                  ellmax      = 8,
-                 integr_opts = None, # option to integrate Psi4
-                 load_puncts = True,
+                 integrate   = False,
+                 integr_opts = {'f0':0.001},  # options to integrate Psi4
+                 #load_puncts = True,
                  ):
         super().__init__()
+        
         if isinstance(ID, int):
             ID = f'{ID:04}'
         self.path        = path
         self.ID          = ID
-        self.integr_opts = integr_opts
+        #self.integr_opts = integr_opts
         self.sim_path    = os.path.join(self.path, 'ICC_BBH_'+self.ID)
         self.domain      = 'Time'
         self._kind       = 'ICC'
@@ -34,8 +36,23 @@ class Waveform_ICC(Waveform):
         # define self.metadata and self.ometadata (original)
         self.load_meta()
         
-        # defin self.psi4lm and self.t_psi4
+        # define self.psi4lm, self.t_psi4 and self.r_extr
         self.load_psi4()
+        
+        if integrate:
+            # get hlm and dhlm by psi4-integration
+            self.integrate_psi4(t_psi4=self.t_psi4, radius=self.r_extr, 
+                                integr_opts=integr_opts, M=1, modes=[(2,2)])
+            i0     = np.where(self.u>=0)[0][0] 
+            DeltaT = self.u[i0]-self.u[0]
+            self.cut(DeltaT)
+            tmrg, _, _, _ = self.find_max()
+            DeltaT_end = self.u[-1]-(tmrg+150)
+            if DeltaT_end>0:
+                # leave only 150 M after merge
+                self.cut(DeltaT_end, from_the_end=True)
+        else:
+            self.load_hlm()
         pass
 
     def load_meta(self):
@@ -95,37 +112,49 @@ class Waveform_ICC(Waveform):
             else:
                 return int(value)
         return None
+    
+    def load_multipole_txtfile(self, fname_token, raise_error=True, ellmax=None):
+        if ellmax is None: ellmax = self.ellmax
+        files = os_ut.find_fnames_with_token(self.sim_path, fname_token) 
+        if len(files)<1:
+            msg = f'No {fname_token}-files found in {self.sim_path}'
+            if raise_error:
+                raise RuntimeError(msg)
+            else:
+                print(f'Warning! {msg}. Returning empty vars')
+                return {}, None, []
 
-    def load_psi4(self):
-        psi4_files = os_ut.find_fnames_with_token(self.sim_path, 'mp_psi4') 
-        if len(psi4_files)<1:
-            raise RuntimeError(f'No psi4-file founds in {self.sim_path}')
-        # fill with zeros
-        tmp   = np.loadtxt(psi4_files[0])
+        tmp   = np.loadtxt(files[0])
         t     = tmp[:,0]
         n     = len(t)
         zeros = np.zeros((n,1)) 
-        dict_psi4 = {}
-        for l in range(self.ellmax+1):
+        mydict = {}
+        for l in range(ellmax+1):
             for m in range(l+1):
-                dict_psi4[(l,m)] = {'real':zeros, 'imag':zeros, 'A':zeros,
-                                    'p':zeros, 'h':zeros}
-        # load actually available modes
-        for f in psi4_files:
-            l      = self.extract_value(f, 'l')
-            m      = self.extract_value(f, 'm')
-            X      = np.loadtxt(f)
-            psi4lm = X[:,1]+1j*X[:,2]
-            dict_psi4[(l,m)] = wf_ut.get_multipole_dict(psi4lm)
-            #A      = abs(psi4lm)
-            #p      = -np.unwrap(np.angle(psi4lm))
-            #dict_psi4[(l,m)] = {'real':psi4lm.real, 'imag':psi4lm.imag,
-            #                  'A':A, 'p':p, 'h':psi4lm}
-        self.t_psi4  = t 
+                mydict[(l,m)] = {'real':zeros, 'imag':zeros, 'A':zeros,
+                                 'p':zeros, 'h':zeros}
+        for f in files:
+            l   = self.extract_value(f, 'l')
+            m   = self.extract_value(f, 'm')
+            X   = np.loadtxt(f)
+            flm = X[:,1]+1j*X[:,2]
+            mydict[(l,m)] = wf_ut.get_multipole_dict(flm)
+        
+        return mydict, t, files 
+
+    def load_psi4(self):
+        dict_psi4, t, files = self.load_multipole_txtfile('mp_psi4', raise_error=True)
+        self._t_psi4 = t 
         self._psi4lm = dict_psi4
-        #plt.figure()
-        #plt.plot(t, dict_psi4[(2,2)]['real'])
-        #plt.show()
+        self.r_extr  = self.extract_value(files[0], 'r')
+        pass
+    
+    def load_hlm(self):
+        dict_hlm, u, _ = self.load_multipole_txtfile('mp_strain', raise_error=False)
+        self._u   = u
+        self._hlm = dict_hlm
+        if self.u is not None:
+            self._u = self.u-self.u[0]
         pass
 
 ################################
