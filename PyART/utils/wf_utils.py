@@ -80,7 +80,7 @@ def taper(t, h, M, alpha, tau, Msuns=1.):
     return (window*h)
 
 def get_multipole_dict(wave):
-    return {'real':wave.real, 'imag':wave.real, 'h':wave,
+    return {'real':wave.real, 'imag':wave.imag, 'h':wave,
             'A':np.abs(wave), 'p':-np.unwrap(np.angle(wave))}
 
 
