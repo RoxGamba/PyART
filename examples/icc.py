@@ -58,22 +58,40 @@ if args.integration_test:
     plt.show()
 
 iicc = Waveform_ICC(path=path, ID=args.id, integrate=True, 
-                    integr_opts={'f0':args.f0, 'window':[20,-20]})
+                    integr_opts=integr_opts)
 
 for k in icc.metadata:
     print(f'{k:10s} : {icc.metadata[k]}')
 
-icc_tmrg, _, _, _  =  icc.find_max()
-iicc_tmrg, _, _, _ = iicc.find_max()
+try:
+  iicc_tmrg, _, _, _ = iicc.find_max()
+  icc_tmrg, _, _, _  =  icc.find_max()
+except:
+  iicc_tmrg = 0
+  icc_tmrg  = 0      
 
+waves = ['hlm', 'dothlm', 'psi4lm']
 plt.figure(figsize=(9,6))
-plt.plot( icc.u -  icc_tmrg,  icc.hlm[(2,2)]['A'],    lw=0.5, c='r', label='stored')
-plt.plot( icc.u -  icc_tmrg,  icc.hlm[(2,2)]['real'], lw=1.0, c='r', label=None)
-plt.plot( icc.u -  icc_tmrg,  icc.hlm[(2,2)]['imag'], lw=1.0, c='r', ls=':', label=None)
-plt.plot(iicc.u - iicc_tmrg, iicc.hlm[(2,2)]['A'],    lw=0.5, c='b', label='integrated')
-plt.plot(iicc.u - iicc_tmrg, iicc.hlm[(2,2)]['real'], lw=1.0, c='b', label=None)
-plt.plot(iicc.u - iicc_tmrg, iicc.hlm[(2,2)]['imag'], lw=1.0, c='b', ls=':', label=None)
-plt.legend()
+for i, wave_name in enumerate(waves):
+    plt.subplot(len(waves),1,i+1)
+    if wave_name=='psi4lm':
+        iicc_t = iicc.t_psi4
+    else:
+        iicc_t = iicc.u - iicc_tmrg
+    icc_wave = getattr(icc,wave_name)
+    if icc_wave:
+        if wave_name=='psi4lm':
+            icc_t  =  icc.t_psi4
+        else:
+            icc_t  =  icc.u  - icc_tmrg
+        plt.plot(icc_t, icc_wave[(2,2)]['A'],    lw=0.5, c='r', label='stored')
+        plt.plot(icc_t, icc_wave[(2,2)]['real'], lw=1.0, c='r', label=None)
+        plt.plot(icc_t, icc_wave[(2,2)]['imag'], lw=1.0, c='r', ls=':', label=None)
+    iicc_wave = getattr(iicc, wave_name)
+    plt.plot(iicc_t, iicc_wave[(2,2)]['A'],    lw=0.5, c='b', label='integrated')
+    plt.plot(iicc_t, iicc_wave[(2,2)]['real'], lw=1.0, c='b', label=None)
+    plt.plot(iicc_t, iicc_wave[(2,2)]['imag'], lw=1.0, c='b', ls=':', label=None)
+    plt.legend()
 plt.show()
 
 

@@ -48,14 +48,17 @@ class Waveform_ICC(Waveform):
             i0     = np.where(self.u>=0)[0][0] 
             DeltaT = self.u[i0]-self.u[0]
             self.cut(DeltaT)
-            tmrg, _, _, _ = self.find_max()
-            DeltaT_end = self.u[-1]-(tmrg+150)
+            try:
+                tmrg, _, _, _ = self.find_max()
+                DeltaT_end = self.u[-1]-(tmrg+150)
+            except Exception as e:
+                print(f'Error while searching merger time: {e}')
+                DeltaT_end = 0
             if DeltaT_end>0:
                 # leave only 150 M after merge
                 self.cut(DeltaT_end, from_the_end=True)
         else:
             self.load_hlm_compute_dothlm()
-
         
         pass
 
@@ -116,7 +119,7 @@ class Waveform_ICC(Waveform):
             else:
                 return int(value)
         return None
-    
+     
     def load_multipole_txtfile(self, fname_token, raise_error=True, ellmax=None):
         if ellmax is None: ellmax = self.ellmax
         files = os_ut.find_fnames_with_token(self.sim_path, fname_token) 
@@ -127,8 +130,14 @@ class Waveform_ICC(Waveform):
             else:
                 print(f'Warning! {msg}. Returning empty vars')
                 return {}, None, []
-
-        tmp   = np.loadtxt(files[0])
+        
+        def load_removing_nans(fname):
+            X     = np.loadtxt(fname)
+            ncols = len(X[0,:])  
+            X     = X[~np.isnan(X).any(axis=1)]
+            return X.reshape(-1, ncols)
+        
+        tmp   = load_removing_nans(files[0])
         t     = tmp[:,0]
         n     = len(t)
         zeros = np.zeros((n,1)) 
@@ -140,10 +149,9 @@ class Waveform_ICC(Waveform):
         for f in files:
             l   = self.extract_value(f, 'l')
             m   = self.extract_value(f, 'm')
-            X   = np.loadtxt(f)
+            X   = load_removing_nans(f)
             flm = X[:,1]+1j*X[:,2]
             mydict[(l,m)] = wf_ut.get_multipole_dict(flm)
-        
         return mydict, t, files 
 
     def load_psi4(self):

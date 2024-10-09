@@ -118,7 +118,7 @@ class Waveform(object):
             return u_mrg, A_mrg, omg_mrg, domg_mrg
     
     def cut(self, DeltaT, cut_hpc=True, from_the_end=False, allw=False,
-                  cut_dothlm=True, cut_psi4lm=True): 
+                  cut_dothlm=True): 
         """
         Cut the waveform (hlm) removing the 
         first DeltaT M 
@@ -152,10 +152,10 @@ class Waveform(object):
         self._hlm = cut_all_modes(self.hlm)
         if cut_dothlm:
             self._dothlm = cut_all_modes(self.dothlm)
-        if cut_psi4lm:
-            self._psi4lm = cut_all_modes(self.psi4lm)
-            if self.t_psi4 is None:
-                self._t_psi4 = self.t_psi4[tslice]
+        #if cut_psi4lm:
+        #    self._psi4lm = cut_all_modes(self.psi4lm)
+        #    if self.t_psi4 is None:
+        #        self._t_psi4 = self.t_psi4[tslice]
 
         # resize polarizations 
         if cut_hpc and self.hp is not None:
@@ -268,7 +268,7 @@ class Waveform(object):
         for i, lm in enumerate(modes):
             l, m = lm
             psi4 = self.psi4lm[lm]['h']
-            mode = IntegrateMultipole(l, m, t, psi4, 
+            mode = IntegrateMultipole(l, m, t, psi4, **integr_opts, 
                                       mass=M, radius=radius, 
                                       integrand='psi4')
             dothlm[lm] = wf_ut.get_multipole_dict(mode.dh)
