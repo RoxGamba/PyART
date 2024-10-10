@@ -43,18 +43,6 @@ class Waveform_ICC(Waveform):
         else:
             self.puncts = None
         
-        if self.puncts is not None:
-            if self.puncts['r'][-1]>3:
-                puncts = self.puncts
-                punct0 = np.column_stack( (puncts['t'], puncts['t'], puncts['x0'], puncts['y0'], puncts['z0']) )
-                punct1 = np.column_stack( (puncts['t'], puncts['t'], puncts['x1'], puncts['y1'], puncts['z1']) )
-                scat   = ScatteringAngle(punct0=punct0, punct1=punct1, file_format='GRA', 
-                                         nmin=2, nmax=5, n_extract=4,
-                                         r_cutoff_out_low=25, r_cutoff_out_high=None,
-                                         r_cutoff_in_low=25, r_cutoff_in_high=100,
-                                         verbose=False)
-                self.metadata['scat_angle'] = scat.chi
-
         # define self.psi4lm, self.t_psi4 and self.r_extr
         self.load_psi4()
         
@@ -127,7 +115,7 @@ class Waveform_ICC(Waveform):
                 'Mf'         : None,
                 'af'         : None,
                 'afv'        : None,
-                'scat_angle' : None, # eventually update while loading punctures
+                'scat_angle' : ometa['scat_angle'],
                 }
         
         meta['flags'] = cat_ut.get_flags(meta)
