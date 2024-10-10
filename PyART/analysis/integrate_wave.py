@@ -53,6 +53,14 @@ class IntegrateMultipole(object):
             raise RuntimeError(f"Unknown integrand: {self.integrand}, use 'psi4' or 'news'")
         
         self.u = self.retarded_time()
+
+        # wrap integration options in a dict and store in attribute
+        tostore = ['integrand', 'method', 'extrap_psi4', 
+                   'f0', 'deg', 'poly_int', 
+                   'window', 'walpha']
+        self.integr_opts = {}
+        for k in tostore:
+            self.integr_opts[k] = getattr(self, k)
         pass
 
     def areal_radius(self):
@@ -113,7 +121,8 @@ class IntegrateMultipole(object):
 
     def fixed_freq_int(self, signal, steps=1):
         """
-        Fixed frequency double integration
+        Fixed frequency integration
+        steps is the number of integrations performed
         """
         f          = self.freq_interval(signal)
         factor     = -1j/(2*np.pi*f)  

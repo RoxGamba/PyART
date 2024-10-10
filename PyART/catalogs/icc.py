@@ -20,7 +20,7 @@ class Waveform_ICC(Waveform):
                  ID          = '0001',
                  ellmax      = 8,
                  integrate   = False,
-                 integr_opts = {'f0':0.001, 'window':[20,-20]},  # options to integrate Psi4
+                 integr_opts = {},  # options to integrate Psi4
                  #load_puncts = True,
                  ):
         super().__init__()
@@ -29,7 +29,6 @@ class Waveform_ICC(Waveform):
             ID = f'{ID:04}'
         self.path        = path
         self.ID          = ID
-        #self.integr_opts = integr_opts
         self.sim_path    = os.path.join(self.path, 'ICC_BBH_'+self.ID)
         self.domain      = 'Time'
         self._kind       = 'ICC'
@@ -43,8 +42,10 @@ class Waveform_ICC(Waveform):
         
         if integrate:
             # get hlm and dhlm by psi4-integration
-            self.integrate_psi4(t_psi4=self.t_psi4, radius=self.r_extr, 
-                                integr_opts=integr_opts, M=1, modes=[(2,2)])
+            self.integr_opts = self.integrate_psi4(t_psi4=self.t_psi4, 
+                                                   radius=self.r_extr, 
+                                                   integr_opts=integr_opts, 
+                                                   M=1, modes=[(2,2)])
             i0     = np.where(self.u>=0)[0][0] 
             DeltaT = self.u[i0]-self.u[0]
             self.cut(DeltaT)
@@ -58,6 +59,7 @@ class Waveform_ICC(Waveform):
                 # leave only 150 M after merge
                 self.cut(DeltaT_end, from_the_end=True)
         else:
+            self.integr_opts = {}
             self.load_hlm_compute_dothlm()
         
         pass

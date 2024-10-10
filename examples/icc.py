@@ -8,14 +8,13 @@ import numpy as np
 path = '/Users/simonealbanesi/data/simulations_icc/ICCsims/catalog'
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--id', default=1,     type=int,     help='Simulatoion ID')
-parser.add_argument('--f0',       default=0.001, type=float,   help='FFI f0')
+parser.add_argument('--f0',       default=0.002, type=float,   help='FFI f0')
 parser.add_argument('--integration_test', action='store_true', help='Show integration test for new integrator')
 args = parser.parse_args()
 
 icc  = Waveform_ICC(path=path, ID=args.id)
 
-
-integr_opts = {'f0':args.f0, 'extrap_psi4':True, 'method':'FFI'}
+integr_opts = {'f0':args.f0, 'extrap_psi4':True, 'method':'FFI', 'window':[20,-20]}
 l = 2
 m = 2
 M = 1
@@ -59,6 +58,8 @@ if args.integration_test:
 
 iicc = Waveform_ICC(path=path, ID=args.id, integrate=True, 
                     integr_opts=integr_opts)
+#print( icc.integr_opts)
+#print(iicc.integr_opts)
 
 for k in icc.metadata:
     print(f'{k:10s} : {icc.metadata[k]}')

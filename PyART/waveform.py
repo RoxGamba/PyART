@@ -252,14 +252,6 @@ class Waveform(object):
         """
         Method to integrate psi4 extracted at finite distance
         """
-        if 'method'      not in integr_opts: integr_opts['method']      = 'FFI'
-        if 'f0'          not in integr_opts: integr_opts['f0']          = 0.007
-        if 'deg'         not in integr_opts: integr_opts['deg']         = 0
-        if 'poly_int'    not in integr_opts: integr_opts['poly_int']    = None
-        if 'extrap_psi4' not in integr_opts: integr_opts['extrap_psi4'] = False
-        if 'window'      not in integr_opts: integr_opts['window']      = None
-        if 'walpha'      not in integr_opts: integr_opts['walpha']      = 3
-         
         if modes is None:
             modes = self.psi4lm.keys()
         dothlm = {}
@@ -276,7 +268,7 @@ class Waveform(object):
         self._u      = mode.u
         self._hlm    = hlm
         self._dothlm = dothlm
-        pass
+        return mode.integr_opts
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
