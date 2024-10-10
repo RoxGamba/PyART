@@ -142,7 +142,8 @@ class Waveform_ICC(Waveform):
             pdict = {'t':t,   'r' :r,  'th':th,
                      'x0':x0, 'y0':y0, 'z0':zeros,
                      'x1':x1, 'y1':y1, 'z1':zeros}
-        else: 
+        else:
+            print("Warning: no punctures' tracks found!")
             pdict = None
         return pdict
 

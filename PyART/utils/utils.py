@@ -318,9 +318,6 @@ def upoly_fits(r0,y0,nmin=1,nmax=5,n_extract=None, r_cutoff_low=None, r_cutoff_h
            'coeffs':b, 'polynomials':p, 'mask':mask}
     return out
 
-def vprint(*args, verbose=True):
-    if verbose: print(*args)
-
 ## Waveform stuff, to be removed
 def interpolate_hlm(u, hlm, u_new, kind='cubic'):
     raise RuntimeError('Deprecated!')
@@ -507,37 +504,33 @@ def save_plot(figname,show=True,save=False,verbose=False):
         plt.close()
     return 
 
-def local_vars_for_plots(self, **kwargs):
-    def kwargs_or_self(name):
-        if name in kwargs.keys():
-            return kwargs.get(name)
-        elif hasattr(self, name):
-            return getattr(self, name)
-        else:
-            raise RuntimeError(f'Unknown var: {name}')
-    loc              = lambda:0
-    loc.sims         = kwargs_or_self('sims')
-    loc.tlim         = kwargs_or_self('tlim')
-    loc.savepng      = kwargs_or_self('savepng')
-    loc.showpng      = kwargs_or_self('showpng')
-    loc.colors       = kwargs_or_self('colors')
-    loc.verbose      = kwargs_or_self('verbose')
-    loc.dpi          = kwargs_or_self('dpi')
-    loc.plots_labels = kwargs_or_self('plots_labels')
-    if not set(loc.sims).issubset(set(self.sims)):
-        raise RuntimeError('List of sims specified in plots must be '\
-                           'a subset of the ones specified during class-initialization')
-    loc.nsims = len(loc.sims)
-    if len(loc.plots_labels)!=loc.nsims: #FIXME: set 'auto' options also for labels
-        raise ValueError('size of plot_labels incompatible with number of (local) simulations')
-    if isinstance(loc.colors, str) and loc.colors=='auto':
-        loc.colors = self.auto_colors(loc.nsims) 
-    elif len(loc.colors)!=loc.nsims:
-        raise ValueError('size of colors incompatible with number of (local) simulations')
-    return loc
-
 def retarded_time(t, r, M=1):
+    # FIXME would remove from here!
     R = r * (1 + M/(2*r))**2
     rstar = R + 2*M*np.log(R/(2*M) - 1)
     return t - rstar
+
+def are_dictionaries_equal(dict1, dict2, excluded_keys=[], float_tol=1e-14, verbose=False):
+    """
+    Check if two dictionaries are equal,
+    modulo excluded keys
+    """
+    setk1 = set(dict1.keys())
+    setk2 = set(dict2.keys())
+    setke = set(excluded_keys)
+    if setk1-setke != setk2-setke:
+        if verbose: print('Different number of keys')
+        return False
+    for key in setk1-setke:
+        val1 = dict1[key]
+        val2 = dict2[key]
+        if isinstance(val1, float) or isinstance(val2, float):
+            kbool = abs(val1-val2)<float_tol
+        else:
+            kbool = (val1 == val2)
+        if not kbool:
+            if verbose: print(f'Issues with key: {key}')
+            return False
+    return True
+
 

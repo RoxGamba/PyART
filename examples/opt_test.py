@@ -18,13 +18,13 @@ mm_settings = {'cut':True, 'initial_frequency_mm':20, 'M':100}
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--catalog', required=True, type=str, 
                                  choices=['rit','sxs'],       help='Catalog')
-parser.add_argument('-i', '--id', default=1,  type=int,    help='Simulatoion ID. If not specified, download hard-coded ID list')
+parser.add_argument('-i', '--id', default=1,  type=int,       help='Simulatoion ID. If not specified, download hard-coded ID list')
 parser.add_argument('-d', '--download', action='store_true',  help='Eventually download data')
 parser.add_argument('--kind_ic', choices=['e0f0', 'E0pph0'], 
                                  default='E0pph0',            help='ICs type')
 parser.add_argument('--debug_plot',   action='store_true',    help='Show debug plot')
 parser.add_argument('--mm_vs_M',      action='store_true',    help='Show plot mm vs M')
-
+parser.add_argument('--overwrite',    action='store_true',    help='Overwrite option (json)')
 args = parser.parse_args()
 
 if args.kind_ic=='e0f0':
@@ -43,7 +43,12 @@ for k in ebbh.metadata:
     print(f'{k:10s} : {ebbh.metadata[k]}')
 
 ebbh.cut(300)
-opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings, opt_bounds=bounds, debug=args.debug_plot)
+
+json_file = 'test.json'
+
+opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings, 
+                      opt_bounds=bounds, debug=args.debug_plot,
+                      json_file=json_file, overwrite=args.overwrite)
 
 if args.mm_vs_M:
     masses = np.linspace(20, 200, num=19)
