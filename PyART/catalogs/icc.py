@@ -2,12 +2,11 @@ import os, json, re
 import numpy as np
 import matplotlib.pyplot as plt
 
+from ..analysis.scattering_angle import ScatteringAngle
 from ..waveform    import Waveform 
-
-#from ..analysis.scattering_angle import ScatteringAngle
-from ..utils import os_utils  as os_ut
-from ..utils import wf_utils  as wf_ut
-from ..utils import cat_utils as cat_ut
+from ..utils       import os_utils  as os_ut
+from ..utils       import wf_utils  as wf_ut
+from ..utils       import cat_utils as cat_ut
 from ..utils.utils import D1
 
 class Waveform_ICC(Waveform):
@@ -22,7 +21,7 @@ class Waveform_ICC(Waveform):
                  ellmax      = 8,
                  integrate   = False,
                  integr_opts = {},  # options to integrate Psi4
-                 #load_puncts = True,
+                 load_puncts = False,
                  ):
         super().__init__()
         
@@ -34,10 +33,28 @@ class Waveform_ICC(Waveform):
         self.domain      = 'Time'
         self._kind       = 'ICC'
         self.ellmax      = ellmax
-
+        
         # define self.metadata and self.ometadata (original)
         self.load_meta()
+
+        # load puncts
+        if load_puncts:
+            self.puncts = self.load_puncts()
+        else:
+            self.puncts = None
         
+        if self.puncts is not None:
+            if self.puncts['r'][-1]>3:
+                puncts = self.puncts
+                punct0 = np.column_stack( (puncts['t'], puncts['t'], puncts['x0'], puncts['y0'], puncts['z0']) )
+                punct1 = np.column_stack( (puncts['t'], puncts['t'], puncts['x1'], puncts['y1'], puncts['z1']) )
+                scat   = ScatteringAngle(punct0=punct0, punct1=punct1, file_format='GRA', 
+                                         nmin=2, nmax=5, n_extract=4,
+                                         r_cutoff_out_low=25, r_cutoff_out_high=None,
+                                         r_cutoff_in_low=25, r_cutoff_in_high=100,
+                                         verbose=False)
+                self.metadata['scat_angle'] = scat.chi
+
         # define self.psi4lm, self.t_psi4 and self.r_extr
         self.load_psi4()
         
@@ -79,6 +96,7 @@ class Waveform_ICC(Waveform):
         M2 =   M/(1+q)
         S1 = np.array([0, 0, ometa['chi1']*M1*M1])
         S2 = np.array([0, 0, ometa['chi2']*M2*M2])
+
         meta = {'name'       : ometa['name'],
                 'ref_time'   : 0,
                 'm1'         : M1,
@@ -109,7 +127,7 @@ class Waveform_ICC(Waveform):
                 'Mf'         : None,
                 'af'         : None,
                 'afv'        : None,
-                'scat_angle' : None, # FIXME
+                'scat_angle' : None, # eventually update while loading punctures
                 }
         
         meta['flags'] = cat_ut.get_flags(meta)
@@ -119,6 +137,27 @@ class Waveform_ICC(Waveform):
         self.metadata  = meta
         return
     
+    def load_puncts(self, fname='puncturetracker-pt_loc..asc'):
+        full_name = os.path.join(self.sim_path,fname)
+        if os.path.exists(full_name):
+            X  = np.loadtxt(full_name)
+            t  = X[:, 8]
+            x0 = X[:,22]
+            y0 = X[:,32]
+            x1 = X[:,23]
+            y1 = X[:,33]
+            x  = x0-x1
+            y  = y0-y1
+            r  = np.sqrt(x**2+y**2)
+            th = -np.unwrap(np.angle(x+1j*y))
+            zeros = 0*t
+            pdict = {'t':t,   'r' :r,  'th':th,
+                     'x0':x0, 'y0':y0, 'z0':zeros,
+                     'x1':x1, 'y1':y1, 'z1':zeros}
+        else: 
+            pdict = None
+        return pdict
+
     def extract_value(self, string, key):
         # FIXME: move in utils
         pattern = rf"{key}(\d+(\.\d+|p\d+)?|\d+)"

@@ -1,9 +1,11 @@
-import argparse
+import argparse, matplotlib
 import matplotlib.pyplot as plt
 from PyART.catalogs.icc import Waveform_ICC
 from PyART.analysis.integrate_multipole import Multipole
 from PyART.analysis.integrate_wave      import IntegrateMultipole
 import numpy as np
+
+matplotlib.rc('text', usetex=True)
 
 path = '/Users/simonealbanesi/data/simulations_icc/ICCsims/catalog'
 parser = argparse.ArgumentParser()
@@ -57,7 +59,7 @@ if args.integration_test:
     plt.show()
 
 iicc = Waveform_ICC(path=path, ID=args.id, integrate=True, 
-                    integr_opts=integr_opts)
+                    integr_opts=integr_opts, load_puncts=True)
 #print( icc.integr_opts)
 #print(iicc.integr_opts)
 
@@ -72,6 +74,8 @@ except:
   icc_tmrg  = 0      
 
 waves = ['hlm', 'dothlm', 'psi4lm']
+ylabs = [r'$h_{22}$', r'$\dot{h}_{22}$', r'$\psi_4^{22}$']
+
 plt.figure(figsize=(9,6))
 for i, wave_name in enumerate(waves):
     plt.subplot(len(waves),1,i+1)
@@ -92,7 +96,18 @@ for i, wave_name in enumerate(waves):
     plt.plot(iicc_t, iicc_wave[(2,2)]['A'],    lw=0.5, c='b', label='integrated')
     plt.plot(iicc_t, iicc_wave[(2,2)]['real'], lw=1.0, c='b', label=None)
     plt.plot(iicc_t, iicc_wave[(2,2)]['imag'], lw=1.0, c='b', ls=':', label=None)
+    plt.ylabel(ylabs[i], fontsize=20)
+    if i==len(waves):
+        plt.xlabel(r'$u$', fontsize=20)
     plt.legend()
 plt.show()
+
+if iicc.metadata['scat_angle'] is not None:
+    plt.figure()
+    plt.plot(iicc.puncts['x0'], iicc.puncts['y0'])
+    plt.plot(iicc.puncts['x1'], iicc.puncts['y1'])
+    plt.xlabel(r'$x$', fontsize=20)
+    plt.ylabel(r'$y$', fontsize=20)
+    plt.show()
 
 
