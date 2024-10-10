@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 from ..waveform    import Waveform 
 
 #from ..analysis.scattering_angle import ScatteringAngle
-from ..utils import os_utils as os_ut
-from ..utils import wf_utils as wf_ut
+from ..utils import os_utils  as os_ut
+from ..utils import wf_utils  as wf_ut
+from ..utils import cat_utils as cat_ut
 from ..utils.utils import D1
 
 class Waveform_ICC(Waveform):
@@ -76,35 +77,44 @@ class Waveform_ICC(Waveform):
         M  = 1
         M1 = q*M/(1+q)
         M2 =   M/(1+q)
-        meta = {'name'     : ometa['name'],
-                'ref_time' : 0,
-                'm1'       : M1,
-                'm2'       : M2,
-                'M'        : M,
-                'q'        : q,
-                'nu'       : nu,
-                'chi1x'    : 0,
-                'chi1y'    : 0,
-                'chi1z'    : ometa['chi1'],
-                'chi2x'    : 0,
-                'chi2y'    : 0,
-                'chi2z'    : ometa['chi2'],
-                'r0'       : ometa['D'],
-                'e0'       : ometa['ecc'],
-                'E0'       : ometa['E0'],
-                'Jz0'      : ometa['J0'],
-                'P0'       : np.array(ometa['P0']),
-                'J0'       : np.array([0,0,ometa['J0']]),
-                'pph0'     : ometa['J0']/(nu*M*M),
-                'E0byM'    : ometa['E0'],
-                'pos1'     : np.array([0,0,+ometa['D']/2]),
-                'pos2'     : np.array([0,0,-ometa['D']/2]),
-                'f0v'      : None,
-                'f0'       : None,
-                'Mf'       : None,
-                'af'       : None,
-                'afv'      : None,
+        S1 = np.array([0, 0, ometa['chi1']*M1*M1])
+        S2 = np.array([0, 0, ometa['chi2']*M2*M2])
+        meta = {'name'       : ometa['name'],
+                'ref_time'   : 0,
+                'm1'         : M1,
+                'm2'         : M2,
+                'M'          : M,
+                'q'          : q,
+                'nu'         : nu,
+                'S1'         : S1,
+                'S2'         : S2,
+                'chi1x'      : 0,
+                'chi1y'      : 0,
+                'chi1z'      : ometa['chi1'],
+                'chi2x'      : 0,
+                'chi2y'      : 0,
+                'chi2z'      : ometa['chi2'],
+                'r0'         : ometa['D'],
+                'e0'         : ometa['ecc'],
+                'E0'         : ometa['E0'],
+                'Jz0'        : ometa['J0'],
+                'P0'         : np.array(ometa['P0']),
+                'J0'         : np.array([0,0,ometa['J0']]),
+                'pph0'       : ometa['J0']/(nu*M*M),
+                'E0byM'      : ometa['E0'],
+                'pos1'       : np.array([0,0,+ometa['D']/2]),
+                'pos2'       : np.array([0,0,-ometa['D']/2]),
+                'f0v'        : None,
+                'f0'         : None,
+                'Mf'         : None,
+                'af'         : None,
+                'afv'        : None,
+                'scat_angle' : None, # FIXME
                 }
+        
+        meta['flags'] = cat_ut.get_flags(meta)
+        cat_ut.check_metadata(meta)
+
         self.ometadata = ometa
         self.metadata  = meta
         return

@@ -18,7 +18,7 @@ mm_settings = {'cut':True, 'initial_frequency_mm':20, 'M':100}
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--catalog', required=True, type=str, 
                                  choices=['rit','sxs'],       help='Catalog')
-parser.add_argument('-i', '--id', default=None,  type=int,    help='Simulatoion ID. If not specified, download hard-coded ID list')
+parser.add_argument('-i', '--id', default=1,  type=int,    help='Simulatoion ID. If not specified, download hard-coded ID list')
 parser.add_argument('-d', '--download', action='store_true',  help='Eventually download data')
 parser.add_argument('--kind_ic', choices=['e0f0', 'E0pph0'], 
                                  default='E0pph0',            help='ICs type')

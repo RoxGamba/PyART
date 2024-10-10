@@ -1,7 +1,7 @@
 import numpy as np; import os
 import h5py; import json
 from ..waveform import  Waveform
-from .cat_utils import check_metadata
+from ..utils import cat_utils as cat_ut
 
 class Waveform_SXS(Waveform):
     """
@@ -173,44 +173,46 @@ class Waveform_SXS(Waveform):
         Lz   = J0 - hS1*M1*M1 - hS2*M2*M2
         pph0 = Lz[2]/(M*M*nu) 
 
-        metadata = {'name'     : name, # i.e. store as name 'SXS:BBH:ID'
-                    'ref_time' : ometa['reference_time'],
+        metadata = {'name'       : name, # i.e. store as name 'SXS:BBH:ID'
+                    'ref_time'   : ometa['reference_time'],
                     # masses and spins 
-                    'm1'       : M1,
-                    'm2'       : M2,
-                    'M'        : M,
-                    'q'        : q,
-                    'nu'       : nu,
-                    'S1'       : hS1*M1*M1, # [M2]
-                    'S2'       : hS2*M2*M2,
-                    'chi1x'    : hS1[0],  # dimensionless
-                    'chi1y'    : hS1[1],
-                    'chi1z'    : hS1[2],
-                    'chi2x'    : hS2[0],  # dimensionless
-                    'chi2y'    : hS2[1],
-                    'chi2z'    : hS2[2],
+                    'm1'         : M1,
+                    'm2'         : M2,
+                    'M'          : M,
+                    'q'          : q,
+                    'nu'         : nu,
+                    'S1'         : hS1*M1*M1, # [M2]
+                    'S2'         : hS2*M2*M2,
+                    'chi1x'      : hS1[0],  # dimensionless
+                    'chi1y'      : hS1[1],
+                    'chi1z'      : hS1[2],
+                    'chi2x'      : hS2[0],  # dimensionless
+                    'chi2y'      : hS2[1],
+                    'chi2z'      : hS2[2],
                     # positions
-                    'pos1'     : pos1,
-                    'pos2'     : pos2,
-                    'r0'       : r0,
-                    'e0'       : ecc,
+                    'pos1'       : pos1,
+                    'pos2'       : pos2,
+                    'r0'         : r0,
+                    'e0'         : ecc,
                     # frequencies
-                    'f0v'      : np.array(ometa['reference_orbital_frequency'])/np.pi,
-                    'f0'       : ometa['reference_orbital_frequency'][2]/np.pi,
+                    'f0v'        : np.array(ometa['reference_orbital_frequency'])/np.pi,
+                    'f0'         : ometa['reference_orbital_frequency'][2]/np.pi,
                     # ADM quantities (INITIAL, not REF)
-                    'E0'       : ometa['initial_ADM_energy'],
-                    'P0'       : np.array(ometa['initial_ADM_linear_momentum']),
-                    'J0'       : J0,
-                    'Jz0'      : J0[2],
-                    'E0byM'    : ometa['initial_ADM_energy']/M,
-                    'pph0'     : pph0,
+                    'E0'         : ometa['initial_ADM_energy'],
+                    'P0'         : np.array(ometa['initial_ADM_linear_momentum']),
+                    'J0'         : J0,
+                    'Jz0'        : J0[2],
+                    'E0byM'      : ometa['initial_ADM_energy']/M,
+                    'pph0'       : pph0,
                     # remnant
-                    'Mf'       : ometa['remnant_mass'],
-                    'afv'      : afv,
-                    'af'       : afv[2],
+                    'Mf'         : ometa['remnant_mass'],
+                    'afv'        : afv,
+                    'af'         : afv[2],
+                    'scat_angle' : None,
                    }
+        metadata['flags'] = cat_ut.get_flags(metadata)
         # check that all the required quantities are given 
-        check_metadata(metadata,raise_err=True) 
+        cat_ut.check_metadata(metadata, raise_err=True)
         # then store as attribute
         self.metadata = metadata 
         pass

@@ -21,9 +21,12 @@ KEYS = ['name',
         'E0byM',          # E0/M 
         'pos1', 'pos2',   # position vectors
         'f0v',            # orbital freq (3-vector)
-        'f0',             # orbital freq (float)) 
+        'f0',             # orbital freq (float))
         'Mf', 'af',       # remnant properties, scalars (af dimensionless, float)
-        'afv']            # af (3-vector)
+        'afv',            # af (3-vector)
+        'scat_angle',     # scattering angle
+        'flags',          # flags to categorize waveform (e.g. 'nonspinning', 'eccentric')
+        ]
 
 def errwarn(msg, raise_err=True):
     if raise_err:
@@ -45,8 +48,31 @@ def check_metadata(meta, raise_err=True):
             errwarn(f"Unknown key '{key}'! If you think this is correct, updated catalog_utils.py", raise_err=raise_err)
     pass
 
+def get_flags(meta, thres_spin=1e-5, thres_q=1e-3, thres_e0=1e-3):
+    flags = []
+    spins = [meta['chi1x'], meta['chi1y'], meta['chi1z'],
+             meta['chi2x'], meta['chi2y'], meta['chi2z']]
+    if all(spins[i] < thres_spin for i in range(6)):
+        flags.append('nonspinning')
+    elif all(spins[i] < thres_spin for i in [0, 1, 3, 4]):
+        flags.append('spin-aligned')
+    else:
+        flags.append('spin-precessing')
+    
+    if abs(meta['q']-1)<thres_q:
+        flags.append('equal-mass')
+    else:
+        flags.append('unequal-mass')
+    
+    if meta['E0byM']>=1:
+        flags.append('hyperbolic')
+    elif meta['e0']>thres_e0:
+        flags.append('elliptic')
+    else:
+        flags.append('quasi-circular')
 
-
+    return flags
+        
 
 
 

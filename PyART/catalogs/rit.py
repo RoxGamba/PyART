@@ -7,8 +7,8 @@ import os, json, requests, time
 from bs4 import BeautifulSoup
 
 from ..waveform import Waveform
-from ..utils    import os_utils as ou
-from .cat_utils import check_metadata
+from ..utils    import os_utils  as os_ut
+from ..utils    import cat_utils as cat_ut
 
 # This class is used to load the RIT data and store it in a convenient way
 class Waveform_RIT(Waveform):
@@ -60,7 +60,7 @@ class Waveform_RIT(Waveform):
             print('+++ Warning! Specifying mtdt_path in input is deprecated +++')
             self.mtdt_path = os.path.join(path,mtdt_path)
         else:
-            self.mtdt_path = ou.find_fnames_with_token(self.sim_path, 'Metadata.txt')[0]
+            self.mtdt_path = os_ut.find_fnames_with_token(self.sim_path, 'Metadata.txt')[0]
 
         if mtdt_load:
             self.metadata, self.ometadata = self.load_metadata(self.mtdt_path)
@@ -71,7 +71,7 @@ class Waveform_RIT(Waveform):
             self.psi_path  = os.path.join(path,psi_path)
             self.mtdt_psi4 = os.path.join(path,psi_path,'Metadata')
         else:
-            self.psi_path  = ou.find_dirs_with_token(self.sim_path, 'ExtrapPsi4')[0]
+            self.psi_path  = os_ut.find_dirs_with_token(self.sim_path, 'ExtrapPsi4')[0]
             self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
         
         if psi_load:
@@ -83,7 +83,7 @@ class Waveform_RIT(Waveform):
             print('+++ Warning! Specifying h_path in input is deprecated +++') 
             h_path = os.path.join(path,h_path)
         else:
-            h_path = ou.find_fnames_with_token(self.sim_path, 'ExtrapStrain')[0]
+            h_path = os_ut.find_fnames_with_token(self.sim_path, 'ExtrapStrain')[0]
 
         if h_load:
             self.h_file   = h5py.File(h_path, 'r')
@@ -154,20 +154,20 @@ class Waveform_RIT(Waveform):
         # if everything fine, creat simulation-dir and download data
         os.makedirs(path, exist_ok=True)
         for href in urls_dict[ID]:
-            ou.runcmd('wget '+href, workdir=path)
+            os_ut.runcmd('wget '+href, workdir=path)
             if 'tar.gz' in href: # if compressed, untar
                 elems = href.split('/')
                 fname = elems[-1]
-                ou.runcmd('tar -vxzf '+fname, workdir=path)
-                ou.runcmd('rm -rv '+fname,    workdir=path) # remove compressed archive
+                os_ut.runcmd('tar -vxzf '+fname, workdir=path)
+                os_ut.runcmd('rm -rv '+fname,    workdir=path) # remove compressed archive
                 
                 # check if the ExtrapPsi4* dir is in the correct level
-                subdirs_ExtrapPsi4 = ou.find_dirs_with_subdirs(path, 'ExtrapPsi4')
+                subdirs_ExtrapPsi4 = os_ut.find_dirs_with_subdirs(path, 'ExtrapPsi4')
                 subdir = subdirs_ExtrapPsi4[0]
-                if ou.is_subdir(path, subdir): # if wron level, move to upper one
+                if os_ut.is_subdir(path, subdir): # if wron level, move to upper one
                     tomove = os.path.join(subdir, 'ExtrapPsi4*')
-                    ou.runcmd(f'mv -v {tomove} .', workdir=path)
-                    ou.runcmd(f'rmdir {subdir}',   workdir=path)
+                    os_ut.runcmd(f'mv -v {tomove} .', workdir=path)
+                    os_ut.runcmd(f'rmdir {subdir}',   workdir=path)
         print('>> Elapsed time: {:.3f} s\n'.format(time.perf_counter()-tstart))
                      
         pass
@@ -287,45 +287,47 @@ class Waveform_RIT(Waveform):
             pph0 = L0[2]/(M*M*nu)
 
             af = float(ometa['final-chi'])
-            meta = {'name'     : ometa['catalog-tag'], # i.e. store as name 'RIT:eBBH:1110'
-                    'ref_time' : ref_time,
+            meta = {'name'       : ometa['catalog-tag'], # i.e. store as name 'RIT:eBBH:1110'
+                    'ref_time'   : ref_time,
                     # masses and spins 
-                    'm1'       : M1,
-                    'm2'       : M2,
-                    'M'        : M,
-                    'q'        : q,
-                    'nu'       : nu,
-                    'S1'       : S1,
-                    'S2'       : S2,
-                    'chi1x'    : chi1x,  # dimensionless
-                    'chi1y'    : chi1y,
-                    'chi1z'    : chi1z,
-                    'chi2x'    : chi2x,  # dimensionless
-                    'chi2y'    : chi2y,
-                    'chi2z'    : chi2z,
+                    'm1'         : M1,
+                    'm2'         : M2,
+                    'M'          : M,
+                    'q'          : q,
+                    'nu'         : nu,
+                    'S1'         : S1,
+                    'S2'         : S2,
+                    'chi1x'      : chi1x,  # dimensionless
+                    'chi1y'      : chi1y,
+                    'chi1z'      : chi1z,
+                    'chi2x'      : chi2x,  # dimensionless
+                    'chi2y'      : chi2y,
+                    'chi2z'      : chi2z,
                     # positions
-                    'pos1'     : np.array([0,0,+D/2]),
-                    'pos2'     : np.array([0,0,-D/2]),
-                    'r0'       : D, 
-                    'e0'       : float(ometa['eccentricity']),
+                    'pos1'       : np.array([0,0,+D/2]),
+                    'pos2'       : np.array([0,0,-D/2]),
+                    'r0'         : D, 
+                    'e0'         : float(ometa['eccentricity']),
                      # frequencies
-                    'f0v'      : np.array([0,0,f0]), # FIXME: only for spin-aligned
-                    'f0'       : f0,
+                    'f0v'        : np.array([0,0,f0]), # FIXME: only for spin-aligned
+                    'f0'         : f0,
                     # ADM quantities (INITIAL, not REF)
-                    'E0'       : float(ometa['initial-ADM-energy']),
-                    'P0'       : None,
-                    'J0'       : J0,
-                    'Jz0'      : J0[2],
-                    'pph0'     : pph0,
-                    'E0byM'    : float(ometa['initial-ADM-energy'])/M,
+                    'E0'         : float(ometa['initial-ADM-energy']),
+                    'P0'         : None,
+                    'J0'         : J0,
+                    'Jz0'        : J0[2],
+                    'pph0'       : pph0,
+                    'E0byM'      : float(ometa['initial-ADM-energy'])/M,
                     # remnant
-                    'Mf'       : float(ometa['final-mass']),
-                    'afv'      : np.array([0,0,af]),
-                    'af'       : af,
+                    'Mf'         : float(ometa['final-mass']),
+                    'afv'        : np.array([0,0,af]),
+                    'af'         : af,
+                    'scat_angle' : None, 
                     }
 
+        meta['flags'] = cat_ut.get_flags(meta)
         # check that all the required quantities are given 
-        check_metadata(meta,raise_err=True) 
+        cat_ut.check_metadata(meta, raise_err=True)
         
         return meta, ometa
 
