@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from PyART.analysis.opt_ic import Optimizer
 from PyART.catalogs.sxs    import Waveform_SXS
 from PyART.catalogs.rit    import Waveform_RIT
+from PyART.catalogs.icc    import Waveform_ICC
 from PyART.analysis.match  import Matcher
 
 matplotlib.rc('text', usetex=True)
@@ -12,19 +13,21 @@ repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], \
                              stdout=subprocess.PIPE).communicate()[0].rstrip().decode('utf-8')
 sxs_path = os.path.join(repo_path, 'examples/local_sxs/')
 rit_path = os.path.join(repo_path, 'examples/local_rit/')
-
+icc_path = '/Users/simonealbanesi/data/simulations_icc/ICCsims/catalog'
 mm_settings = {'cut':True, 'initial_frequency_mm':20, 'M':100}
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--catalog', required=True, type=str, 
-                                 choices=['rit','sxs'],       help='Catalog')
-parser.add_argument('-i', '--id', default=1,  type=int,       help='Simulatoion ID. If not specified, download hard-coded ID list')
-parser.add_argument('-d', '--download', action='store_true',  help='Eventually download data')
+                                 choices=['rit','sxs', 'icc'], help='Catalog')
+parser.add_argument('-i', '--id', default=1,  type=int,        help='Simulatoion ID. If not specified, download hard-coded ID list')
+parser.add_argument('--max_opt_iter', default=1, type=int,     help='Max opt iter')
+parser.add_argument('--mm_threshold',  default=5e-3, type=float, help='mismatch thresholds')
+parser.add_argument('-d', '--download', action='store_true',   help='Eventually download data')
 parser.add_argument('--kind_ic', choices=['e0f0', 'E0pph0'], 
-                                 default='E0pph0',            help='ICs type')
-parser.add_argument('--debug_plot',   action='store_true',    help='Show debug plot')
-parser.add_argument('--mm_vs_M',      action='store_true',    help='Show plot mm vs M')
-parser.add_argument('--overwrite',    action='store_true',    help='Overwrite option (json)')
+                                 default='E0pph0',             help='ICs type')
+parser.add_argument('--debug_plot',   action='store_true',     help='Show debug plot')
+parser.add_argument('--mm_vs_M',      action='store_true',     help='Show plot mm vs M')
+parser.add_argument('--overwrite',    action='store_true',     help='Overwrite option (json)')
 args = parser.parse_args()
 
 if args.kind_ic=='e0f0':
@@ -36,17 +39,25 @@ if args.catalog=='rit':
     ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id)
 elif args.catalog=='sxs':
     ebbh = Waveform_SXS(path=sxs_path, download=args.download, ID=args.id, order="Extrapolated_N3.dir", ellmax=7)
+elif args.catalog=='icc':
+    ebbh = Waveform_ICC(path=icc_path, ID=args.id, integrate=True,
+                        integr_opts={'f0':0.002, 'extrap_psi4':True, 'method':'FFI', 'window':[20,-20]})
 else:
     raise ValueError(f'Unknown catalog: {args.catalog}')
 
 for k in ebbh.metadata:
     print(f'{k:10s} : {ebbh.metadata[k]}')
+print('\n\n')
 
-ebbh.cut(300)
+if args.catalog=='sxs':
+    print('Removing junk')
+    ebbh.cut(200)
 
 json_file = 'test.json'
 
-opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings, 
+opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
+                      max_opt_iter = args.max_opt_iter,
+                      mm_threshold = args.mm_threshold,
                       opt_bounds=bounds, debug=args.debug_plot,
                       json_file=json_file, overwrite=args.overwrite)
 

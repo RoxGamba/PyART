@@ -30,7 +30,7 @@ class Matcher(object):
             self.settings.update(settings)
         self.modes = settings.get('modes', [])
         del settings 
-
+            
         # Choose the appropriate mismatch function
         if self.settings['kind'] == 'single-mode':
             self.match_f = self._compute_mm_single_mode

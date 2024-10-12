@@ -15,26 +15,28 @@ class Optimizer(object):
     """
     def __init__(self,
                  ref_Waveform,
-                 opt_seed    = 190521,
-                 opt_maxfun  = 100,
-                 kind_ic     = 'E0pph0', # implemented: e0f0, E0pph0
-                 mm_settings = None,
-                 verbose     = True,
-                 opt_bounds  = [[None,None],[None,None]],
-                 debug       = False,
-                 json_file   = None,  # JSON file with mm (must be consistent with current options) 
-                 overwrite   = False, # overwrite JSON with new mm-computation
+                 opt_seed     = 190521,
+                 opt_maxfun   = 100,
+                 kind_ic      = 'E0pph0', # implemented: e0f0, E0pph0
+                 max_opt_iter = 1,        # max opt iters (i.e. using different initial guesses) if mm_thres is not reached
+                 mm_threshold = 5e-3,
+                 mm_settings  = None,
+                 verbose      = True,
+                 opt_bounds   = None,
+                 debug        = False,
+                 json_file    = None,  # JSON file with mm (must be consistent with current options) 
+                 overwrite    = False, # overwrite JSON with new mm-computation
                  ):
         
         self.ref_Waveform = ref_Waveform
         self.kind_ic      = kind_ic
+        self.max_opt_iter = max_opt_iter
+        self.mm_threshold = mm_threshold
         self.verbose      = verbose
-        self.opt_bounds   = opt_bounds
         self.opt_seed     = opt_seed
         self.opt_maxfun   = opt_maxfun
         self.json_file    = json_file
         self.overwrite    = overwrite
-        self.opt_iter     = 1 # counter
         
         # set up things according to IC-kind
         if kind_ic=='e0f0':
@@ -50,8 +52,11 @@ class Optimizer(object):
         self.ic_keys = ic_keys
         
         # update None values in self.opt_bounds
+        if opt_bounds is None:
+            opt_bounds = [[None,None],[None,None]]
+        self.opt_bounds = opt_bounds
         self.__update_bounds()
-        
+
         # mismatch settings
         self.mm_settings  = Matcher.__default_parameters__(0) 
         if isinstance(mm_settings, dict):
@@ -61,11 +66,11 @@ class Optimizer(object):
             print('Warning: using the cut-option during optimization is strongly suggested!')
           
         if verbose:
-            print('-'*70)
-            print(f'Running Optimizer')
-            print(f'Reference waveform : {ref_Waveform.metadata["name"]}')
-            print(f'variables of ICs   : {ic_keys[0]}, {ic_keys[1]}')
-            print('-'*70)
+            print('#'*60)
+            print(f'# Running Optimizer')
+            print(f'# reference waveform : {ref_Waveform.metadata["name"]}')
+            print(f'# variables of ICs   : {ic_keys[0]}, {ic_keys[1]}')
+            print('#'*60)
 
         mm_data  = self.load_or_create_mismatches()
         ref_name = self.ref_Waveform.metadata['name']
@@ -78,9 +83,22 @@ class Optimizer(object):
                 print('Original mm  : {:.3e}'.format(opt_data['mm0']))
                 print('Optimized mm : {:.3e}'.format(opt_data['mm_opt']))
         else:
-            opt_data = self.optimize_mismatch()
+            random.seed(self.opt_seed)
+            self.annealing_counter = 1 # counter
+            dashes = '-'*55
+            for i in range(self.max_opt_iter):
+                if self.verbose: print(f'{dashes}\nOptimization iteration #{i:d}\n{dashes}')
+                if i==0:
+                    use_ref_guess = True
+                else:
+                    use_ref_guess = False
+                opt_data = self.optimize_mismatch(use_ref_guess=use_ref_guess)
+                self.annealing_counter = 1
+                if opt_data['mm_opt']<=self.mm_threshold:
+                    break
+                    
             mm_data['mismatches'][ref_name] = opt_data
-            self.save_mismatches(mm_data)
+            if json_file is not None: self.save_mismatches(mm_data)
 
         if debug:
             self.mm_settings['debug'] = True
@@ -101,8 +119,8 @@ class Optimizer(object):
             for j in range(2):
                 if self.opt_bounds[i][j] is None:
                     self.opt_bounds[i][j] = default_bounds[i][j]
-        return 
-    
+        pass
+
     def load_or_create_mismatches(self): 
         """
         Load mismatches data if the options of the
@@ -116,9 +134,11 @@ class Optimizer(object):
             if isinstance(val, np.ndarray):
                 loc_mm_settings[k] = list(val)
         # options to store/read in JSON 
-        options = {'opt_maxfun'  : self.opt_maxfun, 
-                   'kind_ic'     : self.kind_ic,
-                   'mm_settings' : loc_mm_settings,
+        options = {'opt_maxfun'   : self.opt_maxfun, 
+                   'kind_ic'      : self.kind_ic,
+                   'max_opt_iter' : self.max_opt_iter,
+                   'mm_threshold' : self.mm_threshold,
+                   'mm_settings'  : loc_mm_settings,
                   } 
 
         # check if file exists
@@ -227,8 +247,8 @@ class Optimizer(object):
         else:
             mm = 1.0
         if verbose and iter_loop:
-            self.opt_iter += 1
-            print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm, self.opt_iter), end='\r')
+            self.annealing_counter += 1
+            print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm, self.annealing_counter), end='\r')
         return mm
     
     def __func_to_minimize(self, vxy, verbose=None):
@@ -257,7 +277,6 @@ class Optimizer(object):
         if verbose is None: verbose = self.verbose
         kx = self.ic_keys[0]
         ky = self.ic_keys[1]
-        random.seed(self.opt_seed)
         vx_ref  = self.ref_Waveform.metadata[kx]
         vy_ref  = self.ref_Waveform.metadata[ky]
          
@@ -270,7 +289,6 @@ class Optimizer(object):
         if use_ref_guess:
             vxy0 = np.array([vx_ref,vy_ref])
         else:
-            random.seed(self.opt_seed)
             vx0  = random.uniform(bounds[0][0], bounds[0][1])
             vy0  = random.uniform(bounds[1][0], bounds[1][1])
             vxy0 = np.array([vx0, vy0])
@@ -291,7 +309,7 @@ class Optimizer(object):
         x_opt, y_opt = opt_pars[0], opt_pars[1]
         mm_opt = opt_result['fun']
         if verbose:
-            print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm_opt, self.opt_iter), end='\r')
+            print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm_opt, self.annealing_counter), end='\r')
             print(f'Optimized mismatch    : {mm_opt:.3e}')
             print(f'Optimal ICs           : {kx:5s} : {x_opt:.15f}')
             print(f'                        {ky:5s} : {y_opt:.15f}')
