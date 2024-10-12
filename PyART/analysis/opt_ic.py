@@ -71,13 +71,15 @@ class Optimizer(object):
             print(f'# reference waveform : {ref_Waveform.metadata["name"]}')
             print(f'# variables of ICs   : {ic_keys[0]}, {ic_keys[1]}')
             print('#'*60)
-
+        
         mm_data  = self.load_or_create_mismatches()
         ref_name = self.ref_Waveform.metadata['name']
+        
+        self.opt_data = None
         if not overwrite and ref_name in mm_data['mismatches']:
+            opt_data = mm_data['mismatches'][ref_name]
             if verbose: 
                 print(f'Loading mismatch from {self.json_file}')
-                opt_data =  mm_data['mismatches'][ref_name]
                 print('Optimal ICs  : {:s}={:.5f}, {:s}:{:.5f}'.format(opt_data['kx'], opt_data['x_opt'],
                                                                   opt_data['ky'], opt_data['y_opt']))
                 print('Original mm  : {:.3e}'.format(opt_data['mm0']))
@@ -98,7 +100,9 @@ class Optimizer(object):
                     break
                     
             mm_data['mismatches'][ref_name] = opt_data
-            if json_file is not None: self.save_mismatches(mm_data)
+            if json_file is not None: 
+                self.save_mismatches(mm_data)
+        self.opt_data = opt_data
 
         if debug:
             self.mm_settings['debug'] = True
@@ -238,6 +242,18 @@ class Optimizer(object):
             eob_wave = None
         return eob_wave
     
+    def generate_opt_EOB(self, verbose=None):
+        if verbose is None: verbose = self.verbose
+        if self.opt_data is None:
+            if verbose: print('Optimal ICs not found! Returning None')
+            opt_Waveform = None
+        else:
+            kx = self.ic_keys[0]
+            ky = self.ic_keys[1]
+            opt_Waveform = self.generate_EOB(ICs={kx:self.opt_data['x_opt'], 
+                                                  ky:self.opt_data['y_opt']})
+        return opt_Waveform
+
     def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False):
         if verbose is None: verbose = self.verbose
         if eob_Waveform is not None:

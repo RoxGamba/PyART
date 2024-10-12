@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--catalog', required=True, type=str, 
                                  choices=['rit','sxs', 'icc'], help='Catalog')
 parser.add_argument('-i', '--id', default=1,  type=int,        help='Simulatoion ID. If not specified, download hard-coded ID list')
+parser.add_argument('--maxfun',       default=100, type=int,   help='Maxfun in dual annealing')
 parser.add_argument('--max_opt_iter', default=1, type=int,     help='Max opt iter')
 parser.add_argument('--mm_threshold',  default=5e-3, type=float, help='mismatch thresholds')
 parser.add_argument('-d', '--download', action='store_true',   help='Eventually download data')
@@ -56,6 +57,7 @@ if args.catalog=='sxs':
 json_file = 'test.json'
 
 opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
+                      opt_maxfun=args.maxfun,
                       max_opt_iter = args.max_opt_iter,
                       mm_threshold = args.mm_threshold,
                       opt_bounds=bounds, debug=args.debug_plot,
