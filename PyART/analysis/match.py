@@ -155,11 +155,11 @@ class Matcher(object):
             'iota'                 : 0.,
             'coa_phase'            : np.linspace(0,2*np.pi,1),
             'eff_pols'             : np.linspace(0,np.pi,1),
-            'pad_end_frac'         : 0.8,  # fraction of pad after the signal
+            'pad_end_frac'         : 1.0,  # fraction of pad after the signal
             'taper'                : True,
             'taper_start'          : 0.03, # % of the waveform to taper at the beginning
             'taper_end'            : 0.00, # % of the waveform to taper at the end
-            'taper_alpha'          : 0.02, # sigmoid-parameter used in tapering
+            'taper_alpha'          : 0.01, # sigmoid-parameter used in tapering
             'resize_factor'        : 4,
             'debug'                : False,
             'geom'                 : True,
@@ -357,12 +357,6 @@ def condition_td_waveform(h, settings):
     h is already a TimeSeries
     """
     hlen  = len(h)
-    if settings['taper']:
-        t1    = settings['taper_start'] * hlen
-        t2    = settings['taper_end']   * hlen
-        alpha = settings['taper_alpha']
-        t = np.linspace(0, hlen-1, num=hlen)
-        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
     tlen  = settings['tlen']
     ndiff = tlen-hlen
     if settings['pad_end_frac']>1:
@@ -372,12 +366,20 @@ def condition_td_waveform(h, settings):
     h.resize(hlen+npad_after)
     h_numpy = np.pad(h, (npad_before, 0), mode='constant')
     h = TimeSeries(h_numpy, delta_t=h.delta_t)
-    #if settings['taper']:
-    #    t1    = settings['taper_start'] * tlen
-    #    t2    = settings['taper_end']   * tlen
-    #    alpha = settings['taper_alpha']
-    #    t = np.linspace(0, tlen-1, num=tlen)
-    #    h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
+    if settings['taper']:
+        t1    = npad_before + tlen*settings['taper_start']
+        t2    = settings['taper_end']   * tlen 
+        alpha = settings['taper_alpha']
+        t = np.linspace(0, tlen-1, num=tlen)
+        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
+#    tlen = settings['tlen']
+#    h.resize(tlen)
+#    if settings['taper']:
+#        t1    = settings['taper_start'] * tlen
+#        t2    = settings['taper_end']   * tlen
+#        alpha = settings['taper_alpha']
+#        t = np.linspace(0, tlen-1, num=tlen)
+#        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
     return h
 
 def dual_annealing_wrap(func,bounds,maxfun=2000):
