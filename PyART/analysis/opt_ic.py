@@ -78,16 +78,15 @@ class Optimizer(object):
                 print('Original mm  : {:.3e}'.format(opt_data['mm0']))
                 print('Optimized mm : {:.3e}'.format(opt_data['mm_opt']))
         else:
-            # Run optimization
             opt_data = self.optimize_mismatch()
-
-            # save 
             mm_data['mismatches'][ref_name] = opt_data
             self.save_mismatches(mm_data)
 
         if debug:
             self.mm_settings['debug'] = True
-            self.match_against_ref(self.opt_Waveform)
+            opt_Waveform = self.generate_EOB(ICs={self.ic_keys[0]:opt_data['x_opt'], 
+                                                  self.ic_keys[1]:opt_data['y_opt']})
+            self.match_against_ref(opt_Waveform)
         pass
     
     def __update_bounds(self):
@@ -214,6 +213,7 @@ class Optimizer(object):
             eob_wave    = Waveform_EOB(pars=pars)
             eob_wave._u = eob_wave.u#-eob_wave.u[0]
         except Exception as e:
+            # FIXME: no error msg is a little bit criminal
             #print(f'Error occured in EOB wave generation:\n{e}')
             eob_wave = None
         return eob_wave

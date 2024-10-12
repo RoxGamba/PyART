@@ -540,16 +540,14 @@ def are_dictionaries_equal(dict1, dict2, excluded_keys=[], float_tol=1e-14, verb
 
 def safe_loadtxt(fname, remove_nans=True, remove_overlaps=True, time_idx=0):
     X  = np.loadtxt(fname)
-    X0 = 1.0*X
     if remove_nans:
         ncols = len(X[0,:])
         X = X[~np.isnan(X).any(axis=1)]
     if remove_overlaps:
-        # remove overlapping regions
         t = X[:,time_idx]
         mask = t == np.maximum.accumulate(t)
         X = X[mask]
-        # unicity still to ensure:
+        # ensure unicity
         _, unique_indices = np.unique(X[:,time_idx], return_index=True)
         X = X[unique_indices]
     return X

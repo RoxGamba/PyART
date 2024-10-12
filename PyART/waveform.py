@@ -248,7 +248,7 @@ class Waveform(object):
         self._domain = 'Frequency'
         pass
     
-    def integrate_psi4(self, t_psi4, radius, integr_opts={}, modes=None, M=1):
+    def integrate_psi4(self, t_psi4, radius, integr_opts={}, modes=None, M=1, nu_norm=True):
         """
         Method to integrate psi4 extracted at finite distance
         """
@@ -263,6 +263,8 @@ class Waveform(object):
             mode = IntegrateMultipole(l, m, t, psi4, **integr_opts, 
                                       mass=M, radius=radius, 
                                       integrand='psi4')
+            if nu_norm:
+                mode.h = mode.h/self.metadata['nu']
             dothlm[lm] = wf_ut.get_multipole_dict(mode.dh)
             hlm[lm]    = wf_ut.get_multipole_dict(mode.h)
         self._u      = mode.u

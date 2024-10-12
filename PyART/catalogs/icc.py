@@ -147,7 +147,7 @@ class Waveform_ICC(Waveform):
             pdict = None
         return pdict
      
-    def load_multipole_txtfile(self, fname_token, raise_error=True, ellmax=None):
+    def load_multipole_txtfile(self, fname_token, raise_error=True, ellmax=None, nu_norm=False):
         if ellmax is None: ellmax = self.ellmax
         files = os_ut.find_fnames_with_token(self.sim_path, fname_token) 
         if len(files)<1:
@@ -171,6 +171,8 @@ class Waveform_ICC(Waveform):
             m   = ut.extract_value_from_str(f, 'm')
             X   = ut.safe_loadtxt(f)
             flm = X[:,1]+1j*X[:,2]
+            if nu_norm:
+                flm /= self.metadata['nu']
             mydict[(l,m)] = wf_ut.get_multipole_dict(flm)
         
         return mydict, t, files 
@@ -186,7 +188,7 @@ class Waveform_ICC(Waveform):
         """
         Load hlm and compute dothlm
         """
-        dict_hlm, u, _ = self.load_multipole_txtfile('mp_strain', raise_error=False)
+        dict_hlm, u, _ = self.load_multipole_txtfile('mp_strain', raise_error=False, nu_norm=True)
         self._u   = u
         self._hlm = dict_hlm
         if self.u is not None:
@@ -196,7 +198,7 @@ class Waveform_ICC(Waveform):
         dothlm = {}
         for k in self.hlm:
             hlm  = self.hlm[k]['h']
-            dhlm = ut.D1(hlm, self.u, 4)
+            dhlm = ut.D1(hlm, self.u, 4)*self.metadata['nu'] 
             dothlm[k] = wf_ut.get_multipole_dict(dhlm)
         self._dothlm = dothlm 
         pass
