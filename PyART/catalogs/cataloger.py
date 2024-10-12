@@ -12,12 +12,14 @@ class Cataloger(object):
                  path     = './',
                  sim_list = [],
                  catalog  = 'rit',
+                 verbose  = True,
                  add_opts = {},
                  ):
         
         self.path     = path
         self.catalog  = catalog
         self.sim_list = sim_list
+        self.verbose  = verbose
 
         if len(self.sim_list)<1:
             raise RuntimeError('Empty list of simulations')
@@ -32,12 +34,14 @@ class Cataloger(object):
 
         pass
     
-    def Wave(self, ID, add_opts={}):
+    def Wave(self, ID, add_opts={}, verbose=None):
+        if verbose is None: verbose = self.verbose
+        if verbose: print(f'Loading {self.catalog} waveform with ID:{ID:04}')
         if self.catalog=='sxs':
-            wave = Waveform_SXS(path=self.path, download=self.download, ID=ID, **add_opts)
+            wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
                                 #order='Extrapolated_N3.dir', ellmax=7)
         elif self.catalog=='rit':
-            wave = Waveform_RIT(path=self.path, download=self.download, ID=ID, **add_opts)
+            wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
         elif self.catalog=='icc':
             wave = Waveform_ICC(path=self.path, ID=ID, **add_opts)
         else:
@@ -51,8 +55,6 @@ class Cataloger(object):
         for i, wave in enumerate(self.Waves):
             if (2,2) in wave.hlm:
                 tmrg,Amrg,_,_ = wave.find_max()
-                if any(wave.hlm[(2,2)]['A']>0.6):
-                    print(f'Warning for {wave.metadata["name"]}')
                 plt.plot(wave.u-tmrg, wave.hlm[(2,2)]['A'], c=colors[i])
         plt.show()
         pass
