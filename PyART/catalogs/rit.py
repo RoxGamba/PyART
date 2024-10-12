@@ -21,6 +21,7 @@ class Waveform_RIT(Waveform):
                  h_load   = True,
                  mtdt_load= True,
                  ell_emms = 'all',
+                 shorten_rng = True, # keep at most 300 M after merger
                  ) -> None:
         
         super().__init__()
@@ -31,6 +32,8 @@ class Waveform_RIT(Waveform):
         self.metadata      = None
         self.metadata_psi4 = None
         self.domain        = 'Time'
+        
+        self.shorten_rng   = shorten_rng
 
         if isinstance(ID, int):
             ID = f'{ID:04}'
@@ -64,7 +67,11 @@ class Waveform_RIT(Waveform):
         if h_load:
             self.h_file   = h5py.File(h_path, 'r')
             self.load_h()
-        
+            if self.shorten_rng:
+                tmrg,_,_,_ = self.find_max(kind='last-peak',height=0.05)
+                DeltaT = self.u[-1]-tmrg-300
+                if DeltaT>0:
+                    self.cut(DeltaT, from_the_end=True)
         pass
     
     def download_data(self, ID, path='./', urls_json=None, dump_urls=True):
@@ -199,7 +206,7 @@ class Waveform_RIT(Waveform):
 
             except KeyError:
                 pass
-                    
+        
         self._hlm = d
         self.t_h  = th.astype(np.float64)
         self._t   = self.t_h
