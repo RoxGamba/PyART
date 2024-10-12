@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from ..analysis.scattering_angle import ScatteringAngle
-from ..waveform    import Waveform 
-from ..utils       import os_utils  as os_ut
-from ..utils       import wf_utils  as wf_ut
-from ..utils       import cat_utils as cat_ut
-from ..utils.utils import D1
+from ..waveform  import Waveform 
+from ..utils     import os_utils  as os_ut
+from ..utils     import wf_utils  as wf_ut
+from ..utils     import cat_utils as cat_ut
+from ..utils     import utils     as ut
 
 class Waveform_ICC(Waveform):
     """
@@ -146,19 +146,6 @@ class Waveform_ICC(Waveform):
             print("Warning: no punctures' tracks found!")
             pdict = None
         return pdict
-
-    def extract_value(self, string, key):
-        # FIXME: move in utils
-        pattern = rf"{key}(\d+(\.\d+|p\d+)?|\d+)"
-        match = re.search(pattern, string)
-        if match:
-            value = match.group(1)
-            value = value.replace('p', '.')
-            if '.' in value:
-                return float(value)
-            else:
-                return int(value)
-        return None
      
     def load_multipole_txtfile(self, fname_token, raise_error=True, ellmax=None):
         if ellmax is None: ellmax = self.ellmax
@@ -170,16 +157,9 @@ class Waveform_ICC(Waveform):
             else:
                 print(f'Warning! {msg}. Returning empty vars')
                 return {}, None, []
-        
-        def load_removing_nans(fname):
-            X     = np.loadtxt(fname)
-            ncols = len(X[0,:])  
-            X     = X[~np.isnan(X).any(axis=1)]
-            return X.reshape(-1, ncols)
-        
-        tmp   = load_removing_nans(files[0])
-        t     = tmp[:,0]
-        n     = len(t)
+        tmp = ut.safe_loadtxt(files[0])
+        t   = tmp[:,0]
+        n   = len(t)
         zeros = np.zeros((n,1)) 
         mydict = {}
         for l in range(ellmax+1):
@@ -187,18 +167,19 @@ class Waveform_ICC(Waveform):
                 mydict[(l,m)] = {'real':zeros, 'imag':zeros, 'A':zeros,
                                  'p':zeros, 'h':zeros}
         for f in files:
-            l   = self.extract_value(f, 'l')
-            m   = self.extract_value(f, 'm')
-            X   = load_removing_nans(f)
+            l   = ut.extract_value_from_str(f, 'l')
+            m   = ut.extract_value_from_str(f, 'm')
+            X   = ut.safe_loadtxt(f)
             flm = X[:,1]+1j*X[:,2]
             mydict[(l,m)] = wf_ut.get_multipole_dict(flm)
+        
         return mydict, t, files 
 
     def load_psi4(self):
         dict_psi4, t, files = self.load_multipole_txtfile('mp_psi4', raise_error=True)
         self._t_psi4 = t 
         self._psi4lm = dict_psi4
-        self.r_extr  = self.extract_value(files[0], 'r')
+        self.r_extr  = ut.extract_value_from_str(files[0], 'r')
         pass
     
     def load_hlm_compute_dothlm(self):
@@ -215,15 +196,10 @@ class Waveform_ICC(Waveform):
         dothlm = {}
         for k in self.hlm:
             hlm  = self.hlm[k]['h']
-            dhlm = D1(hlm, self.u, 4)
+            dhlm = ut.D1(hlm, self.u, 4)
             dothlm[k] = wf_ut.get_multipole_dict(dhlm)
         self._dothlm = dothlm 
         pass
-
-################################
-# Class for the ICC catalog
-################################
-#class Catalog(object):
 
 
 

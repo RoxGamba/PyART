@@ -1,3 +1,4 @@
+import sys, re
 import numpy as np; 
 from scipy import interpolate
 from scipy.signal import find_peaks; 
@@ -8,6 +9,7 @@ import matplotlib.pyplot as plt
 from astropy.constants import G, c, M_sun, pc
 Msun = G.value * M_sun.value / (c.value**3) # Solar mass
 ## Misc
+
 
 def rotate3_axis(vector,theta=0., axis = [0,0,1]):
     """
@@ -238,10 +240,13 @@ def vec_differences(x1,y1,x2,y2,a,b,dx,diff_kind='abs',fabs=False,interp_kind='c
         dys = np.abs(dys)
     return xs, dys
 
-def spline(x, y, xs, kind='cubic'):
+def spline(x, y, xs, kind='cubic', ensure_unique=False):
     """
     Compute the spline of y(x), return y(xs)
     """
+    if ensure_unique:
+        x, unique_indices = np.unique(x, return_index=True)
+        y = y[unique_indices]
     f = interpolate.interp1d(x, y, kind=kind, fill_value='extrapolate')
     return f(xs)
 
@@ -532,5 +537,33 @@ def are_dictionaries_equal(dict1, dict2, excluded_keys=[], float_tol=1e-14, verb
             if verbose: print(f'Issues with key: {key}')
             return False
     return True
+
+def safe_loadtxt(fname, remove_nans=True, remove_overlaps=True, time_idx=0):
+    X  = np.loadtxt(fname)
+    X0 = 1.0*X
+    if remove_nans:
+        ncols = len(X[0,:])
+        X = X[~np.isnan(X).any(axis=1)]
+    if remove_overlaps:
+        # remove overlapping regions
+        t = X[:,time_idx]
+        mask = t == np.maximum.accumulate(t)
+        X = X[mask]
+        # unicity still to ensure:
+        _, unique_indices = np.unique(X[:,time_idx], return_index=True)
+        X = X[unique_indices]
+    return X
+    
+def extract_value_from_str(string, key):
+    pattern = rf"{key}(\d+(\.\d+|p\d+)?|\d+)"
+    match = re.search(pattern, string)
+    if match:
+        value = match.group(1)
+        value = value.replace('p', '.')
+        if '.' in value:
+            return float(value)
+        else:
+            return int(value)
+    return None
 
 

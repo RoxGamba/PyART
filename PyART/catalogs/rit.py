@@ -17,10 +17,6 @@ class Waveform_RIT(Waveform):
                  path     = '../dat/RIT/',
                  ID       = '0001',
                  download = False,
-                 basepath = None, # deprecated
-                 psi_path = None, # deprecated
-                 h_path   = None, # deprecated
-                 mtdt_path= None, # deprecated
                  psi_load = True,
                  h_load   = True,
                  mtdt_load= True,
@@ -40,10 +36,6 @@ class Waveform_RIT(Waveform):
             ID = f'{ID:04}'
         self.ID = ID
         
-        if basepath is not None:
-            print("+++ Warning: 'basepath' is deprecated! Use 'path'")
-            path = basepath
-
         sim_path = os.path.join(path, f'RIT_BBH_{ID}')
         if not os.path.exists(sim_path):
             if download:
@@ -56,35 +48,19 @@ class Waveform_RIT(Waveform):
         self.sim_path = sim_path
 
         # metadata available
-        if mtdt_path is not None:
-            print('+++ Warning! Specifying mtdt_path in input is deprecated +++')
-            self.mtdt_path = os.path.join(path,mtdt_path)
-        else:
-            self.mtdt_path = os_ut.find_fnames_with_token(self.sim_path, 'Metadata.txt')[0]
-
+        self.mtdt_path = os_ut.find_fnames_with_token(self.sim_path, 'Metadata.txt')[0]
         if mtdt_load:
             self.metadata, self.ometadata = self.load_metadata(self.mtdt_path)
 
         # psi4 available
-        if psi_path is not None:
-            print('+++ Warning! Specifying psi_path in input deprecated +++')
-            self.psi_path  = os.path.join(path,psi_path)
-            self.mtdt_psi4 = os.path.join(path,psi_path,'Metadata')
-        else:
-            self.psi_path  = os_ut.find_dirs_with_token(self.sim_path, 'ExtrapPsi4')[0]
-            self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
-        
+        self.psi_path  = os_ut.find_dirs_with_token(self.sim_path, 'ExtrapPsi4')[0]
+        self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
         if psi_load:
             _, self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
             self.load_psi4()
         
         # strain available
-        if h_path is not None:
-            print('+++ Warning! Specifying h_path in input is deprecated +++') 
-            h_path = os.path.join(path,h_path)
-        else:
-            h_path = os_ut.find_fnames_with_token(self.sim_path, 'ExtrapStrain')[0]
-
+        h_path = os_ut.find_fnames_with_token(self.sim_path, 'ExtrapStrain')[0]
         if h_load:
             self.h_file   = h5py.File(h_path, 'r')
             self.load_h()

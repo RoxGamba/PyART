@@ -27,7 +27,10 @@ class IntegrateMultipole(object):
         self.integrand   = integrand
         self.method      = method
         self.f0          = f0
-        self.fcut        = 2*self.f0/max(1,abs(self.m))        
+        if f0 is not None:
+            self.fcut = 2*self.f0/max(1,abs(self.m))        
+        else:
+            self.fcut = None        
         self.deg         = deg
         self.poly_int    = poly_int
         self.extrap_psi4 = extrap_psi4
