@@ -140,8 +140,8 @@ class Optimizer(object):
         # options to store/read in JSON 
         options = {'opt_maxfun'   : self.opt_maxfun, 
                    'kind_ic'      : self.kind_ic,
-                   'max_opt_iter' : self.max_opt_iter,
-                   'mm_threshold' : self.mm_threshold,
+                   #'max_opt_iter' : self.max_opt_iter,
+                   #'mm_threshold' : self.mm_threshold,
                    'mm_settings'  : loc_mm_settings,
                   } 
 
@@ -333,7 +333,9 @@ class Optimizer(object):
                     'x_ref':vx_ref, 'y_ref':vy_ref,
                     'bounds':bounds, 'seed':self.opt_seed,
                     'x0':vxy0[0], 'y0':vxy0[1], 'mm0':mm0,
-                    'mm_opt':mm_opt, 'x_opt':x_opt, 'y_opt':y_opt, 
+                    'mm_opt':mm_opt, 'x_opt':x_opt, 'y_opt':y_opt,
+                    'mm_threshold':self.mm_threshold,
+                    'max_opt_iter':self.max_opt_iter,
                     }
         return opt_data
 

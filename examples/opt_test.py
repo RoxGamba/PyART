@@ -54,7 +54,7 @@ if args.catalog=='sxs':
     print('Removing junk')
     ebbh.cut(200)
 
-json_file = None
+json_file = f'test_{args.catalog}.json'
 
 opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
                       opt_maxfun=args.maxfun,
