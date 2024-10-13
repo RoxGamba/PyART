@@ -156,7 +156,7 @@ class Matcher(object):
             'taper'                : 'sigmoid', # None, 'sigmoid', or 'tukey'
             'taper_start'          : 0.12, # parameter for sigmoid or tukey window
             'taper_end'            : None, # parameter for sigmoid or tukey window
-            'taper_alpha'          : 0.01, # alpha parameter for sigmoid or tukey
+            'taper_alpha'          : 0.1,  # alpha parameter for sigmoid or tukey (will be M-normalized)
             'resize_factor'        : 4,
             'debug'                : False,
             'geom'                 : True,
@@ -396,7 +396,8 @@ def condition_td_waveform(h, settings, return_tap_times=False):
         t1 = npad_before + hlen*tap1     if (tap1 is not None and tap1>0) else None
         t2 = npad_before + hlen*(1-tap2) if (tap2 is not None and tap2>0) else None
         t  = np.linspace(0, tlen-1, num=tlen)
-        h  = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=settings['taper_alpha'], kind=settings['taper'])
+        alpha_M = settings['taper_alpha']/settings['M']
+        h  = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha_M, kind=settings['taper'])
     else:
         t1 = None
         t2 = None
@@ -409,8 +410,8 @@ def condition_td_waveform(h, settings, return_tap_times=False):
 #        t = np.linspace(0, tlen-1, num=tlen)
 #        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
     if return_tap_times:
-        rescaled_t1 = t1/tlen*settings['resize_factor'] if t1 is not None else None
-        rescaled_t2 = t2/tlen*settings['resize_factor'] if t2 is not None else None
+        rescaled_t1  = t1/tlen*h.sample_times[-1] if t1 is not None else None
+        rescaled_t2  = t2/tlen*h.sample_times[-1] if t2 is not None else None
         tap_times = {'t1':rescaled_t1, 't2':rescaled_t2}
         return h, tap_times
     else:
