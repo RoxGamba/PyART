@@ -40,9 +40,6 @@ class Matcher(object):
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
         
         if self.settings['cut']:
-            #tlen1 = WaveForm1.u[-1]-WaveForm1.u[0]
-            #tlen2 = WaveForm2.u[-1]-WaveForm2.u[0]
-            #DeltaT = tlen2-tlen1
             tmrg1,_,_,_ = WaveForm1.find_max()-WaveForm1.u[0]
             tmrg2,_,_,_ = WaveForm2.find_max()-WaveForm2.u[0]
             DeltaT = tmrg2-tmrg1
@@ -81,7 +78,7 @@ class Matcher(object):
             # Get updated time and hp/hc-TimeSeries
             if not hasattr(Waveform, 'hp'):
                 WaveForm.compute_hphc()
-                wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
+            wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
 
         # also update the modes in a TimeSeries
         wf.modes = {}
@@ -224,19 +221,32 @@ class Matcher(object):
 
         return m
 
-    def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings, tap_times_w1=None, tap_times_w2=None):
+    def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings, 
+                              tap_times_w1=None, tap_times_w2=None,
+                              six_panels=False):
         """
         Plot waveforms and PSD for debugging.
         """
-        plt.figure(figsize=(15, 7))
+        if six_panels:
+            figm      = 2
+            fign      = 3
+            figsize   = (15,7)
+            FT_panels = [3,6]
+        else:
+            figm      = 2
+            fign      = 2
+            figsize   = (10,7)
+            FT_panels = [3,4]
 
-        plt.subplot(231)
+        plt.figure(figsize=figsize)
+
+        plt.subplot(figm,fign,1)
         plt.title('Real part of waveforms before conditioning')
         plt.plot(h1_nc.sample_times, h1_nc, label='h1 unconditioned', color='blue', linestyle='-')
         plt.plot(h2_nc.sample_times, h2_nc, label='h2 unconditioned', color='green', linestyle='-')
         plt.legend()
 
-        plt.subplot(232)
+        plt.subplot(figm,fign,2)
         plt.title('Real part of waveforms after conditioning')
         plt.plot(h1.sample_times, h1, label='h1 conditioned', color='blue')
         plt.plot(h2.sample_times, h2, label='h2 conditioned', color='green')
@@ -251,16 +261,17 @@ class Matcher(object):
             if t1 is not None: plt.axvline(t1, color='green', ls='--')
             if t2 is not None: plt.axvline(t2, color='green', ls='--')
         plt.legend()
+        
+        if six_panels:
+            plt.subplot(figm,fign,4)
+            plt.title('PSD used for match')
+            plt.loglog(psd.sample_frequencies, np.sqrt(psd.data* psd.sample_frequencies), label='PSD', color='black')
+            plt.legend()
 
-        plt.subplot(234)
-        plt.title('PSD used for match')
-        plt.loglog(psd.sample_frequencies, np.sqrt(psd.data* psd.sample_frequencies), label='PSD', color='black')
-        plt.legend()
-
-        plt.subplot(235)
-        plt.title('Overlap integrand between h1 and h2')
-        freq = np.linspace(settings['initial_frequency_mm'], settings['final_frequency_mm'], len(h1))
-        plt.plot(freq, abs(h1.data * h2.data), color='red')
+            plt.subplot(figm,fign,5)
+            plt.title('Overlap integrand between h1 and h2')
+            freq = np.linspace(settings['initial_frequency_mm'], settings['final_frequency_mm'], len(h1))
+            plt.plot(freq, abs(h1.data * h2.data), color='red')
         
         hf1 = h1.to_frequencyseries()
         f1  = hf1.get_sample_frequencies()
@@ -268,18 +279,18 @@ class Matcher(object):
         f2  = hf2.get_sample_frequencies()
         Af1 = np.abs(hf1)
         Af2 = np.abs(hf2)
-        for i in [3,6]:
-            plt.subplot(2,3,i)
+        for i in FT_panels:
+            plt.subplot(figm,fign,i)
             plt.title('Fourier transforms (abs value)')
             plt.plot(f1, Af1, c='blue',  label='FT h1')
             plt.plot(f2, Af2, c='green', label='FT h2')
             plt.axvline(settings['initial_frequency_mm'], lw=0.8, c='r')
             plt.axvline(settings['final_frequency_mm'],   lw=0.8, c='r')
             plt.grid()
-            plt.yscale('log')
             #plt.ylim(1e-6, max(1.2*max(Af1),1.2*max(Af2),0.1))
             plt.legend()
-            if i==3:
+            if i==FT_panels[0]:
+                plt.yscale('log')
                 plt.xscale('log')
                 
         plt.tight_layout()
@@ -381,7 +392,7 @@ def condition_td_waveform(h, settings, return_tap_times=False):
     h = TimeSeries(h_numpy, delta_t=h.delta_t)
     if settings['taper']:
         if settings['taper_start']>0:
-            t1 = npad_before + hlen*(settings['taper_start'])
+            t1 = npad_before + hlen*settings['taper_start']
         else:
             t1 = None
         if settings['taper_end']>0:
@@ -389,9 +400,8 @@ def condition_td_waveform(h, settings, return_tap_times=False):
             t2 = npad_before + hlen*(1-settings['taper_end'])
         else:
             t2 = None
-        alpha = settings['taper_alpha']
         t = np.linspace(0, tlen-1, num=tlen)
-        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
+        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=settings['taper_alpha'])
     else:
         t1 = None
         t2 = None
