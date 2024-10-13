@@ -17,9 +17,10 @@ parser.add_argument('--mass_max',       type=float, default=200,  help="Minimum 
 parser.add_argument('-n', '--mass_num', type=int,   default=20,   help="Number of masses")
 parser.add_argument('--f1',             type=float, default=None, help="Initial freq for mm")
 parser.add_argument('--f2',             type=float, default=2048, help="Final freq for mm")
+parser.add_argument('--taper',          type=str,   default='sigmoid', help="Kind of taper")
 parser.add_argument('--taper_alpha',    type=float, default=0.01, help="Taper alpha")
 parser.add_argument('--taper_start',    type=float, default=0.05, help="Taper start")
-parser.add_argument('--taper_end',      type=float, default=0.00, help="Taper end")
+parser.add_argument('--taper_end',      type=float, default=None, help="Taper end")
 parser.add_argument('-d', '--debug', action='store_true',         help="Show debug plots")
 parser.add_argument('--cut',         action='store_true',         help="Cut waves before mm")
 parser.add_argument('--no_plot',     action='store_true',         help="Avoid mm-plot")
@@ -114,6 +115,7 @@ for i, M in enumerate(masses):
                                 'taper_alpha':args.taper_alpha,
                                 'taper_start':args.taper_start,
                                 'taper_end':args.taper_end,
+                                'taper':args.taper,
                                 'cut':args.cut,
                                 'debug':args.debug,
                                 }

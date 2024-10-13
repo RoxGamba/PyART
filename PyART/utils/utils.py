@@ -143,30 +143,44 @@ def safe_sigmoid(x, alpha, clip=None):
         raise ValueError(f'Invalid clip value: {clip}')
     return 1/(1 + np.exp(exponent))
 
-def taper_waveform(t, h, t1=-1, t2=-1, alpha=0.2):
+def taper_waveform(t, h, t1=None, t2=None, alpha=0.2, kind='sigmoid', debug=False):
     """
     Waveform tapering in Matcher-class.
+    The meaning of t1, t2, and alpha depends on the kind used!
     """
-    out = 1.0*h
-    if t1 is not None: out *= safe_sigmoid( t-t1, alpha=alpha, clip=50)
-    if t2 is not None: out *= safe_sigmoid( t2-t , alpha=alpha, clip=50)
-    # tukey
-    #n     = len(h)
-    #idx1  = np.where(t > t1)[0][0]
-    #idx2  = np.where(t > t2)[0][0]
-    #window_res = tukey(idx2-idx1, alpha)
-    #window = np.pad(window_res, (idx1, 0), mode='constant')
-    #window = np.pad(window, (0, n-idx2), mode='constant')
-    #out = h*window
-    if False:
+    if kind is None:
+        return h
+    
+    elif kind=='sigmoid':
+        window = np.ones_like(h)
+        if t1 is not None: window *= safe_sigmoid( t-t1, alpha=alpha, clip=50)
+        if t2 is not None: window *= safe_sigmoid( t2-t , alpha=alpha, clip=50)
+    
+    elif kind=='tukey':
+        n     = len(h)
+        idx1  = np.where(t > t1)[0][0]
+        if t2 is not None:
+            idx2  = np.where(t > t2)[0][0]
+            window = tukey(idx2-idx1, alpha)
+            window = np.pad(window, (0, n-idx2), mode='constant')
+        else:
+            window = tukey(n-idx1, alpha)
+            nby2   = int(n/2)
+            window[nby2:] = np.ones_like( window[nby2:] )
+
+        window = np.pad(window, (idx1,   0), mode='constant')
+    else:
+        raise ValueError('Unknown tapering method')
+
+    out = h*window
+    if debug:
         import matplotlib.pyplot as plt
         plt.figure
         plt.plot(t, h)
         plt.plot(t, out)
-        plt.plot(t, safe_sigmoid(    t    - t1, alpha=alpha, clip=50))
-        plt.plot(t, safe_sigmoid( t2-t , alpha=alpha, clip=50))
-        plt.axvline(t1)
-        plt.axvline(t2)
+        plt.plot(t, window)
+        if t1 is not None: plt.axvline(t1)
+        if t2 is not None: plt.axvline(t2)
         plt.show()
     return out
 

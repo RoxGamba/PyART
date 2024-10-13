@@ -153,10 +153,10 @@ class Matcher(object):
             'coa_phase'            : np.linspace(0,2*np.pi,1),
             'eff_pols'             : np.linspace(0,np.pi,1),
             'pad_end_frac'         : 1.0,  # fraction of pad after the signal
-            'taper'                : True,
-            'taper_start'          : 0.12, # parameter for sigmoid or tukey window (% start)
-            'taper_end'            : 0.00, # parameter for sigmoid or tukey window (% end)
-            'taper_alpha'          : 0.01, # alpha par
+            'taper'                : 'sigmoid', # None, 'sigmoid', or 'tukey'
+            'taper_start'          : 0.12, # parameter for sigmoid or tukey window
+            'taper_end'            : None, # parameter for sigmoid or tukey window
+            'taper_alpha'          : 0.01, # alpha parameter for sigmoid or tukey
             'resize_factor'        : 4,
             'debug'                : False,
             'geom'                 : True,
@@ -213,11 +213,11 @@ class Matcher(object):
                                        tap_times_w2 = tap_times_w2
                                        )
                   
-        m,_  = optimized_match( h1, h2, 
-                                psd=psd, 
-                                low_frequency_cutoff=settings['initial_frequency_mm'], 
-                                high_frequency_cutoff=settings['final_frequency_mm']
-                                )
+        m, _ = optimized_match(h1, h2, 
+                               psd=psd, 
+                               low_frequency_cutoff=settings['initial_frequency_mm'], 
+                               high_frequency_cutoff=settings['final_frequency_mm']
+                               )
 
         return m
 
@@ -390,18 +390,13 @@ def condition_td_waveform(h, settings, return_tap_times=False):
     h.resize(hlen+npad_after)
     h_numpy = np.pad(h, (npad_before, 0), mode='constant')
     h = TimeSeries(h_numpy, delta_t=h.delta_t)
-    if settings['taper']:
-        if settings['taper_start']>0:
-            t1 = npad_before + hlen*settings['taper_start']
-        else:
-            t1 = None
-        if settings['taper_end']>0:
-            print(settings['taper_end'])
-            t2 = npad_before + hlen*(1-settings['taper_end'])
-        else:
-            t2 = None
-        t = np.linspace(0, tlen-1, num=tlen)
-        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=settings['taper_alpha'])
+    if isinstance(settings['taper'], str):#=='sigmoid':
+        tap1 = settings['taper_start']
+        tap2 = settings['taper_end']
+        t1 = npad_before + hlen*tap1     if (tap1 is not None and tap1>0) else None
+        t2 = npad_before + hlen*(1-tap2) if (tap2 is not None and tap2>0) else None
+        t  = np.linspace(0, tlen-1, num=tlen)
+        h  = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=settings['taper_alpha'], kind=settings['taper'])
     else:
         t1 = None
         t2 = None
