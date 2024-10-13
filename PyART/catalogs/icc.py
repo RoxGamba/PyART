@@ -57,7 +57,7 @@ class Waveform_ICC(Waveform):
             self.cut(DeltaT)
             try:
                 tmrg, _, _, _ = self.find_max()
-                DeltaT_end = self.u[-1]-(tmrg+150)
+                DeltaT_end = self.u[-1]-(tmrg+300)
             except Exception as e:
                 print(f'Error while searching merger time: {e}')
                 DeltaT_end = 0
@@ -170,7 +170,7 @@ class Waveform_ICC(Waveform):
             l   = ut.extract_value_from_str(f, 'l')
             m   = ut.extract_value_from_str(f, 'm')
             X   = ut.safe_loadtxt(f)
-            flm = X[:,1]+1j*X[:,2]
+            flm = -(X[:,1]+1j*X[:,2])
             if nu_norm:
                 flm /= self.metadata['nu']
             mydict[(l,m)] = wf_ut.get_multipole_dict(flm)

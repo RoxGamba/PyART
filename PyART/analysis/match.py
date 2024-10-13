@@ -157,9 +157,9 @@ class Matcher(object):
             'eff_pols'             : np.linspace(0,np.pi,1),
             'pad_end_frac'         : 1.0,  # fraction of pad after the signal
             'taper'                : True,
-            'taper_start'          : 0.03, # % of the waveform to taper at the beginning
-            'taper_end'            : 0.00, # % of the waveform to taper at the end
-            'taper_alpha'          : 0.01, # sigmoid-parameter used in tapering
+            'taper_start'          : 0.12, # parameter for sigmoid or tukey window (% start)
+            'taper_end'            : 0.00, # parameter for sigmoid or tukey window (% end)
+            'taper_alpha'          : 0.01, # alpha par
             'resize_factor'        : 4,
             'debug'                : False,
             'geom'                 : True,
@@ -201,9 +201,9 @@ class Matcher(object):
         
         # condition TD waveforms (taper, resize, etc)
         if wf1.domain == 'Time':
-            h1 = condition_td_waveform(h1_nc, settings)
+            h1, tap_times_w1 = condition_td_waveform(h1_nc, settings, return_tap_times=True)
         if wf2.domain == 'Time':
-            h2 = condition_td_waveform(h2_nc, settings)
+            h2, tap_times_w2 = condition_td_waveform(h2_nc, settings, return_tap_times=True)
         
         assert len(h1) == len(h2)
         df   = 1.0 / h1.duration
@@ -211,7 +211,10 @@ class Matcher(object):
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
         
         if settings['debug']:
-            self._debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings)
+            self._debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings,
+                                       tap_times_w1 = tap_times_w1,
+                                       tap_times_w2 = tap_times_w2
+                                       )
                   
         m,_  = optimized_match( h1, h2, 
                                 psd=psd, 
@@ -221,7 +224,7 @@ class Matcher(object):
 
         return m
 
-    def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings):
+    def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings, tap_times_w1=None, tap_times_w2=None):
         """
         Plot waveforms and PSD for debugging.
         """
@@ -237,6 +240,16 @@ class Matcher(object):
         plt.title('Real part of waveforms after conditioning')
         plt.plot(h1.sample_times, h1, label='h1 conditioned', color='blue')
         plt.plot(h2.sample_times, h2, label='h2 conditioned', color='green')
+        if tap_times_w1 is not None:
+            t1 = tap_times_w1['t1']
+            t2 = tap_times_w1['t2']
+            if t1 is not None: plt.axvline(t1, color='blue', ls='-')
+            if t2 is not None: plt.axvline(t2, color='blue', ls='-')
+        if tap_times_w2 is not None:
+            t1 = tap_times_w2['t1']
+            t2 = tap_times_w2['t2']
+            if t1 is not None: plt.axvline(t1, color='green', ls='--')
+            if t2 is not None: plt.axvline(t2, color='green', ls='--')
         plt.legend()
 
         plt.subplot(234)
@@ -351,7 +364,7 @@ class Matcher(object):
         return 1. - res
         
 ### other functions, not just code related to the class
-def condition_td_waveform(h, settings):
+def condition_td_waveform(h, settings, return_tap_times=False):
     """
     Condition the waveforms before computing the mismatch.
     h is already a TimeSeries
@@ -367,11 +380,21 @@ def condition_td_waveform(h, settings):
     h_numpy = np.pad(h, (npad_before, 0), mode='constant')
     h = TimeSeries(h_numpy, delta_t=h.delta_t)
     if settings['taper']:
-        t1    = npad_before + tlen*settings['taper_start']
-        t2    = settings['taper_end']   * tlen 
+        if settings['taper_start']>0:
+            t1 = npad_before + hlen*(settings['taper_start'])
+        else:
+            t1 = None
+        if settings['taper_end']>0:
+            print(settings['taper_end'])
+            t2 = npad_before + hlen*(1-settings['taper_end'])
+        else:
+            t2 = None
         alpha = settings['taper_alpha']
         t = np.linspace(0, tlen-1, num=tlen)
         h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
+    else:
+        t1 = None
+        t2 = None
 #    tlen = settings['tlen']
 #    h.resize(tlen)
 #    if settings['taper']:
@@ -380,7 +403,13 @@ def condition_td_waveform(h, settings):
 #        alpha = settings['taper_alpha']
 #        t = np.linspace(0, tlen-1, num=tlen)
 #        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
-    return h
+    if return_tap_times:
+        rescaled_t1 = t1/tlen*settings['resize_factor'] if t1 is not None else None
+        rescaled_t2 = t2/tlen*settings['resize_factor'] if t2 is not None else None
+        tap_times = {'t1':rescaled_t1, 't2':rescaled_t2}
+        return h, tap_times
+    else:
+        return h
 
 def dual_annealing_wrap(func,bounds,maxfun=2000):
     result= dual_annealing(func, bounds, maxfun=maxfun)#, local_search_options={"method": "Nelder-Mead"})

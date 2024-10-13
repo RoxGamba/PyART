@@ -14,7 +14,7 @@ repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], \
 sxs_path = os.path.join(repo_path, 'examples/local_sxs/')
 rit_path = os.path.join(repo_path, 'examples/local_rit/')
 icc_path = '/Users/simonealbanesi/data/simulations_icc/ICCsims/catalog'
-mm_settings = {'cut':True, 'initial_frequency_mm':20, 'M':100}
+mm_settings = {'cut':True, 'initial_frequency_mm':20, 'M':100, 'final_frequency_mm':1024}
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--catalog', required=True, type=str, 
@@ -55,6 +55,7 @@ if args.catalog=='sxs':
     ebbh.cut(200)
 
 json_file = f'test_{args.catalog}.json'
+#json_file = None
 
 opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
                       opt_maxfun=args.maxfun,

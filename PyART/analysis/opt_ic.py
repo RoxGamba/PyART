@@ -91,13 +91,14 @@ class Optimizer(object):
             for i in range(self.max_opt_iter):
                 if self.verbose: print(f'{dashes}\nOptimization iteration #{i:d}\n{dashes}')
                 if i==0:
-                    use_ref_guess = True
+                    opt_data     = self.optimize_mismatch(use_ref_guess=True)
                 else:
-                    use_ref_guess = False
-                opt_data = self.optimize_mismatch(use_ref_guess=use_ref_guess)
-                self.annealing_counter = 1
+                    tmp_opt_data = self.optimize_mismatch(use_ref_guess=False)
+                    if tmp_opt_data['mm_opt']<opt_data['mm_opt']:
+                        opt_data = tmp_opt_data
                 if opt_data['mm_opt']<=self.mm_threshold:
                     break
+                self.annealing_counter = 1
                     
             mm_data['mismatches'][ref_name] = opt_data
             if json_file is not None: 

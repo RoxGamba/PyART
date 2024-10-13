@@ -143,14 +143,31 @@ def safe_sigmoid(x, alpha, clip=None):
         raise ValueError(f'Invalid clip value: {clip}')
     return 1/(1 + np.exp(exponent))
 
-def taper_waveform(t, h, t1=-1, t2=-1, alpha=1, clip_val=50):
+def taper_waveform(t, h, t1=-1, t2=-1, alpha=0.2):
     """
     Waveform tapering in Matcher-class.
-    The clip-value is applied to the sigmoid-exponent
     """
     out = 1.0*h
-    if t1>0: out *= safe_sigmoid(    t    - t1, alpha=alpha, clip=clip_val)
-    if t2>0: out *= safe_sigmoid(t[-1]-t2 - t , alpha=alpha, clip=clip_val)
+    if t1 is not None: out *= safe_sigmoid( t-t1, alpha=alpha, clip=50)
+    if t2 is not None: out *= safe_sigmoid( t2-t , alpha=alpha, clip=50)
+    # tukey
+    #n     = len(h)
+    #idx1  = np.where(t > t1)[0][0]
+    #idx2  = np.where(t > t2)[0][0]
+    #window_res = tukey(idx2-idx1, alpha)
+    #window = np.pad(window_res, (idx1, 0), mode='constant')
+    #window = np.pad(window, (0, n-idx2), mode='constant')
+    #out = h*window
+    if False:
+        import matplotlib.pyplot as plt
+        plt.figure
+        plt.plot(t, h)
+        plt.plot(t, out)
+        plt.plot(t, safe_sigmoid(    t    - t1, alpha=alpha, clip=50))
+        plt.plot(t, safe_sigmoid( t2-t , alpha=alpha, clip=50))
+        plt.axvline(t1)
+        plt.axvline(t2)
+        plt.show()
     return out
 
 def windowing(h, alpha=0.1):

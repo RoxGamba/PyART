@@ -200,7 +200,7 @@ class Waveform_RIT(Waveform):
                 p_u =  f[f'phase_l{ell}_m{emm}']['X'][:]
                 # interp to common time array
                 A   = self.__interp_qnt__(A_u, A, th)
-                p   = self.__interp_qnt__(p_u, p, th)
+                p   = self.__interp_qnt__(p_u, p, th) + np.pi
                 A   = A/nu
                 d[(ell, emm)] = {'real' : A*np.cos(p), 'imag': -A*np.sin(p), 'A':A, 'p':p, 'h': A*np.exp(-1j*p)}
 
