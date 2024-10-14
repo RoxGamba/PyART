@@ -17,6 +17,7 @@ class IntegrateMultipole(object):
                        poly_int    = None, 
                        extrap_psi4 = False,
                        window      = None,
+                       patch_opts  = {},
                        walpha      = 3,
                        ):
 
@@ -36,9 +37,13 @@ class IntegrateMultipole(object):
         self.extrap_psi4 = extrap_psi4
         self.window      = window
         self.walpha      = walpha
-        
+        self.patch_opts  = patch_opts
+
         self.t = t
         
+        if self.patch_opts:
+            data = self.patch_psi4(data, **patch_opts)  
+
         if self.window is not None:
             data = self.apply_window(data, window=window, walpha=walpha)
 
@@ -79,7 +84,82 @@ class IntegrateMultipole(object):
         rstar = R + 2*M*np.log(R/(2*M) - 1)
         return self.t - rstar
     
-    def extrapolate_psi4(self):#, integration, fcut=0, deg=-1, poly_int=None):
+    def patch_psi4(self, psi4, t0, t1, t2, debug=False):
+        """
+        Patch psi4 before t1 and after t2 using 
+        power-laws of (t-t0).
+        To be tested on high energy simulations
+        """
+        
+        def return_patch34(t, patch):
+            W0 = patch['W0']
+            W1 = patch['W1']
+            dT = patch['dT']
+            t0 = patch['t0']
+            c4 = -3*dT**4*(W0 + dT/3*W1)
+            c3 = dT**3*W0-c4/dT
+            y  = c3/(t-t0)**3 +  c4/(t-t0)**4 
+            return y
+        
+        def return_patch3(t, patch):
+            c3 = patch['dT']**3*patch['W0']
+            y  = c3/(t-patch['t0'])**3
+            return y
+        
+        t = self.t
+        
+        # update t1 to be a grid point
+        idx1 = np.where(t>t1)[0][0]
+        t1   = t[idx1]
+        # same for t2
+        idx2 = np.where(t>t2)[0][0]
+        t2   = t[idx2]
+
+        A  = np.abs(psi4)
+        dA = D1(A,t,4)
+        
+        patch1 = {'W0':A[idx1], 'W1':dA[idx1],
+                  'dT':t1 - t0, 't0':t0}
+        
+        x1 = np.linspace(0, t1, num=idx1+1)
+        y1 = return_patch34(x1, patch1)
+
+        patch2 = {'W0':A[idx2], 'W1':dA[idx2],
+                  'dT':t2-t0,   't0':t0}
+        x2 = np.linspace(t2, t[-1], num=len(t)-idx2)
+        y2 = return_patch3(x2, patch2)
+        
+        new_psi4_amp = np.concatenate((y1, A[idx1+1:idx2], y2))
+        phase    = -np.unwrap(np.angle(psi4))
+        new_psi4 = new_psi4_amp*np.exp(-1j*phase)
+
+        #x1_ext = np.linspace(-200, t1, num=1000)
+        #y1_ext = return_patch34(x1_ext, patch1)
+        #x1_inf = -1e+10
+        #y1_inf = return_patch34(x1_inf, patch1)
+        #print(y1_inf)
+        
+        if debug:
+            import matplotlib.pyplot as plt
+            plt.figure()
+            plt.subplot(2,2,1)
+            plt.plot(t, np.abs(psi4))
+            plt.plot(x1, y1, c=[0,0.8,0])
+            plt.plot(x2, y2, c=[0.8,0,0])
+            plt.plot(t, new_psi4_amp, ls='--')
+            plt.subplot(2,2,2)
+            plt.plot(t, phase)
+            plt.subplot(2,2,3)
+            plt.plot(t, psi4.real)
+            plt.plot(t, new_psi4.real, '--')
+            plt.subplot(2,2,4)
+            plt.plot(t, psi4.imag)
+            plt.plot(t, new_psi4.imag, '--')
+            plt.show()
+        
+        return new_psi4
+
+    def extrapolate_psi4(self):
         r    = self.radius
         M    = self.mass
         R    = self.areal_radius()
