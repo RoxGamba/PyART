@@ -1,4 +1,4 @@
-import os, json, random
+import os, json, random, time
 import numpy as np
 from scipy import optimize 
 
@@ -109,12 +109,12 @@ class Optimizer(object):
                 print('Optimized mm : {:.3e}'.format(opt_data['mm_opt']))
         else:
             random.seed(self.opt_seed)
-            self.annealing_counter = 1 # counter
             dashes    = '-'*55
             asterisks = '*'*55
             
             eps = self.eps_initial
             
+            t0 = time.perf_counter()
             # i-loop on different search bounds
             for i in range(1, self.eps_max_iter+1): 
                 if self.eps_max_iter>1 and self.verbose:
@@ -132,7 +132,6 @@ class Optimizer(object):
                     # if we reached a nice mismatche, break loop on initial guesses
                     if opt_data['mm_opt']<=self.opt_good_mm:
                         break
-                    self.annealing_counter = 1
                 
                 if opt_data['mm_opt']<=self.eps_bad_mm:
                     # if the mismatch is good according to eps-standard, then break
@@ -148,7 +147,6 @@ class Optimizer(object):
                     flat_new_bounds = [item for sublist in self.opt_bounds for item in sublist]
                     print('Increasing search bounds: [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_old_bounds))
                     print('                  ----> : [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_new_bounds))
-                    self.annealing_counter = 1
                 
                 else:
                     mm_opt = opt_data['mm_opt']
@@ -157,6 +155,9 @@ class Optimizer(object):
                     
             mm_data['mismatches'][ref_name] = opt_data
             
+            if verbose:
+                print('\n>> Total elapsed time : {:.1f} s\n'.format(time.perf_counter()-t0))
+
             if json_file is not None: 
                 self.save_mismatches(mm_data)
         self.opt_data = opt_data
@@ -243,16 +244,20 @@ class Optimizer(object):
         if json_file is None: # i.e., if self.json_file is None
             pass 
         sim_name = self.ref_Waveform.metadata['name']
+        creating_new_file = True 
         if os.path.exists(json_file) and not overwrite:
             with open(json_file, 'r') as file:
                 json_data = json.loads(file.read())
+            creating_new_file = False
             if sim_name in json_data['mismatches']:
-                print(f'   ---> File {json_file} alreay exists and contains {sim_name},but overwriting is off.')
+                print(f'   ---> File {json_file} alreay exists and contains {sim_name}, but overwriting is off.')
                 json_file = json_file.replace('.json', '_new.json')
-                print( '   ---> writing on file: {json_file}') 
+                print( '   ---> writing on file: {json_file}')
+                creating_new_file = True
         with open(json_file, 'w') as file:
             file.write(json.dumps(data,indent=2))
-        if verbose: print(f'Created {json_file}')
+        action = 'Created' if creating_new_file else 'Updated'
+        if verbose: print(f'{action} {json_file}')
         pass
 
     def generate_EOB(self, ICs={'f0':None, 'e0':None}):
@@ -296,16 +301,17 @@ class Optimizer(object):
             eob_wave = None
         return eob_wave
     
-    def generate_opt_EOB(self, verbose=None):
-        if verbose is None: verbose = self.verbose
-        if self.opt_data is None:
+    def generate_opt_EOB(self, opt_data=None, verbose=None):
+        if verbose is  None: verbose  = self.verbose
+        if opt_data is None: opt_data = self.opt_data
+        if opt_data is None:
             if verbose: print('Optimal ICs not found! Returning None')
             opt_Waveform = None
         else:
             kx = self.ic_keys[0]
             ky = self.ic_keys[1]
-            opt_Waveform = self.generate_EOB(ICs={kx:self.opt_data['x_opt'], 
-                                                  ky:self.opt_data['y_opt']})
+            opt_Waveform = self.generate_EOB(ICs={kx:opt_data['x_opt'], 
+                                                  ky:opt_data['y_opt']})
         return opt_Waveform
 
     def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False):
@@ -372,20 +378,30 @@ class Optimizer(object):
             print(f'                        {ky:5s} : {vxy0[1]:.15f}')
         
         f = lambda vxy : self.__func_to_minimize(vxy, verbose=verbose)
-            
+        
+
+        self.annealing_counter = 1
+
+        t0_annealing = time.perf_counter()
         opt_result = optimize.dual_annealing(f, maxfun=self.opt_maxfun, 
                                                 seed=self.opt_seed, x0=vxy0,
                                                 bounds=bounds)
         opt_pars     = opt_result['x']
         x_opt, y_opt = opt_pars[0], opt_pars[1]
         mm_opt = opt_result['fun']
+        
         if verbose:
             print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm_opt, self.annealing_counter), end='\r')
             print(f'Optimized mismatch    : {mm_opt:.3e}')
             print(f'Optimal ICs           : {kx:5s} : {x_opt:.15f}')
             print(f'                        {ky:5s} : {y_opt:.15f}')
+            print( 'Annealing time        : {:.1f} s'.format(time.perf_counter()-t0_annealing))
+        
+        opt_eob = self.generate_opt_EOB(opt_data={'x_opt':x_opt, 'y_opt':y_opt})
+        
         opt_data = { 
                     # store also some attributes, just for convenience 
+                    'opt_seed'     : self.opt_seed,
                     'opt_max_iter' : self.opt_max_iter,
                     'opt_good_mm'  : self.opt_good_mm,
                     'eps_initial'  : self.eps_initial,
@@ -393,20 +409,21 @@ class Optimizer(object):
                     'eps_bad_mm'   : self.eps_bad_mm,
                     'eps_initial'  : self.eps_initial,
                     'eps_factor'   : self.eps_factor,
-                    # data found
-                    'kx'     : kx, 
-                    'ky'     : ky,
-                    'x_ref'  : vx_ref, 
-                    'y_ref'  : vy_ref,
-                    'bounds' : bounds, 
-                    'seed'   : self.opt_seed,
-                    'x0'     : vxy0[0], 
-                    'y0'     : vxy0[1], 
-                    'mm0'    : mm0,
-                    'mm_opt' : mm_opt, 
-                    'x_opt'  : x_opt, 
-                    'y_opt'  : y_opt,
+                    # optimization results
+                    'kx'           : kx, 
+                    'ky'           : ky,
+                    'x_ref'        : vx_ref, 
+                    'y_ref'        : vy_ref,
+                    'bounds'       : bounds, 
+                    'x0'           : vxy0[0], 
+                    'y0'           : vxy0[1], 
+                    'mm0'          : mm0,
+                    'r0_eob'       : opt_eob.dyn['r'][0],
+                    'x_opt'        : x_opt, 
+                    'y_opt'        : y_opt,
+                    'mm_opt'       : mm_opt, 
                     }
+        
         return opt_data
 
 

@@ -92,7 +92,7 @@ def CreateDict(M=1., q=1,
         """
         if H_hyp>0 and J_hyp>0 and r_hyp is None:
             if H_hyp>1: 
-                r_hyp = 100
+                r_hyp = 300
             else:
                 #PotentialPlot(H_hyp,J_hyp,q,chi1z,chi2z)
                 r_apa = search_apastron(q, chi1z, chi2z, J_hyp, H_hyp, step_size=0.1)

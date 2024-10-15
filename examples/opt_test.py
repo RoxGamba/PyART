@@ -18,46 +18,47 @@ mm_settings = {'cut':True, 'initial_frequency_mm':20, 'M':100, 'final_frequency_
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--catalog', required=True, type=str, 
-                                 choices=['rit','sxs', 'icc'], help='Catalog')
-parser.add_argument('-i', '--id', default=1,  type=int,        help='Simulatoion ID. If not specified, download hard-coded ID list')
-parser.add_argument('--maxfun',       default=100, type=int,   help='Maxfun in dual annealing')
-parser.add_argument('--opt_max_iter', default=1, type=int,     help='Max opt iter')
-parser.add_argument('--opt_good_mm',  default=5e-3, type=float, help='opt_good_mm from opt_ic')
-parser.add_argument('--eps_max_iter', default=1,    type=int,   help='ep_max_iter from opt_ic')
-parser.add_argument('--eps_bad_mm',   default=0.1,  type=float, help='eps_bad_mm from opt_ic')
-parser.add_argument('-d', '--download', action='store_true',   help='Eventually download data')
+                                 choices=['rit','sxs', 'icc'],   help='Catalog')
+parser.add_argument('-i', '--id', default=1,         type=int,   help='Simulatoion ID. If not specified, download hard-coded ID list')
+parser.add_argument('--maxfun',       default=100,   type=int,   help='Maxfun in dual annealing')
+parser.add_argument('--opt_max_iter', default=1,     type=int,   help='Max opt iter')
+parser.add_argument('--opt_good_mm',  default=5e-3,  type=float, help='opt_good_mm from opt_ic')
+parser.add_argument('--eps_max_iter', default=1,     type=int,   help='ep_max_iter from opt_ic')
+parser.add_argument('--eps_bad_mm',   default=0.1,   type=float, help='eps_bad_mm from opt_ic')
+parser.add_argument('-d', '--download', action='store_true',     help='Eventually download data')
 parser.add_argument('--kind_ic', choices=['e0f0', 'E0pph0'], 
-                                 default='E0pph0',             help='ICs type')
-parser.add_argument('--debug_plot',   action='store_true',     help='Show debug plot')
-parser.add_argument('--mm_vs_M',      action='store_true',     help='Show plot mm vs M')
-parser.add_argument('--overwrite',    action='store_true',     help='Overwrite option (json)')
+                                 default='E0pph0',               help='ICs type')
+parser.add_argument('--debug_plot',   action='store_true',       help='Show debug plot')
+parser.add_argument('--mm_vs_M',      action='store_true',       help='Show plot mm vs M')
+parser.add_argument('--json_file',    default=None,              help='JSON file for mismatches')
+parser.add_argument('--overwrite',    action='store_true',       help='Overwrite option (json)')
 args = parser.parse_args()
 
 if args.kind_ic=='e0f0':
     bounds = [[0,0.7], [None, None]]
 else:
-    #bounds = [[0.98,1.05], [3.9,6]]
     bounds = [[None,None], [None,None]]
+
 if args.catalog=='rit':
     ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id)
+
 elif args.catalog=='sxs':
     ebbh = Waveform_SXS(path=sxs_path, download=args.download, ID=args.id, order="Extrapolated_N3.dir", ellmax=7)
+
 elif args.catalog=='icc':
     ebbh = Waveform_ICC(path=icc_path, ID=args.id, integrate=True,
                         integr_opts={'f0':0.002, 'extrap_psi4':True, 'method':'FFI', 'window':[20,-20]})
 else:
     raise ValueError(f'Unknown catalog: {args.catalog}')
 
+print('Metadata:')
 for k in ebbh.metadata:
     print(f'{k:10s} : {ebbh.metadata[k]}')
 print('\n\n')
 
 if args.catalog=='sxs':
-    print('Removing junk')
+    print('Removing (200 M) junk for SXS')
     ebbh.cut(200)
-
-json_file = f'test_{args.catalog}.json'
-json_file = None
 
 opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
                       opt_maxfun=args.maxfun,
@@ -67,7 +68,7 @@ opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
                       eps_max_iter = args.eps_max_iter, 
                       eps_bad_mm   = args.eps_bad_mm,
                       debug=args.debug_plot,
-                      json_file=json_file, overwrite=args.overwrite)
+                      json_file=args.json_file, overwrite=args.overwrite)
 
 if args.mm_vs_M:
     masses = np.linspace(20, 200, num=19)

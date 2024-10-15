@@ -54,7 +54,7 @@ class Waveform_ICC(Waveform):
                                                    M=1, modes=[(2,2)])
             i0     = np.where(self.u>=0)[0][0] 
             DeltaT = self.u[i0]-self.u[0]
-            self.cut(DeltaT, cut_psi4lm=False)
+            self.cut(DeltaT, cut_dothlm=True, cut_psi4lm=False)
         else:
             self.integr_opts = {}
             self.load_hlm_compute_dothlm()
