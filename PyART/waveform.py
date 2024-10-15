@@ -75,94 +75,111 @@ class Waveform(object):
                 self, 
                 mode   = (2,2), 
                 kind   = 'last-peak',
+                wave   = 'hlm', 
                 umin   = 0,
                 height = 0.15,
                 return_idx = False
                 ):
         
-        u   = self.u
-        p   = self.hlm[mode]['p']
-        Alm = self.hlm[mode]['A']
-
+        if wave=='psi4lm':
+            if self.t_psi4 is None: 
+                raise RuntimeError('psi4-time not defined, but needed to search psi4-max!')
+            t = self.t_psi4
+        else:
+            t = self.u
+            
+        wave = getattr(self, wave)
+        p   = wave[mode]['p']
+        Alm = wave[mode]['A']
+        
         # compute omega
         omg      = np.zeros_like(p)
-        omg[1:]  = np.diff(p)/np.diff(u)
+        omg[1:]  = np.diff(p)/np.diff(t)
         # compute domega
         domg     = np.zeros_like(omg)
-        domg[1:] = np.diff(omg)/np.diff(u)
+        domg[1:] = np.diff(omg)/np.diff(t)
         
         # find peaks
         peaks, props = find_peaks(Alm, height=height)
 
         if kind == 'first-max-after-t':
             for i in range(len(peaks)):
-                if(u[peaks[i]] > umin):
+                if(t[peaks[i]] > umin):
                     break
         elif kind == 'last-peak':
             i = len(peaks) - 1
-            
         elif kind == 'global':
             Alms = props['peak_heights']
             i    = np.argmax(Alms)
         else:
             raise ValueError("`kind' for merger not found")
 
-        u_mrg    = u[peaks[i]]
+        t_mrg    = t[peaks[i]]
         A_mrg    = Alm[peaks[i]]
         omg_mrg  = omg[peaks[i]]
         domg_mrg = domg[peaks[i]]
 
         if return_idx:
-            return u_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
+            return t_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
         else:
-            return u_mrg, A_mrg, omg_mrg, domg_mrg
+            return t_mrg, A_mrg, omg_mrg, domg_mrg
     
-    def cut(self, DeltaT, cut_hpc=True, from_the_end=False, allw=False,
-                  cut_dothlm=True): 
+    def cut(self, DeltaT, cut_hpc=True, from_the_end=False,
+                  cut_dothlm=True, cut_psi4lm=False): 
         """
-        Cut the waveform (hlm) removing the 
-        first DeltaT M 
-        (or last if from_the_end=True)
-        Store old retarded time in self.u0
+        Cut the waveform removing the 
+        first DeltaT M (or last if from_the_end=True)
+        If cut_psi4lm is True, cut also psi4lm using
+        self.t_psi4
         """
-        u_from_zero = self.u-self.u[0]
-        if u_from_zero[-1]<DeltaT:
-            raise RuntimeError('Cutting too much, no points left!')
-
-        if from_the_end:
-            i0 = np.where(u_from_zero > u_from_zero[-1]-DeltaT)[0][0]
-            tslice = slice(None, i0)
-        else:
-            i0 = np.where(u_from_zero > DeltaT)[0][0]
-            tslice = slice(i0, None)
         
-        self.u0 = self.u
-        self._u = self.u[tslice]
-        if self.t is not None:
-            self._t = self.t[tslice]
+        def get_slice(time_from_zero):
+            if time_from_zero[-1]<DeltaT:
+                raise RuntimeError('Cutting too much, no points left!')
+            if from_the_end:
+                i0 = np.where(time_from_zero > time_from_zero[-1]-DeltaT)[0][0]
+                tslice = slice(None, i0)
+            else:
+                i0 = np.where(time_from_zero > DeltaT)[0][0]
+                tslice = slice(i0, None)
+            return tslice
         
-        def cut_all_modes(wave):
+        def cut_all_modes(wave, my_tslice):
             if wave: 
                 for k in wave.keys():
                     for sk in wave[k].keys():
-                        wave[k][sk] = wave[k][sk][tslice]
+                        wave[k][sk] = wave[k][sk][my_tslice]
             return wave
-
-        # resize hlm
-        self._hlm = cut_all_modes(self.hlm)
-        if cut_dothlm:
-            self._dothlm = cut_all_modes(self.dothlm)
-        #if cut_psi4lm:
-        #    self._psi4lm = cut_all_modes(self.psi4lm)
-        #    if self.t_psi4 is None:
-        #        self._t_psi4 = self.t_psi4[tslice]
-
-        # resize polarizations 
-        if cut_hpc and self.hp is not None:
-            self._hp = self.hp[tslice]
-        if cut_hpc and self.hc is not None:
-            self._hc = self.hc[tslice]
-
+        
+        # if retarded time and hlm are defined, then cut
+        if self.u is not None and self.hlm:
+            u_from_zero = self.u-self.u[0]
+            tslice      = get_slice(u_from_zero)
+            self._u     = self.u[tslice]
+            
+            if self.t is not None: self._t = self.t[tslice]
+            
+            # resize hlm
+            self._hlm = cut_all_modes(self.hlm, tslice)
+            
+            # resize also dothlm
+            if cut_dothlm and self.dothlm:
+                self._dothlm = cut_all_modes(self.dothlm, tslice)
+        
+            # if specified, resize also polarizations 
+            if cut_hpc and self.hp is not None:
+                self._hp = self.hp[tslice]
+            if cut_hpc and self.hc is not None:
+                self._hc = self.hc[tslice]
+        
+        if cut_psi4lm:
+            if self.t_psi4 is None: 
+                print('Warning! No psi4-time found! Avoind psi4-cutting')
+            else:
+                tslice_psi4  = get_slice(self.t_psi4-self.t_psi4[0])
+                self._psi4lm = cut_all_modes(self.psi4lm, tslice_psi4)
+                self._t_psi4 = self.t_psi4[tslice_psi4]
+        
         return
 
     def compute_hphc(self, phi=0, i=0, modes=[(2,2)]):

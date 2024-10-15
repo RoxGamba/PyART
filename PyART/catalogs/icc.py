@@ -44,7 +44,7 @@ class Waveform_ICC(Waveform):
             self.puncts = None
         
         # define self.psi4lm, self.t_psi4 and self.r_extr
-        self.load_psi4()
+        self.load_psi4(tmax_after_peak=200)
         
         if integrate:
             # get hlm and dhlm by psi4-integration
@@ -54,16 +54,7 @@ class Waveform_ICC(Waveform):
                                                    M=1, modes=[(2,2)])
             i0     = np.where(self.u>=0)[0][0] 
             DeltaT = self.u[i0]-self.u[0]
-            self.cut(DeltaT)
-            try:
-                tmrg, _, _, _ = self.find_max()
-                DeltaT_end = self.u[-1]-(tmrg+300)
-            except Exception as e:
-                print(f'Error while searching merger time: {e}')
-                DeltaT_end = 0
-            if DeltaT_end>0:
-                # leave only 150 M after merge
-                self.cut(DeltaT_end, from_the_end=True)
+            self.cut(DeltaT, cut_psi4lm=False)
         else:
             self.integr_opts = {}
             self.load_hlm_compute_dothlm()
@@ -177,11 +168,21 @@ class Waveform_ICC(Waveform):
         
         return mydict, t, files 
 
-    def load_psi4(self):
+    def load_psi4(self, tmax_after_peak=200):
         dict_psi4, t, files = self.load_multipole_txtfile('mp_psi4', raise_error=True)
         self._t_psi4 = t 
         self._psi4lm = dict_psi4
         self.r_extr  = ut.extract_value_from_str(files[0], 'r')
+        
+        try:
+            tmax_psi4,_,_,_ = self.find_max(wave='psi4lm', height=3e-04)
+            print(tmax_psi4)
+            DeltaT_end = self.t_psi4[-1]-(tmax_psi4+tmax_after_peak)
+        except Exception as e:
+            print(f'Error while searching merger time: {e}')
+            DeltaT_end = 0
+        if DeltaT_end>0:
+            self.cut(DeltaT_end, from_the_end=True, cut_psi4lm=True)
         pass
     
     def load_hlm_compute_dothlm(self):

@@ -73,8 +73,9 @@ for ID in IDs:
         print(f'{k:10s} : {icc.metadata[k]}')
 
     try:
-      iicc_tmrg, _, _, _ = iicc.find_max()
-      icc_tmrg, _, _, _  =  icc.find_max()
+      iicc_tmrg, _, _, _ = iicc.find_max(height=0.3)
+      icc_tmrg, _, _, _  = icc.find_max(height=0.3)
+      
     except:
       iicc_tmrg = 0
       icc_tmrg  = 0      
