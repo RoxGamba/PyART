@@ -99,15 +99,20 @@ class Optimizer(object):
         ref_name = self.ref_Waveform.metadata['name']
         
         self.opt_data = None
-        if not overwrite and ref_name in mm_data['mismatches']:
+
+        run_optimization = True
+        if ref_name in mm_data['mismatches']:
             opt_data = mm_data['mismatches'][ref_name]
+            if not overwrite or opt_data['mm_opt']<eps_bad_mm:
+                run_optimization = False
             if verbose: 
                 print(f'Loading mismatch from {self.json_file}')
                 print('Optimal ICs  : {:s}={:.5f}, {:s}:{:.5f}'.format(opt_data['kx'], opt_data['x_opt'],
                                                                   opt_data['ky'], opt_data['y_opt']))
                 print('Original mm  : {:.3e}'.format(opt_data['mm0']))
                 print('Optimized mm : {:.3e}'.format(opt_data['mm_opt']))
-        else:
+        
+        if run_optimization:
             random.seed(self.opt_seed)
             dashes    = '-'*55
             asterisks = '*'*55
@@ -150,8 +155,10 @@ class Optimizer(object):
                 
                 else:
                     mm_opt = opt_data['mm_opt']
-                    print(f'+++ Reached eps_max_iter={self.eps_max_iter} but')
-                    print(f'+++ mm_opt={mm_opt:.3e} > {self.eps_bad_mm}')
+                    print( '\n++++++++++++++++++++++++++++++++++++++')
+                    print(f'+++  Reached eps_max_iter : {self.eps_max_iter:2d}     +++')
+                    print(f'+++  mm_opt : {mm_opt:.2e} > {self.eps_bad_mm:.2e}  +++')
+                    print( '++++++++++++++++++++++++++++++++++++++')
                     
             mm_data['mismatches'][ref_name] = opt_data
             
