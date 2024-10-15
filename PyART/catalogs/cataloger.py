@@ -102,7 +102,7 @@ class Cataloger(object):
                 mm[j] = matcher.mismatch
             plt.plot(masses, mm, label=name, c=colors[i])
         plt.yscale('log')
-        plt.legend(ncol=3)
+        #plt.legend(ncol=3)
         plt.grid()
         plt.show()
         return

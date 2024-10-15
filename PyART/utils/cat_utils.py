@@ -52,9 +52,9 @@ def get_flags(meta, thres_spin=1e-5, thres_q=1e-3, thres_e0=1e-3):
     flags = []
     spins = [meta['chi1x'], meta['chi1y'], meta['chi1z'],
              meta['chi2x'], meta['chi2y'], meta['chi2z']]
-    if all(spins[i] < thres_spin for i in range(6)):
+    if all(abs(spins[i]) < thres_spin for i in range(6)):
         flags.append('nonspinning')
-    elif all(spins[i] < thres_spin for i in [0, 1, 3, 4]):
+    elif all(abs(spins[i]) < thres_spin for i in [0, 1, 3, 4]):
         flags.append('spin-aligned')
     else:
         flags.append('spin-precessing')

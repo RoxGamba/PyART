@@ -89,12 +89,22 @@ class Optimizer(object):
         self.__update_bounds(eps=eps_initial)
           
         if verbose:
-            print( '#'*60)
-            print(f'# Running Optimizer')
-            print(f'# reference waveform : {ref_Waveform.metadata["name"]}')
-            print(f'# variables of ICs   : {ic_keys[0]}, {ic_keys[1]}')
-            print( '#'*60)
-        
+            q    = ref_Waveform.metadata['q']
+            chi1 = ref_Waveform.metadata['chi1z'] 
+            chi2 = ref_Waveform.metadata['chi2z'] 
+            flags_str = ''
+            for flag in ref_Waveform.metadata['flags']:
+                flags_str += flag + ', '
+            flags_str = flags_str[:-2]
+            print( '###########################################')
+            print(f'###          Running Optimizer          ###')
+            print( '###########################################\n')
+            print(f'Reference waveform : {ref_Waveform.metadata["name"]}')
+            print(f'(q, chi1z, chi2z)  : ({q:.2f}, {chi1:.2f}, {chi2:.2f})')
+            print(f'info               : {flags_str}')
+            print(f'Variables of ICs   : {ic_keys[0]}, {ic_keys[1]}')
+            print(' ')
+
         mm_data  = self.load_or_create_mismatches()
         ref_name = self.ref_Waveform.metadata['name']
         
@@ -110,12 +120,12 @@ class Optimizer(object):
                 print('Optimal ICs  : {:s}={:.5f}, {:s}:{:.5f}'.format(opt_data['kx'], opt_data['x_opt'],
                                                                   opt_data['ky'], opt_data['y_opt']))
                 print('Original mm  : {:.3e}'.format(opt_data['mm0']))
-                print('Optimized mm : {:.3e}'.format(opt_data['mm_opt']))
+                print('Optimized mm : {:.3e}\n'.format(opt_data['mm_opt']))
         
         if run_optimization:
             random.seed(self.opt_seed)
-            dashes    = '-'*55
-            asterisks = '*'*55
+            dashes    = '-'*45
+            asterisks = '*'*45
             
             eps = self.eps_initial
             
@@ -150,7 +160,7 @@ class Optimizer(object):
                     eps *= self.eps_factor
                     self.__update_bounds(eps=eps)
                     flat_new_bounds = [item for sublist in self.opt_bounds for item in sublist]
-                    print('Increasing search bounds: [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_old_bounds))
+                    print('\nIncreasing search bounds: [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_old_bounds))
                     print('                  ----> : [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_new_bounds))
                 
                 else:
@@ -163,7 +173,8 @@ class Optimizer(object):
             mm_data['mismatches'][ref_name] = opt_data
             
             if verbose:
-                print('\n>> Total elapsed time : {:.1f} s\n'.format(time.perf_counter()-t0))
+                print(  '>> Best mismatch found : {:.3e}'.format(opt_data['mm_opt']))
+                print('\n>> Total elapsed time  : {:.1f} s\n'.format(time.perf_counter()-t0))
 
             if json_file is not None: 
                 self.save_mismatches(mm_data)
@@ -263,8 +274,9 @@ class Optimizer(object):
                 creating_new_file = True
         with open(json_file, 'w') as file:
             file.write(json.dumps(data,indent=2))
-        action = 'Created' if creating_new_file else 'Updated'
-        if verbose: print(f'{action} {json_file}')
+        if verbose: 
+            action = 'Created' if creating_new_file else 'Updated'
+            print(f'{action} {json_file}\n')
         pass
 
     def generate_EOB(self, ICs={'f0':None, 'e0':None}):
