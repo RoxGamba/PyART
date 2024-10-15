@@ -125,7 +125,7 @@ class Waveform(object):
             return t_mrg, A_mrg, omg_mrg, domg_mrg
     
     def cut(self, DeltaT, cut_hpc=True, from_the_end=False,
-                  cut_dothlm=True, cut_psi4lm=False): 
+                  cut_dothlm=False, cut_psi4lm=False): 
         """
         Cut the waveform removing the 
         first DeltaT M (or last if from_the_end=True)
@@ -163,9 +163,12 @@ class Waveform(object):
             self._hlm = cut_all_modes(self.hlm, tslice)
             
             # resize also dothlm
-            if cut_dothlm and self.dothlm:
-                self._dothlm = cut_all_modes(self.dothlm, tslice)
-        
+            if self.dothlm:
+                if cut_dothlm:
+                    self._dothlm = cut_all_modes(self.dothlm, tslice)
+                else:
+                    print('Warning! dothlm is stored, but cut_dothlm==False when claling self.cut')
+
             # if specified, resize also polarizations 
             if cut_hpc and self.hp is not None:
                 self._hp = self.hp[tslice]
@@ -180,7 +183,7 @@ class Waveform(object):
                 self._psi4lm = cut_all_modes(self.psi4lm, tslice_psi4)
                 self._t_psi4 = self.t_psi4[tslice_psi4]
         
-        return
+        pass
 
     def compute_hphc(self, phi=0, i=0, modes=[(2,2)]):
         """

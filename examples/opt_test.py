@@ -21,8 +21,10 @@ parser.add_argument('-c', '--catalog', required=True, type=str,
                                  choices=['rit','sxs', 'icc'], help='Catalog')
 parser.add_argument('-i', '--id', default=1,  type=int,        help='Simulatoion ID. If not specified, download hard-coded ID list')
 parser.add_argument('--maxfun',       default=100, type=int,   help='Maxfun in dual annealing')
-parser.add_argument('--max_opt_iter', default=1, type=int,     help='Max opt iter')
-parser.add_argument('--mm_threshold',  default=5e-3, type=float, help='mismatch thresholds')
+parser.add_argument('--opt_max_iter', default=1, type=int,     help='Max opt iter')
+parser.add_argument('--opt_good_mm',  default=5e-3, type=float, help='opt_good_mm from opt_ic')
+parser.add_argument('--eps_max_iter', default=1,    type=int,   help='ep_max_iter from opt_ic')
+parser.add_argument('--eps_bad_mm',   default=0.1,  type=float, help='eps_bad_mm from opt_ic')
 parser.add_argument('-d', '--download', action='store_true',   help='Eventually download data')
 parser.add_argument('--kind_ic', choices=['e0f0', 'E0pph0'], 
                                  default='E0pph0',             help='ICs type')
@@ -34,7 +36,7 @@ args = parser.parse_args()
 if args.kind_ic=='e0f0':
     bounds = [[0,0.7], [None, None]]
 else:
-    #bounds = [[0.98,1.00], [3.9,6]]
+    #bounds = [[0.98,1.05], [3.9,6]]
     bounds = [[None,None], [None,None]]
 if args.catalog=='rit':
     ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id)
@@ -55,13 +57,16 @@ if args.catalog=='sxs':
     ebbh.cut(200)
 
 json_file = f'test_{args.catalog}.json'
-#json_file = None
+json_file = None
 
 opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
                       opt_maxfun=args.maxfun,
-                      max_opt_iter = args.max_opt_iter,
-                      mm_threshold = args.mm_threshold,
-                      opt_bounds=bounds, debug=args.debug_plot,
+                      opt_max_iter = args.opt_max_iter,
+                      opt_good_mm  = args.opt_good_mm,
+                      opt_bounds   = bounds, 
+                      eps_max_iter = args.eps_max_iter, 
+                      eps_bad_mm   = args.eps_bad_mm,
+                      debug=args.debug_plot,
                       json_file=json_file, overwrite=args.overwrite)
 
 if args.mm_vs_M:

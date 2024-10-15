@@ -84,7 +84,7 @@ class IntegrateMultipole(object):
         rstar = R + 2*M*np.log(R/(2*M) - 1)
         return self.t - rstar
     
-    def patch_psi4(self, psi4, t0, t1, t2, debug=False):
+    def patch_psi4(self, psi4, t0, t1, t2, debug=True):
         """
         Patch psi4 before t1 and after t2 using 
         power-laws of (t-t0).
@@ -147,6 +147,7 @@ class IntegrateMultipole(object):
             plt.plot(x1, y1, c=[0,0.8,0])
             plt.plot(x2, y2, c=[0.8,0,0])
             plt.plot(t, new_psi4_amp, ls='--')
+            plt.title(f'{self.l:d},{self.m:d}')
             plt.subplot(2,2,2)
             plt.plot(t, phase)
             plt.subplot(2,2,3)

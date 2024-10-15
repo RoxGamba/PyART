@@ -76,6 +76,8 @@ class Waveform_ICC(Waveform):
         S1 = np.array([0, 0, ometa['chi1']*M1*M1])
         S2 = np.array([0, 0, ometa['chi2']*M2*M2])
 
+        Jz = ometa['J0']
+        Lz = Jz - S1[2] - S2[2]
         meta = {'name'       : ometa['name'],
                 'ref_time'   : 0,
                 'm1'         : M1,
@@ -96,8 +98,8 @@ class Waveform_ICC(Waveform):
                 'E0'         : ometa['E0'],
                 'Jz0'        : ometa['J0'],
                 'P0'         : np.array(ometa['P0']),
-                'J0'         : np.array([0,0,ometa['J0']]),
-                'pph0'       : ometa['J0']/(nu*M*M),
+                'J0'         : np.array([0,0,Jz]),
+                'pph0'       : Lz/(nu*M*M),
                 'E0byM'      : ometa['E0'],
                 'pos1'       : np.array([0,0,+ometa['D']/2]),
                 'pos2'       : np.array([0,0,-ometa['D']/2]),
@@ -176,10 +178,9 @@ class Waveform_ICC(Waveform):
         
         try:
             tmax_psi4,_,_,_ = self.find_max(wave='psi4lm', height=3e-04)
-            print(tmax_psi4)
             DeltaT_end = self.t_psi4[-1]-(tmax_psi4+tmax_after_peak)
         except Exception as e:
-            print(f'Error while searching merger time: {e}')
+            print(f'Error while searching max of psi4 time: {e}')
             DeltaT_end = 0
         if DeltaT_end>0:
             self.cut(DeltaT_end, from_the_end=True, cut_psi4lm=True)
