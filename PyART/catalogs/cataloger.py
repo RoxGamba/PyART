@@ -1,4 +1,4 @@
-import os, json
+import os, json, matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -9,6 +9,8 @@ from .icc import Waveform_ICC
 
 from ..analysis.match  import Matcher
 from ..analysis.opt_ic import Optimizer
+
+matplotlib.rc('text', usetex=True)
 
 class Cataloger(object):
     """
@@ -66,7 +68,7 @@ class Cataloger(object):
     def plot_waves(self, cmap='rainbow'):
         mycmap = plt.get_cmap(cmap)
         colors = mycmap(np.linspace(0,1,self.nsims))
-        plt.figure()
+        plt.figure(figsize=(8,6))
         for i, name in enumerate(self.data):
             wave = self.data[name]['Waveform']
             if (2,2) in wave.hlm:
@@ -84,26 +86,138 @@ class Cataloger(object):
         for name in self.data:
             self.data[name]['Optimizer'] = Optimizer(self.data[name]['Waveform'], **optimizer_opts)
         pass
-  
-    def plot_mm_vs_M(self, mass_min=100, mass_max=200, N=20, cmap='rainbow'):
-        mycmap = plt.get_cmap(cmap)
-        colors = mycmap(np.linspace(0,1,self.nsims))
+    
+    def __is_in_valid_range(self, name, ranges):
+        """
+        Check if a certain waveform is in the specified
+        ranges (for example: ranges={'pph0':[1,10]})
+        """
+        meta  = self.data[name]['Waveform'].metadata
+        for key in ranges:
+            if key not in meta:
+                raise ValueError(f'{key} is not a metadata entry!')
+            x = meta[key]
+            if x<ranges[key][0] or x>ranges[key][1]:
+              return False
+        return True
+    
+    def find_subset(self, ranges):
+        subset   = []
+        for name in self.data:
+            if self.__is_in_valid_range(name, ranges=ranges):
+                subset.append(name)
+        return subset 
+    
+    def quantity_from_meta(self, meta, variable):
+        if variable=='chiz_eff':
+            chi1z = meta['chi1z']
+            chi2z = meta['chi2z']
+            m1    = meta['m1']
+            m2    = meta['m2']
+            x     = (m1*chi1z + m2*chi2z)/(m1+m2)
+        elif variable in meta:
+            x = meta[variable] 
+        else:
+            x = None
+        return x
+    
+    def tex_label_from_key(self, key):
+        tex = {'chiz_eff': r'$\chi_{\rm eff}$',
+               'pph0'    : r'$p_\varphi^0$',
+               'E0byM'   : r'$E_0/M$',
+               }
+        if key in tex:
+            return tex[key]
+        else:
+            return key
+
+    #def plot_colorbar(self, xvar='q', yvar='chiz_eff'):
+        
+    def plot_mm_vs_M(self, 
+                     mass_min   = 100, 
+                     mass_max   = 200, 
+                     N          = 20, 
+                     cmap       = 'rainbow', 
+                     ranges     = {'pph0':[1,10]},
+                     cmap_var   = 'E0byM',
+                     hlines     = [],
+                     savepng    = True,
+                     figname    = None,
+                     ):
+         
+        # select waveforms
+        subset = self.find_subset(ranges=ranges)
+
+        cmap_min = None
+        cmap_max = None
+        for i, name in enumerate(subset):
+            meta = self.data[name]['Waveform'].metadata
+            x = self.quantity_from_meta(meta, cmap_var)
+            if x is not None:
+                if cmap_min is None or x<cmap_min:
+                    cmap_min = x
+                if cmap_max is None or x>cmap_max:
+                    cmap_max = x
+
+        nsims_subset = len(subset)
+        tmp= plt.get_cmap(cmap)
+        del cmap
+        cmap = tmp
+
+        # get colors and color index
+        colors = cmap(np.linspace(0,1,nsims_subset))
+        cmap_range = [cmap_min, cmap_max] 
+        if abs(cmap_min-cmap_max)>1e-12:
+            cmap_indeces = []
+            for i, name in enumerate(subset):
+                meta = self.data[name]['Waveform'].metadata
+                x = self.quantity_from_meta(meta, cmap_var)
+                idx = round( (nsims_subset-1)*(x-cmap_min)/(cmap_max-cmap_min) )
+                cmap_indeces.append(idx)
+        else:
+            cmap_indeces = [int(nsims_subset/2) for i in subset]
+
         masses = np.linspace(mass_min, mass_max, num=N)
-        plt.figure()
-        for i, name in enumerate(self.data):
+
+        fig, ax = plt.subplots(1,1,figsize=(8,6))
+        for i, name in enumerate(subset):
             print(f'mm for: {name}')
             mm = masses*0
             mm_settings = self.data[name]['Optimizer'].mm_settings
             eob = self.data[name]['Optimizer'].generate_opt_EOB()
             nr  = self.data[name]['Waveform']
+            pph0_nr = nr.metadata['pph0']
             for j, M in enumerate(masses):
                 mm_settings['M'] = M 
                 matcher = Matcher(nr, eob, pre_align=False, settings=mm_settings)
                 mm[j] = matcher.mismatch
-            plt.plot(masses, mm, label=name, c=colors[i])
+            cidx = cmap_indeces[i]
+            ax.plot(masses, mm, label=name, c=colors[cidx], lw=0.6)
+        
+        styles  = ['-', '--', '-.']
+        nstyles = len(styles)
+        for i, hline in enumerate(hlines):
+            ax.axhline(hline, lw=2.0, ls=styles[i%nstyles], c='k')
+
+        cnorm = plt.Normalize(*cmap_range)
+        sm    = plt.cm.ScalarMappable(norm=cnorm,cmap=cmap)
+        cbar  = plt.colorbar(sm,ax=ax)
+        
+        ax.set_xlim(mass_min, mass_max)
+        
+        cbar_label = self.tex_label_from_key(cmap_var)
+        cbar.set_label(cbar_label,         fontsize=20)
+        ax.set_xlabel(r'$M [M_\odot]$',    fontsize=20)
+        ax.set_ylabel(r'${\bar{\cal F}}$', fontsize=20)
+        
         plt.yscale('log')
-        #plt.legend(ncol=3)
         plt.grid()
+
+        if savepng:
+            if figname is None:
+                figname = f'mismatches_{self.catalog}_{cmap_var}.png'
+            plt.savefig(figname,dpi=200,bbox_inches='tight')
+
         plt.show()
         return
 

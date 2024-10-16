@@ -84,7 +84,7 @@ class IntegrateMultipole(object):
         rstar = R + 2*M*np.log(R/(2*M) - 1)
         return self.t - rstar
     
-    def patch_psi4(self, psi4, t0, t1, t2, debug=True):
+    def patch_psi4(self, psi4, t0, t1, t2, debug=False):
         """
         Patch psi4 before t1 and after t2 using 
         power-laws of (t-t0).
@@ -216,6 +216,7 @@ class IntegrateMultipole(object):
         for i in range(steps):
             cumulative *= factor
             integrals.append(ifft(cumulative))
+                
         return integrals
 
     def remove_time_drift(self, signal):

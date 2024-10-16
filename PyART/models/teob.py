@@ -85,7 +85,7 @@ def CreateDict(M=1., q=1,
                phi_ref = 0.,
                ecc = 1e-8, r_hyp = 0, H_hyp = 0, J_hyp=0, anomaly = np.pi,
                interp="yes", arg_out="yes", use_geom="yes", 
-               use_mode_lm=[1],
+               use_mode_lm=[1], ode_tmax=1e+6,
                cN3LO=None, a6c=None):
         """
         Create the dictionary of parameters for EOBRunPy
@@ -131,7 +131,8 @@ def CreateDict(M=1., q=1,
             'df'                 : df,
             'anomaly'            : anomaly,
             'spin_flx'           : 'EOB',
-            'spin_interp_domain' : 0
+            'spin_interp_domain' : 0,
+            'ode_tmax'           : ode_tmax,
         }
 
         if a6c is not None:

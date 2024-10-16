@@ -101,8 +101,8 @@ class Optimizer(object):
             print( '###########################################\n')
             print(f'Reference waveform : {ref_Waveform.metadata["name"]}')
             print(f'(q, chi1z, chi2z)  : ({q:.2f}, {chi1:.2f}, {chi2:.2f})')
-            print(f'info               : {flags_str}')
-            print(f'Variables of ICs   : {ic_keys[0]}, {ic_keys[1]}')
+            print(f'binary type        : {flags_str}')
+            print(f'Variables for ICs  : {ic_keys[0]}, {ic_keys[1]}')
             print(' ')
 
         mm_data  = self.load_or_create_mismatches()
@@ -133,7 +133,7 @@ class Optimizer(object):
             # i-loop on different search bounds
             for i in range(1, self.eps_max_iter+1): 
                 if self.eps_max_iter>1 and self.verbose:
-                    print(f'\n{asterisks}\nBound (eps) iteration  #{i:d}\n{asterisks}')
+                    print(f'\n{asterisks}\nSearch bounds (eps) iteration  #{i:d}\n{asterisks}')
                  
                 # j-loop on different initial gueses 
                 for j in range(1, self.opt_max_iter+1):
@@ -173,8 +173,8 @@ class Optimizer(object):
             mm_data['mismatches'][ref_name] = opt_data
             
             if verbose:
-                print(  '>> Best mismatch found : {:.3e}'.format(opt_data['mm_opt']))
-                print('\n>> Total elapsed time  : {:.1f} s\n'.format(time.perf_counter()-t0))
+                print('\n>> Best mismatch found : {:.3e}'.format(opt_data['mm_opt']))
+                print(  '>> Total elapsed time  : {:.1f} s\n'.format(time.perf_counter()-t0))
 
             if json_file is not None: 
                 self.save_mismatches(mm_data)
@@ -308,7 +308,8 @@ class Optimizer(object):
 
         else: 
             raise ValueError(f'Unknown kind of ICs: {kind}')
-        
+       
+        sub_meta['ode_tmax'] = 2e+4
         # return generated EOB waveform 
         try:
             pars        = CreateDict(**sub_meta)
@@ -417,7 +418,10 @@ class Optimizer(object):
             print( 'Annealing time        : {:.1f} s'.format(time.perf_counter()-t0_annealing))
         
         opt_eob = self.generate_opt_EOB(opt_data={'x_opt':x_opt, 'y_opt':y_opt})
-        
+        if opt_eob is not None:
+            r0_eob = opt_eob.dyn['r'][0]
+        else:
+            r0_eob = None
         opt_data = { 
                     # store also some attributes, just for convenience 
                     'opt_seed'     : self.opt_seed,
@@ -437,7 +441,7 @@ class Optimizer(object):
                     'x0'           : vxy0[0], 
                     'y0'           : vxy0[1], 
                     'mm0'          : mm0,
-                    'r0_eob'       : opt_eob.dyn['r'][0],
+                    'r0_eob'       : r0_eob,
                     'x_opt'        : x_opt, 
                     'y_opt'        : y_opt,
                     'mm_opt'       : mm_opt, 
