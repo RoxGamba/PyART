@@ -108,15 +108,19 @@ class Cataloger(object):
                 subset.append(name)
         return subset 
     
-    def quantity_from_meta(self, meta, variable):
+    def quantity_from_dataset(self, name, variable):
+        meta = self.data[name]['Waveform'].metadata
         if variable=='chiz_eff':
             chi1z = meta['chi1z']
             chi2z = meta['chi2z']
             m1    = meta['m1']
             m2    = meta['m2']
             x     = (m1*chi1z + m2*chi2z)/(m1+m2)
+        elif variable=='mm_opt' or variable=='mm0':
+            x = self.data[name]['Optimizer'].opt_data[variable]  
         elif variable in meta:
-            x = meta[variable] 
+            chi1z = meta['chi1z']
+            x = meta[variable]
         else:
             x = None
         return x
@@ -130,14 +134,60 @@ class Cataloger(object):
             return tex[key]
         else:
             return key
+    
+    def get_colors_for_subset(self, subset, cmap_var, cmap_name='jet'):
+        cmap_min = None
+        cmap_max = None
+        for i, name in enumerate(subset):
+            x = self.quantity_from_dataset(name, cmap_var)
+            if x is not None:
+                if cmap_min is None or x<cmap_min:
+                    cmap_min = x
+                if cmap_max is None or x>cmap_max:
+                    cmap_max = x
+        N = len(subset)
+        cmap   = plt.get_cmap(cmap_name)
+        colors = cmap(np.linspace(0,1,N))
+        crange = [cmap_min, cmap_max] 
+        if abs(cmap_min-cmap_max)>1e-12:
+            indices = []
+            for name in subset:
+                x = self.quantity_from_dataset(name, cmap_var)
+                idx = round( (N-1)*(x-cmap_min)/(cmap_max-cmap_min) )
+                indices.append(idx)
+        else:
+            indices = [int(N/2) for i in subset]
+        out = {'colors':colors, 'indices':indices, 
+                'cmap':cmap, 'range':crange}
+        return out
 
-    #def plot_colorbar(self, xvar='q', yvar='chiz_eff'):
+    def plot_colorbar(self, xvar='pph0', yvar='chiz_eff', zvar='mm_opt', 
+                            ranges={'pph0':[1,10]}, cmap='jet'):
+        subset = self.find_subset(ranges=ranges)
         
+        N = len(subset)
+        X = np.zeros((N,1))
+        Y = np.zeros((N,1))
+        Z = np.zeros((N,1))
+        
+        for i, name in enumerate(subset):
+            print(name)
+            X[i] = self.quantity_from_dataset(name, xvar) 
+            Y[i] = self.quantity_from_dataset(name, yvar) 
+            Z[i] = self.quantity_from_dataset(name, zvar) 
+        
+        plt.figure
+        plt.scatter(X,Y,c=Z)
+        plt.colorbar()
+        plt.show()
+
+        return         
+
     def plot_mm_vs_M(self, 
                      mass_min   = 100, 
                      mass_max   = 200, 
                      N          = 20, 
-                     cmap       = 'rainbow', 
+                     cmap       = 'jet', 
                      ranges     = {'pph0':[1,10]},
                      cmap_var   = 'E0byM',
                      hlines     = [],
@@ -145,37 +195,12 @@ class Cataloger(object):
                      figname    = None,
                      ):
          
-        # select waveforms
-        subset = self.find_subset(ranges=ranges)
-
-        cmap_min = None
-        cmap_max = None
-        for i, name in enumerate(subset):
-            meta = self.data[name]['Waveform'].metadata
-            x = self.quantity_from_meta(meta, cmap_var)
-            if x is not None:
-                if cmap_min is None or x<cmap_min:
-                    cmap_min = x
-                if cmap_max is None or x>cmap_max:
-                    cmap_max = x
-
-        nsims_subset = len(subset)
-        tmp= plt.get_cmap(cmap)
-        del cmap
-        cmap = tmp
-
-        # get colors and color index
-        colors = cmap(np.linspace(0,1,nsims_subset))
-        cmap_range = [cmap_min, cmap_max] 
-        if abs(cmap_min-cmap_max)>1e-12:
-            cmap_indeces = []
-            for i, name in enumerate(subset):
-                meta = self.data[name]['Waveform'].metadata
-                x = self.quantity_from_meta(meta, cmap_var)
-                idx = round( (nsims_subset-1)*(x-cmap_min)/(cmap_max-cmap_min) )
-                cmap_indeces.append(idx)
-        else:
-            cmap_indeces = [int(nsims_subset/2) for i in subset]
+        # select waveforms and get colors
+        subset       = self.find_subset(ranges=ranges)
+        colors_dict  = self.get_colors_for_subset(subset,cmap_var=cmap_var, cmap_name=cmap)
+        colors       = colors_dict['colors']
+        cmap_indices = colors_dict['indices']
+        cmap_range   = colors_dict['range']
 
         masses = np.linspace(mass_min, mass_max, num=N)
 
@@ -191,7 +216,7 @@ class Cataloger(object):
                 mm_settings['M'] = M 
                 matcher = Matcher(nr, eob, pre_align=False, settings=mm_settings)
                 mm[j] = matcher.mismatch
-            cidx = cmap_indeces[i]
+            cidx = cmap_indices[i]
             ax.plot(masses, mm, label=name, c=colors[cidx], lw=0.6)
         
         styles  = ['-', '--', '-.']
@@ -200,7 +225,7 @@ class Cataloger(object):
             ax.axhline(hline, lw=2.0, ls=styles[i%nstyles], c='k')
 
         cnorm = plt.Normalize(*cmap_range)
-        sm    = plt.cm.ScalarMappable(norm=cnorm,cmap=cmap)
+        sm    = plt.cm.ScalarMappable(norm=cnorm,cmap=colors_dict['cmap'])
         cbar  = plt.colorbar(sm,ax=ax)
         
         ax.set_xlim(mass_min, mass_max)
@@ -217,7 +242,7 @@ class Cataloger(object):
             if figname is None:
                 figname = f'mismatches_{self.catalog}_{cmap_var}.png'
             plt.savefig(figname,dpi=200,bbox_inches='tight')
-
+            print(f'Figure saved: {figname}')
         plt.show()
         return
 
