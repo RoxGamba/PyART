@@ -77,13 +77,14 @@ class Cataloger(object):
         plt.show()
         pass
     
-    def optimize_mismatches(self, optimizer_opts={}, verbose=None):
+    def optimize_mismatches(self, optimizer_opts={}, verbose=None, ranges={'pph0':[1,10]}):
         if verbose is None: verbose = self.verbose
         # set some options according to class-instance
         optimizer_opts['json_file'] = self.json_file
         optimizer_opts['verbose']   = verbose
         # run optimizer on all the waveforms
-        for name in self.data:
+        subset = self.find_subset(ranges)
+        for name in subset:
             self.data[name]['Optimizer'] = Optimizer(self.data[name]['Waveform'], **optimizer_opts)
         pass
     
@@ -129,6 +130,7 @@ class Cataloger(object):
         tex = {'chiz_eff': r'$\chi_{\rm eff}$',
                'pph0'    : r'$p_\varphi^0$',
                'E0byM'   : r'$E_0/M$',
+               'mm_opt'  : r'$\bar{\cal F}$',
                }
         if key in tex:
             return tex[key]
@@ -161,26 +163,34 @@ class Cataloger(object):
                 'cmap':cmap, 'range':crange}
         return out
 
-    def plot_colorbar(self, xvar='pph0', yvar='chiz_eff', zvar='mm_opt', 
-                            ranges={'pph0':[1,10]}, cmap='jet'):
+    def plot_colorbar(self, xvar='pph0', yvar='mm_opt', cvar='E0byM', 
+                            ranges={'pph0':[1,10]}, cmap='jet',
+                            hlines=[],yscale=True):
         subset = self.find_subset(ranges=ranges)
-        
         N = len(subset)
         X = np.zeros((N,1))
         Y = np.zeros((N,1))
-        Z = np.zeros((N,1))
-        
+        C = np.zeros((N,1))
         for i, name in enumerate(subset):
-            print(name)
             X[i] = self.quantity_from_dataset(name, xvar) 
             Y[i] = self.quantity_from_dataset(name, yvar) 
-            Z[i] = self.quantity_from_dataset(name, zvar) 
+            C[i] = self.quantity_from_dataset(name, cvar) 
+        fontsize = 20
+        plt.figure(figsize=(8,6))
+        plt.scatter(X,Y,c=C, cmap=cmap)
+        cbar = plt.colorbar()
+        plt.xlabel(self.tex_label_from_key(xvar), fontsize=fontsize)
+        plt.ylabel(self.tex_label_from_key(yvar), fontsize=fontsize)
+        cbar.set_label(self.tex_label_from_key(cvar), fontsize=fontsize)
         
-        plt.figure
-        plt.scatter(X,Y,c=Z)
-        plt.colorbar()
+        styles  = ['-', '--', '-.']
+        nstyles = len(styles)
+        for i, hline in enumerate(hlines):
+            plt.axhline(hline, lw=2.0, ls=styles[i%nstyles], c='k')
+        if yscale: 
+            plt.yscale('log') 
+            plt.grid()
         plt.show()
-
         return         
 
     def plot_mm_vs_M(self, 
