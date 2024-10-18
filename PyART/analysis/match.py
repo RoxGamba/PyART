@@ -72,10 +72,11 @@ class Matcher(object):
             raise RuntimeError('hp not found! Compute it before calling Matcher')
         
         wf = lambda: None
-        wf.domain = WaveForm.domain
-        wf.f = None  # Assume TD waveform at the moment
-        wf.hlm = WaveForm.hlm
-        wf.t = WaveForm.u
+        wf.domain       = WaveForm.domain
+        wf.f            = None  # Assume TD waveform at the moment
+        wf.hlm          = WaveForm.hlm
+        wf.t            = WaveForm.u
+        wf.compute_hphc = WaveForm.compute_hphc
         
         if self.settings['modes-or-pol']=='pol':
             # Get updated time and hp/hc-TimeSeries
