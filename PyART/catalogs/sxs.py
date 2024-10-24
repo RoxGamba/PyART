@@ -208,6 +208,8 @@ class Waveform_SXS(Waveform):
                     'Mf'       : ometa['remnant_mass'],
                     'afv'      : afv,
                     'af'       : afv[2],
+                    # Rescale the amplitude by nu?
+                    'rescale'  : True,
                    }
         # check that all the required quantities are given 
         check_metadata(metadata,raise_err=True) 
@@ -295,7 +297,9 @@ class Waveform_SXS(Waveform):
             l    = mode[0]; m = mode[1]
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm  = self.nr[order][mode]
-            h    = (hlm[:, 1] + 1j * hlm[:, 2])/self.metadata['nu']
+            h    = (hlm[:, 1] + 1j * hlm[:, 2])
+            if self.metadata['rescale']:
+                h /= self.metadata['nu']
             # amp and phase
             Alm = abs(h)[self.cut_N:]
             plm = -np.unwrap(np.angle(h))[self.cut_N:]

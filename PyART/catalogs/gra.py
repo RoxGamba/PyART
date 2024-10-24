@@ -90,6 +90,8 @@ class Waveform_GRA(Waveform):
                     'Mf'       : None,
                     'afv'      : None,
                     'af'       : None,
+                    # Rescale the amplitude by nu?
+                    'rescale'  : True,
                    }
         
         self.metadata = metadata 
@@ -134,7 +136,9 @@ class Waveform_GRA(Waveform):
             l    = mode[0]; m = mode[1]
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm  = nr[r_ext][mode]
-            h    = (hlm[:, 1] + 1j * hlm[:, 2])/self.metadata['nu']
+            h    = (hlm[:, 1] + 1j * hlm[:, 2])
+            if self.metadata['rescale']:
+                h /= self.metadata['nu']
             # amp and phase
             Alm = abs(h)[self.cut_N:]
             plm = -np.unwrap(np.angle(h))[self.cut_N:]

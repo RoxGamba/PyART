@@ -401,15 +401,26 @@ def sky_and_time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, kind='hm'):
                             sigmasq=1.,
                             low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq,)
     
-    det_stat = compute_max_snr_over_sky_loc_stat_no_phase(Iplus, 
-                                                                Icross, 
-                                                                hphccorr=hphc_corr,
-                                                                hpnorm=1.,
-                                                                hcnorm=1.,
-                                                                thresh=0.1,
-                                                                analyse_slice=slice(0, len(Iplus.data))
-                                                                )
-
+    if kind.lower() == 'hm':
+        det_stat = compute_max_snr_over_sky_loc_stat_no_phase(Iplus, 
+                                                                    Icross, 
+                                                                    hphccorr=hphc_corr,
+                                                                    hpnorm=1.,
+                                                                    hcnorm=1.,
+                                                                    thresh=0.1,
+                                                                    analyse_slice=slice(0, len(Iplus.data)))
+    elif kind.lower() == 'precessing':
+        from pycbc.filter import compute_u_val_for_sky_loc_stat
+        det_stat = compute_u_val_for_sky_loc_stat(Iplus, 
+                                                  Icross, 
+                                                  hphccorr=hphc_corr,
+                                                  hpnorm=1.,
+                                                  hcnorm=1.,
+                                                  thresh=0.1,
+                                                  analyse_slice=slice(0, len(Iplus.data)))
+    else:
+        raise ValueError('Currently only HM and precessing is supported!')
+    
     i = np.argmax(det_stat.data)
     o = det_stat[i]
     if (o > 1.):
