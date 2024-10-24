@@ -22,7 +22,9 @@ class Waveform_SXS(Waveform):
                     cut_U    = None,
                     ellmax   = 8,
                     download = False,
-                    load_m0  = False
+                    load_m0  = False,
+                    # Allow for other SXS h5 files 
+                    basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5"
                 ):
         super().__init__()
         if isinstance(ID, int):
@@ -49,7 +51,7 @@ class Waveform_SXS(Waveform):
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
         
         if isinstance(self.level, int):
-            fname = self.get_lev_fname(basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+            fname = self.get_lev_fname(basename=basename)
             if os.path.exists(fname):
                 self.nr = h5py.File(fname)
             else:
