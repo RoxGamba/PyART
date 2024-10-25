@@ -23,6 +23,7 @@ class Waveform_SXS(Waveform):
                     ellmax   = 8,
                     download = False,
                     load_m0  = False,
+                    rescale = False,
                     # Allow for other SXS h5 files 
                     basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5"
                 ):
@@ -39,6 +40,7 @@ class Waveform_SXS(Waveform):
         self._kind         = 'SXS'
         self.nr            = None
         self.domain        = 'Time'
+        self.rescale       = rescale
 
         self.check_cut_consistency()
         if os.path.exists(self.sxs_data_path) == False:
@@ -210,8 +212,6 @@ class Waveform_SXS(Waveform):
                     'Mf'       : ometa['remnant_mass'],
                     'afv'      : afv,
                     'af'       : afv[2],
-                    # Rescale the amplitude by nu?
-                    'rescale'  : True,
                    }
         # check that all the required quantities are given 
         check_metadata(metadata,raise_err=True) 
@@ -300,7 +300,7 @@ class Waveform_SXS(Waveform):
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm  = self.nr[order][mode]
             h    = (hlm[:, 1] + 1j * hlm[:, 2])
-            if self.metadata['rescale']:
+            if self.rescale:
                 h /= self.metadata['nu']
             # amp and phase
             Alm = abs(h)[self.cut_N:]
