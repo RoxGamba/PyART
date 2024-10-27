@@ -108,11 +108,22 @@ class Optimizer(object):
         mm_data  = self.load_or_create_mismatches()
         ref_name = self.ref_Waveform.metadata['name']
         
-        self.opt_data = None
+        opt_data      = None
+        self.opt_data = opt_data
 
         run_optimization = True
         if ref_name in mm_data['mismatches']:
             opt_data = mm_data['mismatches'][ref_name]
+            opt_data['q']     = self.ref_Waveform.metadata['q']
+            opt_data['chi1x'] = self.ref_Waveform.metadata['chi1x']
+            opt_data['chi1y'] = self.ref_Waveform.metadata['chi1y']
+            opt_data['chi1z'] = self.ref_Waveform.metadata['chi1z']
+            opt_data['chi2x'] = self.ref_Waveform.metadata['chi2x']
+            opt_data['chi2y'] = self.ref_Waveform.metadata['chi2y']
+            opt_data['chi2z'] = self.ref_Waveform.metadata['chi2z']
+            mm_data['mismatches'][ref_name] = opt_data
+            with open(json_file, 'w') as file:
+                file.write(json.dumps(mm_data,indent=2))
             if not overwrite or opt_data['mm_opt']<eps_bad_mm:
                 run_optimization = False
             if verbose: 
@@ -138,7 +149,7 @@ class Optimizer(object):
                 # j-loop on different initial gueses 
                 for j in range(1, self.opt_max_iter+1):
                     if self.verbose: print(f'{dashes}\nOptimization iteration #{j:d}\n{dashes}')
-                    if i==1 and j==1: # if first iter of both loops
+                    if i==1 and j==1 and opt_data is None: # if first iter of both loops
                         opt_data = self.optimize_mismatch(use_ref_guess=True)
                     else:
                         opt_data_new = self.optimize_mismatch(use_ref_guess=False)
@@ -270,7 +281,7 @@ class Optimizer(object):
             if sim_name in json_data['mismatches']:
                 print(f'   ---> File {json_file} alreay exists and contains {sim_name}, but overwriting is off.')
                 json_file = json_file.replace('.json', '_new.json')
-                print( '   ---> writing on file: {json_file}')
+                print(f'   ---> writing on file: {json_file}')
                 creating_new_file = True
         with open(json_file, 'w') as file:
             file.write(json.dumps(data,indent=2))
@@ -284,7 +295,7 @@ class Optimizer(object):
         # define subset of info to generate EOB waveform
         keys_to_use =  ['M', 'q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z']
         sub_meta = {key: ref_meta[key] for key in keys_to_use}
-        
+         
         # kind-specific input
         def return_IC(key):
             if key not in ICs:
@@ -314,7 +325,7 @@ class Optimizer(object):
         try:
             pars        = CreateDict(**sub_meta)
             eob_wave    = Waveform_EOB(pars=pars)
-            eob_wave._u = eob_wave.u#-eob_wave.u[0]
+            #eob_wave._u = eob_wave.u#-eob_wave.u[0]
         except Exception as e:
             # FIXME: no error msg is a little bit criminal
             #print(f'Error occured in EOB wave generation:\n{e}')
@@ -422,8 +433,38 @@ class Optimizer(object):
             r0_eob = opt_eob.dyn['r'][0]
         else:
             r0_eob = None
+
+        # fixing EOB IDs according to cut-option in matcher
+#        if opt_eob is not None and self.mm_settings['cut']:
+#            print(self.mm_settings)
+#            u_ref = self.ref_Waveform.u
+#            u_eob = opt_eob.u
+#            umrg_ref,_,_,_ = self.ref_Waveform.find_max()#-u_ref[0]
+#            umrg_eob,_,_,_ = opt_eob.find_max()#-u_eob[0]
+#            
+#            tmrg_ref,_,_,_ = self.ref_Waveform.find_max()-u_ref[0]
+#            tmrg_eob,_,_,_ = opt_eob.find_max()-u_eob[0]
+#            DeltaT = tmrg_eob-tmrg_ref
+#            import matplotlib.pyplot as plt # FIXME: only for debug, to remove
+#            plt.figure
+#            plt.plot(u_ref-umrg_ref, self.ref_Waveform.hlm[(2,2)]['real'], label='rn ref')
+#            plt.plot(u_eob-umrg_eob, opt_eob.hlm[(2,2)]['real'], label='eob')
+#            
+#            if DeltaT>0:
+#                opt_eob.cut(DeltaT)
+#                plt.plot(opt_eob.u-umrg_eob, opt_eob.hlm[(2,2)]['real'], label='eob', ls='--')
+#            plt.legend()
+#            plt.show()
+
         opt_data = { 
                     # store also some attributes, just for convenience 
+                    'q'            : self.ref_Waveform.metadata['q'],
+                    'chi1x'        : self.ref_Waveform.metadata['chi1x'],
+                    'chi1y'        : self.ref_Waveform.metadata['chi1y'],
+                    'chi1z'        : self.ref_Waveform.metadata['chi1z'],
+                    'chi2x'        : self.ref_Waveform.metadata['chi2x'],
+                    'chi2y'        : self.ref_Waveform.metadata['chi2y'],
+                    'chi2z'        : self.ref_Waveform.metadata['chi2z'],
                     'opt_seed'     : self.opt_seed,
                     'opt_max_iter' : self.opt_max_iter,
                     'opt_good_mm'  : self.opt_good_mm,

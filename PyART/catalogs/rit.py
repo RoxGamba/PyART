@@ -250,14 +250,22 @@ class Waveform_RIT(Waveform):
                     return float(mydict[key])
                 else:
                     return default
-
-            chi1x = return_val_or_default(f'{kind}-chi1x',ometa)
-            chi1y = return_val_or_default(f'{kind}-chi1y',ometa)
-            chi1z = return_val_or_default(f'{kind}-chi1z',ometa)
-            chi2x = return_val_or_default(f'{kind}-chi2x',ometa)
-            chi2y = return_val_or_default(f'{kind}-chi2y',ometa)
-            chi2z = return_val_or_default(f'{kind}-chi2z',ometa)
             
+            if kind=='initial':
+                chi1x = return_val_or_default(f'{kind}-bh-chi1x',ometa)
+                chi1y = return_val_or_default(f'{kind}-bh-chi1y',ometa)
+                chi1z = return_val_or_default(f'{kind}-bh-chi1z',ometa)
+                chi2x = return_val_or_default(f'{kind}-bh-chi2x',ometa)
+                chi2y = return_val_or_default(f'{kind}-bh-chi2y',ometa)
+                chi2z = return_val_or_default(f'{kind}-bh-chi2z',ometa)
+            else:
+                chi1x = return_val_or_default(f'{kind}-chi1x',ometa)
+                chi1y = return_val_or_default(f'{kind}-chi1y',ometa)
+                chi1z = return_val_or_default(f'{kind}-chi1z',ometa)
+                chi2x = return_val_or_default(f'{kind}-chi2x',ometa)
+                chi2y = return_val_or_default(f'{kind}-chi2y',ometa)
+                chi2z = return_val_or_default(f'{kind}-chi2z',ometa)
+                
             D  = float(ometa['initial-separation']) 
             f0 = float(ometa['freq-start-22'])/2 # FIXME
 
