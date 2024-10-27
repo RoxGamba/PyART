@@ -1,6 +1,6 @@
 import numpy as np; import os; import h5py
 from ..waveform import  Waveform
-import glob as glob
+import glob as glob; import json
 
 class Waveform_GRA(Waveform):
     """
@@ -14,12 +14,13 @@ class Waveform_GRA(Waveform):
     def __init__(
             self,
             path,
-            q      = 1, # to be removed once metadata is loaded
             ellmax = 8,
             ext    = 'ext',
             r_ext  = None,
             cut_N  = None,
             cut_U  = None,
+            mtdt_path = None,
+            rescale = False,
             modes = [(2,2)]
         ):
 
@@ -32,18 +33,70 @@ class Waveform_GRA(Waveform):
         self.extrap = ext
         self.domain = 'Time'
         self.r_ext  = r_ext
-        self.load_metadata(q)
+        self.rescale = rescale
+        self.load_metadata(mtdt_path)
         self.load_hlm(extrap=ext, ellmax=ellmax, r_ext=r_ext)
         pass
 
-    def load_metadata(self, q):
+    def load_metadata(self, path):
         """
-        Load the metadata
+        Load the metadata, if path is None assume 
+        that they are in the same dir as the .h5 files
         """
-        self.metadata = {
-            'q' : q,
-            'nu': q/(1+q)**2
-        }
+        if path is None: path = self.path
+        ometa = json.load(open(path, 'r'))
+
+        m1 = float(ometa['initial-mass1'])
+        m2 = float(ometa['initial-mass2'])
+        M  = m1 + m2
+        q  = m1/m2
+        nu = m1*m2/M**2
+        hS1  = ometa['initial-dimensionless-spin1'].strip('"').split(','); hS1 = np.array([float(hS1[i]) for i in range(3)])
+        hS2  = ometa['initial-dimensionless-spin2'].strip('"').split(','); hS2 = np.array([float(hS2[i]) for i in range(3)])
+        pos1 = ometa['initial-position1'].strip('"').split(','); pos1 = np.array([float(pos1[i]) for i in range(3)])
+        pos2 = ometa['initial-position2'].strip('"').split(','); pos2 = np.array([float(pos2[i]) for i in range(3)])
+        r0   = ometa['initial-separation']
+
+        metadata = {'name'     : ometa['simulation-name'],
+                    'ref_time' : 0.,
+                    # masses and spins 
+                    'm1'       : m1,
+                    'm2'       : m2,
+                    'M'        : M,
+                    'q'        : q,
+                    'nu'       : nu,
+                    'S1'       : hS1*m1*m1, # [M2]
+                    'S2'       : hS2*m2*m2,
+                    'chi1x'    : hS1[0],  # dimensionless
+                    'chi1y'    : hS1[1],
+                    'chi1z'    : hS1[2],
+                    'chi2x'    : hS2[0],  # dimensionless
+                    'chi2y'    : hS2[1],
+                    'chi2z'    : hS2[2],
+                    # positions
+                    'pos1'     : pos1,
+                    'pos2'     : pos2,
+                    'r0'       : r0,
+                    'e0'       : None,
+                    # frequencies
+                    'f0v'      : None,
+                    'f0'       : float(ometa['initial-orbital-frequency'])/np.pi,
+                    # ADM quantities (INITIAL, not REF)
+                    'E0'       : float(ometa['initial-ADM-energy']),
+                    'P0'       : None, #np.array(ometa['initial_ADM_linear_momentum']),
+                    'J0'       : None,
+                    'Jz0'      : None,
+                    'E0byM'    : float(ometa['initial-ADM-energy'])/M,
+                    'pph0'     : None,
+                    # remnant
+                    'Mf'       : None,
+                    'afv'      : None,
+                    'af'       : None,
+                    # Rescale the amplitude by nu?
+                    'rescale'  : True,
+                   }
+        
+        self.metadata = metadata 
         pass
 
     def load_hlm(self, extrap='ext', ellmax=None, load_m0=False, r_ext=None):
@@ -56,7 +109,7 @@ class Waveform_GRA(Waveform):
         if extrap == 'ext':
             h5_file = os.path.join(self.path, 'rh_Asymptotic_GeometricUnits.h5')
         elif extrap == 'CCE':
-            h5_file = os.path.join(self.path, 'rh_CCE_GeometricUnits.h5')
+            h5_file = os.path.join(self.path, 'rh_CCE_GeometricUnits_radii.h5')
         elif extrap == 'finite':
             h5_file = os.path.join(self.path, 'rh_FiniteRadii_GeometricUnits.h5')
         else:
@@ -85,7 +138,9 @@ class Waveform_GRA(Waveform):
             l    = mode[0]; m = mode[1]
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm  = nr[r_ext][mode]
-            h    = (hlm[:, 1] + 1j * hlm[:, 2])/self.metadata['nu']
+            h    = (hlm[:, 1] + 1j * hlm[:, 2])
+            if self.rescale:
+                h /= self.metadata['nu']
             # amp and phase
             Alm = abs(h)[self.cut_N:]
             plm = -np.unwrap(np.angle(h))[self.cut_N:]

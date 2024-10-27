@@ -22,7 +22,10 @@ class Waveform_SXS(Waveform):
                     cut_U    = None,
                     ellmax   = 8,
                     download = False,
-                    load_m0  = False
+                    load_m0  = False,
+                    rescale = False,
+                    # Allow for other SXS h5 files 
+                    basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5"
                 ):
         super().__init__()
         if isinstance(ID, int):
@@ -37,6 +40,7 @@ class Waveform_SXS(Waveform):
         self._kind         = 'SXS'
         self.nr            = None
         self.domain        = 'Time'
+        self.rescale       = rescale
 
         self.check_cut_consistency()
         if os.path.exists(self.sxs_data_path) == False:
@@ -49,7 +53,7 @@ class Waveform_SXS(Waveform):
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
         
         if isinstance(self.level, int):
-            fname = self.get_lev_fname(basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+            fname = self.get_lev_fname(basename=basename)
             if os.path.exists(fname):
                 self.nr = h5py.File(fname)
             else:
@@ -297,7 +301,9 @@ class Waveform_SXS(Waveform):
             l    = mode[0]; m = mode[1]
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm  = self.nr[order][mode]
-            h    = (hlm[:, 1] + 1j * hlm[:, 2])/self.metadata['nu']
+            h    = (hlm[:, 1] + 1j * hlm[:, 2])
+            if self.rescale:
+                h /= self.metadata['nu']
             # amp and phase
             Alm = abs(h)[self.cut_N:]
             plm = -np.unwrap(np.angle(h))[self.cut_N:]
