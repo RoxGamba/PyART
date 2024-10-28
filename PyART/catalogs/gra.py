@@ -34,7 +34,8 @@ class Waveform_GRA(Waveform):
         self.domain = 'Time'
         self.r_ext  = r_ext
         self.rescale = rescale
-        self.load_metadata(mtdt_path)
+        # comment out the following for the moment
+        # self.load_metadata(mtdt_path)
         self.load_hlm(extrap=ext, ellmax=ellmax, r_ext=r_ext)
         pass
 
@@ -92,8 +93,6 @@ class Waveform_GRA(Waveform):
                     'Mf'       : None,
                     'afv'      : None,
                     'af'       : None,
-                    # Rescale the amplitude by nu?
-                    'rescale'  : True,
                    }
         
         self.metadata = metadata 
