@@ -34,7 +34,7 @@ class Matcher(object):
         # Choose the appropriate mismatch function
         if self.settings['kind'] == 'single-mode':
             self.match_f = self._compute_mm_single_mode
-        elif self.settings['kind'].lower() == 'hm':
+        elif self.settings['kind'].lower() == 'hm' or 'prec' in self.settings['kind'].lower():
             self.match_f = self._compute_mm_skymax
         else:
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
@@ -80,9 +80,9 @@ class Matcher(object):
         
         if self.settings['modes-or-pol']=='pol':
             # Get updated time and hp/hc-TimeSeries
-            if not hasattr(Waveform, 'hp'):
+            if not hasattr(WaveForm, 'hp'):
                 WaveForm.compute_hphc()
-                wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
+            wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
 
         # also update the modes in a TimeSeries
         wf.modes = {}
