@@ -35,7 +35,7 @@ class Waveform_ICC(Waveform):
         self.ellmax      = ellmax
         
         # define self.metadata and self.ometadata (original)
-        self.load_meta()
+        self.load_metadata()
 
         # load puncts
         if load_puncts:
@@ -57,11 +57,13 @@ class Waveform_ICC(Waveform):
             self.cut(DeltaT, cut_dothlm=True, cut_psi4lm=False)
         else:
             self.integr_opts = {}
-            self.load_hlm_compute_dothlm()
+            self.load_hlm()
         
+        if not self.dothlm:
+            self.compute_dothlm(factor=self.metadata['nu'])
         pass
 
-    def load_meta(self):
+    def load_metadata(self):
         """
         Load metadata (store in JSON)
         """
@@ -186,7 +188,7 @@ class Waveform_ICC(Waveform):
             self.cut(DeltaT_end, from_the_end=True, cut_psi4lm=True)
         pass
     
-    def load_hlm_compute_dothlm(self):
+    def load_hlm(self):
         """
         Load hlm and compute dothlm
         """
@@ -195,14 +197,6 @@ class Waveform_ICC(Waveform):
         self._hlm = dict_hlm
         if self.u is not None:
             self._u = self.u-self.u[0]
-        
-        # compute dothlm
-        dothlm = {}
-        for k in self.hlm:
-            hlm  = self.hlm[k]['h']
-            dhlm = ut.D1(hlm, self.u, 4)*self.metadata['nu'] 
-            dothlm[k] = wf_ut.get_multipole_dict(dhlm)
-        self._dothlm = dothlm 
         pass
 
 

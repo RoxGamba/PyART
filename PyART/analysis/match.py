@@ -39,12 +39,17 @@ class Matcher(object):
         else:
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
         
-        if self.settings['cut']:
+        if self.settings['cut_longer'] and self.settings['cut_second_waveform']:
+            raise RuntimeError("The options 'cut_longer' and 'cut_second_waveform' cannot be used together!")
+
+        if self.settings['cut_second_waveform'] or self.settings['cut_second_waveform']:
             tmrg1,_,_,_ = WaveForm1.find_max()-WaveForm1.u[0]
             tmrg2,_,_,_ = WaveForm2.find_max()-WaveForm2.u[0]
             DeltaT = tmrg2-tmrg1
             if DeltaT>0:
                 WaveForm2.cut(DeltaT)
+            elif DeltaT<0 and self.settings['cut_longer']:
+                WaveForm1.cut(-DeltaT)
                 
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
@@ -77,7 +82,7 @@ class Matcher(object):
         
         if self.settings['modes-or-pol']=='pol':
             # Get updated time and hp/hc-TimeSeries
-            if not hasattr(Waveform, 'hp'):
+            if not hasattr(WaveForm, 'hp'):
                 WaveForm.compute_hphc()
             wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
 
@@ -161,7 +166,8 @@ class Matcher(object):
             'resize_factor'        : 4,
             'debug'                : False,
             'geom'                 : True,
-            'cut'                  : False, # cut waveform2 if longer than waveform1
+            'cut_longer'           : False, # cut longer waveform
+            'cut_second_waveform'  : False, # cut waveform2 if longer than waveform1
         }
     
     def _get_psd(self, flen, df, fmin):
@@ -402,14 +408,6 @@ def condition_td_waveform(h, settings, return_tap_times=False):
     else:
         t1 = None
         t2 = None
-#    tlen = settings['tlen']
-#    h.resize(tlen)
-#    if settings['taper']:
-#        t1    = settings['taper_start'] * tlen
-#        t2    = settings['taper_end']   * tlen
-#        alpha = settings['taper_alpha']
-#        t = np.linspace(0, tlen-1, num=tlen)
-#        h = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha)
     if return_tap_times:
         rescaled_t1  = t1/tlen*h.sample_times[-1] if t1 is not None else None
         rescaled_t2  = t2/tlen*h.sample_times[-1] if t2 is not None else None

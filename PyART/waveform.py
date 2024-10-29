@@ -124,6 +124,22 @@ class Waveform(object):
         else:
             return t_mrg, A_mrg, omg_mrg, domg_mrg
     
+    def compute_dothlm(self, factor=1.0):
+        """ 
+        Compute dothlm from self.hlm using 
+        numerical differentiation 
+        """
+        if not self.hlm:
+            raise RuntimeError('dothlm cannot be compute if hlm is not loaded')
+        dothlm = {}
+        for k in self.hlm:
+            hlm  = self.hlm[k]['h']
+            dhlm = ut.D1(hlm, self.u, 4)
+            dhlm *= factor
+            dothlm[k] = wf_ut.get_multipole_dict(dhlm)
+        self._dothlm = dothlm 
+        pass
+
     def cut(self, DeltaT, cut_hpc=True, from_the_end=False,
                   cut_dothlm=False, cut_psi4lm=False): 
         """

@@ -15,7 +15,7 @@ sxs_path = os.path.join(repo_path, 'examples/local_sxs/')
 #rit_path = os.path.join(repo_path, 'examples/local_rit/')
 rit_path = '/Users/simonealbanesi/repos/eob_generic_catalogs/data/rit/' 
 icc_path = '/Users/simonealbanesi/data/simulations_icc/ICCsims/catalog'
-mm_settings = {'cut':True, 'initial_frequency_mm':20, 'M':100, 'final_frequency_mm':1024}
+mm_settings = {'cut_second_waveform':True, 'initial_frequency_mm':20, 'M':100, 'final_frequency_mm':1024}
 
 mm_settings['initial_frequency_mm'] = 10
 

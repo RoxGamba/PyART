@@ -116,7 +116,7 @@ for i, M in enumerate(masses):
                                 'taper_start':args.taper_start,
                                 'taper_end':args.taper_end,
                                 'taper':args.taper,
-                                'cut':args.cut,
+                                'cut_longer':args.cut,
                                 'debug':args.debug,
                                 }
                      )

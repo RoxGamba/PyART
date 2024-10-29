@@ -66,7 +66,7 @@ class Waveform_RIT(Waveform):
         h_path = os_ut.find_fnames_with_token(self.sim_path, 'ExtrapStrain')[0]
         if h_load:
             self.h_file   = h5py.File(h_path, 'r')
-            self.load_h()
+            self.load_hlm()
             if self.shorten_rng:
                 tmrg,_,_,_ = self.find_max(kind='last-peak',height=0.05)
                 DeltaT = self.u[-1]-tmrg-300
@@ -180,7 +180,7 @@ class Waveform_RIT(Waveform):
         self._t_psi4 = t
         pass
 
-    def load_h(self):
+    def load_hlm(self):
 
         d  = {}
         f  = self.h_file

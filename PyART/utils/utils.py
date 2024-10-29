@@ -253,7 +253,7 @@ def delta_a_b(a, xa, b, xb, N=500):
 
 def vec_differences(x1,y1,x2,y2,a,b,dx,diff_kind='abs',fabs=False,interp_kind='cubic'):
     """
-    Compute differences between arrays with different signs
+    Compute differences between arrays with different lengths
     """
     xs  = np.linspace(a,b,num=int((b-a)/dx))
     y1s = spline(x1,y1,xs,kind=interp_kind)
@@ -265,8 +265,8 @@ def vec_differences(x1,y1,x2,y2,a,b,dx,diff_kind='abs',fabs=False,interp_kind='c
     elif diff_kind=='phi':
         dys  = y1s-y2s
         maxd = max(dys)
-        n    = round(maxd/(2*Pi))
-        dys  = dys - 2*Pi*n
+        n    = round(maxd/(2*np.pi))
+        dys  = dys - 2*np.pi*n
     if fabs:
         dys = np.abs(dys)
     return xs, dys

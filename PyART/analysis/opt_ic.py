@@ -67,8 +67,10 @@ class Optimizer(object):
         if isinstance(mm_settings, dict):
             for k in mm_settings:
                 self.mm_settings[k] = mm_settings[k]
-        if not self.mm_settings['cut'] and self.verbose:
-            print('Warning: using the cut-option during optimization is strongly suggested!')
+        if self.mm_settings['cut_longer'] and self.verbose:
+            print("Warning: using the option 'cut_longer' during optimization should be avoided!")
+        if not self.mm_settings['cut_second_waveform'] and self.verbose:
+            print("Warning: using the option 'cut_second_waveform' during optimization is strongly suggested!")
         
         # set up things according to IC-kind
         if kind_ic=='e0f0':
