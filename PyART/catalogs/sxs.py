@@ -14,22 +14,24 @@ class Waveform_SXS(Waveform):
     """
     def __init__(
                     self,
-                    path     = '../dat/SXS/',
-                    ID       = '0001',
-                    order    = "Extrapolated_N2.dir",
-                    level    = None,
-                    cut_N    = None,
-                    cut_U    = None,
-                    ellmax   = 8,
-                    download = False,
-                    load_m0  = False,
-                    rescale = False,
+                    path          = '../dat/SXS/',
+                    ID            = '0001',
+                    order         = "Extrapolated_N2.dir",
+                    level         = None,
+                    cut_N         = None,
+                    cut_U         = None,
+                    ellmax        = 8,
+                    download      = False,
+                    download_psi4 = False,
+                    load_m0       = False,
+                    rescale       = False,
                     # Allow for other SXS h5 files 
-                    basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5"
+                    basename      = "rhOverM_Asymptotic_GeometricUnits_CoM.h5"
                 ):
         super().__init__()
         if isinstance(ID, int):
             ID = f'{ID:04}'
+            
         self.ID            = ID
         self.sxs_data_path = os.path.join(path,'SXS_BBH_'+ID)
         self.order         = order
@@ -47,7 +49,7 @@ class Waveform_SXS(Waveform):
             if download:
                 print("The path ", self.sxs_data_path, " does not exist.")
                 print("Downloading the simulation from the SXS catalog.")
-                self.download_simulation(ID=ID, path=path)
+                self.download_simulation(ID=ID, path=path, dowload_psi4=download_psi4)
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
@@ -98,7 +100,7 @@ class Waveform_SXS(Waveform):
         if isinstance(basename, str): tojoin.append(basename)
         return os.path.join(self.sxs_data_path, *tojoin)
     
-    def download_simulation(self, ID='0001', src='BBH',path=None, deprecation=True):
+    def download_simulation(self, ID='0001', src='BBH',path=None, dowload_psi4=False):
         """
         Download the simulation from the SXS catalog; requires the sxs module
         """
@@ -109,14 +111,12 @@ class Waveform_SXS(Waveform):
             os.environ['SXSCACHEDIR'] = path
 
         nm = 'SXS:'+src+':'+ID
-        # obj  = sxs.load(nm, download=True, ignore_deprecation=deprecation)
-        # print(obj.metadata)
-        # print(obj.horizons)
 
         _  = sxs.load(nm+'/Lev/'+"metadata.json")
         _  = sxs.load(nm+'/Lev/'+"rhOverM_Asymptotic_GeometricUnits_CoM.h5")
-        _  = sxs.load(nm+'/Lev/'+"rMPsi4_Asymptotic_GeometricUnits_CoM.h5")
         _  = sxs.load(nm+'/Lev/'+"Horizons.h5")
+        if dowload_psi4:
+            _  = sxs.load(nm+'/Lev/'+"rMPsi4_Asymptotic_GeometricUnits_CoM.h5")
         
         # find folder(s) corresponding to the name, mkdir the new one
         flds = [f for f in os.listdir(os.environ['SXSCACHEDIR']) if nm in f]
