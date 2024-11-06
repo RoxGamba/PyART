@@ -49,9 +49,9 @@ class Waveform_GRA(Waveform):
 
         m1 = float(ometa['initial-mass1'])
         m2 = float(ometa['initial-mass2'])
-        M  = m1 + m2
-        q  = m1/m2
-        nu = m1*m2/M**2
+        M    = m1 + m2
+        q    = m1/m2
+        nu   = q/(1+q)**2
         hS1  = ometa['initial-dimensionless-spin1'].strip('"').split(','); hS1 = np.array([float(hS1[i]) for i in range(3)])
         hS2  = ometa['initial-dimensionless-spin2'].strip('"').split(','); hS2 = np.array([float(hS2[i]) for i in range(3)])
         pos1 = ometa['initial-position1'].strip('"').split(','); pos1 = np.array([float(pos1[i]) for i in range(3)])
@@ -133,6 +133,7 @@ class Waveform_GRA(Waveform):
         modes = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if (m!=0 or load_m0) and l >= np.abs(m)]
 
         dict_hlm = {}
+
         for mode in modes:
             l    = mode[0]; m = mode[1]
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
@@ -149,47 +150,6 @@ class Waveform_GRA(Waveform):
                               'A'   : Alm, 'p' : plm, 
                               'h'   : h[self.cut_N:]
                               }
-        self._hlm = dict_hlm
-        pass
-
-    def load_hlm_old(self):
-        """
-        Load the data, assume the structure to be:
-        # 1:tortoise_time 2:code_time 3:real 4:imag 5:phi 6:omega(=dphi/dt)[geom] 7:|amplitude| 8:freq[Hz]
-        """
-        
-        hlms_files = glob.glob(self.path + '/*.txt')
-        if len(hlms_files) == 0:
-            raise FileNotFoundError('No files found in the given path: {}'.format(self.path))
-        
-        # load the time from one mode
-        tmp_u,_,_,_,_,_,_,_ = np.loadtxt(hlms_files[0], unpack=True, skiprows=2)
-
-        self.check_cut_consistency()
-        if self.cut_N is None: self.cut_N = np.argwhere(tmp_u>=self.cut_U)[0][0] 
-        if self.cut_U is None: self.cut_U = tmp_u[self.cut_N]
-
-        self._u  = tmp_u[self.cut_N:]
-        self._t  = self._u # FIXME: should we use another time? 
-
-        dict_hlm = {}
-
-        # Note: this is not nu-rescaled!
-        for this_file in hlms_files:
-            name = this_file.split('/')[-1]
-            ell  = int(name.split('_')[1][1:])
-            emm  = int(name.split('_')[2][1:])
-
-            u,_,re,im,plm,_,Alm,_ = np.loadtxt(this_file, unpack=True, skiprows=2)
-            key = (ell,emm)
-            Alm = Alm[self.cut_N:]; plm = plm[self.cut_N:]
-            re  = re[self.cut_N:];  im  = im[self.cut_N:]
-            h   = re + 1j*im
-            dict_hlm[key] = {'real': re,  'imag': im,
-                             'A'   : Alm, 'p' : plm, 
-                             'h'   : h
-                            }
-
         self._hlm = dict_hlm
         pass
 
@@ -222,38 +182,6 @@ class Waveform_GRA(Waveform):
             indices_dict[mm] = {'t':1, 're':re_idx, 'im':im_idx} 
         
         return indices_dict
-
-    def load_psi4lm_old(self, path=None, fname=None):
-        """
-        Load the psi4lm modes. For now, assume that the data is in the format
-        of Athena's output.
-        """
-        if path is None: path = self.path
-        psi4lm_files = glob.glob(path + '/*.txt')
-        if len(psi4lm_files) == 0:
-            raise FileNotFoundError('No files found in the given path: {}'.format(path))
-        
-        fullname = os.path.join(path,fname)
-        indices_dict = self.get_indices_dict()
-        X = np.loadtxt(fullname)
-
-        # load and store the time 
-        # todo: use a different time array for psi4?
-        t = X[:,indices_dict[(2,2)]['t']]
-        self._t = t
-        self._u = t
-
-        dict_psi4lm = {}
-        for mm in self.modes:
-            re  = X[:,indices_dict[mm]['re']]
-            im  = X[:,indices_dict[mm]['im']]
-            Amp = np.sqrt(re**2 + im**2)
-            phi = np.arctan2(im, re)
-            dict_psi4lm[mm] = {'real': re, 'imag': im,
-                                'A'  : Amp, 'p'   : phi
-                                }
-        self._psi4lm = dict_psi4lm
-        pass
 
     def load_psi4lm(self, path=None, fname=None, ellmax=None, r_ext=None, extrap='ext',  load_m0=False):
         if ellmax==None: ellmax=self.ellmax
@@ -298,9 +226,12 @@ class Waveform_GRA(Waveform):
             Alm = abs(psi4)[self.cut_N:]
             plm = -np.unwrap(np.angle(psi4))[self.cut_N:]
             key = (l,m)
-            dict_psi4lm[key] = {'real' : Alm * np.cos(plm),
+            dict_psi4lm[key] = {'real'  : Alm * np.cos(plm),
                                  'imag' : Alm * np.sin(plm),
-                                 'A'    : Alm,
-                                 'p'    : plm}
+                                 'A'    : Alm, 
+                                 'p'    : plm,
+                                 'psu4' : psi4[self.cut_N:]
+                                }
+
         self._psi4lm = dict_psi4lm
         pass 
