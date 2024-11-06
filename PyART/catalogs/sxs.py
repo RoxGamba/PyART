@@ -350,15 +350,19 @@ class Waveform_SXS(Waveform):
             l    = mode[0]; m = mode[1]
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm  = self.nr_psi[order][mode]
-            h    = (hlm[:, 1] + 1j * hlm[:, 2])
+            psi4    = (hlm[:, 1] + 1j * hlm[:, 2])
+            if self.rescale:
+                psi4 /= self.metadata['nu']
             # amp and phase
-            Alm = abs(h)[self.cut_N:]
-            plm = -np.unwrap(np.angle(h))[self.cut_N:]
+            Alm = abs(psi4)[self.cut_N:]
+            plm = -np.unwrap(np.angle(psi4))[self.cut_N:]
             # save in dictionary
             key = (l, m)
-            dict_psi4lm[key] =  {'real': Alm*np.cos(plm), 'imag': Alm*np.sin(plm),
-                              'A'   : Alm, 'p' : plm, 
-                              'h'   : h[self.cut_N:]
+            dict_psi4lm[key] = { 'real': Alm*np.cos(plm), 
+                                 'imag': Alm*np.sin(plm),
+                                 'A'   : Alm, 
+                                 'p'   : plm, 
+                                 'psi4': psi4[self.cut_N:]
                               }
         self._psi4lm = dict_psi4lm
         pass
