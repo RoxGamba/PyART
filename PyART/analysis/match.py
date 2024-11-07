@@ -42,7 +42,7 @@ class Matcher(object):
         if self.settings['cut_longer'] and self.settings['cut_second_waveform']:
             raise RuntimeError("The options 'cut_longer' and 'cut_second_waveform' cannot be used together!")
 
-        if self.settings['cut_second_waveform'] or self.settings['cut_second_waveform']:
+        if self.settings['cut_second_waveform'] or self.settings['cut_longer']:
             tmrg1,_,_,_ = WaveForm1.find_max()-WaveForm1.u[0]
             tmrg2,_,_,_ = WaveForm2.find_max()-WaveForm2.u[0]
             DeltaT = tmrg2-tmrg1
