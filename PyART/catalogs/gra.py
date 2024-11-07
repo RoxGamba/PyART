@@ -34,7 +34,8 @@ class Waveform_GRA(Waveform):
         self.domain = 'Time'
         self.r_ext  = r_ext
         self.rescale = rescale
-        self.load_metadata(mtdt_path)
+        # comment out the following for the moment
+        # self.load_metadata(mtdt_path)
         self.load_hlm(extrap=ext, ellmax=ellmax, r_ext=r_ext)
         pass
 
@@ -92,8 +93,6 @@ class Waveform_GRA(Waveform):
                     'Mf'       : None,
                     'afv'      : None,
                     'af'       : None,
-                    # Rescale the amplitude by nu?
-                    'rescale'  : True,
                    }
         
         self.metadata = metadata 
@@ -109,7 +108,7 @@ class Waveform_GRA(Waveform):
         if extrap == 'ext':
             h5_file = os.path.join(self.path, 'rh_Asymptotic_GeometricUnits.h5')
         elif extrap == 'CCE':
-            h5_file = os.path.join(self.path, 'rh_CCE_GeometricUnits_radii.h5')
+            h5_file = os.path.join(self.path, 'rh_CCE_GeometricUnits.h5')
         elif extrap == 'finite':
             h5_file = os.path.join(self.path, 'rh_FiniteRadii_GeometricUnits.h5')
         else:
@@ -224,7 +223,7 @@ class Waveform_GRA(Waveform):
         
         return indices_dict
 
-    def load_psi4lm(self, path=None, fname=None):
+    def load_psi4lm_old(self, path=None, fname=None):
         """
         Load the psi4lm modes. For now, assume that the data is in the format
         of Athena's output.
@@ -256,3 +255,52 @@ class Waveform_GRA(Waveform):
         self._psi4lm = dict_psi4lm
         pass
 
+    def load_psi4lm(self, path=None, fname=None, ellmax=None, r_ext=None, extrap='ext',  load_m0=False):
+        if ellmax==None: ellmax=self.ellmax
+        
+        if r_ext==None: r_ext='100.00'
+        
+        if extrap == 'ext':
+            h5_file = os.path.join(self.path, 'rPsi4_Asymptotic_GeometricUnits.h5')
+        elif extrap == 'CCE':
+            h5_file = os.path.join(self.path, 'rPsi4_CCE_GeometricUnits.h5')
+        elif extrap == 'finite':
+            h5_file = os.path.join(self.path, 'rPsi4_FiniteRadii_GeometricUnits.h5')
+        else:
+            raise ValueError('extrap should be either "ext", "CCE" or "finite"')
+
+        if not os.path.isfile(h5_file):
+            raise FileNotFoundError('No file found in the given path: {}'.format(h5_file))
+        
+        nr    = h5py.File(h5_file, 'r')
+        if r_ext not in nr.keys():
+            raise ValueError('r_ext not found in the h5 file. Available values are: {}'.format(nr.keys()))
+        tmp_u = nr[r_ext]['Y_l2_m2.dat'][:,0]
+
+        # self.check_cut_consistency()
+        if self.cut_N is None: self.cut_N = np.argwhere(tmp_u>=self.cut_U)[0][0] 
+        if self.cut_U is None: self.cut_U = tmp_u[self.cut_N]
+
+        self._u  = tmp_u[self.cut_N:]
+        self._t  = self._u
+
+        from itertools import product
+        modes = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if (m!=0 or load_m0) and l >= np.abs(m)]
+
+        dict_psi4lm = {}
+        for mode in modes:
+            l    = mode[0]; m = mode[1]
+            mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
+            psi4lm  = nr[r_ext][mode]
+            psi4 = (psi4lm[:,1] + 1j*psi4lm[:,2])
+            if self.rescale:
+                psi4 /= self.metadata['nu']
+            Alm = abs(psi4)[self.cut_N:]
+            plm = -np.unwrap(np.angle(psi4))[self.cut_N:]
+            key = (l,m)
+            dict_psi4lm[key] = {'real' : Alm * np.cos(plm),
+                                 'imag' : Alm * np.sin(plm),
+                                 'A'    : Alm,
+                                 'p'    : plm}
+        self._psi4lm = dict_psi4lm
+        pass 

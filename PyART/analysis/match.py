@@ -34,7 +34,7 @@ class Matcher(object):
         # Choose the appropriate mismatch function
         if self.settings['kind'] == 'single-mode':
             self.match_f = self._compute_mm_single_mode
-        elif self.settings['kind'].lower() == 'hm':
+        elif self.settings['kind'].lower() == 'hm' or 'prec' in self.settings['kind'].lower():
             self.match_f = self._compute_mm_skymax
         else:
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
