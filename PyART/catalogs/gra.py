@@ -57,6 +57,8 @@ class Waveform_GRA(Waveform):
         pos1 = ometa['initial-position1'].strip('"').split(','); pos1 = np.array([float(pos1[i]) for i in range(3)])
         pos2 = ometa['initial-position2'].strip('"').split(','); pos2 = np.array([float(pos2[i]) for i in range(3)])
         r0   = ometa['initial-separation']
+        P0   = ometa['initial-ADM-linear-momentum'].strip('"').split(','); P0 = np.array([float(P0[i]) for i in range(3)])
+        L0   = ometa['initial-ADM-angular-momentum'].strip('"').split(','); L0 = np.array([float(L0[i]) for i in range(3)])
 
         metadata = {'name'     : ometa['simulation-name'],
                     'ref_time' : 0.,
@@ -84,9 +86,9 @@ class Waveform_GRA(Waveform):
                     'f0'       : float(ometa['initial-orbital-frequency'])/np.pi,
                     # ADM quantities (INITIAL, not REF)
                     'E0'       : float(ometa['initial-ADM-energy']),
-                    'P0'       : None, #np.array(ometa['initial_ADM_linear_momentum']),
-                    'J0'       : None,
-                    'Jz0'      : None,
+                    'P0'       : P0,
+                    'J0'       : L0,
+                    'Jz0'      : L0[2],
                     'E0byM'    : float(ometa['initial-ADM-energy'])/M,
                     'pph0'     : None,
                     # remnant
@@ -108,7 +110,7 @@ class Waveform_GRA(Waveform):
         if extrap == 'ext':
             h5_file = os.path.join(self.path, 'rh_Asymptotic_GeometricUnits.h5')
         elif extrap == 'CCE':
-            h5_file = os.path.join(self.path, 'rh_CCE_GeometricUnits.h5')
+            h5_file = os.path.join(self.path, 'rh_CCE_GeometricUnits_radii.h5')
         elif extrap == 'finite':
             h5_file = os.path.join(self.path, 'rh_FiniteRadii_GeometricUnits.h5')
         else:
@@ -148,7 +150,7 @@ class Waveform_GRA(Waveform):
             key = (l, m)
             dict_hlm[key] =  {'real': Alm*np.cos(plm), 'imag': Alm*np.sin(plm),
                               'A'   : Alm, 'p' : plm, 
-                              'h'   : h[self.cut_N:]
+                              'z'   : h[self.cut_N:]
                               }
         self._hlm = dict_hlm
         pass
@@ -230,7 +232,7 @@ class Waveform_GRA(Waveform):
                                  'imag' : Alm * np.sin(plm),
                                  'A'    : Alm, 
                                  'p'    : plm,
-                                 'psu4' : psi4[self.cut_N:]
+                                 'z'    : psi4[self.cut_N:]
                                 }
 
         self._psi4lm = dict_psi4lm

@@ -155,7 +155,7 @@ class Waveform_RIT(Waveform):
                      
         pass
 
-    def load_psi4(self):
+    def load_psi4lm(self):
 
         files = glob.glob(os.path.join(self.psi_path, '*.asc'))
         d = {}
@@ -174,7 +174,7 @@ class Waveform_RIT(Waveform):
                 t,re,im,A,p = np.loadtxt(ff, unpack=True, skiprows=4, usecols=(0,1,2,3,4) )
             except Exception:
                 t,re,im,A,p,o = np.loadtxt(ff, unpack=True, skiprows=4, usecols=(0,1,2,3,4))
-            d[(ell,emm)] = {'real':re, 'imag':im, 'A':A, 'p':p, 'h': A*np.exp(-1j*p)}
+            d[(ell,emm)] = {'real':re, 'imag':im, 'A':A, 'p':p, 'z': A*np.exp(-1j*p)}
         
         self._psi4lm = d
         self._t_psi4 = t
@@ -202,7 +202,7 @@ class Waveform_RIT(Waveform):
                 A   = self.__interp_qnt__(A_u, A, th)
                 p   = self.__interp_qnt__(p_u, p, th) + np.pi
                 A   = A/nu
-                d[(ell, emm)] = {'real' : A*np.cos(p), 'imag': -A*np.sin(p), 'A':A, 'p':p, 'h': A*np.exp(-1j*p)}
+                d[(ell, emm)] = {'real' : A*np.cos(p), 'imag': -A*np.sin(p), 'A':A, 'p':p, 'z': A*np.exp(-1j*p)}
 
             except KeyError:
                 pass
