@@ -250,7 +250,7 @@ class Waveform(object):
         self.dynamics_from_hlm(modes)
 
         E    = self.dyn['E']['total']
-        J    = self.dyn['J']['total']
+        J    = self.dyn['Jz']['total']
 
         e    = (M_adm - E)                             # not nu-normalized total energy
         eb   = (M_adm - E - m1 - m2) / (m1*m2/(m1+m2)) # nu-normalized binding energy

@@ -234,6 +234,14 @@ class Matcher(object):
         """
         Plot waveforms and PSD for debugging.
         """
+
+        hf1 = h1.to_frequencyseries()
+        f1  = hf1.get_sample_frequencies()
+        hf2 = h2.to_frequencyseries()
+        f2  = hf2.get_sample_frequencies()
+        Af1 = np.abs(hf1)
+        Af2 = np.abs(hf2)
+
         if six_panels:
             figm      = 2
             fign      = 3
@@ -278,14 +286,8 @@ class Matcher(object):
             plt.subplot(figm,fign,5)
             plt.title('Overlap integrand between h1 and h2')
             freq = np.linspace(settings['initial_frequency_mm'], settings['final_frequency_mm'], len(h1))
-            plt.plot(freq, abs(h1.data * h2.data), color='red')
+            plt.plot(freq, hf1.data * np.conjugate(hf2.data), color='red')
         
-        hf1 = h1.to_frequencyseries()
-        f1  = hf1.get_sample_frequencies()
-        hf2 = h2.to_frequencyseries()
-        f2  = hf2.get_sample_frequencies()
-        Af1 = np.abs(hf1)
-        Af2 = np.abs(hf2)
         for i in FT_panels:
             plt.subplot(figm,fign,i)
             plt.title('Fourier transforms (abs value)')

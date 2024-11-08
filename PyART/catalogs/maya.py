@@ -35,7 +35,7 @@ class MAYA(Waveform):
 
         pass
 
-    def load_h(self):
+    def load_hlm(self):
 
         d  = {}
         if self.ell_emms == 'all': 
