@@ -110,7 +110,7 @@ class Waveform_GRA(Waveform):
         if extrap == 'ext':
             h5_file = os.path.join(self.path, 'rh_Asymptotic_GeometricUnits.h5')
         elif extrap == 'CCE':
-            h5_file = os.path.join(self.path, 'rh_CCE_GeometricUnits_radii.h5')
+            h5_file = os.path.join(self.path, 'rh_CCE_GeometricUnits.h5')
         elif extrap == 'finite':
             h5_file = os.path.join(self.path, 'rh_FiniteRadii_GeometricUnits.h5')
         else:
