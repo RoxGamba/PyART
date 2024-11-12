@@ -3,30 +3,61 @@ from scipy import interpolate
 import matplotlib.pyplot as plt
 import h5py 
 import glob
+import os
 
 from ..waveform import  Waveform
 
 class CoRe(Waveform):
 
     def __init__(self,
-                 basepath='../dat/CoRe/',
-                 kind     = 'txt',
+                 path='../dat/CoRe/',
+                 ID      = 'BAM:0001',
+                 run     = 'R01',
+                 kind     = 'h5',
                  mtdt_path='../dat/CoRe/metadata.txt',
-                 ell_emms='all'
+                 ell_emms='all',
+                 download=False
                  )->None:
 
         super().__init__()
-
+        self.ID = ID.replace(':','_')
+        self.run = run
         self.ell_emms = ell_emms
+        self.core_data_path = os.path.join(path,ID)
         self.metadata = None
 
+        if os.path.exists(self.core_data_path) == False:
+            if download:
+                print("The path ", self.core_data_path, " does not exist.")
+                print("Downloading the simulation from the CoRe database.")
+                self.download_simulation(ID=self.ID, path=path)
+            else:
+                print("Use download=True to download the simulation from the CoRe database.")
+                raise FileNotFoundError(f"The path {self.core_data_path} does not exist.")
+            
+        self.runpath = os.path.join(self.core_data_path,self.run)
         # read metadata
         self.metadata = self.read_metadata(mtdt_path)
 
         # read data
-        self.read_h(basepath, kind)
+        self.read_h(self.core_data_path, kind)
 
         pass
+
+    def download_simulation(self, ID='BAM_0001', path='.',protocol='https',verbose=False):
+        pre = {'ssh': 'git@', 'https': 'https://'}
+        sep = {'ssh': ':'   , 'https': '/'}
+        server = 'core-gitlfs.tpi.uni-jena.de'
+        gitbase = 'core_database'
+        if protocol not in pre.keys():
+            raise NameError("Protocol not supported!")
+        git_repo = '{}{}{}{}/{}.git'.format(pre[protocol],server,
+                                        sep[protocol],gitbase,ID)
+        print('git-clone {} ...'.format(git_repo))
+        os.system('git clone '+git_repo)
+        self.core_data_path = os.path.join(path,ID)
+        print('done!')
+
 
     def read_metadata(self, mtdt_path):
         metadata = {}
@@ -49,7 +80,34 @@ class CoRe(Waveform):
         else:
             raise NameError('kind not recognized')
         
+    def read_h_h5(self, basepath):
+        self.dfile = os.path.join(self.runpath,'data.h5')
+        dset = {}
+        with h5py.File(self.dfile, 'r') as fn:
+            for g in fn.keys():
+                dset[g] = {}
+                for f in fn[g].keys():
+                    dset[g][f] = fn[g][f][()]
+        try:
+            uM = dset[:,0]
+            RehM = dset[:,1]
+            ImhM = dset[:,2]
+            Momg = dset[:,5]
+            aM   = dset[:,6]
+            phi  = dset[:,7]
+        except:
+            uM = dset[:,0]
+            RehM = dset[:,1]
+            ImhM = dset[:,2]
+            Momg = dset[:,3]
+            aM   = dset[:,4]
+            phi  = dset[:,5]
+
+        # TODO: add option to get all modes available or get specific mode
+
+        
     def read_h_txt(self, basepath):
+        # TODO: modify in case one has the txt files already
         # find all modes under basepath
         modes = glob.glob(basepath+'/Rh_l*.txt')
 
