@@ -35,6 +35,7 @@ class Waveform_SEOB(Waveform):
             fac       = -1 * M * lal.MRSUN_SI / (self.pars["distance"] * lal.PC_SI * 1.e6)
             t         = t/(M * lal.MTSUN_SI)
             for mode in hlm_seob.keys():
+                # Also rescale by nu
                 hlm_seob[mode] = hlm_seob[mode]/fac/nu
 
         self._u   = t
@@ -50,25 +51,29 @@ class Waveform_SEOB(Waveform):
                      'E'     : self.SEOB.model.dynamics[:,5]*nu,
                      'MOmega': self.SEOB.model.dynamics[:,6],
                      }
+        self.domain = 'Time'
         return 0
     
     def check_pars(self):
         """
         Check and adjust pars dictionary
         """
-        # If using geometric units, assuming total mass = 1
+        if "q" not in self.pars:
+            if "mass1" not in self.pars or "mass2" not in self.pars:
+                raise ValueError("SEOB: Neither mass ratio nor individual masses given in input.")
+            self.pars["q"] = self.pars["mass1"]/self.pars["mass2"]
+        
+        if ("mass1" not in self.pars or "mass2" not in self.pars) and self.pars["use_geometric_units"] == "no":
+            raise ValueError("SEOB: If not using geom. units, need individual masses.")
+        
         if self.pars["use_geometric_units"] == "yes":
-            if "mass1" not in self.pars:
-                self.pars["mass1"] = self.pars["q"]/(1. + self.pars["q"])
-            if "mass2" not in self.pars:
-                self.pars["mass2"] = 1./(1. + self.pars["q"])
+            # If using geometric units, set total mass to 100
+            self.pars["mass1"] = 100.*self.pars["q"]/(1. + self.pars["q"])
+            self.pars["mass2"] = 100./(1. + self.pars["q"])
+
             # Convert initial frequency to physical units, save geometric in dict
             self.pars["f22_start_geom"] = self.pars["f22_start"]
-            self.pars["f22_start"] = self.pars["f22_start"]/(self.pars["mass1"] + self.pars["mass2"])/lal.MTSUN_SI
-            # Rescale deltaT to avoid problems with ringdown frequencies; this assumes the default value, not great
-            self.pars["deltaT"] = self.pars["deltaT"]/100.
-        if "q" not in self.pars:
-            self.pars["q"] = self.pars["mass1"]/self.pars["mass2"]
+            self.pars["f22_start"]      = self.pars["f22_start"]/(self.pars["mass1"] + self.pars["mass2"])/lal.MTSUN_SI
         
         # If x, y spin components given, check that approximant is SEOBNRv5->P<-HM
         if max([np.abs(self.pars["spin1x"]), np.abs(self.pars["spin1y"]), 
@@ -78,13 +83,16 @@ class Waveform_SEOB(Waveform):
                 self.pars["approximant"] = "SEOBNRv5PHM"
 
     def compute_energetics(self):
-        pars = self.pars
-        q    = pars['q']
-        q    = float(q)
-        nu   = q/(1.+q)**2
-        dyn  = self.dyn
-        E, j = dyn['E'], dyn['Pphi']
-        Eb   = (E-1)/nu
+        """
+        Compute binding energy and angular momentum from dynamics.
+        """
+        pars    = self.pars
+        q       = pars['q']
+        q       = float(q)
+        nu      = q/(1.+q)**2
+        dyn     = self.dyn
+        E, j    = dyn['E'], dyn['Pphi']
+        Eb      = (E-1)/nu
         self.Eb = Eb
         self.j  = j
         return Eb, j
@@ -114,7 +122,7 @@ def CreateDict(M=1., q=1,
                approx="SEOBNRv5HM",
                use_mode_lm=[(2,2)]):
     """
-    Create the dictionary of parameters for EOBRunPy
+    Create the dictionary of parameters for pyseobnr->GenerateWaveform
     """
     pardic = {
                 "q"                   : q,
