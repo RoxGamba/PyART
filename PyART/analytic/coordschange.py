@@ -140,22 +140,22 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
     else:
         cosa = 1.0
         sina = 0.0
-    px_athena =  cosa*pa[0] - sina*pa[1] 
-    py_athena =  sina*pa[0] + cosa*pa[1] 
+    pxbynu =  cosa*pa[0] - sina*pa[1] 
+    pybynu =  sina*pa[0] + cosa*pa[1] 
      
     x1       =  d_ADM/(q+1)
     x2       = -d_ADM*q/(q+1)
     x_offset = -b_par+d_ADM/(q+1)
     
     # wrap output
-    out = {'q_cart_ADM' : qa, 
-           'p_cart_ADM' : pa,
-           'px_gra'     : px_athena*nu, 
-           'py_gra'     : py_athena*nu,
-           'x1_gra'     : x1, 
-           'x2_gra'     : x2,
-           'D_gra'      : d_ADM,
-           'x_offset'   : x_offset,
+    out = {'q_cart'   : qa, 
+           'p_cart'   : pa,
+           'px'       : pxbynu*nu, 
+           'py'       : pybynu*nu,
+           'x1'       : x1, 
+           'x2'       : x2,
+           'D'        : d_ADM,
+           'x_offset' : x_offset,
           }
 
     if verbose:
@@ -167,8 +167,8 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
         print('b_par    : {:.15f}'.format(b_par))
         print('D        : {:.15f}'.format(b_par*2))
         print('x_offset : {:.15f}'.format(x_offset))
-        print('px       : {:.15f}'.format(px_athena*nu))
-        print('py       : {:.15f}\n'.format(py_athena*nu))
+        print('px       : {:.15f}'.format(pxbynu*nu))
+        print('py       : {:.15f}\n'.format(pybynu*nu))
     
         print('{}\nEOB-ADM 2PN transformation\n{}'.format(dashes,dashes))
         print('q EOB      : {:.5e}, {:.5e}'.format(qe[0], qe[1]))
@@ -181,3 +181,5 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
     
     return out 
     
+
+

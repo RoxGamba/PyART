@@ -7,6 +7,7 @@ from . import analytic
 from . import catalogs
 from . import models
 from . import utils
+from . import numerical
 
 # ---------------------
 # Basic unit conversion

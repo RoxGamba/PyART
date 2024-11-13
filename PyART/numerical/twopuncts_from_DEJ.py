@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 import concurrent.futures
 from PyART.utils.os_utils import runcmd
 
-DUMMY = './twopuncts.dummy'
+file_path = os.path.abspath(__file__)
+file_dir  = os.path.dirname(file_path)
+DUMMY = os.path.join(file_dir,'twopuncts.dummy')
 
 ###########################
 # Class to normalize data
@@ -25,7 +27,7 @@ class LinearScaler:
 ###########################
 # Class to compute NR ICs
 ###########################
-class numrel_ICs(object):
+class Numrel_IDs(object):
     def __init__(self, q, E, L, D, TP_dummy=DUMMY,  **kwargs):
         
         self.q           = q
@@ -318,9 +320,9 @@ class numrel_ICs(object):
                 print(f'# iter : {i:d}')
                 print(f'P0     : {P:.10f}\ndP     : {dP:.10f}')
             t0 = time.perf_counter()
-            P = ics.fit_iter(P, dP, npoints=npoints, poly_order=poly_order, x0_position=x0_position, nproc=nproc,
+            P  = self.fit_iter(P, dP, npoints=npoints, poly_order=poly_order, x0_position=x0_position, nproc=nproc,
                              save_plot=save_plot, show_plot=show_plot)
-            E_adm,_,_ = ics.run_TP_wrapper(P)
+            E_adm,_,_ = self.run_TP_wrapper(P)
             error = abs(E_adm-self.E)/self.E
             if verbose:
                 print(f'iteration results')
@@ -333,7 +335,7 @@ class numrel_ICs(object):
             dP *= 1/resize_factor 
             x0_position = x0_position_other
         Py = self.L/self.D
-        Px = np.sqrt(P**2-Py**2)
+        Px = -np.sqrt(P**2-Py**2)
         return Px, Py, E_adm
 
 if __name__ == '__main__':
@@ -367,7 +369,7 @@ if __name__ == '__main__':
     L     = args.ang_momentum
     res   = args.res
 
-    ics = numrel_ICs(M=M, q=q, D=D, E=E, L=L, chi1z=chi1z, chi2z=chi2z, 
+    ics = Numrel_IDs(M=M, q=q, D=D, E=E, L=L, chi1z=chi1z, chi2z=chi2z, 
                      npoints_A=res[0], npoints_B=res[1], npoints_phi=res[2],
                      TP_path=args.TP_path, outdir=args.outdir, verbose=args.verbose)
     
