@@ -106,3 +106,13 @@ def Adm2Eob(qa_vec, pa_vec, nu, PN_order):
 
     return qe_vec, pe_vec
 
+#def eob_ID_to_ADM(eob_Wave):
+#    """
+#    eob_Wave is instance of PyART.models.teob.Waveform_EOB
+#    Generate initial ID for NR simulations
+#    """
+    
+
+
+
+    
