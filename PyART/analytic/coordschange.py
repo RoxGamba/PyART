@@ -106,13 +106,78 @@ def Adm2Eob(qa_vec, pa_vec, nu, PN_order):
 
     return qe_vec, pe_vec
 
-#def eob_ID_to_ADM(eob_Wave):
-#    """
-#    eob_Wave is instance of PyART.models.teob.Waveform_EOB
-#    Generate initial ID for NR simulations
-#    """
+def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
+    """
+    eob_Wave is instance of PyART.models.teob.Waveform_EOB
+    Generate initial ID for NR simulations with initial
+    data from TwoPuncturesC
+    """
+    # Get info from EOB dynamics
+    q    = eob_Wave.pars['q']
+    nu   = q/(1+q)**2
+    r0   = eob_Wave.dyn['r'][0]
+    phi0 = eob_Wave.dyn['phi'][0]
+    pph0 = eob_Wave.dyn['Pphi'][0]
+    pr   = eob_Wave.get_Pr()
+    pr0  = pr[0]
     
+    # Convert to EOB Cartesian
+    x,y,px,py = Polar2Cartesian(r0, phi0, pr0, pph0) 
+    qe = np.array([x , y])
+    pe = np.array([px, py])  # already divided by nu
+    
+    # Convert to ADM Cartesian
+    qa, pa = Eob2Adm(qe, pe, nu, PN_order=PN_order)
+    d_ADM  = np.sqrt(np.dot(qa,qa))
+    
+    halfx = qa[0]/2 
+    b_par = d_ADM/2 
+    if rotate_on_x_axis:
+        # Rotate so that the punctures will be on the x-axis at t=0
+        cosa  = halfx/b_par 
+        sina  = np.sqrt(1-cosa*cosa) 
+        if qa[1]>0: sina = -sina 
+    else:
+        cosa = 1.0
+        sina = 0.0
+    px_athena =  cosa*pa[0] - sina*pa[1] 
+    py_athena =  sina*pa[0] + cosa*pa[1] 
+     
+    x1       =  d_ADM/(q+1)
+    x2       = -d_ADM*q/(q+1)
+    x_offset = -b_par+d_ADM/(q+1)
+    
+    # wrap output
+    out = {'q_cart_ADM' : qa, 
+           'p_cart_ADM' : pa,
+           'px_gra'     : px_athena*nu, 
+           'py_gra'     : py_athena*nu,
+           'x1_gra'     : x1, 
+           'x2_gra'     : x2,
+           'D_gra'      : d_ADM,
+           'x_offset'   : x_offset,
+          }
 
-
-
+    if verbose:
+        # for testing 
+        qe_check, pe_check = Adm2Eob(qa, pa, nu, PN_order=PN_order) 
+        
+        dashes = '-'*50
+        print('{}\nPunctures\n{}'.format(dashes,dashes))
+        print('b_par    : {:.15f}'.format(b_par))
+        print('D        : {:.15f}'.format(b_par*2))
+        print('x_offset : {:.15f}'.format(x_offset))
+        print('px       : {:.15f}'.format(px_athena*nu))
+        print('py       : {:.15f}\n'.format(py_athena*nu))
+    
+        print('{}\nEOB-ADM 2PN transformation\n{}'.format(dashes,dashes))
+        print('q EOB      : {:.5e}, {:.5e}'.format(qe[0], qe[1]))
+        print('q EOB->ADM : {:.5e}, {:.5e}'.format(qa[0], qa[1]))
+        print('q ADM->EOB : {:.5e}, {:.5e}\n'.format(qe_check[0], qe_check[1]))
+    
+        print('p EOB      : {:.5e}, {:.5e}'.format(pe[0], pe[1]))
+        print('p EOB->ADM : {:.5e}, {:.5e}'.format(pa[0], pa[1]))
+        print('p ADM->EOB : {:.5e}, {:.5e}\n'.format(pe_check[0], pe_check[1]))
+    
+    return out 
     
