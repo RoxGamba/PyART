@@ -1,0 +1,54 @@
+verbose=False
+# x coordinate of the m+ puncture
+par_b=@par_b@
+# mass of the m+ puncture
+par_m_plus=@par_m_plus@
+# mass of the m- puncture
+par_m_minus=@par_m_minus@
+# target ADM mass for m+
+target_M_plus=@target_M_plus@
+# target ADM mass for m-
+target_M_minus=@target_M_minus@
+# momentum of the m puncture
+par_P_plus1=@par_P_plus1@
+par_P_plus2=@par_P_plus2@
+par_P_plus3=@par_P_plus3@
+# momentum of the m- puncture
+par_P_minus1=@par_P_minus1@
+par_P_minus2=@par_P_minus2@
+par_P_minus3=@par_P_minus3@
+# spin of the m puncture
+par_S_plus1=@par_S_plus1@
+par_S_plus2=@par_S_plus2@
+par_S_plus3=@par_S_plus3@
+# spin of the m- puncture
+par_S_minus1=@par_S_minus1@
+par_S_minus2=@par_S_minus2@
+par_S_minus3=@par_S_minus3@
+# offset b=0 to position (x,y,z)
+center_offset1=@center_offset1@
+center_offset2=@center_offset2@
+center_offset3=@center_offset3@
+give_bare_mass=@give_bare_mass@
+npoints_A=@npoints_A@
+npoints_B=@npoints_B@
+npoints_phi=@npoints_phi@
+Newton_tol=1.0000000000000000e-10
+Newton_maxit=5
+TP_epsilon=0.0000000000000000e+00
+TP_Tiny=0.0000000000000000e+00
+TP_Extend_Radius=0.0000000000000000e+00
+adm_tol=1.0000000000000000e-10
+solve_momentum_constraint=0
+use_external_initial_guess=0
+do_residuum_debug_output=0
+do_initial_debug_output=0
+do_solution_file_output=0
+do_bam_file_output=0
+grid_setup_method=0
+initial_lapse=2
+initial_lapse_psi_exponent=-2.0000000000000000e+00
+conformal_state=1
+swap_xz=0
+multiply_old_lapse=0
+verbose=1
