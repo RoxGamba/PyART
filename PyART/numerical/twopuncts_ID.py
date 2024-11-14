@@ -6,7 +6,7 @@ from PyART.utils.os_utils import runcmd
 
 file_path = os.path.abspath(__file__)
 file_dir  = os.path.dirname(file_path)
-DUMMY = os.path.join(file_dir,'twopuncts.dummy')
+DUMMY     = os.path.join(file_dir,'twopuncts.dummy')
 
 ###########################
 # Class to normalize data
@@ -27,22 +27,22 @@ class LinearScaler:
 ###########################
 # Class to compute NR ICs
 ###########################
-class Numrel_IDs(object):
-    def __init__(self, q, E, L, D, TP_dummy=DUMMY,  **kwargs):
+class TwoPunctID(object):
+    def __init__(self, **kwargs):
         
-        self.q           = q
-        self.E           = E
-        self.E_min       = None
-        self.L           = L
-        self.D           = D
         self.M           = 1.0
+        self.q           = 1.0
+        self.E           = 1.1
+        self.E_min       = None
+        self.L           = 1.0
+        self.D           = 100
         self.chi1z       = 0.0
         self.chi2z       = 0.0
         self.npoints_A   = 8
         self.npoints_B   = 8
-        self.npoints_phi = 8
-        self.TP_dummy    = TP_dummy
-        self.TP_path     = './' 
+        self.npoints_phi = 6
+        self.TP_dummy    = DUMMY
+        self.TP_exe      = './TwoPunctures.x' 
         self.outdir      = './'
         self.verbose     = False
         self.iteration   = None
@@ -65,8 +65,10 @@ class Numrel_IDs(object):
                 print(f'Created outdir: {self.outdir}')
 
         M     = self.M
+        q     = self.q
         chi1z = self.chi1z 
         chi2z = self.chi2z
+        D     = self.D
 
         # create dictionary for TP
         if q<1 : q=1/q
@@ -86,7 +88,6 @@ class Numrel_IDs(object):
         offsety = 0.0
         offsetz = 0.0
         
-        self.TP_exe  = os.path.join(self.TP_path, 'TwoPuncturesRun.x')
         self.TP_pars = {'par_b':par_b, 'par_m_plus':mp, 'par_m_minus':mm, 'target_M_plus':mp, 'target_M_minus':mm,
                         'par_P_plus1'  : None, 'par_P_plus2'  : None, 'par_P_plus3'  : 0.0,
                         'par_P_minus1' : None, 'par_P_minus2' : None, 'par_P_minus3' : 0.0,
@@ -163,9 +164,6 @@ class Numrel_IDs(object):
         if verbose:
             print(f'{outfile:10s} : P:{P:.10f}  E_ADM:{E_ADM:.10f}  M1:{M1:.5f}  M2:{M2:.5f}')
         return E_ADM, M1, M2
-    
-    def linear_transform(self,x,A,B,C=0,D=1):
-        return (D-C)*(x-A)/(B-A)+C
     
     def run_TP_parallel(self, momenta, batch):
         energies = np.zeros_like(momenta) 
@@ -296,7 +294,6 @@ class Numrel_IDs(object):
     def fit_iterations(self, P0=None, step_rel=0.15, tol=1e-10, resize_factor=100, itermax=5, npoints=4, \
                              poly_order=None, verbose=None, nproc=1, save_plot=True, show_plot=False):
         if verbose is None: verbose = self.verbose
-        
         if P0 is None and self.E > 1-tol:
             nu = self.q/(1+self.q)**2
             P0 = 0.5*np.sqrt( (self.E**2-1)/(4*nu) )
@@ -340,15 +337,14 @@ class Numrel_IDs(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--TP_path',       required=True,             help='Path to TwoPunctures.x')
+    parser.add_argument('--exe',           required=True,             help='Exectuable (TwoPunctures.x)')
     parser.add_argument('-q',              default=1,     type=float, help='mass ratio')
     parser.add_argument('--chi1z',         default=0.0,   type=float, help='chi1z')
     parser.add_argument('--chi2z',         default=0.0,   type=float, help='chi2z')
     parser.add_argument('-D', '--distance',default=100,   type=float, help='Initial separation') 
-    parser.add_argument('-E', '--energy',  default=1,     type=float, help='Initial energy') 
+    parser.add_argument('-E', '--energy',  default=1.01,  type=float, help='Initial energy') 
     parser.add_argument('-L', '--ang_momentum', default=1,type=float, help='Initial orbital angular momentum') 
     parser.add_argument('-o', '--outdir',  default='./out',           help='Outdir')
-    parser.add_argument('-v', '--verbose', action='store_true',       help='verbose (the final result is printed in any case)')
     parser.add_argument('-n', '--nproc',   default=1,     type=int,   help='number of process used')
     parser.add_argument('--res',default=[8,8,6],nargs='+',type=int,   help='Resolution to use: [npoints_A,npoints_B,npoints_phi]')                  
     # tunable parameter for the search
@@ -360,7 +356,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # input
-    M     = 1
     q     = args.q
     chi1z = args.chi1z
     chi2z = args.chi2z
@@ -369,11 +364,11 @@ if __name__ == '__main__':
     L     = args.ang_momentum
     res   = args.res
 
-    ics = Numrel_IDs(M=M, q=q, D=D, E=E, L=L, chi1z=chi1z, chi2z=chi2z, 
-                     npoints_A=res[0], npoints_B=res[1], npoints_phi=res[2],
-                     TP_path=args.TP_path, outdir=args.outdir, verbose=args.verbose)
+    tpi = TwoPunctID(q=q, D=D, E=E, L=L, chi1z=chi1z, chi2z=chi2z, 
+                      npoints_A=res[0], npoints_B=res[1], npoints_phi=res[2],
+                      TP_exe=args.exe, outdir=args.outdir, verbose=True)
     
-    Px, Py, E_adm = ics.fit_iterations(P0=args.init_guess, step_rel=args.step, tol=args.tol, \
+    Px, Py, E_adm = tpi.fit_iterations(P0=args.init_guess, step_rel=args.step, tol=args.tol, \
                                       npoints=args.npoints, resize_factor=args.resize, nproc=args.nproc)
     P = np.sqrt(Px**2 + Py**2)
     
