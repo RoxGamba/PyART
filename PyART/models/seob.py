@@ -4,7 +4,10 @@ try:
     import pyseobnr.generate_waveform as SEOB
 except ModuleNotFoundError:
     print("WARNING: pyseobnr not installed.")
-import lal
+try:
+    import lal
+except ModuleNotFoundError:
+    print("WARNING: lal not installed.")
 
 from ..waveform import Waveform
 from ..utils import wf_utils as wfu
@@ -19,6 +22,8 @@ class Waveform_SEOB(Waveform):
                     pars=None,
                 ):
         super().__init__()
+        if pars is None:
+            raise RuntimeError("No input parameters given for SEOB!")
         self.pars  = pars
         self._kind = 'SEOB'
         self.check_pars()
@@ -107,7 +112,7 @@ def convert_hlm(hlm):
         p   = -np.unwrap(np.angle(hlm[key]))
         hlm_conv[key] = {'real': A*np.cos(p), 'imag': -1*A*np.sin(p),
                                 'A'   : A, 'p' : p,
-                                'h'   : A*np.exp(-1j*p)
+                                'z'   : A*np.exp(-1j*p)
                                 }
     return hlm_conv
 
