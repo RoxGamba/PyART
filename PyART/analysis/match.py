@@ -73,7 +73,7 @@ class Matcher(object):
         if not hasattr(WaveForm, 'hp'):
             raise RuntimeError('hp not found! Compute it before calling Matcher')
         
-        wf = lambda: None
+        wf              = lambda: None
         wf.domain       = WaveForm.domain
         wf.f            = None  # Assume TD waveform at the moment
         wf.hlm          = WaveForm.hlm

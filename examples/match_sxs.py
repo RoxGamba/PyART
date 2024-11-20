@@ -83,7 +83,7 @@ eobpars = {
             'spin_interp_domain' : 0
             }
 eob = teob.Waveform_EOB(pars=eobpars)
-#eob.compute_hphc()
+eob.multiply_by(var=['hlm'], factor=q/(1+q)**2)
 
 #nr_mrg,_,_,_  = nr.find_max() 
 #eob_mrg,_,_,_ = eob.find_max() 
