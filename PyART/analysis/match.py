@@ -172,11 +172,11 @@ class Matcher(object):
             'iota'                 : 0.,
             'coa_phase'            : np.linspace(0,2*np.pi,1),
             'eff_pols'             : np.linspace(0,np.pi,1),
-            'pad_end_frac'         : 1.0,  # fraction of pad after the signal
+            'pad_end_frac'         : 0.5,  # fraction of pad after the signal
             'taper'                : 'sigmoid', # None, 'sigmoid', or 'tukey'
-            'taper_start'          : 0.12, # parameter for sigmoid or tukey window
+            'taper_start'          : 0.05, # parameter for sigmoid or tukey window
             'taper_end'            : None, # parameter for sigmoid or tukey window
-            'taper_alpha'          : 0.1,  # alpha parameter for sigmoid or tukey (will be M-normalized)
+            'taper_alpha'          : 2.0,  # alpha parameter for sigmoid or tukey (will be M-normalized)
             'resize_factor'        : 4,
             'debug'                : False,
             'geom'                 : True,

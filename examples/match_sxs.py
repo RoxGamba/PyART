@@ -17,7 +17,7 @@ parser.add_argument('-n', '--mass_num', type=int,   default=20,   help="Number o
 parser.add_argument('--f1',             type=float, default=None, help="Initial freq for mm")
 parser.add_argument('--f2',             type=float, default=2048, help="Final freq for mm")
 parser.add_argument('--taper',          type=str,   default='sigmoid', help="Kind of taper")
-parser.add_argument('--taper_alpha',    type=float, default=0.10, help="Taper alpha")
+parser.add_argument('--taper_alpha',    type=float, default=0.20, help="Taper alpha")
 parser.add_argument('--taper_start',    type=float, default=0.05, help="Taper start")
 parser.add_argument('--taper_end',      type=float, default=None, help="Taper end")
 parser.add_argument('-d', '--debug', action='store_true',         help="Show debug plots")
@@ -115,7 +115,7 @@ for i, M in enumerate(masses):
                                 'resize_factor':4, 
                                 'modes-or-pol':'modes', 
                                 'modes':[(2,2)],
-                                'pad_end_frac':0.8,
+                                'pad_end_frac':0.5,
                                 'taper_alpha':args.taper_alpha,
                                 'taper_start':args.taper_start,
                                 'taper_end':args.taper_end,
