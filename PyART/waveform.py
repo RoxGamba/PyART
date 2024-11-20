@@ -139,6 +139,14 @@ class Waveform(object):
             dothlm[k] = wf_ut.get_multipole_dict(dhlm)
         self._dothlm = dothlm 
         pass
+    
+    def multiply_by(self, var=['hlm'], factor=1.):
+        for v in var:
+            wave_dict = getattr(self, v)
+            for lm in wave_dict:
+                h  = wave_dict[lm]['h']*factor
+                wave_dict[lm] = wf_ut.get_multipole_dict(h)
+        pass
 
     def cut(self, DeltaT, cut_hpc=True, from_the_end=False,
                   cut_dothlm=False, cut_psi4lm=False): 
@@ -250,7 +258,7 @@ class Waveform(object):
         self.dynamics_from_hlm(modes)
 
         E    = self.dyn['E']['total']
-        J    = self.dyn['J']['total']
+        J    = self.dyn['Jz']['total']
 
         e    = (M_adm - E)                             # not nu-normalized total energy
         eb   = (M_adm - E - m1 - m2) / (m1*m2/(m1+m2)) # nu-normalized binding energy
@@ -284,7 +292,7 @@ class Waveform(object):
         self._domain = 'Frequency'
         pass
     
-    def integrate_psi4(self, t_psi4, radius, integr_opts={}, modes=None, M=1, nu_norm=True):
+    def integrate_psi4lm(self, t_psi4, radius, integr_opts={}, modes=None, M=1):
         """
         Method to integrate psi4 extracted at finite distance
         """
@@ -299,8 +307,6 @@ class Waveform(object):
             mode = IntegrateMultipole(l, m, t, psi4, **integr_opts, 
                                       mass=M, radius=radius, 
                                       integrand='psi4')
-            if nu_norm:
-                mode.h = mode.h/self.metadata['nu']
             dothlm[lm] = wf_ut.get_multipole_dict(mode.dh)
             hlm[lm]    = wf_ut.get_multipole_dict(mode.h)
         self._u      = mode.u

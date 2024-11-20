@@ -22,6 +22,7 @@ class Waveform_ICC(Waveform):
                  integrate   = False,
                  integr_opts = {},  # options to integrate Psi4
                  load_puncts = False,
+                 nu_rescale  = False,
                  ):
         super().__init__()
         
@@ -33,7 +34,8 @@ class Waveform_ICC(Waveform):
         self.domain      = 'Time'
         self._kind       = 'ICC'
         self.ellmax      = ellmax
-        
+        self.nu_rescale  = nu_rescale
+
         # define self.metadata and self.ometadata (original)
         self.load_metadata()
 
@@ -44,11 +46,11 @@ class Waveform_ICC(Waveform):
             self.puncts = None
         
         # define self.psi4lm, self.t_psi4 and self.r_extr
-        self.load_psi4(tmax_after_peak=200)
+        self.load_psi4lm(tmax_after_peak=200)
         
         if integrate:
             # get hlm and dhlm by psi4-integration
-            self.integr_opts = self.integrate_psi4(t_psi4=self.t_psi4, 
+            self.integr_opts = self.integrate_psi4lm(t_psi4=self.t_psi4, 
                                                    radius=self.r_extr, 
                                                    integr_opts=integr_opts, 
                                                    M=1, modes=[(2,2)])
@@ -142,7 +144,7 @@ class Waveform_ICC(Waveform):
             pdict = None
         return pdict
      
-    def load_multipole_txtfile(self, fname_token, raise_error=True, ellmax=None, nu_norm=False):
+    def load_multipole_txtfile(self, fname_token, raise_error=True, ellmax=None):
         if ellmax is None: ellmax = self.ellmax
         files = os_ut.find_fnames_with_token(self.sim_path, fname_token) 
         if len(files)<1:
@@ -166,13 +168,13 @@ class Waveform_ICC(Waveform):
             m   = ut.extract_value_from_str(f, 'm')
             X   = ut.safe_loadtxt(f)
             flm = -(X[:,1]+1j*X[:,2])
-            if nu_norm:
+            if self.nu_rescale:
                 flm /= self.metadata['nu']
             mydict[(l,m)] = wf_ut.get_multipole_dict(flm)
         
         return mydict, t, files 
 
-    def load_psi4(self, tmax_after_peak=200):
+    def load_psi4lm(self, tmax_after_peak=200):
         dict_psi4, t, files = self.load_multipole_txtfile('mp_psi4', raise_error=True)
         self._t_psi4 = t 
         self._psi4lm = dict_psi4
@@ -192,7 +194,7 @@ class Waveform_ICC(Waveform):
         """
         Load hlm and compute dothlm
         """
-        dict_hlm, u, _ = self.load_multipole_txtfile('mp_strain', raise_error=False, nu_norm=True)
+        dict_hlm, u, _ = self.load_multipole_txtfile('mp_strain', raise_error=False)
         self._u   = u
         self._hlm = dict_hlm
         if self.u is not None:

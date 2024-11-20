@@ -123,7 +123,7 @@ class Waveform_RWZ(Waveform):
 
             dict_hlm[(l, m)] = {'real': Reh, 'imag': Imh, 
                            'A': Amp, 'p': phi,
-                           'h':Ch}
+                           'z':Ch}
         
         self.hlm = dict_hlm
         pass

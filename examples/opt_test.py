@@ -15,9 +15,7 @@ sxs_path = os.path.join(repo_path, 'examples/local_sxs/')
 #rit_path = os.path.join(repo_path, 'examples/local_rit/')
 rit_path = '/Users/simonealbanesi/repos/eob_generic_catalogs/data/rit/' 
 icc_path = '/Users/simonealbanesi/data/simulations_icc/ICCsims/catalog'
-mm_settings = {'cut_second_waveform':True, 'initial_frequency_mm':20, 'M':100, 'final_frequency_mm':1024}
 
-mm_settings['initial_frequency_mm'] = 10
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--catalog', required=True, type=str, 
@@ -35,7 +33,13 @@ parser.add_argument('--debug_plot',   action='store_true',       help='Show debu
 parser.add_argument('--mm_vs_M',      action='store_true',       help='Show plot mm vs M')
 parser.add_argument('--json_file',    default=None,              help='JSON file for mismatches')
 parser.add_argument('--overwrite',    action='store_true',       help='Overwrite option (json)')
+parser.add_argument('--taper_alpha',    type=float, default=1.00, help="Taper alpha")
+parser.add_argument('--taper_start',    type=float, default=0.05, help="Taper start")
 args = parser.parse_args()
+
+mm_settings = {'cut_second_waveform':True, 'initial_frequency_mm':20, 'M':100, 'final_frequency_mm':1024,
+               'taper_alpha':args.taper_alpha, 'taper_start':args.taper_start}
+mm_settings['initial_frequency_mm'] = 10
 
 if args.kind_ic=='e0f0':
     bounds = [[0,0.7], [None, None]]
@@ -43,13 +47,13 @@ else:
     bounds = [[None,None], [None,None]]
 
 if args.catalog=='rit':
-    ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id)
+    ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id, nu_rescale=True)
 
 elif args.catalog=='sxs':
-    ebbh = Waveform_SXS(path=sxs_path, download=args.download, ID=args.id, order="Extrapolated_N3.dir", ellmax=7)
+    ebbh = Waveform_SXS(path=sxs_path, download=args.download, ID=args.id, order="Extrapolated_N3.dir", ellmax=7,  nu_rescale=True)
 
 elif args.catalog=='icc':
-    ebbh = Waveform_ICC(path=icc_path, ID=args.id, integrate=True,
+    ebbh = Waveform_ICC(path=icc_path, ID=args.id, integrate=True, nu_rescale=True, 
                         integr_opts={'f0':0.002, 'extrap_psi4':True, 'method':'FFI', 'window':[20,-20]})
 else:
     raise ValueError(f'Unknown catalog: {args.catalog}')

@@ -14,22 +14,24 @@ class Waveform_SXS(Waveform):
     """
     def __init__(
                     self,
-                    path     = '../dat/SXS/',
-                    ID       = '0001',
-                    order    = "Extrapolated_N2.dir",
-                    level    = None,
-                    cut_N    = None,
-                    cut_U    = None,
-                    ellmax   = 8,
-                    download = False,
-                    load_m0  = False,
-                    rescale = False,
+                    path          = '../dat/SXS/',
+                    ID            = '0001',
+                    order         = "Extrapolated_N2.dir",
+                    level         = None,
+                    cut_N         = None,
+                    cut_U         = None,
+                    ellmax        = 8,
+                    download      = False,
+                    download_psi4 = False,
+                    load_m0       = False,
+                    nu_rescale    = False,
                     # Allow for other SXS h5 files 
-                    basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5"
+                    basename      = "rhOverM_Asymptotic_GeometricUnits_CoM.h5"
                 ):
         super().__init__()
         if isinstance(ID, int):
             ID = f'{ID:04}'
+            
         self.ID            = ID
         self.sxs_data_path = os.path.join(path,'SXS_BBH_'+ID)
         self.order         = order
@@ -40,14 +42,14 @@ class Waveform_SXS(Waveform):
         self._kind         = 'SXS'
         self.nr            = None
         self.domain        = 'Time'
-        self.rescale       = rescale
+        self.nu_rescale    = nu_rescale
 
         self.check_cut_consistency()
         if os.path.exists(self.sxs_data_path) == False:
             if download:
                 print("The path ", self.sxs_data_path, " does not exist.")
                 print("Downloading the simulation from the SXS catalog.")
-                self.download_simulation(ID=ID, path=path)
+                self.download_simulation(ID=ID, path=path, dowload_psi4=download_psi4)
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
@@ -98,7 +100,7 @@ class Waveform_SXS(Waveform):
         if isinstance(basename, str): tojoin.append(basename)
         return os.path.join(self.sxs_data_path, *tojoin)
     
-    def download_simulation(self, ID='0001', src='BBH',path=None):
+    def download_simulation(self, ID='0001', src='BBH',path=None, dowload_psi4=False):
         """
         Download the simulation from the SXS catalog; requires the sxs module
         """
@@ -109,9 +111,12 @@ class Waveform_SXS(Waveform):
             os.environ['SXSCACHEDIR'] = path
 
         nm = 'SXS:'+src+':'+ID
+
         _  = sxs.load(nm+'/Lev/'+"metadata.json")
         _  = sxs.load(nm+'/Lev/'+"rhOverM_Asymptotic_GeometricUnits_CoM.h5")
         _  = sxs.load(nm+'/Lev/'+"Horizons.h5")
+        if dowload_psi4:
+            _  = sxs.load(nm+'/Lev/'+"rMPsi4_Asymptotic_GeometricUnits_CoM.h5")
         
         # find folder(s) corresponding to the name, mkdir the new one
         flds = [f for f in os.listdir(os.environ['SXSCACHEDIR']) if nm in f]
@@ -302,7 +307,7 @@ class Waveform_SXS(Waveform):
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm  = self.nr[order][mode]
             h    = (hlm[:, 1] + 1j * hlm[:, 2])
-            if self.rescale:
+            if self.nu_rescale:
                 h /= self.metadata['nu']
             # amp and phase
             Alm = abs(h)[self.cut_N:]
@@ -311,10 +316,55 @@ class Waveform_SXS(Waveform):
             key = (l, m)
             dict_hlm[key] =  {'real': Alm*np.cos(plm), 'imag': Alm*np.sin(plm),
                               'A'   : Alm, 'p' : plm, 
-                              'h'   : h[self.cut_N:]
+                              'z'   : h[self.cut_N:]
                               }
         self._hlm = dict_hlm
         all_keys = self._hlm.keys()
+        pass
+
+    def load_psi4lm(self, ellmax=None, load_m0=False):
+
+        fname = self.get_lev_fname(level=self.level,basename="rMPsi4_Asymptotic_GeometricUnits_CoM.h5")
+        if os.path.exists(fname):
+            self.nr_psi = h5py.File(fname)
+
+        if ellmax==None: ellmax=self.ellmax
+        order   = self.order
+
+        if not hasattr(self, 'metadata'):
+            raise RuntimeError('Load metadata before loading hlm!')
+
+        from itertools import product
+
+        modes = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if (m!=0 or load_m0) and l >= np.abs(m)]
+       
+        tmp_u = self.nr_psi[order]['Y_l2_m2.dat'][:, 0]
+        
+        if self.cut_N is None: self.cut_N = np.argwhere(tmp_u>=self.cut_U)[0][0] 
+        if self.cut_U is None: self.cut_U = tmp_u[self.cut_N]
+        
+        self._t_psi4  = self._u # FIXME: should we use another time? 
+
+        dict_psi4lm = {}
+        for mode in modes:
+            l    = mode[0]; m = mode[1]
+            mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
+            psi4lm  = self.nr_psi[order][mode]
+            psi4    = (psi4lm[:, 1] + 1j * psi4lm[:, 2])
+            if self.nu_rescale:
+                psi4 /= self.metadata['nu']
+            # amp and phase
+            Alm = abs(psi4)[self.cut_N:]
+            plm = -np.unwrap(np.angle(psi4))[self.cut_N:]
+            # save in dictionary
+            key = (l, m)
+            dict_psi4lm[key] = { 'real': Alm*np.cos(plm), 
+                                 'imag': Alm*np.sin(plm),
+                                 'A'   : Alm, 
+                                 'p'   : plm, 
+                                 'z'   : psi4[self.cut_N:]
+                              }
+        self._psi4lm = dict_psi4lm
         pass
 
     def compute_psi4_from_hlm(self):

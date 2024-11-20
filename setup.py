@@ -32,5 +32,9 @@ ignore_files = ['.DS_Store', '*.pyc', 'Thumbs.db', '*.sqlite', '*.swp', '*.env',
 
 setup(
     scripts=find_files('bin/', relpath='./', ignore_dirs=ignore_dirs, ignore_files=ignore_files),
-    packages=find_packages()
+    packages=find_packages(),
+    include_package_data=True,
+    package_data={
+        'PyART.numerical': ['twopuncts.dummy'],
+    },
 )

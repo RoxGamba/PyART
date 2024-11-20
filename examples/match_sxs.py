@@ -1,4 +1,4 @@
-import sys,os,argparse,subprocess,matplotlib
+import sys,os,argparse,subprocess,matplotlib,time
 import numpy as np
 import matplotlib.pyplot as plt
 from PyART.catalogs       import sxs
@@ -7,7 +7,6 @@ from PyART.analysis.match import Matcher
 from PyART.utils import utils as ut 
 
 matplotlib.rc('text', usetex=True)
-
 
 parser = argparse.ArgumentParser()
 
@@ -18,7 +17,7 @@ parser.add_argument('-n', '--mass_num', type=int,   default=20,   help="Number o
 parser.add_argument('--f1',             type=float, default=None, help="Initial freq for mm")
 parser.add_argument('--f2',             type=float, default=2048, help="Final freq for mm")
 parser.add_argument('--taper',          type=str,   default='sigmoid', help="Kind of taper")
-parser.add_argument('--taper_alpha',    type=float, default=0.10, help="Taper alpha")
+parser.add_argument('--taper_alpha',    type=float, default=0.20, help="Taper alpha")
 parser.add_argument('--taper_start',    type=float, default=0.05, help="Taper start")
 parser.add_argument('--taper_end',      type=float, default=None, help="Taper end")
 parser.add_argument('-d', '--debug', action='store_true',         help="Show debug plots")
@@ -83,7 +82,11 @@ eobpars = {
             'spin_interp_domain' : 0
             }
 eob = teob.Waveform_EOB(pars=eobpars)
-#eob.compute_hphc()
+eob.multiply_by(var=['hlm'], factor=q/(1+q)**2)
+
+#plt.figure
+#plt.plot(eob.u, eob.hlm[(2,2)]['A'])
+#plt.show()
 
 #nr_mrg,_,_,_  = nr.find_max() 
 #eob_mrg,_,_,_ = eob.find_max() 
@@ -95,6 +98,7 @@ eob = teob.Waveform_EOB(pars=eobpars)
 # compute (2,2) mismatches for different masses
 masses = np.linspace(args.mass_min, args.mass_max, num=args.mass_num)
 mm = masses*0.
+t0 = time.perf_counter()
 for i, M in enumerate(masses):
     if args.f1 is None:
         f0_mm = 1.25*f0/(M*ut.Msun)
@@ -111,7 +115,7 @@ for i, M in enumerate(masses):
                                 'resize_factor':4, 
                                 'modes-or-pol':'modes', 
                                 'modes':[(2,2)],
-                                'pad_end_frac':0.8,
+                                'pad_end_frac':0.5,
                                 'taper_alpha':args.taper_alpha,
                                 'taper_start':args.taper_start,
                                 'taper_end':args.taper_end,
@@ -121,7 +125,10 @@ for i, M in enumerate(masses):
                                 }
                      )
     mm[i] = matcher.mismatch
+
     print(f'mass:{M:8.2f}, f0_mm:{f0_mm:8.4f} Hz, mm: {mm[i]:.3e}')
+
+print('Elapsed time [s]: ', time.perf_counter()-t0)
 
 if not args.no_plot and args.mass_num>1:
     plt.figure(figsize=(9,6))

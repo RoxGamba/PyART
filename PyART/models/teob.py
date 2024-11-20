@@ -57,6 +57,16 @@ class Waveform_EOB(Waveform):
             self._hc  = hc
             self.domain = 'Time'
         return 0
+    
+    def get_Pr(self):
+        if not hasattr(self, 'dyn'):
+            raise RuntimeError('EOB dynamics not found!')
+        Prstar = self.dyn['Prstar']
+        Pr     = np.zeros_like(Prstar)
+        for i in range(len(Pr)):
+            A, B   = EOB.eob_metricAB_py(self.dyn['r'][i], self.pars['q'])
+            Pr[i]  = Prstar[i]*np.sqrt(B/A)
+        return Pr
 
 def convert_hlm(hlm):
     from ..utils import wf_utils as wfu
