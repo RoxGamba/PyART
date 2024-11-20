@@ -1,4 +1,4 @@
-import sys, re
+import sys, re, copy
 import numpy as np; 
 from scipy import interpolate
 from scipy.signal import find_peaks; 
@@ -546,18 +546,28 @@ def retarded_time(t, r, M=1):
     rstar = R + 2*M*np.log(R/(2*M) - 1)
     return t - rstar
 
-def are_dictionaries_equal(dict1, dict2, excluded_keys=[], float_tol=1e-14, verbose=False):
+def are_dictionaries_equal(dict1_in, dict2_in, excluded_keys=[], float_tol=1e-14, verbose=False):
     """
     Check if two dictionaries are equal,
     modulo excluded keys
     """
+    dict1 = copy.deepcopy(dict1_in)
+    dict2 = copy.deepcopy(dict2_in)
+    # remove excluded keys 
+    for ke in excluded_keys:
+        if ke in dict1:
+            del dict1[ke]
+        if ke in dict2:
+            del dict2[ke]
+
     setk1 = set(dict1.keys())
     setk2 = set(dict2.keys())
-    setke = set(excluded_keys)
-    if setk1-setke != setk2-setke:
-        if verbose: print('Different number of keys')
+    #setke = set(excluded_keys)
+    #if setk1-setke != setk2-setke:
+    if setk1 != setk2:
+        if verbose: print('+++ Different number of keys +++')
         return False
-    for key in setk1-setke:
+    for key in setk1:
         val1 = dict1[key]
         val2 = dict2[key]
         if isinstance(val1, float) or isinstance(val2, float):
@@ -565,9 +575,55 @@ def are_dictionaries_equal(dict1, dict2, excluded_keys=[], float_tol=1e-14, verb
         else:
             kbool = (val1 == val2)
         if not kbool:
-            if verbose: print(f'Issues with key: {key}')
+            if verbose: print(f'+++ Issues with key: {key} +++')
             return False
     return True
+
+def print_dict_comparison(dict1_in,dict2_in,excluded_keys=[], dict1_name='dict1', dict2_name='dict2'):
+    dict1 = copy.deepcopy(dict1_in)
+    dict2 = copy.deepcopy(dict2_in)
+    # remove excluded keys 
+    for ke in excluded_keys:
+        if ke in dict1:
+            del dict1[ke]
+        if ke in dict2:
+            del dict2[ke]
+
+    def list_to_str(mylist):
+        mystr = '('
+        for elem in mylist:
+            if isinstance(elem, (list,tuple)):
+                return 'too deep: list of list of list' 
+            mystr += str(elem) + ', '
+        mystr += ')'
+        return mystr.replace(', )', ')')
+
+    for key, value1 in dict1.items():
+        value2 = dict2[key]
+        if isinstance(value1, dict):
+            dbool = ut.are_dictionaries_equal(value1, value2, verbose=True)
+            if dbool:
+                print(f'>> issues with {key:16s} (dictionary)')
+            else:
+                print(f'>> {key:16s} is dict:')
+        else:
+            if value1 is None: value1 = "None"
+            if value2 is None: value2 = "None"
+            if isinstance(value1, list) or isinstance(value2, list):
+                n1 = len(value1)
+                n2 = len(value2)
+                print(f'>> {key:22s} is list:')
+                for i in range(max(n1,n2)):
+                    elem1 = value1[i] if i<n1 else ' '
+                    elem2 = value2[i] if i<n2 else ' '
+                    if isinstance(elem1, (list,tuple)):
+                        elem1 = list_to_str(elem1) 
+                    if isinstance(elem2, (list,tuple)):
+                        elem2 = list_to_str(elem2) 
+                    print(' '*26+f'elem n.{i:d} ---> {dict1_name:10s}: {elem1:<10}   {dict2_name:10s}: {elem2:<10}') 
+            else:
+                print(f">> {key:22s} - {dict1_name:10s}: {value1:<22}   {dict2_name:10s}: {value2:<22}")
+    pass
 
 def safe_loadtxt(fname, remove_nans=True, remove_overlaps=True, time_idx=0):
     X  = np.loadtxt(fname)

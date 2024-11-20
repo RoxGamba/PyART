@@ -1,4 +1,4 @@
-import os, json, random, time
+import os, json, random, time, copy
 import numpy as np
 from scipy import optimize 
 
@@ -121,16 +121,17 @@ class Optimizer(object):
         run_optimization = True
         if ref_name in mm_data['mismatches']:
             opt_data = mm_data['mismatches'][ref_name]
-            opt_data['q']     = self.ref_Waveform.metadata['q']
-            opt_data['chi1x'] = self.ref_Waveform.metadata['chi1x']
-            opt_data['chi1y'] = self.ref_Waveform.metadata['chi1y']
-            opt_data['chi1z'] = self.ref_Waveform.metadata['chi1z']
-            opt_data['chi2x'] = self.ref_Waveform.metadata['chi2x']
-            opt_data['chi2y'] = self.ref_Waveform.metadata['chi2y']
-            opt_data['chi2z'] = self.ref_Waveform.metadata['chi2z']
-            mm_data['mismatches'][ref_name] = opt_data
-            with open(json_file, 'w') as file:
-                file.write(json.dumps(mm_data,indent=2))
+            # TODO: commented this part. Seems useless. Double check 
+#            opt_data['q']     = self.ref_Waveform.metadata['q']
+#            opt_data['chi1x'] = self.ref_Waveform.metadata['chi1x']
+#            opt_data['chi1y'] = self.ref_Waveform.metadata['chi1y']
+#            opt_data['chi1z'] = self.ref_Waveform.metadata['chi1z']
+#            opt_data['chi2x'] = self.ref_Waveform.metadata['chi2x']
+#            opt_data['chi2y'] = self.ref_Waveform.metadata['chi2y']
+#            opt_data['chi2z'] = self.ref_Waveform.metadata['chi2z']
+#            mm_data['mismatches'][ref_name] = opt_data
+#            with open(json_file, 'w') as file:
+#                file.write(json.dumps(mm_data,indent=2))
             if not overwrite or opt_data['mm_opt']<eps_bad_mm:
                 run_optimization = False
             if verbose: 
@@ -225,11 +226,14 @@ class Optimizer(object):
         Otherwise, create a new dictionary (NOT a new json file)
         """
         # convert numpy array to lists to avoid issues with JSON writing/loading
-        loc_mm_settings = self.mm_settings
+        loc_mm_settings = copy.deepcopy(self.mm_settings)
         for k in loc_mm_settings:
             val = loc_mm_settings[k]
             if isinstance(val, np.ndarray):
                 loc_mm_settings[k] = list(val)
+        del loc_mm_settings['initial_frequency_mm'] # save this at sim-level
+        del loc_mm_settings['final_frequency_mm']
+        
         # options to store/read in JSON 
         options = {'opt_maxfun'   : self.opt_maxfun, 
                    'kind_ic'      : self.kind_ic,
@@ -245,29 +249,26 @@ class Optimizer(object):
             # fix list of list to list of tuples for 'modes' in json-data
             modes_list_of_list = json_data['options']['mm_settings']['modes']
             json_data['options']['mm_settings']['modes'] = [tuple(mode) for mode in modes_list_of_list]
-            # check that the options are the same
-            if not ut.are_dictionaries_equal(json_data['options'], options, 
-                                             excluded_keys=[], verbose=True):
-                print(f'>> Options in {self.json_file}')
-                for key, value in options.items():
-                    json_value = json_data['options'][key]
-                    if isinstance(value, dict):
-                        dbool = ut.are_dictionaries_equal(value, json_value, verbose=True,
-                                                          excluded_keys=['debug'])
-                        if dbool:
-                            print(f'>> issues with {key:16s} (dictionary)')
-                        else:
-                            print(f'>> {key:16s} is dictionary')
-                    else:
-                        if value      is None: value      = "None"
-                        if json_value is None: json_value = "None"
-                        if isinstance(json_value, list) or isinstance(value, list):
-                            print(f'>> {key:16s} is list')
-                        else:
-                            print(f">> {key:16s} - json: {json_value:<20}   self: {value:<20}")
-                raise RuntimeError('The options in the json-file are different w.r.t. the current ones. Exit.') 
-            else:
-                data = json_data
+            
+            # check that the options are the same: 
+            # 1) start by checking everything except mm_settings
+            # 2) then check mm_settings
+            dicts2check = [ [json_data['options'],                options               ],
+                            [json_data['options']['mm_settings'], options['mm_settings']]
+                          ]
+            names = [ ['json', 'self'], ['mm_set-json', 'mm_set-self']  ]
+            list_excluded_keys = [['mm_settings'], ['debug', 'initial_frequency_mm', 'final_frequency_mm']]
+            for i in range(len(dicts2check)):
+                dict1     = dicts2check[i][0]
+                dict2     = dicts2check[i][1]
+                name1     = names[i][0]
+                name2     = names[i][1]
+                excl_keys = list_excluded_keys[i]
+                if not ut.are_dictionaries_equal(dict1, dict2, excluded_keys=excl_keys, verbose=True):
+                    ut.print_dict_comparison(dict1, dict2, excluded_keys=excl_keys, dict1_name=name1, dict2_name=name2)
+                    raise RuntimeError('The options in the json-file are different w.r.t. the currient ones. Exit.')
+            
+            data = json_data
         else:
             # create mismatches dict
             data = {'options':options, 'mismatches':{}}
@@ -485,6 +486,8 @@ class Optimizer(object):
                     'chi2x'        : self.ref_Waveform.metadata['chi2x'],
                     'chi2y'        : self.ref_Waveform.metadata['chi2y'],
                     'chi2z'        : self.ref_Waveform.metadata['chi2z'],
+                    'initial_frequency_mm' : self.mm_settings['initial_frequency_mm'],
+                    'final_frequency_mm'   : self.mm_settings['final_frequency_mm'],
                     'opt_seed'     : self.opt_seed,
                     'opt_max_iter' : self.opt_max_iter,
                     'opt_good_mm'  : self.opt_good_mm,
