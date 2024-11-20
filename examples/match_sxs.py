@@ -1,4 +1,4 @@
-import sys,os,argparse,subprocess,matplotlib
+import sys,os,argparse,subprocess,matplotlib,time
 import numpy as np
 import matplotlib.pyplot as plt
 from PyART.catalogs       import sxs
@@ -7,7 +7,6 @@ from PyART.analysis.match import Matcher
 from PyART.utils import utils as ut 
 
 matplotlib.rc('text', usetex=True)
-
 
 parser = argparse.ArgumentParser()
 
@@ -85,6 +84,10 @@ eobpars = {
 eob = teob.Waveform_EOB(pars=eobpars)
 eob.multiply_by(var=['hlm'], factor=q/(1+q)**2)
 
+#plt.figure
+#plt.plot(eob.u, eob.hlm[(2,2)]['A'])
+#plt.show()
+
 #nr_mrg,_,_,_  = nr.find_max() 
 #eob_mrg,_,_,_ = eob.find_max() 
 #plt.figure
@@ -95,6 +98,7 @@ eob.multiply_by(var=['hlm'], factor=q/(1+q)**2)
 # compute (2,2) mismatches for different masses
 masses = np.linspace(args.mass_min, args.mass_max, num=args.mass_num)
 mm = masses*0.
+t0 = time.perf_counter()
 for i, M in enumerate(masses):
     if args.f1 is None:
         f0_mm = 1.25*f0/(M*ut.Msun)
@@ -121,7 +125,10 @@ for i, M in enumerate(masses):
                                 }
                      )
     mm[i] = matcher.mismatch
+
     print(f'mass:{M:8.2f}, f0_mm:{f0_mm:8.4f} Hz, mm: {mm[i]:.3e}')
+
+print('Elapsed time [s]: ', time.perf_counter()-t0)
 
 if not args.no_plot and args.mass_num>1:
     plt.figure(figsize=(9,6))

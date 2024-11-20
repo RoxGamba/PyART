@@ -3,6 +3,7 @@ Stuff for mismatches, still need to port the parallelization,
 the precessing case and debug/test the code
 """
 
+import copy, time
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize_scalar, dual_annealing
@@ -23,8 +24,10 @@ class Matcher(object):
                  WaveForm2,
                  settings  = None,
                  pre_align = False,
+                 cache     = {}, # {} or {'h1f':h1f, 'h2f':h2f, 'M':M} (can specify also only h1f or h2f) 
                  ) -> None:
         
+        self.cache = cache
         self.settings = self.__default_parameters__()
         if settings:
             self.settings.update(settings)
@@ -50,11 +53,12 @@ class Matcher(object):
                 WaveForm2.cut(DeltaT)
             elif DeltaT<0 and self.settings['cut_longer']:
                 WaveForm1.cut(-DeltaT)
-                
+        
+
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
-        
+
         # align to improve subsequent tapering (applied before matching computation)
         if pre_align: 
             wf1, wf2 = self.pre_alignment(wf1, wf2)
@@ -62,8 +66,16 @@ class Matcher(object):
         # Determine time length for resizing
         self.settings['tlen'] = self._find_tlen(wf1, wf2, resize_factor=self.settings['resize_factor'])
         # Compute and store the mismatch
-        self.mismatch = 1 - self.match_f(wf1,wf2,self.settings)
-    
+        mm, out = self.match_f(wf1,wf2,self.settings)
+        self.mismatch= 1 - mm
+        if 'h1f' in out and 'h2f' in out:
+            self.h1f = out['h1f']
+            self.h2f = out['h2f']
+        else: # when using skymax
+            self.h1f = None
+            self.h2f = None
+        pass
+
     def _wave2locobj(self, WaveForm, isgeom=True):
         """
         Extract useful information from WaveForm class 
@@ -88,7 +100,9 @@ class Matcher(object):
 
         # also update the modes in a TimeSeries
         wf.modes = {}
-        for k in WaveForm.hlm.keys():
+
+        #for k in WaveForm.hlm.keys():
+        for k in self.settings['modes']: 
             re = WaveForm.hlm[k]['real']
             im = WaveForm.hlm[k]['imag']
             re_lm, im_lm, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, re, im, isgeom=isgeom)
@@ -186,47 +200,62 @@ class Matcher(object):
         else:        
             raise ValueError('psd not recognized')
         return psd
-
+    
+    def _get_single_mode_nc(self, wf, settings):
+        if settings['modes-or-pol'] == 'pol':
+            h_nc = wf.hp
+        elif settings['modes-or-pol'] == 'modes':
+            if len(settings['modes']) > 1:
+                raise ValueError('Only one mode is allowed in this function')
+            h_nc = wf.modes[settings['modes'][0]]['real']
+        return h_nc
+    
     def _compute_mm_single_mode(self, wf1, wf2, settings):
         """
         Compute the mismatch between two waveforms with only a single mode.
         Use either h+ (modes-or-pol = 'pol') or the mode itself (modes-or-pol = 'modes')
         This is true for non-precessing systems with a single (ell, |m|)
         """
-
-        if settings['modes-or-pol'] == 'pol':
-            h1_nc = wf1.hp
-            h2_nc = wf2.hp
-        elif settings['modes-or-pol'] == 'modes':
-            if len(settings['modes']) > 1:
-                raise ValueError('Only one mode is allowed in this function')
-            h1_nc = wf1.modes[settings['modes'][0]]['real']
-            h2_nc = wf2.modes[settings['modes'][0]]['real']
         
-        # condition TD waveforms (taper, resize, etc)
-        if wf1.domain == 'Time':
+        h1_nc = self._get_single_mode_nc(wf1, settings)
+        h2_nc = self._get_single_mode_nc(wf2, settings)
+        
+        Mref = settings['M']
+        
+        if 'h1f' in self.cache and np.isclose(Mref, self.cache['M'], atol=1e-14):
+            h1f = self.cache['h1f']
+        elif wf1.domain=='Time':
             h1, tap_times_w1 = condition_td_waveform(h1_nc, settings, return_tap_times=True)
-        if wf2.domain == 'Time':
+            h1f = h1.to_frequencyseries()
+        else:
+            h1f = h1_nc
+       
+        if 'h2f' in self.cache and np.isclose(Mref, self.cache['M'], atol=1e-14):
+            h2f = self.cache['h2f']
+        elif wf2.domain=='Time':
             h2, tap_times_w2 = condition_td_waveform(h2_nc, settings, return_tap_times=True)
+            h2f = h2.to_frequencyseries()
+        else:
+            h2f = h2_nc
         
-        assert len(h1) == len(h2)
-        df   = 1.0 / h1.duration
-        flen = len(h1)//2 + 1
+        assert len(h1f) == len(h2f)
+        df   = 1.0 / h1f.duration
+        flen = len(h1f)//2 + 1
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
-        
-        if settings['debug']:
-            self._debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings,
-                                       tap_times_w1 = tap_times_w1,
-                                       tap_times_w2 = tap_times_w2
-                                       )
-                  
-        m, _ = optimized_match(h1, h2, 
+         
+        m, _ = optimized_match(h1f, h2f, 
                                psd=psd, 
                                low_frequency_cutoff=settings['initial_frequency_mm'], 
                                high_frequency_cutoff=settings['final_frequency_mm']
                                )
-
-        return m
+        
+        if settings['debug'] and wf1.domain=='Time' and wf2.domain=='Time':
+            self._debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings,
+                                       tap_times_w1 = tap_times_w1,
+                                       tap_times_w2 = tap_times_w2
+                                       )
+        out = {'h1f':h1f, 'h2f':h2f}
+        return m, out
 
     def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings, 
                               tap_times_w1=None, tap_times_w2=None,
@@ -342,7 +371,8 @@ class Matcher(object):
                     fmax=settings['final_frequency_mm']
                 )
                 mms.append(mm)
-        return np.average(mm)
+        out = {} # FIXME: just for consistency with compute_mm_single_mode
+        return np.average(mm), out
     
     def skymax_match(self,  
                      s, wf, 
@@ -384,11 +414,12 @@ class Matcher(object):
         return 1. - res
         
 ### other functions, not just code related to the class
-def condition_td_waveform(h, settings, return_tap_times=False):
+def condition_td_waveform(h_in, settings, return_tap_times=False):
     """
     Condition the waveforms before computing the mismatch.
     h is already a TimeSeries
     """
+    h     = copy.copy(h_in) # shallow-copy 
     hlen  = len(h)
     tlen  = settings['tlen']
     ndiff = tlen-hlen
@@ -399,6 +430,7 @@ def condition_td_waveform(h, settings, return_tap_times=False):
     h.resize(hlen+npad_after)
     h_numpy = np.pad(h, (npad_before, 0), mode='constant')
     h = TimeSeries(h_numpy, delta_t=h.delta_t)
+    
     if isinstance(settings['taper'], str):#=='sigmoid':
         tap1 = settings['taper_start']
         tap2 = settings['taper_end']
@@ -410,6 +442,7 @@ def condition_td_waveform(h, settings, return_tap_times=False):
     else:
         t1 = None
         t2 = None
+    
     if return_tap_times:
         rescaled_t1  = t1/tlen*h.sample_times[-1] if t1 is not None else None
         rescaled_t2  = t2/tlen*h.sample_times[-1] if t2 is not None else None

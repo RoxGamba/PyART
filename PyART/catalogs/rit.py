@@ -60,7 +60,7 @@ class Waveform_RIT(Waveform):
         self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
         if psi_load:
             _, self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
-            self.load_psi4()
+            self.load_psi4lm()
         
         # strain available
         h_path = os_ut.find_fnames_with_token(self.sim_path, 'ExtrapStrain')[0]

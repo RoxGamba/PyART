@@ -32,6 +32,9 @@ class Optimizer(object):
                  eps_max_iter = 1,     # If true, iterate on eps-bounds
                  eps_bad_mm   = 0.1,   # if after opt_max_iter(s) we are still above this threshold, 
                                        # increase bound-eps (if eps_max_iter>1)
+                 
+                 # cache
+                 use_matcher_cache = False, 
 
                  # json-output options
                  json_file    = None,  # JSON file with mm (must be consistent with current options). If None, do not print data 
@@ -57,6 +60,8 @@ class Optimizer(object):
         self.eps_factor   = eps_factor
         self.eps_max_iter = eps_max_iter
         self.eps_bad_mm   = eps_bad_mm
+        
+        self.use_matcher_cache = use_matcher_cache
 
         self.json_file    = json_file
         self.overwrite    = overwrite
@@ -347,26 +352,30 @@ class Optimizer(object):
                                                   ky:opt_data['y_opt']})
         return opt_Waveform
 
-    def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False):
+    def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False, return_matcher=False, cache={}):
         if verbose is None: verbose = self.verbose
         if eob_Waveform is not None:
             matcher = Matcher(self.ref_Waveform, eob_Waveform, pre_align=False,
-                              settings=self.mm_settings)
+                              settings=self.mm_settings, cache=cache)
             mm = matcher.mismatch
         else:
+            matcher = None
             mm = 1.0
         if verbose and iter_loop:
             self.annealing_counter += 1
             print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm, self.annealing_counter), end='\r')
-        return mm
+        if return_matcher:
+            return mm, matcher
+        else:
+            return mm
     
-    def __func_to_minimize(self, vxy, verbose=None):
+    def __func_to_minimize(self, vxy, verbose=None, cache={}):
         if verbose is None: verbose = self.verbose
         kx = self.ic_keys[0]
         ky = self.ic_keys[1]
         eob_Waveform = self.generate_EOB(ICs={kx:vxy[0], ky:vxy[1]})
         if eob_Waveform is not None:
-            mm = self.match_against_ref(eob_Waveform, verbose=self.verbose, iter_loop=True)
+            mm = self.match_against_ref(eob_Waveform, verbose=self.verbose, iter_loop=True, cache=cache)
         else:
             if self.kind_ic=='E0pph0':
                 pph0 = vxy[1]
@@ -402,7 +411,8 @@ class Optimizer(object):
             vy0  = random.uniform(bounds[1][0], bounds[1][1])
             vxy0 = np.array([vx0, vy0])
         
-        mm0 = self.match_against_ref(self.generate_EOB(ICs={kx:vxy0[0], ky:vxy0[1]}),iter_loop=False)
+        mm0, matcher0 = self.match_against_ref(self.generate_EOB(ICs={kx:vxy0[0], ky:vxy0[1]}),
+                                               iter_loop=False, return_matcher=True)
         if verbose:
             print(f'Original  mismatch    : {mm0:.3e}')
             print( 'Optimization interval : {:5s} in [{:.2e}, {:.2e}]'.format(kx, bounds[0][0], bounds[0][1]))
@@ -410,8 +420,16 @@ class Optimizer(object):
             print(f'Initial guess         : {kx:5s} : {vxy0[0]:.15f}')
             print(f'                        {ky:5s} : {vxy0[1]:.15f}')
         
-        f = lambda vxy : self.__func_to_minimize(vxy, verbose=verbose)
-        
+        if self.use_matcher_cache:
+            if matcher0 is None:
+                if verbose: print('+++ First mm-computation failed! Not using cache +++')
+                cache = {}
+            else:
+                cache = {'h1f':matcher0.h1f, 'M':matcher0.settings['M']}
+        else:
+            cache = {}
+
+        f = lambda vxy : self.__func_to_minimize(vxy, verbose=verbose, cache=cache)
 
         self.annealing_counter = 1
 
