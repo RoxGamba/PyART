@@ -249,7 +249,7 @@ class Matcher(object):
                                high_frequency_cutoff=settings['final_frequency_mm']
                                )
         
-        if settings['debug'] and wf1.domain=='Time' and wf2.domain=='Time':
+        if settings['debug'] and wf1.domain=='Time' and wf2.domain=='Time' and not self.cache:
             self._debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings,
                                        tap_times_w1 = tap_times_w1,
                                        tap_times_w2 = tap_times_w2
