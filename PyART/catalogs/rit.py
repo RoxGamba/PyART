@@ -190,7 +190,6 @@ class Waveform_RIT(Waveform):
         else:
             modes = self.ell_emms
         
-        nu = self.metadata['nu']
         for mm in modes:
             ell, emm = mm
             try:
@@ -201,7 +200,6 @@ class Waveform_RIT(Waveform):
                 # interp to common time array
                 A   = self.__interp_qnt__(A_u, A, th)
                 p   = self.__interp_qnt__(p_u, p, th) + np.pi
-                A   = A/nu
                 d[(ell, emm)] = {'real' : A*np.cos(p), 'imag': -A*np.sin(p), 'A':A, 'p':p, 'z': A*np.exp(-1j*p)}
 
             except KeyError:
