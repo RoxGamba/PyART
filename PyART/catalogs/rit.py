@@ -14,13 +14,14 @@ from ..utils    import cat_utils as cat_ut
 class Waveform_RIT(Waveform):
 
     def __init__(self,
-                 path     = '../dat/RIT/',
-                 ID       = '0001',
-                 download = False,
-                 psi_load = True,
-                 h_load   = True,
-                 mtdt_load= True,
-                 ell_emms = 'all',
+                 path        = '../dat/RIT/',
+                 ID          = '0001',
+                 download    = False,
+                 psi_load    = True,
+                 h_load      = True,
+                 mtdt_load   = True,
+                 ell_emms    = 'all',
+                 nu_rescale  = False, 
                  shorten_rng = True, # keep at most 300 M after merger
                  ) -> None:
         
@@ -32,7 +33,7 @@ class Waveform_RIT(Waveform):
         self.metadata      = None
         self.metadata_psi4 = None
         self.domain        = 'Time'
-        
+        self.nu_rescale    = nu_rescale        
         self.shorten_rng   = shorten_rng
 
         if isinstance(ID, int):
@@ -174,6 +175,8 @@ class Waveform_RIT(Waveform):
                 t,re,im,A,p = np.loadtxt(ff, unpack=True, skiprows=4, usecols=(0,1,2,3,4) )
             except Exception:
                 t,re,im,A,p,o = np.loadtxt(ff, unpack=True, skiprows=4, usecols=(0,1,2,3,4))
+            if self.nu_rescale:
+                A /= self.metadata['nu']
             d[(ell,emm)] = {'real':re, 'imag':im, 'A':A, 'p':p, 'z': A*np.exp(-1j*p)}
         
         self._psi4lm = d
@@ -200,6 +203,8 @@ class Waveform_RIT(Waveform):
                 # interp to common time array
                 A   = self.__interp_qnt__(A_u, A, th)
                 p   = self.__interp_qnt__(p_u, p, th) + np.pi
+                if self.nu_rescale:
+                    A /= self.metadata['nu']
                 d[(ell, emm)] = {'real' : A*np.cos(p), 'imag': -A*np.sin(p), 'A':A, 'p':p, 'z': A*np.exp(-1j*p)}
 
             except KeyError:
