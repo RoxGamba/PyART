@@ -96,7 +96,8 @@ def CreateDict(M=1., q=1,
                ecc = 1e-8, r_hyp = 0, H_hyp = 0, J_hyp=0, anomaly = np.pi,
                interp="yes", arg_out="yes", use_geom="yes", 
                use_mode_lm=[1], ode_tmax=1e+6,
-               cN3LO=None, a6c=None):
+               cN3LO=None, a6c=None,
+               use_nqc=True):
         """
         Create the dictionary of parameters for EOBRunPy
         """
@@ -144,6 +145,12 @@ def CreateDict(M=1., q=1,
             'spin_interp_domain' : 0,
             'ode_tmax'           : ode_tmax,
         }
+
+        if not use_nqc:
+            pardic['nqc']            = "manual"
+            pardic['nqc_coefs_hlm']  = "none"
+            pardic['nqc_coefs_flx']  = "none"
+          
 
         if a6c is not None:
             pardic['a6c'] = a6c

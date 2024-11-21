@@ -32,6 +32,7 @@ sxs_path = os.path.join(repo_path, 'examples/local_sxs/')
 # load (or download) SXS data 
 sxs_id = f'{args.sxs_id:04}' # e.g.0180
 nr = sxs.Waveform_SXS(path=sxs_path, download=True, ID=sxs_id, order="Extrapolated_N3.dir", ellmax=7)
+nr.cut(300)
 #nr.compute_hphc()
 
 # read SXS-meta
@@ -69,7 +70,7 @@ eobpars = {
             'srate_interp'       : srate,
             'inclination'        : 0.,
             'output_hpc'         : "no",
-            'use_mode_lm'        : [1],     # List of modes to use
+            'use_mode_lm'        : [1], # List of modes to use
             'arg_out'            : "yes",   # output dynamics and hlm in addition to h+, hx
             'ecc'                : 1e-8,
             'r_hyp'              : 0.,
@@ -104,9 +105,10 @@ for i, M in enumerate(masses):
         f0_mm = 1.25*f0/(M*ut.Msun)
     else:
         f0_mm = args.f1
-    matcher = Matcher(nr, eob, pre_align=False,
+    matcher = Matcher(nr, eob,
                       settings={
                                 #'kind':'single-mode', 
+                                'pre_align':True,
                                 'initial_frequency_mm':f0_mm,
                                 'final_frequency_mm':args.f2,
                                 'tlen':len(nr.u), 

@@ -18,6 +18,7 @@ class Optimizer(object):
 
                  # option for dual annealing
                  kind_ic      = 'E0pph0', # implemented: e0f0, E0pph0
+                 use_nqc      = True,
                  opt_seed     = 190521,
                  opt_maxfun   = 100,
 
@@ -49,6 +50,7 @@ class Optimizer(object):
         self.ref_Waveform = ref_Waveform
         
         self.kind_ic      = kind_ic
+        self.use_nqc      = use_nqc
         self.opt_seed     = opt_seed
         self.opt_maxfun   = opt_maxfun
         
@@ -303,7 +305,9 @@ class Optimizer(object):
         # define subset of info to generate EOB waveform
         keys_to_use =  ['M', 'q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z']
         sub_meta = {key: ref_meta[key] for key in keys_to_use}
-         
+        
+        sub_meta['use_nqc'] = self.use_nqc
+
         # kind-specific input
         def return_IC(key):
             if key not in ICs:
@@ -356,7 +360,7 @@ class Optimizer(object):
     def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False, return_matcher=False, cache={}):
         if verbose is None: verbose = self.verbose
         if eob_Waveform is not None:
-            matcher = Matcher(self.ref_Waveform, eob_Waveform, pre_align=False,
+            matcher = Matcher(self.ref_Waveform, eob_Waveform,
                               settings=self.mm_settings, cache=cache)
             mm = matcher.mismatch
         else:
