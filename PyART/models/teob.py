@@ -106,7 +106,7 @@ def CreateDict(M=1., q=1,
                 r_hyp = 300
             else:
                 #PotentialPlot(H_hyp,J_hyp,q,chi1z,chi2z)
-                r_apa = search_apastron(q, chi1z*0, chi2z*0, J_hyp, H_hyp, step_size=0.1)
+                r_apa = search_apastron(q, chi1z, chi2z, J_hyp, H_hyp, step_size=0.1)
                 if r_apa is None:
                     raise RuntimeError(f'Apastron not found, check initial conditon: E={H_hyp:.5f}, pph={J_hyp:.5f}')
                 r_hyp = r_apa - 1e-2 # small tol to avoid numerical issues
@@ -138,6 +138,7 @@ def CreateDict(M=1., q=1,
             'r_hyp'              : r_hyp,
             'H_hyp'              : H_hyp,
             'j_hyp'              : J_hyp,
+            'prs_sign_hyp'       : -1,
             'coalescence_angle'  : phi_ref,
             'df'                 : df,
             'anomaly'            : anomaly,

@@ -40,7 +40,8 @@ class Optimizer(object):
                  # json-output options
                  json_file    = None,  # JSON file with mm (must be consistent with current options). If None, do not print data 
                  overwrite    = False, # overwrite JSON with new mm-computation
-                 
+                 lock_file    = None,  # lock-file to avoid writing from different processes
+
                  # other options
                  mm_settings  = None,  # options for Matcher (dictionary)
                  verbose      = True,
@@ -67,6 +68,7 @@ class Optimizer(object):
 
         self.json_file    = json_file
         self.overwrite    = overwrite
+        self.lock_file    = lock_file
         self.verbose      = verbose
         
         # mismatch settings
@@ -276,12 +278,17 @@ class Optimizer(object):
             data = {'options':options, 'mismatches':{}}
         return data
     
-    def save_mismatches(self, data, verbose=None, json_file=None, overwrite=None):
+    def save_mismatches(self, data, verbose=None, json_file=None, overwrite=None,
+                        lock_file=None, lock_wait=1, lock_wait_max=10):
         if verbose   is None: verbose   = self.verbose
         if overwrite is None: overwrite = self.overwrite
+        
         if json_file is None: json_file = self.json_file
         if json_file is None: # i.e., if self.json_file is None
             pass 
+        
+        if lock_file is None: lock_file = self.lock_file
+
         sim_name = self.ref_Waveform.metadata['name']
         creating_new_file = True 
         if os.path.exists(json_file) and not overwrite:
@@ -293,8 +300,28 @@ class Optimizer(object):
                 json_file = json_file.replace('.json', '_new.json')
                 print(f'   ---> writing on file: {json_file}')
                 creating_new_file = True
+
+        # Lock file to ensure that no other processes are writing on the JSON
+        # If it exists, wait
+        # Then create one
+        if lock_file is not None:
+            t0 = time.perf_counter()
+            # check if lock-file exists, if it does, wait
+            while os.path.exists(lock_file):
+                time.sleep(lock_wait)
+                if time.perf_counter()-t0>lock_wait_max:
+                    raise RuntimeError(f'Hitting walltime for lock-wait! Lock file: {lock_file}')
+            # now creat lock file
+            with open(lock_file, "w") as file:
+                file.write('lock-file for Optimizer.save_mismatches()')
+        
         with open(json_file, 'w') as file:
             file.write(json.dumps(data,indent=2))
+        
+        # remove lock-file
+        if lock_file is not None:
+            os.remove(lock_file)
+
         if verbose: 
             action = 'Created' if creating_new_file else 'Updated'
             print(f'{action} {json_file}\n')

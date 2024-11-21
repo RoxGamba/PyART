@@ -1,7 +1,8 @@
-import os, json, matplotlib
+import sys, os, json, matplotlib, time
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
+from multiprocessing import Process
 
 from .sxs import Waveform_SXS
 from .rit import Waveform_RIT
@@ -72,22 +73,100 @@ class Cataloger(object):
         for i, name in enumerate(self.data):
             wave = self.data[name]['Waveform']
             if (2,2) in wave.hlm:
-                tmrg,Amrg,_,_ = wave.find_max()
-                plt.plot(wave.u-tmrg, wave.hlm[(2,2)]['A'], c=colors[i])
+                try:
+                    tmrg,_,_,_ = wave.find_max()
+                    plt.plot(wave.u-tmrg, wave.hlm[(2,2)]['A'], c=colors[i])
+                except:
+                    plt.plot(wave.u, wave.hlm[(2,2)]['A'], c=colors[i])
         plt.show()
         pass
     
-    def optimize_mismatches(self, optimizer_opts={}, verbose=None, ranges={'pph0':[1,10]}):
+    def optimize_mismatches_batch(self, batch, optimizer_opts={}, verbose=None):
         if verbose is None: verbose = self.verbose
         # set some options according to class-instance
         optimizer_opts['json_file'] = self.json_file
         optimizer_opts['verbose']   = verbose
         # run optimizer on all the waveforms
-        subset = self.find_subset(ranges)
+        for name in batch:
+            # store optimized mm 
+            Optimizer(self.data[name]['Waveform'], **optimizer_opts)
+        pass
+    
+    def process_with_redirect(self, process_id, nproc, opts={}):
+        """
+        If we are running in parallel, use log files. Otherwise,
+        use stdout
+        """
+        if nproc>1:
+            log_file = f"cataloger_process_{process_id}.log"
+            print(f'Log-file #{process_id:d}: {log_file}')
+            with open(log_file, "w") as file:
+                sys.stdout = file
+                sys.stderr = file
+                try:
+                    self.optimize_mismatches_batch(**opts)
+                finally:
+                    sys.stdout = sys.__stdout__ 
+                    sys.stderr = sys.__stderr__
+        else:
+            self.optimize_mismatches_batch(**opts)
+        pass
+
+    def optimize_mismatches(self, optimizer_opts={}, verbose=None, ranges={'pph0':[1,10]}, nproc=1):
+        optimizer_opts['json_file'] = self.json_file
+        optimizer_opts['verbose']   = True
+        
+        subset  = self.find_subset(ranges)
+        nsubset = len(subset)
+        
+        if nsubset<nproc:
+            print(f'Warning! More processes than configurations, reducing nproc to {nsubset}')
+            nproc = nsubset 
+        
+        if nproc==1:
+            self.optimize_mismatches_batch(batch=subset, optimizer_opts=optimizer_opts) 
+        
+        else:
+            print('Redirecting output in log-files')
+
+            batches    = []
+            batch_size = len(subset) // nproc
+            remainder  = len(subset)  % nproc
+            start = 0
+            for i in range(nproc):
+                current_size = batch_size + 1 if i < remainder else batch_size
+                batches.append(subset[start:start + current_size])
+                start += current_size
+            
+            for i in range(len(batches)):
+                print(batches[i][0], batches[i][-1])
+             
+            processes = []
+            for i in range(nproc):
+                process = Process(target=self.process_with_redirect,
+                                  kwargs={'process_id':i,
+                                          'nproc':nproc,
+                                          'opts':{
+                                              'batch':batches[i],
+                                              'optimizer_opts':optimizer_opts, 
+                                              'verbose':verbose}
+                                              }
+                                             )
+                processes.append(process)
+                process.start()
+            
+            for process in processes:
+                process.join()
+            
+            if verbose:
+                print("All processes have been completed, check the logs.")
+        
+        # info store in the json, now just loop one more time to updated class 
+        optimizer_opts['verbose'] = False
         for name in subset:
             self.data[name]['Optimizer'] = Optimizer(self.data[name]['Waveform'], **optimizer_opts)
         pass
-    
+
     def __is_in_valid_range(self, name, ranges):
         """
         Check if a certain waveform is in the specified
@@ -224,7 +303,7 @@ class Cataloger(object):
             pph0_nr = nr.metadata['pph0']
             for j, M in enumerate(masses):
                 mm_settings['M'] = M 
-                matcher = Matcher(nr, eob, pre_align=False, settings=mm_settings)
+                matcher = Matcher(nr, eob, settings=mm_settings)
                 mm[j] = matcher.mismatch
             cidx = cmap_indices[i]
             ax.plot(masses, mm, label=name, c=colors[cidx], lw=0.6)
