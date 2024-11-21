@@ -88,19 +88,19 @@ class Cataloger(object):
         optimizer_opts['verbose']   = verbose
         # run optimizer on all the waveforms
         for name in batch:
-            # store optimized mm 
+            # store optimized mm in JSON 
             Optimizer(self.data[name]['Waveform'], **optimizer_opts)
         pass
     
     def process_with_redirect(self, process_id, nproc, opts={}):
         """
-        If we are running in parallel, use log files. Otherwise,
-        use stdout
+        If we are running in parallel, use log files. 
+        Otherwise, use stdout
         """
         if nproc>1:
-            log_file = f"cataloger_process_{process_id}.log"
-            print(f'Log-file #{process_id:d}: {log_file}')
-            with open(log_file, "w") as file:
+            log_file = f'cataloger_process_{process_id}.log'
+            print(f'Logfile #{process_id:d}: {log_file}')
+            with open(log_file, 'a') as file:
                 sys.stdout = file
                 sys.stderr = file
                 try:
@@ -127,7 +127,7 @@ class Cataloger(object):
             self.optimize_mismatches_batch(batch=subset, optimizer_opts=optimizer_opts) 
         
         else:
-            print('Redirecting output in log-files')
+            print('Redirecting output in logfiles')
 
             batches    = []
             batch_size = len(subset) // nproc

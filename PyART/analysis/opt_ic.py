@@ -302,8 +302,7 @@ class Optimizer(object):
                 creating_new_file = True
 
         # Lock file to ensure that no other processes are writing on the JSON
-        # If it exists, wait
-        # Then create one
+        # If it exists, wait, then create one
         if lock_file is not None:
             t0 = time.perf_counter()
             # check if lock-file exists, if it does, wait
