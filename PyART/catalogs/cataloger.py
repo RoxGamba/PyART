@@ -1,4 +1,4 @@
-import sys, os, json, matplotlib, time
+import sys, os, json, matplotlib, time, copy
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -83,12 +83,10 @@ class Cataloger(object):
     
     def optimize_mismatches_batch(self, batch, optimizer_opts={}, verbose=None):
         if verbose is None: verbose = self.verbose
-        # set some options according to class-instance
-        optimizer_opts['json_file'] = self.json_file
         optimizer_opts['verbose']   = verbose
         # run optimizer on all the waveforms
         for name in batch:
-            # store optimized mm in JSON 
+            # store on JSON
             Optimizer(self.data[name]['Waveform'], **optimizer_opts)
         pass
     
@@ -100,7 +98,7 @@ class Cataloger(object):
         if nproc>1:
             log_file = f'cataloger_process_{process_id}.log'
             print(f'Logfile #{process_id:d}: {log_file}')
-            with open(log_file, 'a') as file:
+            with open(log_file, 'w') as file:
                 sys.stdout = file
                 sys.stderr = file
                 try:
@@ -118,17 +116,14 @@ class Cataloger(object):
         
         subset  = self.find_subset(ranges)
         nsubset = len(subset)
-        
         if nsubset<nproc:
             print(f'Warning! More processes than configurations, reducing nproc to {nsubset}')
             nproc = nsubset 
         
-        if nproc==1:
+        if nproc==1 or nsubset==1:
             self.optimize_mismatches_batch(batch=subset, optimizer_opts=optimizer_opts) 
         
         else:
-            print('Redirecting output in logfiles')
-
             batches    = []
             batch_size = len(subset) // nproc
             remainder  = len(subset)  % nproc
@@ -142,27 +137,64 @@ class Cataloger(object):
                 print(batches[i][0], batches[i][-1])
              
             processes = []
+            json_tmp_list = []
+            print('Redirecting output in logfiles')
             for i in range(nproc):
+                # get name for temporary JSON file 
+                json_file_tmp = optimizer_opts['json_file']
+                json_file_tmp = json_file_tmp.replace('.json', f'_{i:d}.json')
+                json_tmp_list.append(json_file_tmp)
+                
+                # copy json_file (if exists) in temp file. Otherwise temp created by Optimizer  
+                if os.path.exists(self.json_file):
+                    with open(self.json_file, 'r') as source:
+                        with open(json_file_tmp, 'w') as new: 
+                            new.write(source.read())
+
+                # create optimizer_opts with temporary JSON file
+                optimizer_opts_tmp = copy.deepcopy(optimizer_opts)
+                optimizer_opts_tmp['json_file'] = json_file_tmp
+                # launch process
                 process = Process(target=self.process_with_redirect,
                                   kwargs={'process_id':i,
                                           'nproc':nproc,
                                           'opts':{
                                               'batch':batches[i],
-                                              'optimizer_opts':optimizer_opts, 
+                                              'optimizer_opts':optimizer_opts_tmp, 
                                               'verbose':verbose}
                                               }
                                              )
                 processes.append(process)
                 process.start()
             
+            # wait for processes to finish 
             for process in processes:
                 process.join()
+                
+            # info stored in the temporary JSONs, collect info
+            # 1) load original json file if it exists, otherwise load first temp file
+            if os.path.exists(self.json_file):
+                json_base = self.json_file
+            else:
+                json_base = json_tmp_list[0]
+            with open(json_base, 'r') as file:
+                json_data = json.loads(file.read())
+            # 2) add info from temporary json, delete temporary json 
+            for json_tmp in json_tmp_list:
+                with open(json_tmp, 'r') as file:
+                    json_data_tmp = json.loads(file.read())
+                mismatches = json_data_tmp['mismatches']
+                for key in mismatches:
+                    if key not in json_data:
+                        json_data['mismatches'][key] = mismatches[key]
+                os.remove(json_tmp)
+            with open(self.json_file, 'w') as file:
+                file.write(json.dumps(json_data,indent=2))
             
-            if verbose:
-                print("All processes have been completed, check the logs.")
-        
-        # info store in the json, now just loop one more time to updated class 
-        optimizer_opts['verbose'] = False
+        # read collated json
+        optimizer_opts['json_file'] = self.json_file
+        optimizer_opts['verbose']   = False
+        optimizer_opts['overwrite'] = False
         for name in subset:
             self.data[name]['Optimizer'] = Optimizer(self.data[name]['Waveform'], **optimizer_opts)
         pass

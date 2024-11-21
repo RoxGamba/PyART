@@ -10,7 +10,6 @@ optimizer_opts = {'mm_settings'  : {'cut_second_waveform':True, 'final_frequency
                   'eps_max_iter' : 3,
                   'eps_factor'   : 2,
                   'eps_bad_mm'   : 0.05,
-                  'lock_file'    : 'cat_lock_file.txt'
                   }
 sim_list = list(range(1096,1111))
 cat = Cataloger(path=path, catalog='rit', sim_list=sim_list, 
