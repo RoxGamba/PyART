@@ -364,9 +364,14 @@ class Optimizer(object):
     def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False, return_matcher=False, cache={}):
         if verbose is None: verbose = self.verbose
         if eob_Waveform is not None:
-            matcher = Matcher(self.ref_Waveform, eob_Waveform,
-                              settings=self.mm_settings, cache=cache)
-            mm = matcher.mismatch
+            try:
+                matcher = Matcher(self.ref_Waveform, eob_Waveform,
+                                  settings=self.mm_settings, cache=cache)
+                mm = matcher.mismatch
+            except Exception as e:
+                print('Error while computing match: ', e)
+                matcher = None
+                mm = 1.0
         else:
             matcher = None
             mm = 1.0
