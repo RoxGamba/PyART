@@ -333,7 +333,11 @@ class Optimizer(object):
         elif self.kind_ic=='E0pph0':
             sub_meta['H_hyp'] = return_IC('E0byM')
             sub_meta['J_hyp'] = return_IC('pph0')
-            sub_meta['r_hyp'] = self.r0_eob  # if None, it will be computed in the EOB model
+            if self.r0_eob == 'read':
+                # start close to the NR value, a little earlier
+                sub_meta['r_hyp'] = ref_meta['r0']*1.1
+            else:
+                sub_meta['r_hyp'] = self.r0_eob  # if None, it will be computed in the EOB model
         else: 
             raise ValueError(f'Unknown kind of ICs: {kind}')
        
@@ -412,7 +416,7 @@ class Optimizer(object):
         ky = self.ic_keys[1]
         vx_ref  = self.ref_Waveform.metadata[kx]
         vy_ref  = self.ref_Waveform.metadata[ky]
-        
+
         bounds = self.opt_bounds
         if vx_ref<bounds[0][0] and vx_ref>bounds[0][1]:
             print('Warning! Reference value for {:s} is outside searching interval: [{:.2e},{:.2e}]'.format(ks,  bounds[0][0],  bounds[0][1]))
