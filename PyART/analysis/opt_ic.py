@@ -21,6 +21,7 @@ class Optimizer(object):
                  use_nqc      = True,
                  opt_seed     = 190521,
                  opt_maxfun   = 100,
+                 r0_eob       = None,     # use a fixed value for r_hyp in EOB model, if None it will be computed by TEOB
 
                  # loop on different initial guesses (nested in bound-iters)
                  opt_max_iter = 1,     # max opt iters (i.e. using different initial guesses) if mm_thres is not reached
@@ -53,6 +54,7 @@ class Optimizer(object):
         self.use_nqc      = use_nqc
         self.opt_seed     = opt_seed
         self.opt_maxfun   = opt_maxfun
+        self.r0_eob       = r0_eob
         
         self.opt_max_iter = opt_max_iter
         self.opt_good_mm  = opt_good_mm
@@ -331,8 +333,7 @@ class Optimizer(object):
         elif self.kind_ic=='E0pph0':
             sub_meta['H_hyp'] = return_IC('E0byM')
             sub_meta['J_hyp'] = return_IC('pph0')
-            sub_meta['r_hyp'] = None # computed in CreateDict
-
+            sub_meta['r_hyp'] = self.r0_eob  # if None, it will be computed in the EOB model
         else: 
             raise ValueError(f'Unknown kind of ICs: {kind}')
        
@@ -411,7 +412,7 @@ class Optimizer(object):
         ky = self.ic_keys[1]
         vx_ref  = self.ref_Waveform.metadata[kx]
         vy_ref  = self.ref_Waveform.metadata[ky]
-         
+        
         bounds = self.opt_bounds
         if vx_ref<bounds[0][0] and vx_ref>bounds[0][1]:
             print('Warning! Reference value for {:s} is outside searching interval: [{:.2e},{:.2e}]'.format(ks,  bounds[0][0],  bounds[0][1]))
