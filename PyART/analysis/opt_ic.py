@@ -21,8 +21,6 @@ class Optimizer(object):
                  vrs          = ['H_hyp', 'j_hyp'], # variables to optimize over, default is ['H_hyp', 'j_hyp']
                  map_function = None,               # function to map variables to EOB parameters
                  use_nqc      = True,
-                 opt_seed     = 190521,
-                 opt_maxfun   = 100,
                  r0_eob       = None,     # use a fixed value for r_hyp in EOB model, if None it will be computed by TEOB
 
                  # loop on different initial guesses (nested in bound-iters)
@@ -36,6 +34,10 @@ class Optimizer(object):
                  eps_max_iter = 1,     # If true, iterate on eps-bounds
                  eps_bad_mm   = 0.1,   # if after opt_max_iter(s) we are still above this threshold, 
                                        # increase bound-eps (if eps_max_iter>1)
+                 
+                 # minimizer options
+                 minimizer = {'kind': 'dual_annealing'},
+                 
                  # cache
                  use_matcher_cache = False, 
 
@@ -53,8 +55,6 @@ class Optimizer(object):
         
         self.kind_ic      = kind_ic
         self.use_nqc      = use_nqc
-        self.opt_seed     = opt_seed
-        self.opt_maxfun   = opt_maxfun
         self.r0_eob       = r0_eob
         
         self.opt_max_iter = opt_max_iter
@@ -98,6 +98,17 @@ class Optimizer(object):
             self.opt_bounds = {var: [None, None] for var in self.opt_vars}
         self.__update_bounds(eps=eps_initial)
 
+        # set minimizer
+        self.__minimizer__defaults__()
+        self.minimizer = {**self.minimizer, **minimizer}
+        self.annealing_counter = 0
+        if minimizer['kind'] == 'dynesty':
+            self.minimize = self.__minimize__dynesty__
+        elif minimizer['kind'] == 'dual_annealing':
+            self.minimize = self.__minimize_annealing_
+        else:
+            raise ValueError(f'Unknown minimizer kind: {minimizer["kind"]}')
+
         if verbose:
             q    = ref_Waveform.metadata['q']
             chi1 = ref_Waveform.metadata['chi1z'] 
@@ -134,7 +145,7 @@ class Optimizer(object):
                 print('Optimized mm : {:.3e}\n'.format(opt_data['mm_opt']))
         
         if run_optimization:
-            random.seed(self.opt_seed)
+            random.seed(self.minimizer['opt_seed'])
             dashes    = '-'*45
             asterisks = '*'*45
             
@@ -245,7 +256,7 @@ class Optimizer(object):
         del loc_mm_settings['final_frequency_mm']
         
         # options to store/read in JSON 
-        options = {'opt_maxfun'   : self.opt_maxfun, 
+        options = {'minimizer'    : self.minimizer,
                    'kind_ic'      : self.kind_ic,
                    'vars'         : self.opt_vars,
                    'mm_settings'  : loc_mm_settings,
@@ -451,28 +462,16 @@ class Optimizer(object):
         bounds_array = np.array([[bounds[ky][0], bounds[ky][1]] for ky in kys])
         f = lambda x : self.__func_to_minimize(x, kys, verbose=verbose, cache=cache)
 
-        self.annealing_counter = 1
+        t0_annealing  = time.perf_counter()
+        opts, mm_opt  = self.minimize(f, x0, bounds_array, kys)
 
-        t0_annealing = time.perf_counter()
-        opt_result   = optimize.dual_annealing(
-                                                f,
-                                                maxfun = self.opt_maxfun, 
-                                                seed   = self.opt_seed, 
-                                                x0     = x0,
-                                                bounds = bounds_array
-                                            )
-        
-        opt_pars     = opt_result['x']
-        opts         = {kys[i]: opt_pars[i] for i in range(len(kys))}
-        mm_opt       = opt_result['fun']
-        
         if verbose:
             print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm_opt, self.annealing_counter), end='\r')
             print(f'Optimized mismatch    : {mm_opt:.3e}')
             print(f'Optimal ICs           :' )
             for ky in kys:
                 print(f'                        {ky:5s} : {opts[ky]:.15f}')
-            print( 'Annealing time        : {:.1f} s'.format(time.perf_counter()-t0_annealing))
+            print( 'Minimization time        : {:.1f} s'.format(time.perf_counter()-t0_annealing))
         
         # generate the eob waveform corresponding to the optimal ICs
         eob_opt = self.generate_EOB(ICs=opts)
@@ -492,7 +491,7 @@ class Optimizer(object):
                     'chi2z'        : self.ref_Waveform.metadata['chi2z'],
                     'initial_frequency_mm' : self.mm_settings['initial_frequency_mm'],
                     'final_frequency_mm'   : self.mm_settings['final_frequency_mm'],
-                    'opt_seed'     : self.opt_seed,
+                    'opt_seed'     : self.minimizer['opt_seed'],
                     'opt_max_iter' : self.opt_max_iter,
                     'opt_good_mm'  : self.opt_good_mm,
                     'eps_initial'  : self.eps_initial,
@@ -513,6 +512,99 @@ class Optimizer(object):
         
         return opt_data
 
+    def __minimizer__defaults__(self):
+        """
+        Set the default minimizer options.
+        """
+        self.minimizer = { # annealing options
+                           'kind': 'dual_annealing', 
+                           'opt_maxfun': 1000, 
+                           'opt_seed': 190521,
 
+                           # dynesty options
+                           'nlive'  : 10,
+                           'maxiter': 10000,
+                           'maxcall': 10000,
+                           'print_progress': True,
+        }
+        pass
+
+    def __minimize_annealing_(self, f, x0, bounds_array, kys):
+        """
+        Minimize with dual annealing. 
+        """
+        maxiter = self.minimizer.get('opt_maxfun', 1000)
+        seed    = self.minimizer.get('opt_seed', 190521)
+        x0      = x0
+
+        opt_result   = optimize.dual_annealing(
+                                                f,
+                                                maxfun = maxiter, 
+                                                seed   = seed, 
+                                                x0     = x0,
+                                                bounds = bounds_array,
+                                            )
+        
+        opt_pars     = opt_result['x']
+        opts         = {kys[i]: opt_pars[i] for i in range(len(kys))}
+        mm_opt       = opt_result['fun']
+        print(mm_opt)
+        return opts, mm_opt
+    
+    def __minimize__dynesty__(self, f, x0, bounds_array, kys):
+        """
+        Minimize with dynesty.
+        NOTE: largely untested!
+        """
+        from dynesty import NestedSampler
+
+        # Define the dimensionality of our problem.
+        ndim     = len(kys)
+        progress = self.minimizer.get('print_progress', True)
+        nlive    = self.minimizer.get('nlive'  , 1024)
+        maxiter  = self.minimizer.get('maxiter', 10000)
+        maxcall  = self.minimizer.get('maxcall', 10000)
+
+        def loglike(x):
+            """
+            The log-likelihood function.
+            We use the mismatch weighted over the min_thrs, squared
+            """
+            logl = -0.5*(f(x)/0.001)**2
+            if np.isnan(logl) or np.isinf(logl):
+                return -np.inf
+            return logl
+
+        def prior_transform(u):
+            """
+            Map the unit cube to the parameter space, assuming
+            uniform priors on the parameters.
+            """
+            return [bounds_array[i][0] + u[i] * (bounds_array[i][1] - bounds_array[i][0]) for i in range(ndim)]
+
+        # Define our sampler.
+        sampler = NestedSampler(loglike, 
+                                prior_transform, 
+                                ndim, 
+                                nlive=nlive, 
+                                sample="rwalk",  # Specify rwalk as the sampling method
+                                bound="multi",   # Use a multi-ellipsoid bound    
+                                )  
+        sampler.run_nested(maxiter=maxiter, maxcall=maxcall,print_progress=progress, dlogz=0.1)
+
+        # return just the maxL point
+        maxL   = sampler.results.logl.argmax()
+        opts   = {kys[i]: sampler.results.samples[maxL][i] for i in range(len(kys))}
+        mm_opt = f(sampler.results.samples[maxL])
+
+        # make the traceplot
+        if self.verbose:
+            from dynesty import plotting as dyplot
+            fig, _ = dyplot.traceplot(sampler.results,
+                             show_titles=True,
+                             trace_cmap='viridis')
+            fig.savefig('traceplot.png')
+
+        return opts, mm_opt
 
 
