@@ -305,7 +305,6 @@ class Optimizer(object):
                 print(f'   ---> writing on file: {json_file}')
                 creating_new_file = True
 
-        print(data)
         with open(json_file, 'w') as file:
             file.write(json.dumps(data,indent=2))
 
@@ -326,7 +325,7 @@ class Optimizer(object):
 
         # map the ICs (and the other intrinsic pars) to the EOB parameters
         mapped_ids = self.map_function({**ICs, **sub_meta})
-        if self.kind_ic=='E0pph0':
+        if 'H_hyp' in mapped_ids:
             if self.r0_eob == 'read':
                 # start close to the NR value, a little earlier
                 mapped_ids['r_hyp'] = ref_meta['r0']*1.1
