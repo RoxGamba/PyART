@@ -81,7 +81,7 @@ def convert_hlm(hlm):
         p   = hlm[key][1]
         hlm_conv[(ell, emm)] = {'real': A*np.cos(p), 'imag': -1*A*np.sin(p),
                                 'A'   : A, 'p' : p,
-                                'h'   : A*np.exp(-1j*p)
+                                'z'   : A*np.exp(-1j*p)
                                 }
     return hlm_conv
 

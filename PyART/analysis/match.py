@@ -75,7 +75,7 @@ class Matcher(object):
             #plt.figure
             for lm in self.settings['modes']:
                 
-                h = WaveForm2.hlm[lm]['h']*np.exp(-1j*dphi22/2*lm[1])
+                h = WaveForm2.hlm[lm]['z']*np.exp(-1j*dphi22/2*lm[1])
                 WaveForm2._hlm[lm] = wf_ut.get_multipole_dict(h)
                 #plt.plot(WaveForm1.u, WaveForm1.hlm[lm]['real'])
                 #plt.plot(WaveForm2.u, WaveForm2.hlm[lm]['real'], ls='--')

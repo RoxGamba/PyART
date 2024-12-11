@@ -10,6 +10,8 @@ from .icc import Waveform_ICC
 
 from ..analysis.match  import Matcher
 from ..analysis.opt_ic import Optimizer
+from ..models.teob import CreateDict
+from ..models.teob import Waveform_EOB
 
 matplotlib.rc('text', usetex=True)
 
@@ -66,6 +68,23 @@ class Cataloger(object):
             raise ValueError(f'Unknown catalog: {self.catalog}')
         return wave
     
+    def get_model_waveform(self, name, add_opts={}, verbose=None):
+        """
+        Compute the waveform with the model corresponding to a catalog ID
+        """
+        if self.data[name]['Optimizer'] is not None:
+            eob = self.data[name]['Optimizer'].generate_opt_EOB()
+        else:
+            # Create a mock optimizer
+            params  = self.data[name]['Waveform'].metadata
+            cd_args = CreateDict.__code__.co_varnames
+            newpars = {ky:val for ky,val in params.items() if ky in cd_args} 
+            params  = CreateDict(**newpars)
+            # have a slightly lower f0
+            params['initial_frequency'] = 0.95*params['initial_frequency']
+            eob    = Waveform_EOB(params)
+        return eob
+
     def plot_waves(self, cmap='rainbow'):
         mycmap = plt.get_cmap(cmap)
         colors = mycmap(np.linspace(0,1,self.nsims))
@@ -304,18 +323,27 @@ class Cataloger(object):
         plt.show()
         return         
 
-    def plot_mm_vs_M(self, 
+    def mm_vs_M(self, 
                      mass_min   = 100, 
                      mass_max   = 200, 
-                     N          = 20, 
+                     N          = 20,
                      cmap       = 'jet', 
+                     mm_settings= None,
                      ranges     = {'pph0':[1,10]},
                      cmap_var   = 'E0byM',
                      hlines     = [],
                      savepng    = True,
+                     savejson   = True,
                      figname    = None,
                      ):
-         
+
+        if mm_settings is None:
+            if self.data[name]['Optimizer'] is not None:
+                if self.verbose: print(f'Using settings from {name} optimizer')
+                mm_settings = self.data[name]['Optimizer'].mm_settings
+            else:
+                raise ValueError('No mm_settings provided and no Optimizer available')
+
         # select waveforms and get colors
         subset       = self.find_subset(ranges=ranges)
         colors_dict  = self.get_colors_for_subset(subset,cmap_var=cmap_var, cmap_name=cmap)
@@ -325,18 +353,22 @@ class Cataloger(object):
 
         masses = np.linspace(mass_min, mass_max, num=N)
 
-        fig, ax = plt.subplots(1,1,figsize=(8,6))
+        _, ax = plt.subplots(1,1,figsize=(8,6))
+        mm_data = {}
+        mm_data['masses'] = list(masses)
+
         for i, name in enumerate(subset):
             print(f'mm for: {name}')
             mm = masses*0
-            mm_settings = self.data[name]['Optimizer'].mm_settings
-            eob = self.data[name]['Optimizer'].generate_opt_EOB()
+            eob = self.get_model_waveform(name)
             nr  = self.data[name]['Waveform']
-            pph0_nr = nr.metadata['pph0']
+
             for j, M in enumerate(masses):
                 mm_settings['M'] = M 
-                matcher = Matcher(nr, eob, settings=mm_settings)
-                mm[j] = matcher.mismatch
+                matcher   = Matcher(nr, eob, settings=mm_settings)
+                mm[j]     = matcher.mismatch
+            mm_data[name] = {'mismatch':list(mm), 'settings':mm_settings}
+
             cidx = cmap_indices[i]
             ax.plot(masses, mm, label=name, c=colors[cidx], lw=0.6)
         
@@ -365,6 +397,12 @@ class Cataloger(object):
             plt.savefig(figname,dpi=200,bbox_inches='tight')
             print(f'Figure saved: {figname}')
         plt.show()
+
+        if savejson:
+            with open(self.json_file, 'w') as file:
+                file.write(json.dumps(mm_data,indent=2))
+                print(f'JSON file saved: {self.json_file}')
+
         return
 
 
