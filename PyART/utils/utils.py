@@ -601,7 +601,7 @@ def print_dict_comparison(dict1_in,dict2_in,excluded_keys=[], dict1_name='dict1'
     for key, value1 in dict1.items():
         value2 = dict2[key]
         if isinstance(value1, dict):
-            dbool = ut.are_dictionaries_equal(value1, value2, verbose=True)
+            dbool = are_dictionaries_equal(value1, value2, verbose=True)
             if dbool:
                 print(f'>> issues with {key:16s} (dictionary)')
             else:

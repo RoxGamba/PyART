@@ -39,6 +39,10 @@ class Matcher(object):
             self.match_f = self._compute_mm_single_mode
         elif self.settings['kind'].lower() == 'hm' or 'prec' in self.settings['kind'].lower():
             self.match_f = self._compute_mm_skymax
+        elif self.settings['kind'].lower() == 'hm-overlap':
+            if self.settings['modes-or-pol'] == 'modes':
+                raise ValueError("Only 'pol' is allowed for 'hm-overlap' kind")
+            self.match_f = self._compute_overlap_skymax
         else:
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
         
@@ -70,6 +74,7 @@ class Matcher(object):
             dphi22 = WaveForm1.hlm[(2,2)]['p'][i01] - WaveForm2.hlm[(2,2)]['p'][i02] 
             #plt.figure
             for lm in self.settings['modes']:
+                
                 h = WaveForm2.hlm[lm]['h']*np.exp(-1j*dphi22/2*lm[1])
                 WaveForm2._hlm[lm] = wf_ut.get_multipole_dict(h)
                 #plt.plot(WaveForm1.u, WaveForm1.hlm[lm]['real'])
@@ -116,9 +121,11 @@ class Matcher(object):
         
         if self.settings['modes-or-pol']=='pol':
             # Get updated time and hp/hc-TimeSeries
-            #if not hasattr(WaveForm, 'hp'):
             # compute hphc, eventually again. WaveForm might have been cut/pre-aligned
-            WaveForm.compute_hphc()
+            if WaveForm.hp is None:
+                coa_phase = self.settings['pol_phase']
+                incl      = self.settings['pol_incl']
+                WaveForm.compute_hphc(coa_phase, incl, modes=self.modes)
             wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
 
         # also update the modes in a TimeSeries
@@ -376,6 +383,38 @@ class Matcher(object):
             print("Saving to ", settings['save'])
             plt.savefig(f"{settings['save']}", dpi=100, bbox_inches='tight')
 
+    def _compute_overlap_skymax(self, wf1, wf2, settings):
+        """
+        Same as compute_mm_skymax, but without numerical
+        optimization of the orbital phase. Uses directly
+        the polarizations of the waveforms, instead of the modes.
+        This has to be specified for a **single** value of 
+        effective polarization.
+        """
+
+        k          = settings['eff_pols']
+        # target
+        sp,sx      = wf1.hp, wf1.hc
+        sp         = condition_td_waveform(sp, settings)
+        sx         = condition_td_waveform(sx, settings)
+        spf        = sp.to_frequencyseries() 
+        sxf        = sx.to_frequencyseries()
+        s          = np.cos(k)*spf + np.sin(k)*sxf
+        
+        # model
+        hp, hc     = wf2.hp, wf2.hc
+        hp         = condition_td_waveform(hp, settings)
+        hc         = condition_td_waveform(hc, settings)
+        hpf        = hp.to_frequencyseries()
+        hcf        = hc.to_frequencyseries()
+
+        psd        = self._get_psd(len(spf), spf.delta_f, settings['initial_frequency_mm'])
+        
+        return sky_and_time_maxed_overlap(s, hpf, hcf, 
+                                                    psd,self.settings['initial_frequency_mm'],
+                                                    self.settings['final_frequency_mm'], kind=self.settings['kind']
+                                                    ), {}
+
     def _compute_mm_skymax(self, wf1, wf2, settings):
         """
         Compute the match between two waveforms with higher modes.
@@ -526,7 +565,7 @@ def sky_and_time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, kind='hm'):
                             sigmasq=1.,
                             low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq,)
     
-    if kind.lower() == 'hm':
+    if 'hm' in kind.lower():
         det_stat = compute_max_snr_over_sky_loc_stat_no_phase(Iplus, 
                                                                     Icross, 
                                                                     hphccorr=hphc_corr,

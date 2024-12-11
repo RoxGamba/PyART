@@ -133,7 +133,7 @@ class Waveform(object):
             raise RuntimeError('dothlm cannot be compute if hlm is not loaded')
         dothlm = {}
         for k in self.hlm:
-            hlm  = self.hlm[k]['h']
+            hlm  = self.hlm[k]['z']
             dhlm = ut.D1(hlm, self.u, 4)
             dhlm *= factor
             dothlm[k] = wf_ut.get_multipole_dict(dhlm)
@@ -144,7 +144,7 @@ class Waveform(object):
         for v in var:
             wave_dict = getattr(self, v)
             for lm in wave_dict:
-                h  = wave_dict[lm]['h']*factor
+                h  = wave_dict[lm]['z']*factor
                 wave_dict[lm] = wf_ut.get_multipole_dict(h)
         pass
 
@@ -224,7 +224,7 @@ class Waveform(object):
         new_u = np.arange(self.u[0], self.u[-1], dT)
         
         for k in self.hlm.keys():
-            h  = self.hlm[k]['h']
+            h  = self.hlm[k]['z']
             iA = np.interp(new_u, self.u, np.abs(h))
             ip = np.interp(new_u, self.u, -np.unwrap(np.angle(h)))
             ih = iA*np.exp(-1j*ip)
@@ -241,7 +241,7 @@ class Waveform(object):
             if warning: warnings.warn('Warning: dothlm not found, computing derivatives of hlm')
             for mode in modes:
                 self.dothlm[mode]      = {}
-                self.dothlm[mode]['h'] = ut.D02(self.t, self.hlm[mode]['h'])
+                self.dothlm[mode]['z'] = ut.D02(self.t, self.hlm[mode]['z'])
 
         dynamicsdict = waveform2energetics(
                         self.hlm, self.dothlm, self.t, modes,
@@ -303,7 +303,7 @@ class Waveform(object):
         t      = t_psi4
         for i, lm in enumerate(modes):
             l, m = lm
-            psi4 = self.psi4lm[lm]['h']
+            psi4 = self.psi4lm[lm]['z']
             mode = IntegrateMultipole(l, m, t, psi4, **integr_opts, 
                                       mass=M, radius=radius, 
                                       integrand='psi4')
@@ -362,36 +362,36 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
         fact = mnfactor[k] * oo16pi
         
         # Energy
-        dictdyn['dotE'][(l,m)] = fact * np.abs(doth[(l,m)]['h'])**2 
+        dictdyn['dotE'][(l,m)] = fact * np.abs(doth[(l,m)]['z'])**2 
 
         # Angular momentum
-        dictdyn['dotJz'][(l,m)] = fact * m * np.imag(h[(l,m)]['h'] * np.conj(doth[(l,m)]['h']))
+        dictdyn['dotJz'][(l,m)] = fact * m * np.imag(h[(l,m)]['z'] * np.conj(doth[(l,m)]['z']))
 
-        dothlm_1 = doth[(l,m-1)]['h'] if (l,m-1) in doth else 0*h[(l,m)]['h']
-        dothlm1  = doth[(l,m+1)]['h'] if (l,m+1) in doth else 0*h[(l,m)]['h']
+        dothlm_1 = doth[(l,m-1)]['z'] if (l,m-1) in doth else 0*h[(l,m)]['z']
+        dothlm1  = doth[(l,m+1)]['z'] if (l,m+1) in doth else 0*h[(l,m)]['z']
 
         dictdyn['dotJy'][(l,m)] = 0.5 * fact * \
-                                np.real( h[(l,m)]['h'] * (wf_ut.mc_f(l,m) * np.conj(dothlm1) - wf_ut.mc_f(l,-m) * np.conj(dothlm_1) ))
+                                np.real( h[(l,m)]['z'] * (wf_ut.mc_f(l,m) * np.conj(dothlm1) - wf_ut.mc_f(l,-m) * np.conj(dothlm_1) ))
         dictdyn['dotJx'][(l,m)] = 0.5 * fact * \
-                                np.real( h[(l,m)]['h'] * (wf_ut.mc_f(l,m) * np.conj(dothlm1) + wf_ut.mc_f(l,-m) * np.conj(dothlm_1) ))
+                                np.real( h[(l,m)]['z'] * (wf_ut.mc_f(l,m) * np.conj(dothlm1) + wf_ut.mc_f(l,-m) * np.conj(dothlm_1) ))
         dictdyn['dotJ'][(l,m)] = np.sqrt(dictdyn['dotJx'][(l,m)]**2 + 
                                          dictdyn['dotJy'][(l,m)]**2 + 
                                          dictdyn['dotJz'][(l,m)]**2
                                         )
 
         # Linear momentum
-        dothlm1   = doth[(l,m+1)]['h']   if (l,m+1)   in doth else 0*h[(l,m)]['h']
-        dothl_1m1 = doth[(l-1,m+1)]['h'] if (l-1,m+1) in doth else 0*h[(l,m)]['h']
-        dothl1m1  = doth[(l+1,m+1)]['h'] if (l+1,m+1) in doth else 0*h[(l,m)]['h']
-        dotl_1m   = doth[(l-1,m)]['h']   if (l-1,m)   in doth else 0*h[(l,m)]['h']
-        dothl1m   = doth[(l+1,m)]['h']   if (l+1,m)   in doth else 0*h[(l,m)]['h']
+        dothlm1   = doth[(l,m+1)]['z']   if (l,m+1)   in doth else 0*h[(l,m)]['z']
+        dothl_1m1 = doth[(l-1,m+1)]['z'] if (l-1,m+1) in doth else 0*h[(l,m)]['z']
+        dothl1m1  = doth[(l+1,m+1)]['z'] if (l+1,m+1) in doth else 0*h[(l,m)]['z']
+        dotl_1m   = doth[(l-1,m)]['z']   if (l-1,m)   in doth else 0*h[(l,m)]['z']
+        dothl1m   = doth[(l+1,m)]['z']   if (l+1,m)   in doth else 0*h[(l,m)]['z']
         
-        dotPxiy = 2.0 * fact * doth[(l,m)]['h'] * \
+        dotPxiy = 2.0 * fact * doth[(l,m)]['z'] * \
                 (wf_ut.mc_a(l,m) * np.conj(dothlm1) + wf_ut.mc_b(l,-m) * np.conj(dothl_1m1) - wf_ut.mc_b(l+1,m+1) * np.conj(dothl1m1))
         dictdyn['dotPy'][(l,m)] = np.imag(dotPxiy)
         dictdyn['dotPx'][(l,m)] = np.real(dotPxiy)
-        dictdyn['dotPz'][(l,m)] = fact * np.imag( doth[(l,m)]['h'] * \
-                                (wf_ut.mc_c(l,m) * np.conj(doth[(l,m)]['h']) + wf_ut.mc_d(l,m) * np.conj(dotl_1m) + wf_ut.mc_d(l+1,m) * np.conj(dothl1m)) )
+        dictdyn['dotPz'][(l,m)] = fact * np.imag( doth[(l,m)]['z'] * \
+                                (wf_ut.mc_c(l,m) * np.conj(doth[(l,m)]['z']) + wf_ut.mc_d(l,m) * np.conj(dotl_1m) + wf_ut.mc_d(l+1,m) * np.conj(dothl1m)) )
 
         dictdyn['dotP'][(l,m)] = np.sqrt(dictdyn['dotPx'][(l,m)]**2 + 
                                          dictdyn['dotPy'][(l,m)]**2 + 
