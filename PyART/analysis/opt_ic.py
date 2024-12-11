@@ -30,13 +30,9 @@ class Optimizer(object):
                  opt_max_iter = 1,     # max opt iters (i.e. using different initial guesses) if mm_thres is not reached
                  opt_good_mm  = 5e-3,  # interrupt opt-iters if mm is below this threshold
 
-                 # Option for bounds and iterations
+                 # Option for bounds and iterations on bounds
                  opt_bounds   = None,  # specify bounds (None or {'key1': [x1,x2], 'key2': [y1,None], ...} )
-                 eps_initial  = 1e-2,  # initial bound eps, used if some opt bounds are not specified
-                 eps_factor   = 2,     # increase-factor for eps at each eps-iter
-                 eps_max_iter = 1,     # If true, iterate on eps-bounds
-                 eps_bad_mm   = 0.1,   # if after opt_max_iter(s) we are still above this threshold, 
-                                       # increase bound-eps (if eps_max_iter>1)
+                 bounds_iter  = {},    # options to use when iterating over bounds 
                  
                  # minimizer options
                  minimizer = {'kind': 'dual_annealing'},
@@ -66,10 +62,6 @@ class Optimizer(object):
         self.opt_data     = None
 
         self.opt_bounds   = opt_bounds
-        self.eps_initial  = eps_initial
-        self.eps_factor   = eps_factor
-        self.eps_max_iter = eps_max_iter
-        self.eps_bad_mm   = eps_bad_mm
         
         self.use_matcher_cache = use_matcher_cache
 
@@ -97,10 +89,13 @@ class Optimizer(object):
                 print('Warning: map_function is not None, but kind_ic is not "choose"')
                 print('         user-input map_function will be ignored.')            
 
-        # update bounds
         if self.opt_bounds is None:
             self.opt_bounds = {var: [None, None] for var in self.opt_vars}
-        self.__update_bounds(eps=eps_initial)
+        # update bounds iterator
+        self.__bounds_iter_defaults__()
+        self.bounds_iter = {**self.bounds_iter, **bounds_iter}
+        # update bounds
+        self.__update_bounds(eps=self.bounds_iter['eps_initial'])
 
         # set minimizer
         self.__minimizer__defaults__()
@@ -138,7 +133,7 @@ class Optimizer(object):
         if ref_name in mm_data['mismatches']:
             opt_data = mm_data['mismatches'][ref_name]
 
-            if not overwrite or opt_data['mm_opt']<eps_bad_mm:
+            if not overwrite or opt_data['mm_opt']<self.bounds_iter['bad_mm']:
                 run_optimization = False
             if verbose: 
                 print(f'Loading mismatch from {self.json_file}')
@@ -153,12 +148,12 @@ class Optimizer(object):
             dashes    = '-'*45
             asterisks = '*'*45
             
-            eps = self.eps_initial
+            eps = copy.copy(self.bounds_iter['eps_initial'])
             
             t0 = time.perf_counter()
             # i-loop on different search bounds
-            for i in range(1, self.eps_max_iter+1): 
-                if self.eps_max_iter>1 and self.verbose:
+            for i in range(1, self.bounds_iter['max_iter']+1): 
+                if self.bounds_iter['max_iter']>1 and self.verbose:
                     print(f'\n{asterisks}\nSearch bounds (eps) iteration  #{i:d}\n{asterisks}')
                  
                 # j-loop on different initial gueses
@@ -174,26 +169,31 @@ class Optimizer(object):
                     if opt_data['mm_opt']<=self.opt_good_mm:
                         break
                 
-                if opt_data['mm_opt']<=self.eps_bad_mm:
+                if opt_data['mm_opt']<=self.bounds_iter['bad_mm']:
                     # if the mismatch is good according to eps-standard, then break
                     break
                 
-                elif i<self.eps_max_iter:
+                elif i<self.bounds_iter['max_iter']:
                     # otherwise, increase the bound search (if we are not at the last iter)
-                    flat_old_bounds = [item for sublist in self.opt_bounds for item in sublist]
+                    #flat_old_bounds = [item for sublist in self.opt_bounds for item in sublist]
+                    flat_old_bounds = [item for key in self.opt_bounds for item in self.opt_bounds[key]]
                     
-                    self.opt_bounds = [ [None,None], [None,None] ]
-                    eps *= self.eps_factor
+                    kys = self.opt_vars
+                    self.opt_bounds = {kys[0]:[None,None], kys[1]:[None,None]}
+                    for ky in eps:
+                        eps[ky] *= self.bounds_iter['eps_factors'][ky]
                     self.__update_bounds(eps=eps)
-                    flat_new_bounds = [item for sublist in self.opt_bounds for item in sublist]
+                    #flat_new_bounds = [item for sublist in self.opt_bounds for item in sublist]
+                    flat_new_bounds = [item for key in self.opt_bounds for item in self.opt_bounds[key]]
+                    print(flat_new_bounds)
                     print('\nIncreasing search bounds: [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_old_bounds))
                     print('                  ----> : [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_new_bounds))
                 
                 else:
                     mm_opt = opt_data['mm_opt']
                     print( '\n++++++++++++++++++++++++++++++++++++++')
-                    print(f'+++  Reached eps_max_iter : {self.eps_max_iter:2d}     +++')
-                    print(f'+++  mm_opt : {mm_opt:.2e} > {self.eps_bad_mm:.2e}  +++')
+                    print(f'+++  Reached eps_max_iter : {self.bounds_iter["max_iter"]:2d}     +++')
+                    print(f'+++  mm_opt : {mm_opt:.2e} > {self.bounds_iter["bad_mm"]:.2e}  +++')
                     print( '++++++++++++++++++++++++++++++++++++++')
                     
             mm_data['mismatches'][ref_name] = opt_data
@@ -255,11 +255,12 @@ class Optimizer(object):
             raise ValueError(f'Unknown kind of ICs: {self.kind_ic}')
         pass
 
-    def __update_bounds(self, eps=1e-2):
+    def __update_bounds(self, eps=None):
         """
         Set the bounds for the optimization; if the bounds are not specified,
         set them to the reference value (read from metadata) +/- eps
         """
+        if eps is None: eps = self.bounds_iter['eps_initial']
         vls = []
         for ky in self.opt_vars:
             try:
@@ -268,8 +269,8 @@ class Optimizer(object):
                 print(f'WARNING: update bounds, {ky} not found in metadata. Setting to 1.')
                 vls.append(1)
         
-        default_bounds = {ky: [vl*(1-eps), vl*(1+eps)] for ky,vl in zip(self.opt_vars, vls)}
-        
+        default_bounds = {ky: [vl*(1-eps[ky]), vl*(1+eps[ky])] for ky,vl in zip(self.opt_vars, vls)}
+
         for ky in self.opt_vars:
             for j in range(2):
                 if self.opt_bounds[ky][j] is None:
@@ -538,11 +539,7 @@ class Optimizer(object):
                     'opt_seed'     : self.minimizer['opt_seed'],
                     'opt_max_iter' : self.opt_max_iter,
                     'opt_good_mm'  : self.opt_good_mm,
-                    'eps_initial'  : self.eps_initial,
-                    'eps_max_iter' : self.eps_max_iter,
-                    'eps_bad_mm'   : self.eps_bad_mm,
-                    'eps_initial'  : self.eps_initial,
-                    'eps_factor'   : self.eps_factor,
+                    'bounds_iter'  : self.bounds_iter,
                     # optimization results
                     'bounds'       : bounds, 
                     'mm0'          : mm0,
@@ -555,6 +552,18 @@ class Optimizer(object):
             opt_data['dyn0'] = dyn0
         
         return opt_data
+    
+    def __bounds_iter_defaults__(self):
+        self.bounds_iter = {
+                            'eps_initial': {},    # initial epsilon values 
+                            'eps_factors': {},    # increase-factor for eps at each eps-iter
+                            'max_iter'   : 1,     # If true, iterate on eps-bounds
+                            'bad_mm'     : 0.1,   # if after opt_max_iter(s) we are still above this threshold 
+        }
+        for ky in self.opt_vars:
+            self.bounds_iter['eps_initial'][ky] = 1e-2
+            self.bounds_iter['eps_factors'][ky] = 2
+        pass
 
     def __minimizer__defaults__(self):
         """
