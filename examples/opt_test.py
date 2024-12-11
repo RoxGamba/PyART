@@ -11,11 +11,9 @@ matplotlib.rc('text', usetex=True)
 
 repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], \
                              stdout=subprocess.PIPE).communicate()[0].rstrip().decode('utf-8')
-sxs_path = os.path.join(repo_path, 'examples/local_sxs/')
-#rit_path = os.path.join(repo_path, 'examples/local_rit/')
-rit_path = '/Users/simonealbanesi/repos/eob_generic_catalogs/data/rit/' 
-icc_path = '/Users/simonealbanesi/data/simulations_icc/ICCsims/catalog'
-
+sxs_path = os.path.join(repo_path, 'examples/local_data/sxs/')
+rit_path = os.path.join(repo_path, 'examples/local_data/rit/')
+icc_path = os.path.join(repo_path, 'examples/local_data/icc/')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--catalog', required=True, type=str, 
@@ -49,9 +47,9 @@ else:
     mm_settings['pre_align_shift'] = 0.
     
 if args.kind_ic=='e0f0':
-    bounds = [[0,0.7], [None, None]]
+    bounds = {'e0':[0,0.7], 'f0':[None, None]}
 else:
-    bounds = [[None,None], [None,None]]
+    bounds = {'E0byM':[None,None], 'pph0':[None,None]}
 
 if args.catalog=='rit':
     ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id, nu_rescale=True)
@@ -74,10 +72,13 @@ if args.catalog=='sxs':
     print('Removing (200 M) junk for SXS')
     ebbh.cut(200)
 
+minimizer = {'kind':'dual_annealing', 'opt_maxfun':args.maxfun, 'opt_max_iter':args.opt_max_iter}
+
 opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
                       use_nqc=args.use_nqc,
-                      opt_maxfun=args.maxfun,
-                      opt_max_iter = args.opt_max_iter,
+                      minimizer=minimizer,
+                      #opt_maxfun=args.maxfun,
+                      #opt_max_iter = args.opt_max_iter,
                       opt_good_mm  = args.opt_good_mm,
                       opt_bounds   = bounds, 
                       eps_max_iter = args.eps_max_iter, 

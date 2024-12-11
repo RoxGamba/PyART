@@ -205,6 +205,7 @@ class Optimizer(object):
             if json_file is not None: 
                 self.save_mismatches(mm_data)
         self.opt_data = opt_data
+        pass
 
     def __set_variables(self, vrs):
         """
@@ -400,12 +401,13 @@ class Optimizer(object):
             eob_wave = None
         return eob_wave
     
-    def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False, return_matcher=False, cache={}):
-        if verbose is None: verbose = self.verbose
+    def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False, return_matcher=False, cache={}, mm_settings=None):
+        if verbose     is None: verbose     = self.verbose
+        if mm_settings is None: mm_settings = self.mm_settings
         if eob_Waveform is not None:
             try:
                 matcher = Matcher(self.ref_Waveform, eob_Waveform,
-                                  settings=self.mm_settings, cache=cache)
+                                  settings=mm_settings, cache=cache)
                 mm = matcher.mismatch
             except Exception as e:
                 print('Error while computing match: ', e)
@@ -516,7 +518,12 @@ class Optimizer(object):
             dyn0 = eob_opt.dyn
         else:
             dyn0 = None
-
+        
+        if self.debug:
+            temp_settings = copy.copy(self.mm_settings)
+            temp_settings['debug'] = True
+            self.match_against_ref(eob_opt, mm_settings=temp_settings)
+        
         opt_data = { 
                     # store also some attributes, just for convenience 
                     'q'            : self.ref_Waveform.metadata['q'],

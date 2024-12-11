@@ -162,7 +162,7 @@ class Waveform_ICC(Waveform):
         for l in range(ellmax+1):
             for m in range(l+1):
                 mydict[(l,m)] = {'real':zeros, 'imag':zeros, 'A':zeros,
-                                 'p':zeros, 'h':zeros}
+                                 'p':zeros, 'z':zeros}
         for f in files:
             l   = ut.extract_value_from_str(f, 'l')
             m   = ut.extract_value_from_str(f, 'm')
