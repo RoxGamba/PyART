@@ -21,7 +21,10 @@ class Optimizer(object):
                  vrs          = ['H_hyp', 'j_hyp'], # variables to optimize over, default is ['H_hyp', 'j_hyp']
                  map_function = None,               # function to map variables to EOB parameters
                  use_nqc      = True,
-                 r0_eob       = None,     # use a fixed value for r_hyp in EOB model, if None it will be computed by TEOB
+                 r0_eob       = None,               # use a fixed value for r_hyp in EOB model, if None it will be computed by TEOB
+
+                 # model-specific options
+                 model_opts   = {},
 
                  # loop on different initial guesses (nested in bound-iters)
                  opt_max_iter = 1,     # max opt iters (i.e. using different initial guesses) if mm_thres is not reached
@@ -56,6 +59,7 @@ class Optimizer(object):
         self.kind_ic      = kind_ic
         self.use_nqc      = use_nqc
         self.r0_eob       = r0_eob
+        self.model_opts   = model_opts
         
         self.opt_max_iter = opt_max_iter
         self.opt_good_mm  = opt_good_mm
@@ -215,6 +219,37 @@ class Optimizer(object):
         elif self.kind_ic == 'E0pph0':
             self.opt_vars = ['E0byM', 'pph0']
             self.map_function = lambda x: {'H_hyp':x['E0byM'], 'J_hyp':x['pph0']}
+        elif self.kind_ic == 'phi0theta0':
+            self.opt_vars = ['phi_ref', 'theta']
+
+            def rotate_in_plane_spins(chiA,chiB,theta=0.):
+                """
+                Perform a rotation of the in-plane spins by an angle theta
+                """
+                from scipy.spatial.transform import Rotation
+
+                zaxis    = np.array([0, 0, 1])
+                r        = Rotation.from_rotvec(theta*zaxis)
+                chiA_rot = r.apply(chiA)
+                chiB_rot = r.apply(chiB)
+                return chiA_rot, chiB_rot
+
+            def func(vrs):
+                theta   = vrs['theta']
+                phi_ref = vrs['phi_ref']
+                chiA = np.array([vrs['chi1x'], vrs['chi1y'], vrs['chi1z']])
+                chiB = np.array([vrs['chi2x'], vrs['chi2y'], vrs['chi2z']])
+
+                # rotate in-plane spin components by theta
+                chiA_rot, chiB_rot = rotate_in_plane_spins(chiA,chiB,theta=theta)
+                rotated = {
+                        'chi1x'  : chiA_rot[0], 'chi1y': chiA_rot[1], 'chi1z': chiA_rot[2],
+                        'chi2x'  : chiB_rot[0], 'chi2y': chiB_rot[1], 'chi2z': chiB_rot[2],
+                        'phi_ref': phi_ref,
+                        }
+                return rotated
+
+            self.map_function = func
         else:
             raise ValueError(f'Unknown kind of ICs: {self.kind_ic}')
         pass
@@ -336,7 +371,8 @@ class Optimizer(object):
 
         # map the ICs (and the other intrinsic pars) to the EOB parameters
         mapped_ids = self.map_function({**ICs, **sub_meta})
-        if 'H_hyp' in mapped_ids:
+
+        if 'H_hyp' in mapped_ids or 'J_hyp' in mapped_ids:
             if self.r0_eob == 'read':
                 # start close to the NR value, a little earlier
                 mapped_ids['r_hyp'] = ref_meta['r0']*1.1
@@ -350,9 +386,10 @@ class Optimizer(object):
                         mapped_ids['r_hyp'] = self.r0_eob
                 mapped_ids['r_hyp']         = self.r0_eob  # if None, it will be computed in the EOB model
         
-        # add the mapped ICs to the sub_meta dictionary
+        # add the mapped ICs to the sub_meta dictionary & additional model options
         # and run
         sub_meta.update(mapped_ids)
+        sub_meta.update(self.model_opts)
         try:
             pars        = CreateDict(**sub_meta)
             eob_wave    = Waveform_EOB(pars=pars)
@@ -418,7 +455,7 @@ class Optimizer(object):
         # Treat variables which are in common with the reference
         kys_ref = [ky for ky in kys if ky in self.ref_Waveform.metadata] # common keys
         vs_ref  = {ky: self.ref_Waveform.metadata[ky] for ky in kys_ref} # reference values
-        for ky in kys:
+        for ky in kys_ref:
             vv = vs_ref[ky]
             if vv<bounds[ky][0] or vv>bounds[ky][1]:
                 print('Warning! Reference value for {:s} is outside searching interval: [{:.2e},{:.2e}]'.format(ky,  bounds[ky][0],  bounds[ky][1]))
@@ -433,7 +470,7 @@ class Optimizer(object):
         for ky in kys:
             if ky not in kys_ref:
                 vs0[ky] = np.random.uniform(bounds[ky][0], bounds[ky][1])
-        
+
         # reference match
         mm0, matcher0 = self.match_against_ref(self.generate_EOB(ICs=vs0),
                                                                 iter_loop=False, 
@@ -548,7 +585,6 @@ class Optimizer(object):
         opt_pars     = opt_result['x']
         opts         = {kys[i]: opt_pars[i] for i in range(len(kys))}
         mm_opt       = opt_result['fun']
-        print(mm_opt)
         return opts, mm_opt
     
     def __minimize__dynesty__(self, f, x0, bounds_array, kys):
