@@ -47,7 +47,8 @@ class Optimizer(object):
                  ):
         
         self.ref_Waveform = ref_Waveform
-        
+        self.opt_Waveform = None
+
         self.kind_ic      = kind_ic
         self.opt_seed     = opt_seed
         self.opt_maxfun   = opt_maxfun
@@ -198,12 +199,12 @@ class Optimizer(object):
             if json_file is not None: 
                 self.save_mismatches(mm_data)
         self.opt_data = opt_data
-
+        self.opt_Waveform = self.generate_EOB(ICs={self.ic_keys[0]:opt_data['x_opt'], 
+                                                  self.ic_keys[1]:opt_data['y_opt']})
+        
         if debug:
             self.mm_settings['debug'] = True
-            opt_Waveform = self.generate_EOB(ICs={self.ic_keys[0]:opt_data['x_opt'], 
-                                                  self.ic_keys[1]:opt_data['y_opt']})
-            self.match_against_ref(opt_Waveform)
+            self.match_against_ref(self.opt_Waveform)
         pass
     
     def __update_bounds(self, eps=1e-2):

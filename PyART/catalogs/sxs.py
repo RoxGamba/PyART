@@ -154,8 +154,8 @@ class Waveform_SXS(Waveform):
         M1 = ometa['reference_mass1']
         M2 = ometa['reference_mass2']
         q  = M2/M1
-        #if q<1:
-        #    q = 1/q
+        if q<1:
+            q = 1/q
         nu = q/(1+q)**2
         M  = M1 + M2
         hS1  = np.array(ometa['reference_dimensionless_spin1']) 
