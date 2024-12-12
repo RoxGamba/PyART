@@ -115,7 +115,8 @@ class Cataloger(object):
         Otherwise, use stdout
         """
         if nproc>1:
-            log_file = f'cataloger_process_{process_id}.log'
+            now_str  = datetime.now().strftime('%Y%m%d_%H-%M-%S')
+            log_file = f'{now_str:s}_cataloger_process_{process_id}.log'
             print(f'Logfile #{process_id:d}: {log_file}')
             with open(log_file, 'w') as file:
                 sys.stdout = file

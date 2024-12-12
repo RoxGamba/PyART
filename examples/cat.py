@@ -20,7 +20,7 @@ optimizer_opts = {'mm_settings'  : {'cut_second_waveform':True, 'final_frequency
 sim_list = list(range(1096,1111))
 cat = Cataloger(path=path, catalog='rit', sim_list=sim_list, 
                            json_file='./examples/mismatches_rit_cat.json', 
-                           add_opts={'download':True})
+                           add_opts={'download':True, 'nu_rescale':True})
 #cat.plot_waves()
 hlines = [5e-2,1e-2,1e-3]
 cat.optimize_mismatches(optimizer_opts=optimizer_opts, nproc=4)
