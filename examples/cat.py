@@ -1,9 +1,13 @@
 import sys,os, subprocess
 from PyART.catalogs.cataloger import Cataloger
 
-path = '/Users/simonealbanesi/repos/eob_generic_catalogs/data/rit'
+repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], \
+                             stdout=subprocess.PIPE).communicate()[0].rstrip().decode('utf-8')
+path = os.path.join(repo_path, 'examples/local_data/rit/')
+
 optimizer_opts = {'mm_settings'  : {'cut_second_waveform':True, 'final_frequency_mm':1024}, 
                   'overwrite'    : False,
+                  'json_save_dyn': False,
                   'minimizer'    : {'kind':'dual_annealing', 'opt_maxfun':200},
                   'opt_max_iter' : 1,#6,
                   'opt_good_mm'  : 1e-4,#5e-3,

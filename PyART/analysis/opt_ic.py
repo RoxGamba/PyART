@@ -43,7 +43,7 @@ class Optimizer(object):
                  # json-output options
                  json_file    = None,  # JSON file with mm (must be consistent with current options). If None, do not print data 
                  overwrite    = False, # overwrite JSON with new mm-computation
-
+                 json_save_dyn = False, # save dynamics in JSON 
                  # other options
                  mm_settings  = None,  # options for Matcher (dictionary)
                  verbose      = True,
@@ -65,10 +65,11 @@ class Optimizer(object):
         
         self.use_matcher_cache = use_matcher_cache
 
-        self.json_file    = json_file
-        self.overwrite    = overwrite
-        self.verbose      = verbose
-        self.debug        = debug
+        self.json_file     = json_file
+        self.json_save_dyn = json_save_dyn
+        self.overwrite     = overwrite
+        self.verbose       = verbose
+        self.debug         = debug
 
         # mismatch settings
         self.mm_settings = Matcher.__default_parameters__(0) 
@@ -175,7 +176,6 @@ class Optimizer(object):
                 
                 elif i<self.bounds_iter['max_iter']:
                     # otherwise, increase the bound search (if we are not at the last iter)
-                    #flat_old_bounds = [item for sublist in self.opt_bounds for item in sublist]
                     flat_old_bounds = [item for key in self.opt_bounds for item in self.opt_bounds[key]]
                     
                     kys = self.opt_vars
@@ -183,9 +183,7 @@ class Optimizer(object):
                     for ky in eps:
                         eps[ky] *= self.bounds_iter['eps_factors'][ky]
                     self.__update_bounds(eps=eps)
-                    #flat_new_bounds = [item for sublist in self.opt_bounds for item in sublist]
                     flat_new_bounds = [item for key in self.opt_bounds for item in self.opt_bounds[key]]
-                    print(flat_new_bounds)
                     print('\nIncreasing search bounds: [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_old_bounds))
                     print('                  ----> : [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_new_bounds))
                 
@@ -515,10 +513,6 @@ class Optimizer(object):
         
         # generate the eob waveform corresponding to the optimal ICs
         eob_opt = self.generate_EOB(ICs=opts)
-        if eob_opt is not None:
-            dyn0 = eob_opt.dyn
-        else:
-            dyn0 = None
         
         if self.debug:
             temp_settings = copy.copy(self.mm_settings)
@@ -547,9 +541,13 @@ class Optimizer(object):
                     }
         for ky in kys:
             opt_data[ky+'_opt'] = opts[ky]
-        if dyn0 is not None:
+        
+        if eob_opt is not None and self.json_save_dyn:
+            dyn0 = eob_opt.dyn
             dyn0 = {ky: list(dyn0[ky]) for ky in dyn0.keys()}
-            opt_data['dyn0'] = dyn0
+        else:
+            dyn0 = None
+        opt_data['dyn0'] = dyn0
         
         return opt_data
     

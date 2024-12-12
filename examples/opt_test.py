@@ -23,8 +23,6 @@ parser.add_argument('--maxfun',       default=100,   type=int,   help='Maxfun in
 parser.add_argument('--use_nqc', action='store_true',            help='Use NQC')  
 parser.add_argument('--opt_max_iter', default=1,     type=int,   help='Max opt iter')
 parser.add_argument('--opt_good_mm',  default=5e-3,  type=float, help='opt_good_mm from opt_ic')
-parser.add_argument('--eps_max_iter', default=1,     type=int,   help='ep_max_iter from opt_ic')
-parser.add_argument('--eps_bad_mm',   default=0.1,   type=float, help='eps_bad_mm from opt_ic')
 parser.add_argument('-d', '--download', action='store_true',     help='Eventually download data')
 parser.add_argument('--kind_ic', choices=['e0f0', 'E0pph0'], 
                                  default='E0pph0',               help='ICs type')
@@ -74,15 +72,18 @@ if args.catalog=='sxs':
 
 minimizer = {'kind':'dual_annealing', 'opt_maxfun':args.maxfun, 'opt_max_iter':args.opt_max_iter}
 
+bounds_iter = {'eps_initial': {'E0byM':1e-3, 'pph0':1e-2},
+               'eps_factors': {'E0byM':4,    'pph0':2},
+               'bad_mm'     : 1e-2,
+               'max_iter'   : 3
+              }
+
 opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
                       use_nqc=args.use_nqc,
                       minimizer=minimizer,
-                      #opt_maxfun=args.maxfun,
-                      #opt_max_iter = args.opt_max_iter,
                       opt_good_mm  = args.opt_good_mm,
-                      opt_bounds   = bounds, 
-                      eps_max_iter = args.eps_max_iter, 
-                      eps_bad_mm   = args.eps_bad_mm,
+                      opt_bounds   = bounds,
+                      bounds_iter  = bounds_iter,
                       debug=args.debug_plot,
                       json_file=args.json_file, overwrite=args.overwrite)
 
