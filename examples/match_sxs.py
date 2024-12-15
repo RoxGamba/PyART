@@ -27,7 +27,7 @@ args = parser.parse_args()
 
 repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], \
                              stdout=subprocess.PIPE).communicate()[0].rstrip().decode('utf-8')
-sxs_path = os.path.join(repo_path, 'examples/local_sxs/')
+sxs_path = os.path.join(repo_path, 'examples/local_data/sxs/')
 
 # load (or download) SXS data 
 sxs_id = f'{args.sxs_id:04}' # e.g.0180

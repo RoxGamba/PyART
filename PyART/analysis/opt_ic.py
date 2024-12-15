@@ -367,7 +367,7 @@ class Optimizer(object):
             if ic in default_intrinsic: default_intrinsic.remove(ic)
         sub_meta = {key: ref_meta[key] for key in default_intrinsic}
         sub_meta['use_nqc']  = self.use_nqc
-        sub_meta['ode_tmax'] = 2e+4
+        sub_meta['ode_tmax'] = 3e+4
 
         # map the ICs (and the other intrinsic pars) to the EOB parameters
         mapped_ids = self.map_function({**ICs, **sub_meta})

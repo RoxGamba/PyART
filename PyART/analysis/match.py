@@ -188,8 +188,9 @@ class Matcher(object):
             h1 = TimeSeries(wf1.hp, dT)
             h2 = TimeSeries(wf2.hp, dT)
         else:
-            h1 = TimeSeries(wf1.modes[(2,2)]['real'], dT)
-            h2 = TimeSeries(wf2.modes[(2,2)]['real'], dT)
+            mode_keys = list(wf1.modes.keys())
+            h1 = TimeSeries(wf1.modes[mode_keys[0]]['real'], dT)
+            h2 = TimeSeries(wf2.modes[mode_keys[0]]['real'], dT)
         LM   = max(len(h1), len(h2))
         tl   = (LM-1)*dT
         tN   = ut.nextpow2(resize_factor*tl)
