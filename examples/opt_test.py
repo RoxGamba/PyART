@@ -70,9 +70,9 @@ if args.catalog=='sxs':
     print('Removing (200 M) junk for SXS')
     ebbh.cut(200)
 
-minimizer = {'kind':'dual_annealing', 'opt_maxfun':args.maxfun, 'opt_max_iter':args.opt_max_iter}
+minimizer = {'kind':'dual_annealing', 'opt_maxfun':args.maxfun, 'opt_max_iter':args.opt_max_iter, 'opt_seed':190521}
 
-bounds_iter = {'eps_initial': {'E0byM':1e-3, 'pph0':1e-2},
+bounds_iter = {'eps_initial': {'E0byM':5e-3, 'pph0':1e-2},
                'eps_factors': {'E0byM':4,    'pph0':2},
                'bad_mm'     : 1e-2,
                'max_iter'   : 3
@@ -86,6 +86,7 @@ opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
                       bounds_iter  = bounds_iter,
                       debug=args.debug_plot,
                       json_file=args.json_file, overwrite=args.overwrite)
+
 
 if args.mm_vs_M:
     masses = np.linspace(20, 200, num=19)

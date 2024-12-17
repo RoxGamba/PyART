@@ -33,8 +33,8 @@ class Cataloger(object):
         self.sim_list  = sim_list
         self.verbose   = verbose
         if json_file is None:
-            date     = datetime.now()
-            fmt_date = date.strftime("%Y%m%d")
+            date      = datetime.now()
+            fmt_date  = date.strftime("%Y%m%d")
             json_file = f'mismatches_{self.catalog}_{fmt_date}.json'            
         self.json_file = json_file
         #self.mm_data   = self.read_mismatches_json() 
@@ -73,7 +73,12 @@ class Cataloger(object):
         Compute the waveform with the model corresponding to a catalog ID
         """
         if self.data[name]['Optimizer'] is not None:
-            eob = self.data[name]['Optimizer'].generate_opt_EOB()
+            optimizer = self.data[name]['Optimizer']
+            kys   = optimizer.opt_vars
+            x_opt = optimizer.opt_data[kys[0]+'_opt']
+            y_opt = optimizer.opt_data[kys[1]+'_opt']
+            ICs = {kys[0]:x_opt, kys[1]:y_opt}
+            eob = optimizer.generate_EOB(ICs=ICs)
         else:
             # Create a mock optimizer
             params  = self.data[name]['Waveform'].metadata
@@ -334,16 +339,10 @@ class Cataloger(object):
                      cmap_var   = 'E0byM',
                      hlines     = [],
                      savepng    = True,
-                     savejson   = True,
+                     savejson   = False,
                      figname    = None,
                      ):
 
-        if mm_settings is None:
-            if self.data[name]['Optimizer'] is not None:
-                if self.verbose: print(f'Using settings from {name} optimizer')
-                mm_settings = self.data[name]['Optimizer'].mm_settings
-            else:
-                raise ValueError('No mm_settings provided and no Optimizer available')
 
         # select waveforms and get colors
         subset       = self.find_subset(ranges=ranges)
@@ -359,11 +358,17 @@ class Cataloger(object):
         mm_data['masses'] = list(masses)
 
         for i, name in enumerate(subset):
+            if mm_settings is None:
+                if self.data[name]['Optimizer'] is not None:
+                    if self.verbose: print(f'Using settings from {name} optimizer')
+                    mm_settings = self.data[name]['Optimizer'].mm_settings
+                else:
+                    raise ValueError('No mm_settings provided and no Optimizer available')
             print(f'mm for: {name}')
             mm = masses*0
             eob = self.get_model_waveform(name)
             nr  = self.data[name]['Waveform']
-
+            
             for j, M in enumerate(masses):
                 mm_settings['M'] = M 
                 matcher   = Matcher(nr, eob, settings=mm_settings)
@@ -400,6 +405,7 @@ class Cataloger(object):
         plt.show()
 
         if savejson:
+            #FIXME this option is broken! (maybe not evend needed)
             with open(self.json_file, 'w') as file:
                 file.write(json.dumps(mm_data,indent=2))
                 print(f'JSON file saved: {self.json_file}')

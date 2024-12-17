@@ -396,7 +396,7 @@ class Optimizer(object):
             #eob_wave._u = eob_wave.u#-eob_wave.u[0]
         except Exception as e:
             # FIXME: no error msg is a little bit criminal
-            # print(f'Error occured in EOB wave generation:\n{e}')
+            print(f'Error occured in EOB wave generation:\n{e}')
             eob_wave = None
         return eob_wave
     
@@ -540,6 +540,7 @@ class Optimizer(object):
                     'mm_opt'       : mm_opt, 
                     }
         for ky in kys:
+            opt_data[ky]        = vs_ref[ky]
             opt_data[ky+'_opt'] = opts[ky]
         
         if eob_opt is not None and self.json_save_dyn:

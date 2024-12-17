@@ -24,8 +24,8 @@ cat = Cataloger(path=path, catalog='rit', sim_list=sim_list,
 #cat.plot_waves()
 hlines = [5e-2,1e-2,1e-3]
 cat.optimize_mismatches(optimizer_opts=optimizer_opts, nproc=4)
-cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='E0byM')
-cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='chiz_eff')
+#cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='E0byM')
+#cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='chiz_eff')
 #cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='E0byM',    ranges={'pph0':[3,10]})
 #cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='chiz_eff', ranges={'pph0':[3,10]})
-#cat.plot_mm_vs_M(N=10, ranges={'pph0':[1,10]}, savepng=False, cmap_var='pph0', hlines=[5e-2, 1e-2, 1e-3])
+cat.mm_vs_M(N=10, ranges={'pph0':[1,10]}, savepng=False, cmap_var='pph0', hlines=[5e-2, 1e-2, 1e-3], mass_min=20)
