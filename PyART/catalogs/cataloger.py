@@ -339,7 +339,6 @@ class Cataloger(object):
                      cmap_var   = 'E0byM',
                      hlines     = [],
                      savepng    = True,
-                     savejson   = False,
                      figname    = None,
                      ):
 
@@ -351,11 +350,18 @@ class Cataloger(object):
         cmap_indices = colors_dict['indices']
         cmap_range   = colors_dict['range']
 
-        masses = np.linspace(mass_min, mass_max, num=N)
+        masses = np.linspace(mass_min, mass_max, num=N)    
+        
+        # start setting up the JSON file
+        mm_data = {}
+        mm_data['masses']     = list(masses)
+        mm_data['options']    = {}
+        mm_data['mismatches'] = {}
+        mm_data['options']['mm_settings'] = mm_settings
+
+        vrs = ['q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z', 'E0byM', 'pph0']
 
         _, ax = plt.subplots(1,1,figsize=(8,6))
-        mm_data = {}
-        mm_data['masses'] = list(masses)
 
         for i, name in enumerate(subset):
             if mm_settings is None:
@@ -368,12 +374,18 @@ class Cataloger(object):
             mm = masses*0
             eob = self.get_model_waveform(name)
             nr  = self.data[name]['Waveform']
-            
+                            
             for j, M in enumerate(masses):
                 mm_settings['M'] = M 
                 matcher   = Matcher(nr, eob, settings=mm_settings)
                 mm[j]     = matcher.mismatch
-            mm_data[name] = {'mismatch':list(mm), 'settings':mm_settings}
+            mm_data['mismatches'][name] = {}
+            mm_data['mismatches'][name]['mm_vs_M'] = list(mm)
+            mm_data['mismatches'][name]['mm_max']  = max(mm)
+            mm_data['mismatches'][name]['mm_min']  = min(mm)
+
+            for vr in vrs:
+                mm_data['mismatches'][name][vr] = self.quantity_from_dataset(name, vr)
 
             cidx = cmap_indices[i]
             ax.plot(masses, mm, label=name, c=colors[cidx], lw=0.6)
@@ -404,11 +416,9 @@ class Cataloger(object):
             print(f'Figure saved: {figname}')
         plt.show()
 
-        if savejson:
-            #FIXME this option is broken! (maybe not evend needed)
-            with open(self.json_file, 'w') as file:
-                file.write(json.dumps(mm_data,indent=2))
-                print(f'JSON file saved: {self.json_file}')
+        with open(self.json_file, 'w') as file:
+            file.write(json.dumps(mm_data,indent=2))
+            print(f'JSON file saved: {self.json_file}')
 
         return
 
