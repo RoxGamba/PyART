@@ -37,7 +37,7 @@ class Waveform_CoRe(Waveform):
                  path='../dat/CoRe/',
                  ID      = 'BAM:0001',
                  run     = 'R01',
-                 kind     = 'h5',
+                 kind    = 'h5',
                  mtdt_path=None,
                  ell_emms='all',
                  download=False,
@@ -68,7 +68,7 @@ class Waveform_CoRe(Waveform):
         self.metadata = self.load_metadata(mtdt_path)
 
         # read data
-        # self.load_hlm(self.runpath, kind)
+        self.load_hlm(kind = kind)
 
         pass
 
@@ -105,15 +105,20 @@ class Waveform_CoRe(Waveform):
 
         return metadata
     
-    def read_h(self, basepath, kind):
+    def load_hlm(self, kind = 'h5'):
         if kind == 'txt':
-            self.read_h_txt(basepath)
+            self.read_h_txt(self.runpath)
         elif kind == 'h5':
-            self.read_h_h5(basepath)
+            self.read_h_h5(self.runpath)
         else:
             raise NameError('kind not recognized')
         
     def read_h_h5(self, basepath):
+        """
+        Read modes from the h5 file.
+        Extract both the modes at ifinite radius
+        and extrapolate to infinity using a K=1 polynomial
+        """
         self.dfile = os.path.join(basepath,'data.h5')
         dset = {}
         with h5py.File(self.dfile, 'r') as fn:
@@ -121,23 +126,75 @@ class Waveform_CoRe(Waveform):
                 dset[g] = {}
                 for f in fn[g].keys():
                     dset[g][f] = fn[g][f][()]
-        try:
-            uM   = dset['rh_22'][:,0]
-            RehM = dset['rh_22'][:,1]
-            ImhM = dset['rh_22'][:,2]
-            Momg = dset['rh_22'][:,5]
-            aM   = dset['rh_22'][:,6]
-            phi  = dset['rh_22'][:,7]
-        except:
-            uM   = dset['rh_22'][:,0]
-            RehM = dset['rh_22'][:,1]
-            ImhM = dset['rh_22'][:,2]
-            Momg = dset['rh_22'][:,3]
-            aM   = dset['rh_22'][:,4]
-            phi  = dset['rh_22'][:,5]
+        
+        self.hlm_fr = {}
 
-        # TODO: add option to get all modes available or get specific mode
+        # identify all available modes in the keys
+        for ky in dset.keys():
+            if 'rh' in ky:
+                ellemm   = ky.split('_')[-1]
+                ell, emm = int(ellemm[0]), int(ellemm[1])
+                self.hlm_fr[(ell, emm)] = {}
+                
+                # load all extraction radii
+                A_xtp, p_xtp, r_xtp, t_xtp = [], [], [], []
 
+                for rext in dset[ky].keys():
+                    data = dset[ky][rext]
+                    rext = float(rext.split('.')[0].split('_')[-1][1:])
+                    r_xtp.append(rext)
+
+                    try:
+                        uM   = data[:,0]
+                        RehM = data[:,1]
+                        ImhM = data[:,2]
+                        Momg = data[:,5]
+                        aM   = data[:,6]
+                        phi  = data[:,7]
+
+                    except:
+                        uM   = data[:,0]
+                        RehM = data[:,1]
+                        ImhM = data[:,2]
+                        Momg = data[:,3]
+                        aM   = data[:,4]
+                        phi  = data[:,5]
+
+                    self.hlm_fr[(ell, emm)][rext]= {'u': uM, 
+                                                     'real': RehM, 
+                                                     'imag': ImhM, 
+                                                     'A': aM, 'p': phi}       
+                    A_xtp.append(aM)
+                    p_xtp.append(phi)
+                    t_xtp.append(uM)
+
+                # extrapolate to infinite extraction radius
+                # extrap phase and amp separately
+
+                # common time grid
+                t0   = max([min(tt) for tt in t_xtp])
+                tf   = min([max(tt) for tt in t_xtp])
+                dt   = min([np.diff(tt).min() for tt in t_xtp])
+                tnew = np.linspace(t0, tf, int((tf-t0)/dt))
+
+                res = []
+                for yy in [A_xtp, p_xtp]:
+                    # interpolate all on the same time grid
+                    ynew = []
+                    for i,y in enumerate(yy):
+                        f = interpolate.interp1d(t_xtp[i], y)
+                        ynew.append(f(tnew))
+                    
+                    res.append(radius_extrap_polynomial(ynew, r_xtp, 1))
+
+                A_fre, p_fre = res
+                # reconstruct complex waveform
+                z_fre = A_fre*np.exp(-1j*p_fre)
+                self.hlm[(ell, emm)] = {'A': A_fre, 'p': p_fre, 'z': z_fre, 
+                                        'real': A_fre*np.cos(p_fre), 'imag': -A_fre*np.sin(p_fre)
+                                        }
+        self._u = tnew
+        self._t = tnew
         
     def read_h_txt(self, basepath):
         # TODO: modify in case one has the txt files already
@@ -175,3 +232,44 @@ class Waveform_CoRe(Waveform):
         self._u = u
         self._hlm = d
         pass
+
+# stolen from watpy
+def radius_extrap_polynomial(ys, rs, K):
+    """
+    Given different datasets yi, i=1...N, collected as
+             ys = [y0, y1, y2, ... , yN]
+    and array containing extraction radii
+             rs = [r0, r1, r2, ... , rN],
+    compute the asymptotic value of y as r goes to infinity from an Kth
+    order polynomial in 1/r, e.g.
+
+        yi = y_infty + \sum_i=k^K ci / ri^k,
+
+    where y_infty and the K coefficients ci are determined through a least
+    squares polynomial fit from the above data.
+
+    ys ... collection of data sets yi which all are of the same length,
+           e.g. all sampled on the same grid u.
+    rs ... extraction radii of the data samples yi
+    K  ... maximum polynomial order of 1/r polynomial
+    """
+    import scipy as sp
+    N = len(ys)
+    if N != len(rs):
+        raise ValueError("Mismatch in number of data sets ys and radii rs encountered!")
+    L = len(ys[0])
+    for i in range(1,N):
+        if len(ys[i]) != L:
+            raise ValueError("Inhomogenuous data set encountered! Check if all ys are sampled " *
+                             "on the same grid")
+
+    yinfty = np.zeros(L)
+    # implementation relies on example given at 
+    # https://docs.scipy.org/doc/scipy/reference/reference/generated/scipy.linalg.lstsq.html#scipy.linalg.lstsq
+    M = np.array(rs)[:, np.newaxis]**(-np.array(range(K+1))) # inverse powers of rs
+    for i in range(L):
+        ys_i = [ ys[k][i] for k in range(N) ] # gather data for common radius
+        p, *_ = sp.linalg.lstsq(M, ys_i)
+        yinfty[i] = p[0] # zeroth coefficient equals value at r -> infty
+        
+    return yinfty
