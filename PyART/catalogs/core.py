@@ -35,17 +35,21 @@ class Waveform_CoRe(Waveform):
 
     def __init__(self,
                  path='../dat/CoRe/',
-                 ID      = 'BAM:0001',
+                 ID      = '0001',
                  run     = 'R01',
+                 code    = 'BAM',
                  kind    = 'h5',
                  mtdt_path=None,
                  ell_emms='all',
                  download=False,
+                 cut_at_mrg=False,
                  nu_rescale=False,
                  )->None:
 
         super().__init__()
-        self.ID = ID.replace(':','_')
+        ID = code+f'_{ID:04}'
+        self.ID = ID
+        print(self.ID)
         self.run = run
         self.ell_emms = ell_emms
         self.core_data_path = os.path.join(path,ID)
@@ -70,6 +74,9 @@ class Waveform_CoRe(Waveform):
         # read data
         self.load_hlm(kind = kind)
 
+        if cut_at_mrg:
+            self.cut_at_mrg()
+
         pass
 
     def download_simulation(self, ID='BAM_0001', path='.',protocol='https',verbose=False):
@@ -86,6 +93,22 @@ class Waveform_CoRe(Waveform):
         self.core_data_path = os.path.join(path,ID)
         # pull with lfs
         os.system('cd {}; git lfs pull'.format(self.core_data_path))
+
+    def cut_at_mrg(self):
+        """
+        Find the global peak of the 22 and cut the waveform at this time.
+        Assuming that this is the merger time. For some wfs with postmerger this
+        might not be true!
+        """
+        # find the peak of the 22 mode
+        _, _, _, _, idx_cut = self.find_max(kind='global', return_idx=True)
+
+        # cut all modes at the same index
+        for key in self.hlm.keys():
+            self.hlm[key] = {k: v[:idx_cut] for k,v in self.hlm[key].items()}
+        self._t = self._t[:idx_cut]
+        self._u = self._u[:idx_cut]
+        pass
 
     def load_metadata(self, mtdt_path):
         metadata = {}
