@@ -55,6 +55,7 @@ class Waveform_CoRe(Waveform):
         self.core_data_path = os.path.join(path,ID)
         self.metadata       = None
         self.domain         = 'Time'
+        self.nu_rescale     = nu_rescale
 
         if os.path.exists(self.core_data_path) == False:
             if download:
@@ -164,6 +165,7 @@ class Waveform_CoRe(Waveform):
         """
         self.dfile = os.path.join(basepath,'data.h5')
         dset = {}
+        nu   = self.metadata['nu']
         with h5py.File(self.dfile, 'r') as fn:
             for g in fn.keys():
                 dset[g] = {}
@@ -207,6 +209,7 @@ class Waveform_CoRe(Waveform):
                                                      'real': RehM, 
                                                      'imag': ImhM, 
                                                      'A': aM, 'p': phi}       
+                    if self.nu_rescale: aM = aM/nu
                     A_xtp.append(aM)
                     p_xtp.append(phi)
                     t_xtp.append(uM)
