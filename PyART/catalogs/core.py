@@ -7,16 +7,41 @@ import os
 
 from ..waveform import  Waveform
 
-class CoRe(Waveform):
+## Conversion dictionary
+conversion_dict_floats = {
+    'database_key': 'name',
+    'simulation_name': 'alternative_names',
+    'id_mass': 'M',
+    'id_rest_mass': 'Mb',
+    'id_mass_ratio': 'q',
+    'id_ADM_mass': 'E0',
+    'id_ADM_angularmomentum': 'J0',
+    'id_eos': 'EOS',
+    'id_kappa2T': 'k2T',
+    'id_eccentricity': 'ecc',
+}
+
+conversion_dict_vectors = {
+    'id_spin_starA': 'S1',
+    'id_spin_starB': 'S2',
+    'id_Lambdaell_starA': 'Lambda_ell_A',
+    'id_Lambdaell_starB': 'Lambda_ell_B',
+}
+
+def vector_string_to_array(vstr):
+    return np.array([float(v) for v in vstr.split(',')])
+
+class Waveform_CoRe(Waveform):
 
     def __init__(self,
                  path='../dat/CoRe/',
                  ID      = 'BAM:0001',
                  run     = 'R01',
                  kind     = 'h5',
-                 mtdt_path='../dat/CoRe/metadata.txt',
+                 mtdt_path=None,
                  ell_emms='all',
-                 download=False
+                 download=False,
+                 nu_rescale=False,
                  )->None:
 
         super().__init__()
@@ -34,13 +59,16 @@ class CoRe(Waveform):
             else:
                 print("Use download=True to download the simulation from the CoRe database.")
                 raise FileNotFoundError(f"The path {self.core_data_path} does not exist.")
-            
-        self.runpath = os.path.join(self.core_data_path,self.run)
+        
+        self.simpath = self.core_data_path
+        self.runpath = os.path.join(self.simpath, run)
         # read metadata
-        self.metadata = self.read_metadata(mtdt_path)
+        if mtdt_path is None:
+            mtdt_path = os.path.join(self.simpath,'metadata_main.txt')
+        self.metadata = self.load_metadata(mtdt_path)
 
         # read data
-        self.read_h(self.core_data_path, kind)
+        # self.load_hlm(self.runpath, kind)
 
         pass
 
@@ -56,10 +84,10 @@ class CoRe(Waveform):
         print('git-clone {} ...'.format(git_repo))
         os.system('git clone '+git_repo)
         self.core_data_path = os.path.join(path,ID)
-        print('done!')
+        # pull with lfs
+        os.system('cd {}; git lfs pull'.format(self.core_data_path))
 
-
-    def read_metadata(self, mtdt_path):
+    def load_metadata(self, mtdt_path):
         metadata = {}
         with open(mtdt_path, "r") as f:
             lines = [l for l in f.readlines() if l.strip()] # rm empty
@@ -68,7 +96,12 @@ class CoRe(Waveform):
                 line               = line.rstrip("\n")
                 key, val           = line.split("= ")
                 key                = key.strip()
-                metadata[key] = val.strip()
+                if key in conversion_dict_floats.keys():
+                    metadata[conversion_dict_floats[key]] = val.strip()
+                elif key in conversion_dict_vectors.keys():
+                    metadata[conversion_dict_vectors[key]] = vector_string_to_array(val)
+                else:
+                    metadata[key] = val.strip()
 
         return metadata
     
@@ -81,7 +114,7 @@ class CoRe(Waveform):
             raise NameError('kind not recognized')
         
     def read_h_h5(self, basepath):
-        self.dfile = os.path.join(self.runpath,'data.h5')
+        self.dfile = os.path.join(basepath,'data.h5')
         dset = {}
         with h5py.File(self.dfile, 'r') as fn:
             for g in fn.keys():
@@ -89,19 +122,19 @@ class CoRe(Waveform):
                 for f in fn[g].keys():
                     dset[g][f] = fn[g][f][()]
         try:
-            uM = dset[:,0]
-            RehM = dset[:,1]
-            ImhM = dset[:,2]
-            Momg = dset[:,5]
-            aM   = dset[:,6]
-            phi  = dset[:,7]
+            uM   = dset['rh_22'][:,0]
+            RehM = dset['rh_22'][:,1]
+            ImhM = dset['rh_22'][:,2]
+            Momg = dset['rh_22'][:,5]
+            aM   = dset['rh_22'][:,6]
+            phi  = dset['rh_22'][:,7]
         except:
-            uM = dset[:,0]
-            RehM = dset[:,1]
-            ImhM = dset[:,2]
-            Momg = dset[:,3]
-            aM   = dset[:,4]
-            phi  = dset[:,5]
+            uM   = dset['rh_22'][:,0]
+            RehM = dset['rh_22'][:,1]
+            ImhM = dset['rh_22'][:,2]
+            Momg = dset['rh_22'][:,3]
+            aM   = dset['rh_22'][:,4]
+            phi  = dset['rh_22'][:,5]
 
         # TODO: add option to get all modes available or get specific mode
 
@@ -142,4 +175,3 @@ class CoRe(Waveform):
         self._u = u
         self._hlm = d
         pass
-
