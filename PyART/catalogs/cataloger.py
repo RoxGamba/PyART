@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from multiprocessing import Process
 
-from .sxs import Waveform_SXS
-from .rit import Waveform_RIT
-from .icc import Waveform_ICC
+from .sxs  import Waveform_SXS
+from .rit  import Waveform_RIT
+from .icc  import Waveform_ICC
+from .core import Waveform_CoRe
 
 from ..analysis.match  import Matcher
 from ..analysis.opt_ic import Optimizer
@@ -59,11 +60,12 @@ class Cataloger(object):
         if verbose: print(f'Loading {self.catalog} waveform with ID:{ID:04}')
         if self.catalog=='sxs':
             wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
-                                #order='Extrapolated_N3.dir', ellmax=7)
         elif self.catalog=='rit':
             wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
         elif self.catalog=='icc':
             wave = Waveform_ICC(path=self.path, ID=ID, **add_opts)
+        elif self.catalog=='core':
+            wave = Waveform_CoRe(path=self.path, ID=ID, **add_opts)
         else:
             raise ValueError(f'Unknown catalog: {self.catalog}')
         return wave
@@ -329,6 +331,14 @@ class Cataloger(object):
         plt.show()
         return         
 
+    def mm_at_M(self, name, M, mm_settings = None):
+        
+        eob = self.get_model_waveform(name)
+        nr  = self.data[name]['Waveform']
+        mm_settings['M'] = M 
+        matcher   = Matcher(nr, eob, settings=mm_settings)
+        return matcher.mismatch
+    
     def mm_vs_M(self, 
                      mass_min   = 100, 
                      mass_max   = 200, 
@@ -379,6 +389,7 @@ class Cataloger(object):
                 mm_settings['M'] = M 
                 matcher   = Matcher(nr, eob, settings=mm_settings)
                 mm[j]     = matcher.mismatch
+                
             mm_data['mismatches'][name] = {}
             mm_data['mismatches'][name]['mm_vs_M'] = list(mm)
             mm_data['mismatches'][name]['mm_max']  = max(mm)

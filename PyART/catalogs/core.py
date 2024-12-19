@@ -19,6 +19,7 @@ conversion_dict_floats = {
     'id_eos': 'EOS',
     'id_kappa2T': 'k2T',
     'id_eccentricity': 'ecc',
+    'id_gw_frequency_Momega22': 'initial_frequency',
 }
 
 conversion_dict_vectors = {
@@ -47,13 +48,13 @@ class Waveform_CoRe(Waveform):
                  )->None:
 
         super().__init__()
-        ID = code+f'_{ID:04}'
-        self.ID = ID
-        print(self.ID)
-        self.run = run
-        self.ell_emms = ell_emms
+        ID                  = code+f'_{ID:04}'
+        self.ID             = ID
+        self.run            = run
+        self.ell_emms       = ell_emms
         self.core_data_path = os.path.join(path,ID)
-        self.metadata = None
+        self.metadata       = None
+        self.domain         = 'Time'
 
         if os.path.exists(self.core_data_path) == False:
             if download:
@@ -74,6 +75,7 @@ class Waveform_CoRe(Waveform):
         # read data
         self.load_hlm(kind = kind)
 
+        # remove postmerger
         if cut_at_mrg:
             self.cut_at_mrg()
 
@@ -105,9 +107,9 @@ class Waveform_CoRe(Waveform):
 
         # cut all modes at the same index
         for key in self.hlm.keys():
-            self.hlm[key] = {k: v[:idx_cut] for k,v in self.hlm[key].items()}
-        self._t = self._t[:idx_cut]
-        self._u = self._u[:idx_cut]
+            self.hlm[key] = {k: v[:idx_cut+10] for k,v in self.hlm[key].items()}
+        self._t = self._t[:idx_cut+10]
+        self._u = self._u[:idx_cut+10]
         pass
 
     def load_metadata(self, mtdt_path):
@@ -120,12 +122,30 @@ class Waveform_CoRe(Waveform):
                 key, val           = line.split("= ")
                 key                = key.strip()
                 if key in conversion_dict_floats.keys():
-                    metadata[conversion_dict_floats[key]] = val.strip()
+                    try:
+                        metadata[conversion_dict_floats[key]] = float(val.strip())
+                    except ValueError:
+                        metadata[conversion_dict_floats[key]] = val.strip()
                 elif key in conversion_dict_vectors.keys():
                     metadata[conversion_dict_vectors[key]] = vector_string_to_array(val)
                 else:
                     metadata[key] = val.strip()
 
+        q  = float(metadata['q'])
+        nu = q/(1+q)**2
+        metadata['nu']   = nu
+        metadata['pph0'] = float(metadata['J0'])
+        metadata['J0']   = float(metadata['J0'])*nu
+        metadata['E0byM'] = float(metadata['E0'])
+        metadata['chi1x'] = metadata['S1'][0]
+        metadata['chi1y'] = metadata['S1'][1]
+        metadata['chi1z'] = metadata['S1'][2]
+        metadata['chi2x'] = metadata['S2'][0]
+        metadata['chi2y'] = metadata['S2'][1]
+        metadata['chi2z'] = metadata['S2'][2]
+        metadata['LambdaAl2'] = metadata['Lambda_ell_A'][0]
+        metadata['LambdaBl2'] = metadata['Lambda_ell_B'][0]
+        metadata['initial_frequency'] = metadata['initial_frequency']/(2*np.pi)
         return metadata
     
     def load_hlm(self, kind = 'h5'):
