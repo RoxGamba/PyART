@@ -124,13 +124,18 @@ class Waveform(object):
         else:
             return t_mrg, A_mrg, omg_mrg, domg_mrg
     
-    def compute_dothlm(self, factor=1.0):
+    def compute_dothlm(self, factor=1.0, only_warn=False):
         """ 
         Compute dothlm from self.hlm using 
         numerical differentiation 
         """
         if not self.hlm:
-            raise RuntimeError('dothlm cannot be compute if hlm is not loaded')
+            msg = 'dothlm cannot be compute if hlm is not loaded'
+            if only_warn:
+                print(f'Warning! {msg}')
+            else:
+                raise RuntimeError(msg)
+
         dothlm = {}
         for k in self.hlm:
             hlm  = self.hlm[k]['z']
