@@ -4,10 +4,6 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from multiprocessing import Process
 
-from .sxs import Waveform_SXS
-from .rit import Waveform_RIT
-from .icc import Waveform_ICC
-
 from ..analysis.match  import Matcher
 from ..analysis.opt_ic import Optimizer
 from ..models.teob import CreateDict
@@ -58,12 +54,22 @@ class Cataloger(object):
         if verbose is None: verbose = self.verbose
         if verbose: print(f'Loading {self.catalog} waveform with ID:{ID:04}')
         if self.catalog=='sxs':
+            from .sxs import Waveform_SXS
             wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
                                 #order='Extrapolated_N3.dir', ellmax=7)
+        
         elif self.catalog=='rit':
+            from .rit import Waveform_RIT
             wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
+        
         elif self.catalog=='icc':
+            from .icc import Waveform_ICC
             wave = Waveform_ICC(path=self.path, ID=ID, **add_opts)
+        
+        elif self.catalog=='grahyp':
+            from .gra_hyp import Waveform_GRAHyp
+            wave = Waveform_GRAHyp(path=self.path, ID=ID, **add_opts)
+        
         else:
             raise ValueError(f'Unknown catalog: {self.catalog}')
         return wave
