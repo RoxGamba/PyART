@@ -1,6 +1,5 @@
 import numpy as np
 import os
-#import hypfit
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import matplotlib
@@ -27,6 +26,7 @@ class ScatteringAngle:
         self.file_format      = 'GRA'
         self.punct0           = None
         self.punct1           = None
+        self.use_single_punct = None # None, 0, or 1
         self.fnames           = ['punctures_position1.txt', 'punctures_position2.txt']
         self.verbose          = True
 
@@ -49,6 +49,21 @@ class ScatteringAngle:
         
         self.to_commonformat()
         self.compute_chi()
+        pass
+
+    def get_xy(self):
+        if self.use_single_punct is None:
+            x  = self.x1-self.x2
+            y  = self.y1-self.y2
+        elif self.use_single_punct==0:
+            x = self.x1
+            y = self.y1
+        elif self.use_single_punct==1:
+            x = self.x2
+            y = self.y2
+        else:
+            raise ValueError(f'Uknown value for use_single_punct: {self.use_single_punct}')
+        return x,y
 
     def to_commonformat(self):
         if self.punct0 is not None and self.punct1 is not None:
@@ -90,8 +105,7 @@ class ScatteringAngle:
             self.y1 = mtr0[:,3]
             self.x2 = mtr1[:,2] 
             self.y2 = mtr1[:,3]
-            x  = self.x1-self.x2
-            y  = self.y1-self.y2
+            x,y = self.get_xy()
             r  = np.sqrt(x*x+y*y)
             th = np.unwrap(np.arctan(y/x)*2)/2
 
@@ -100,8 +114,7 @@ class ScatteringAngle:
             self.y1 = mtr0[:,1]
             self.x2 = mtr1[:,0] 
             self.y2 = mtr1[:,1]
-            x  = self.x1-self.x2
-            y  = self.y1-self.y2
+            x,y = self.get_xy()
             r  = np.sqrt(x*x+y*y)
             th = np.unwrap(np.arctan(y/x)*2)/2
             t  = np.linspace(0,1,num=len(r)) # fictitious time
@@ -110,6 +123,8 @@ class ScatteringAngle:
             t  = mtr0[:,0]
             r  = mtr0[:,1]
             th = mtr0[:,2]
+            if self.use_single_punct is not None:
+                raise RuntimeError('use_single_punct cannot be used with EOB!')
             x  = r*np.cos(th);
             y  = r*np.sin(th);
         
@@ -119,8 +134,7 @@ class ScatteringAngle:
             self.y1 = mtr0[:,1]
             self.x2 = mtr0[:,3] 
             self.y2 = mtr0[:,4]
-            x  = self.x1-self.x2
-            y  = self.y1-self.y2
+            x,y = self.get_xy()
             r  = np.sqrt(x*x+y*y)
             th = np.unwrap(np.arctan(y/x)*2)/2
         
@@ -359,36 +373,6 @@ class ScatteringAngle:
         self.save_plot(show=show,save=save,figname=figname)
         return 
     
-#    def test_hypfit(self, plot=False, swap_ab=True, plot_rlim=None, verbose=None):
-#        if verbose is None: verbose = self.verbose
-#        angles = np.zeros((2,2))
-#        for i in range(2):
-#            if i==0:
-#                th = self.th_in
-#                r  = self.r_in
-#            else: 
-#                th = self.th_out
-#                r  = self.r_out
-#            x  = r*np.cos(th)
-#            y  = r*np.sin(th)
-#            ABCDF = hypfit.fit_quadratic(x, y)
-#            canonical = hypfit.quadratic_to_canonical(ABCDF)
-#            if plot:
-#                if plot_rlim is None:
-#                    plot_rlim = self.r_cutoff_out_high
-#                hypfit.plot_fit(x, y, canonical, swap_ab=swap_ab, rlim=plot_rlim)
-#            A = ABCDF[0]
-#            B = ABCDF[1]
-#            C = ABCDF[2]
-#            sqrt_delta = np.sqrt(B*B-A*C)
-#            m1 = A/(-B + sqrt_delta ) # angular coeff of asympt 
-#            m2 = A/(-B - sqrt_delta ) 
-#            angles[i,:] = np.arctan(np.array([m1,m2]))/2/np.pi*360
-#        chi = angles[1,0]-angles[0,1]
-#        if verbose:
-#            print('chi hyp-extracted : {:.4f}'.format(chi))
-#        return chi
-#
 #    def __zero_pad_before(self, array, N, return_column=True):
 #        n = len(array)
 #        v = np.zeros((N,))
