@@ -43,7 +43,7 @@ class Waveform_ICC(Waveform):
 
         # load puncts
         if load_puncts:
-            self.puncts = self.load_puncts()
+            self.load_puncts()
         else:
             self.puncts = None
         
@@ -144,7 +144,8 @@ class Waveform_ICC(Waveform):
         else:
             print("Warning: no punctures' tracks found!")
             pdict = None
-        return pdict
+        self.puncts = pdict
+        return
      
     def load_multipole_txtfile(self, fname_token, raise_error=True, ellmax=None):
         if ellmax is None: ellmax = self.ellmax

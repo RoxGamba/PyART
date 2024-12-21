@@ -34,7 +34,12 @@ class Waveform_GRAHyp(Waveform):
 
         # define self.metadata and self.ometadata (original)
         self.load_metadata()
-
+        
+        if load_puncts:
+            self.load_puncts()
+        else:
+            self.puncts = None
+            
         # define self.psi4lm, self.t_psi4
         self.load_psi4lm()
         
@@ -97,7 +102,7 @@ class Waveform_GRAHyp(Waveform):
                 'Mf'         : None,
                 'af'         : None,
                 'afv'        : None,
-                'scat_angle' : None,
+                'scat_angle' : ometa['scat_angle']['chi'],
                 }
         
         meta['flags'] = cat_ut.get_flags(meta)
@@ -106,6 +111,32 @@ class Waveform_GRAHyp(Waveform):
         self.ometadata = ometa
         self.metadata  = meta
         return
+    
+    def load_puncts(self, fnames=['puncture_0.txt', 'puncture_1.txt']):
+        full_name_0 = os.path.join(self.sim_path,fnames[0])
+        full_name_1 = os.path.join(self.sim_path,fnames[1])
+        if os.path.exists(full_name_0) and os.path.exists(full_name_1):
+            X0 = np.loadtxt(full_name_0)
+            X1 = np.loadtxt(full_name_1)
+            t  = X0[:,1]
+            x0 = X0[:,2]
+            y0 = X0[:,3]
+            z0 = X0[:,4]
+            x1 = X1[:,2]
+            y1 = X1[:,3]
+            z1 = X1[:,4]
+            x  = x0-x1
+            y  = y0-y1
+            r  = np.sqrt(x**2+y**2) # in plane
+            th = -np.unwrap(np.angle(x+1j*y))
+            pdict = {'t':t,   'r' :r,  'th':th,
+                     'x0':x0, 'y0':y0, 'z0':z0,
+                     'x1':x1, 'y1':y1, 'z1':z1}
+        else:
+            print("Warning: no punctures' tracks found!")
+            pdict = None
+        self.puncts = pdict
+        return
 
     def load_psi4lm(self):
         """
@@ -113,7 +144,7 @@ class Waveform_GRAHyp(Waveform):
         """
         r_extr = self.ometadata['r_extr']
         fname = f'psi4_l2m2_r{r_extr:.2f}.txt'
-        X = np.loadtxt(os.path.join(self.path,'BBH_GRAHYP_'+self.ID,fname))
+        X = np.loadtxt(os.path.join(self.sim_path,fname))
         self._t_psi4 = X[:,0]
         
         self._psi4lm = {}
