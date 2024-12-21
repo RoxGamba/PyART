@@ -207,28 +207,28 @@ def PotentialMinimum(rvec,pph,q,chi1,chi2):
     if len(peaks)>0:
         Vmin = V[peaks[0]]
     else:
-        Vmin = 1 
+        Vmin = 1
     return Vmin
 
-def search_apastron(q, chi1, chi2, pph, E, step_size=0.1):
+def search_radial_turning_points(q, chi1, chi2, pph, E, step_size=0.1):
     def fzero(r):
         V = SpinHamiltonian(r, pph, q, chi1, chi2)
         return E-V
     r_infty = 200
     bracketed_intervals = bracketing(fzero, 2, r_infty, step_size=step_size)
-    approx_r_apa = bracketed_intervals[-1][0]
-    # debug
-    #import matplotlib.pyplot as plt # for debug
-    #rvec = np.linspace(2, 200, num=1000)
-    #V = RadialPotential(rvec, pph, q, chi1 ,chi2)
-    #plt.figure
-    #plt.plot(rvec, V)
-    #plt.axhline(E)
-    #plt.show()
+    approx_r_apa  = bracketed_intervals[-1][0]
+    approx_r_peri = bracketed_intervals[0][1]
     if len(bracketed_intervals)<3:
-        r_apa = None
+        r_apa  = None
+        r_peri = None
     else:
-        r_apa = brentq(fzero, approx_r_apa-step_size, approx_r_apa+step_size)
+        r_apa  = brentq(fzero, approx_r_apa -step_size, approx_r_apa +step_size)
+        r_peri = brentq(fzero, approx_r_peri-step_size, approx_r_peri+step_size)
+    return r_peri, r_apa
+
+def search_apastron(q, chi1, chi2, pph, E, step_size=0.1):
+    # kept only for retro-compatibility
+    _, r_apa = search_radial_turning_points(q, chi1, chi2, pph, E, step_size=step_size) 
     return r_apa
 
 def PotentialPlot(E0,pph0,q,chi1,chi2):
