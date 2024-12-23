@@ -94,6 +94,7 @@ class Waveform_CoRe(Waveform):
         print('git-clone {} ...'.format(git_repo))
         os.system('git clone '+git_repo)
         self.core_data_path = os.path.join(path,ID)
+        os.system(f'mv {ID} {self.core_data_path}')
         # pull with lfs
         os.system('cd {}; git lfs pull'.format(self.core_data_path))
 
