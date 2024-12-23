@@ -15,6 +15,7 @@ class ScatteringAngle:
     """
     def __init__(self, **kwargs):
         
+        self.puncts           = None
         self.nmin             = 2
         self.nmax             = 10
         self.n_extract        = None
@@ -22,12 +23,7 @@ class ScatteringAngle:
         self.r_cutoff_in_high = 80
         self.r_cutoff_out_low = 25
         self.r_cutoff_out_high= None
-        self.path             = None
-        self.file_format      = 'GRA'
-        self.punct0           = None
-        self.punct1           = None
         self.use_single_punct = None # None, 0, or 1
-        self.fnames           = ['punctures_position1.txt', 'punctures_position2.txt']
         self.verbose          = True
 
         for key, value in kwargs.items():
@@ -35,7 +31,7 @@ class ScatteringAngle:
                 setattr(self, key, value)
             else:
                 raise ValueError(f'Unknown option: {key}')
-
+        
         if self.n_extract is None:
             self.n_extract = self.nmax # safe if SVD is used
         
@@ -43,9 +39,6 @@ class ScatteringAngle:
         nmax       = self.nmax
         n_extract  = self.n_extract
         self.nfits = nmax-nmin+1
-        
-        if self.path is None:
-            self.path = os.getcwd()
         
         self.to_commonformat()
         self.compute_chi()
@@ -66,78 +59,30 @@ class ScatteringAngle:
         return x,y
 
     def to_commonformat(self):
-        if self.punct0 is not None and self.punct1 is not None:
-            mtr0 = self.punct0
-            mtr1 = self.punct1
-            self.fnames = None
-        elif self.punct0 is not None and self.punct1 is None and (self.file_format=='EOB' or self.file_format=='BAM'): 
-            mtr0 = self.punct0
-            self.fnames = None
-        else:
-            fnames = self.fnames
-            if len(fnames)==2:
-                fname1 = os.path.join(self.path,fnames[0])
-                fname2 = os.path.join(self.path,fnames[1])
-                if os.path.exists(fname1):
-                    mtr0 = np.loadtxt(fname1)
-                else:
-                    raise RuntimeError("'"+fnames[0]+"' not found in "+self.path)
-                if os.path.exists(fname2):
-                    mtr1 = np.loadtxt(fname2)
-                else:
-                    raise RuntimeError("'"+fnames[1]+"' not found in "+self.path)
+        nr_keys  = ['t', 'x0', 'y0', 'x1', 'y1']
+        eob_keys = ['t', 'r', 'phi']
+
+        if all(key in self.puncts for key in nr_keys): 
+            t       = self.puncts['t']
+            self.x1 = self.puncts['x0']
+            self.y1 = self.puncts['y0']
+            self.x2 = self.puncts['x1']
+            self.y2 = self.puncts['y1']
+            x,y = self.get_xy()
+            r   = np.sqrt(x*x+y*y)
+            th  = np.unwrap(np.arctan(y/x)*2)/2
+        
+        elif all(key in self.puncts for key in eob_keys):
+            self.x1 = None
+            self.y1 = None
+            self.x2 = None
+            self.y2 = None
+            t  = self.puncts['t'] 
+            r  = self.puncts['r']
+            th = self.puncts['phi']
+            x  = r*np.cos(th) 
+            y  = r*np.sin(th) 
             
-                if len(mtr0[0,:])!=len(mtr1[0,:]):
-                    raise RuntimeError('files with different number of lines!')
-            else:
-                fname = os.path.join(self.path,fnames)
-                if os.path.exists(fname):
-                    if self.file_format=='BAM':
-                        mtr0 = np.loadtxt(fname, comments='"')
-                    else:
-                        mtr0 = np.loadtxt(fname)
-                else:
-                    raise RuntimeError("'"+fname+"' not found in "+self.path)
-
-        if self.file_format=='GRA' or self.file_format=='RIT':
-            t       = mtr0[:,1]
-            self.x1 = mtr0[:,2] 
-            self.y1 = mtr0[:,3]
-            self.x2 = mtr1[:,2] 
-            self.y2 = mtr1[:,3]
-            x,y = self.get_xy()
-            r  = np.sqrt(x*x+y*y)
-            th = np.unwrap(np.arctan(y/x)*2)/2
-
-        elif self.file_format=='trackXY':
-            self.x1 = mtr0[:,0]
-            self.y1 = mtr0[:,1]
-            self.x2 = mtr1[:,0] 
-            self.y2 = mtr1[:,1]
-            x,y = self.get_xy()
-            r  = np.sqrt(x*x+y*y)
-            th = np.unwrap(np.arctan(y/x)*2)/2
-            t  = np.linspace(0,1,num=len(r)) # fictitious time
-        
-        elif self.file_format=='EOB':
-            t  = mtr0[:,0]
-            r  = mtr0[:,1]
-            th = mtr0[:,2]
-            if self.use_single_punct is not None:
-                raise RuntimeError('use_single_punct cannot be used with EOB!')
-            x  = r*np.cos(th);
-            y  = r*np.sin(th);
-        
-        elif self.file_format=='BAM':
-            t       = mtr0[:,8]
-            self.x1 = mtr0[:,0] 
-            self.y1 = mtr0[:,1]
-            self.x2 = mtr0[:,3] 
-            self.y2 = mtr0[:,4]
-            x,y = self.get_xy()
-            r  = np.sqrt(x*x+y*y)
-            th = np.unwrap(np.arctan(y/x)*2)/2
-        
         self.t  = t
         self.x  = x
         self.y  = y
@@ -373,21 +318,16 @@ class ScatteringAngle:
         self.save_plot(show=show,save=save,figname=figname)
         return 
     
-#    def __zero_pad_before(self, array, N, return_column=True):
-#        n = len(array)
-#        v = np.zeros((N,))
-#        for i in range(n):
-#            v[N-n+i] = array[i]
-#        if not return_column:
-#            v = np.transpose(v)
-#        return v 
+def ComputeChiFrom2Sims(path_hres=None, path_lres=None,
+                        puncts_hres=None, puncts_lres=None,
+                        verbose=False, vverbose=False, **kwargs):
+    # NOTE: 
+    print('Warning! ComputeChiFrom2Sims: old code, not properly tested!')
 
-def ComputeChiFrom2Sims(path_hres=None, path_lres=None, punct0_hres=None, punct1_hres=None, \
-                        punct0_lres=None, punct1_lres=None, verbose=False, vverbose=False, **kwargs):
     if vverbose:
         verbose = True
-    scat_lres = ScatteringAngle(path=path_lres, punct0=punct0_lres, punct1=punct1_lres, verbose=vverbose, **kwargs)
-    scat_hres = ScatteringAngle(path=path_hres, punct0=punct0_hres, punct1=punct1_hres, verbose=vverbose, **kwargs)
+    scat_lres = ScatteringAngle(path=path_lres, puncts=puncts_lres, verbose=vverbose, **kwargs)
+    scat_hres = ScatteringAngle(path=path_hres, puncts=puncts_hres, verbose=vverbose, **kwargs)
 
     chi_hres     = scat_hres.chi;
     fit_err_hres = scat_hres.fit_err;
@@ -414,32 +354,4 @@ def ComputeChiFrom2Sims(path_hres=None, path_lres=None, punct0_hres=None, punct1
     out['fit_err']   = fit_err
     out['res_err']   = res_err
     return out
-
-if __name__ == '__main__':
-    
-    root = '/Users/simonealbanesi/data/'
-    path_hres  = root+'simulations_athena/gauss_2021/sit/E1d008_j4d3_N192/scalars'
-    path_lres  = root+'simulations_athena/gauss_2021/sit/E1d008_j4d3_N128/scalars'
-    print('-'*50, '\nAthena scattering E1d008_j4d3\n', '-'*50, sep='')
-    ComputeChiFrom2Sims(path_hres, path_lres)
-
-    seth_IDs = ['0d980', '0d990', '0d995', '1d000', '1d010']
-    fnames    = ['trackXY1.dat', 'trackXY2.dat']
-    for ID in seth_IDs:
-        print('\n', '-'*50, '\nSeth a00/E'+ID+'\n', '-'*50, sep='')
-        path_lres = root+'other/punctures_2204.10299/a00/E'+ID+'/n36'
-        path_hres = root+'other/punctures_2204.10299/a00/E'+ID+'/n54'
-        out = ComputeChiFrom2Sims(path_hres, path_lres, fnames=fnames, file_format='trackXY')
-        out['scat_hres'].plot_summary()
-    
-#    print('\n\n', '-'*50, '\nEOB angles q=1\n', '-'*50, sep='')
-#    path   = root+'simulations_athena/gauss_2023/candidates/';
-#    fnames = ['q1.0_j5.82_E01.0911_traj.txt', 'q1.0_j5.92_E01.0911_traj.txt', 
-#              'q1.0_j6.15_E01.0911_traj.txt',  'q1.0_j6.5_E01.0911_traj.txt', 
-#              'q1.0_j7.0_E01.0911_traj.txt',  'q1.0_j7.5_E01.0911_traj.txt'];
-#    for fname in fnames:
-#        scat_eob = ScatteringAngle(path=path, fnames=fname, file_format='EOB', nmin=2, nmax=4, n_extract=4,
-#                               r_cutoff_out_low=25, r_cutoff_out_high=100, verbose=True)
-#        scat_eob.plot_summary()
-#        print('-'*50)
 
