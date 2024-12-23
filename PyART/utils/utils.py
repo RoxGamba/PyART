@@ -311,12 +311,19 @@ def spline_antidiff(t,y,k=3,n=1):
     # Return the answer
     return ans
 
-def upoly_fits(r0,y0,nmin=1,nmax=5,n_extract=None, r_cutoff_low=None, r_cutoff_high=None, direction='in'):
-    """
-    Fit quantities using u=1/r polynomials to extract
-    to infinity. Used, e.g., for scattering angles
-    """
-    if n_extract     is None: n_extract     = nmax
+def polyfit_svd(x, y, order):
+    X = np.vander(x, order + 1)
+    U, S, Vt = np.linalg.svd(X, full_matrices=False)
+    #threshold = np.finfo(float).eps * max(X.shape) * S[0]
+    threshold = 1e-13*np.amax(S)
+    mask = S > threshold
+    S_inv = np.zeros_like(S)
+    S_inv[mask] = 1 / S[mask]
+    coeffs = Vt.T @ np.diag(S_inv) @ U.T @ y
+    return coeffs
+
+def upoly_fits(r0,y0,nmin=1,nmax=10,n_extract=None, r_cutoff_low=None, r_cutoff_high=None, direction='in', svd=True):
+    if n_extract     is None: n_extract     = nmax # safe if SVD is used
     if r_cutoff_low  is None: r_cutoff_low  = min(r0)
     if r_cutoff_high is None: r_cutoff_high = max(r0)
     if nmin>nmax: raise ValueError(f'nmin>nmax: {nmin}>{nmax} !')
@@ -343,13 +350,17 @@ def upoly_fits(r0,y0,nmin=1,nmax=5,n_extract=None, r_cutoff_low=None, r_cutoff_h
     for i in range(0, nfits):
         fit_order     = nmin+i
         fit_orders[i] = fit_order
-        b_tmp  = np.polyfit(u, y, fit_order)
+        if svd:
+            b_tmp  = polyfit_svd(u, y, fit_order)
+        else:
+            b_tmp  = np.polyfit(u, y, fit_order)
         b[:,i] = zero_pad_before(b_tmp, nmax+1)
         p[:,i] = np.polyval(b_tmp, u) 
         ye_vec[i]  = b[-1,i]
-        if fit_order==n_extract:
+        if n_extract is not None and fit_order==n_extract:
             ye = ye_vec[i]
-    
+    if n_extract is None:
+        ye = np.mean(ye_vec)
     out = {'extrap':ye, 'extrap_vec':ye_vec, 'fit_orders':fit_orders.astype(int).tolist(),
            'coeffs':b, 'polynomials':p, 'mask':mask}
     return out
