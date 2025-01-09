@@ -19,7 +19,7 @@ conversion_dict_floats = {
     'id_eos': 'EOS',
     'id_kappa2T': 'k2T',
     'id_eccentricity': 'ecc',
-    'id_gw_frequency_Momega22': 'initial_frequency',
+    'id_gw_frequency_Momega22': 'f0',
 }
 
 conversion_dict_vectors = {
@@ -147,7 +147,7 @@ class Waveform_CoRe(Waveform):
         metadata['chi2z'] = metadata['S2'][2]
         metadata['LambdaAl2'] = metadata['Lambda_ell_A'][0]
         metadata['LambdaBl2'] = metadata['Lambda_ell_B'][0]
-        metadata['initial_frequency'] = metadata['initial_frequency']/(2*np.pi)
+        metadata['f0'] = metadata['f0']/(2*np.pi)
         return metadata
     
     def load_hlm(self, kind = 'h5'):
