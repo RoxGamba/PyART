@@ -100,18 +100,18 @@ class Waveform_CoRe(Waveform):
 
     def cut_at_mrg(self):
         """
-        Find the global peak of the 22 and cut the waveform at this time.
+        Find the global peak of the 22 and cut the waveform at this time + 10 M.
         Assuming that this is the merger time. For some wfs with postmerger this
         might not be true!
         """
         # find the peak of the 22 mode
-        _, _, _, _, idx_cut = self.find_max(kind='global', return_idx=True)
+        t_mrg, _, _, _, idx_cut = self.find_max(kind='global', return_idx=True)
 
         # cut all modes at the same index
-        for key in self.hlm.keys():
-            self.hlm[key] = {k: v[:idx_cut+10] for k,v in self.hlm[key].items()}
-        self._t = self._t[:idx_cut+10]
-        self._u = self._u[:idx_cut+10]
+
+        # Let's cut at mergr + 10 M     
+        DeltaT = self.u[-1] - (t_mrg + 10)
+        self.cut(DeltaT, from_the_end=True)
         pass
 
     def load_metadata(self, mtdt_path):
