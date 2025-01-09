@@ -53,23 +53,27 @@ class Cataloger(object):
     def get_Waveform(self, ID, add_opts={}, verbose=None):
         if verbose is None: verbose = self.verbose
         if verbose: print(f'Loading {self.catalog} waveform with ID:{ID:04}')
+          
         if self.catalog=='sxs':
             from .sxs import Waveform_SXS
             wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
-                                #order='Extrapolated_N3.dir', ellmax=7)
-        
-        elif self.catalog=='rit':
+            
+        elif self.catalog=='rit'
             from .rit import Waveform_RIT
             wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
         
         elif self.catalog=='icc':
             from .icc import Waveform_ICC
             wave = Waveform_ICC(path=self.path, ID=ID, **add_opts)
+
+        elif self.catalog=='core':
+            from .core import Waveform_CoRe
+            wave = Waveform_CoRe(path=self.path, ID=ID, **add_opts)
         
         elif self.catalog=='grahyp':
             from .gra_hyp import Waveform_GRAHyp
             wave = Waveform_GRAHyp(path=self.path, ID=ID, **add_opts)
-        
+
         else:
             raise ValueError(f'Unknown catalog: {self.catalog}')
         return wave
@@ -335,6 +339,14 @@ class Cataloger(object):
         plt.show()
         return         
 
+    def mm_at_M(self, name, M, mm_settings = None):
+        
+        eob = self.get_model_waveform(name)
+        nr  = self.data[name]['Waveform']
+        mm_settings['M'] = M 
+        matcher   = Matcher(nr, eob, settings=mm_settings)
+        return matcher.mismatch
+    
     def mm_vs_M(self, 
                      mass_min   = 100, 
                      mass_max   = 200, 
@@ -385,6 +397,7 @@ class Cataloger(object):
                 mm_settings['M'] = M 
                 matcher   = Matcher(nr, eob, settings=mm_settings)
                 mm[j]     = matcher.mismatch
+                
             mm_data['mismatches'][name] = {}
             mm_data['mismatches'][name]['mm_vs_M'] = list(mm)
             mm_data['mismatches'][name]['mm_max']  = max(mm)

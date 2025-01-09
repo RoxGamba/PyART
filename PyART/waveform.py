@@ -107,6 +107,8 @@ class Waveform(object):
                 if(t[peaks[i]] > umin):
                     break
         elif kind == 'last-peak':
+            if len(peaks) == 0:
+                raise ValueError('No peaks found')
             i = len(peaks) - 1
         elif kind == 'global':
             Alms = props['peak_heights']
