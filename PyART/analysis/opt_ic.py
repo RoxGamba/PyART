@@ -51,7 +51,8 @@ class Optimizer(object):
                  ):
         
         self.ref_Waveform = ref_Waveform
-        
+        self.opt_Waveform = None
+
         self.kind_ic      = kind_ic
         self.use_nqc      = use_nqc
         self.r0_eob       = r0_eob
