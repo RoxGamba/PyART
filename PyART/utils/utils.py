@@ -143,7 +143,7 @@ def safe_sigmoid(x, alpha, clip=None):
         raise ValueError(f'Invalid clip value: {clip}')
     return 1/(1 + np.exp(exponent))
 
-def taper_waveform(t, h, t1=None, t2=None, alpha=0.2, kind='sigmoid', debug=False):
+def taper_waveform(t, h, t1=None, t2=None, alpha=0.2, alpha_end=None, kind='sigmoid', debug=False):
     """
     Waveform tapering in Matcher-class.
     The meaning of t1, t2, and alpha depends on the kind used!
@@ -152,9 +152,10 @@ def taper_waveform(t, h, t1=None, t2=None, alpha=0.2, kind='sigmoid', debug=Fals
         return h
     
     elif kind=='sigmoid':
+        if alpha_end is None: alpha_end = alpha
         window = np.ones_like(h)
-        if t1 is not None: window *= safe_sigmoid( t-t1, alpha=alpha, clip=50)
-        if t2 is not None: window *= safe_sigmoid( t2-t , alpha=alpha, clip=50)
+        if t1 is not None: window *= safe_sigmoid( t-t1,  alpha=alpha, clip=50)
+        if t2 is not None: window *= safe_sigmoid( t2-t , alpha=alpha_end, clip=50)
     
     elif kind=='tukey':
         n     = len(h)

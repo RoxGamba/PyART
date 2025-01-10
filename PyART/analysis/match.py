@@ -220,6 +220,7 @@ class Matcher(object):
             'taper_start'          : 0.10, # parameter for sigmoid or tukey window
             'taper_end'            : None, # parameter for sigmoid or tukey window
             'taper_alpha'          : 0.5,  # alpha parameter for sigmoid or tukey (will be M-normalized)
+            'taper_alpha_end'      : None, # if specified, use this alpha for the end (only with sigmoid)
             'resize_factor'        : 4,
             'debug'                : False,
             'geom'                 : True,
@@ -518,7 +519,11 @@ def condition_td_waveform(h_in, settings, return_tap_times=False, mrg_idx=None):
         t2 = npad_before + hlen*(1-tap2) if (tap2 is not None and tap2>0) else None
         t  = np.linspace(0, tlen-1, num=tlen)
         alpha_M = settings['taper_alpha']/settings['M']
-        h  = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha_M, kind=settings['taper'])
+        if settings['taper_alpha_end'] is not None:
+            alpha_end_M = settings['taper_alpha_end']/settings['M']
+        else:
+            alpha_end_M = alpha_M
+        h  = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha_M, alpha_end=alpha_end_M, kind=settings['taper'])
     else:
         t1 = None
         t2 = None
