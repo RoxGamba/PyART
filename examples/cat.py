@@ -18,14 +18,15 @@ optimizer_opts = {'mm_settings'  : {'cut_second_waveform':True, 'final_frequency
                                    }
                   }
 sim_list = list(range(1096,1111))
+sim_list = list(range(1125,1140))
 cat = Cataloger(path=path, catalog='rit', sim_list=sim_list, 
                            json_file='./examples/mismatches_rit_cat.json', 
                            add_opts={'download':True, 'nu_rescale':True})
 #cat.plot_waves()
 hlines = [5e-2,1e-2,1e-3]
 cat.optimize_mismatches(optimizer_opts=optimizer_opts, nproc=4)
-#cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='E0byM')
+cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='E0byM', ranges={'check_pph_lso':True})
 #cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='chiz_eff')
 #cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='E0byM',    ranges={'pph0':[3,10]})
 #cat.plot_colorbar(xvar='pph0', yvar='mm_opt', hlines=hlines, cvar='chiz_eff', ranges={'pph0':[3,10]})
-cat.mm_vs_M(N=10, ranges={'pph0':[1,10]}, savepng=False, cmap_var='pph0', hlines=[5e-2, 1e-2, 1e-3], mass_min=20)
+#cat.mm_vs_M(N=10, ranges={'pph0':[1,10], 'check_pph_lso':True}, savepng=False, cmap_var='pph0', hlines=[5e-2, 1e-2, 1e-3], mass_min=20)

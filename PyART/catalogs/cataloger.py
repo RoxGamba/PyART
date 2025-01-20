@@ -7,7 +7,7 @@ from multiprocessing import Process
 from ..analysis.match  import Matcher
 from ..analysis.opt_ic import Optimizer
 from ..models.teob import CreateDict
-from ..models.teob import Waveform_EOB
+from ..models.teob import Waveform_EOB, GetLSO
 
 matplotlib.rc('text', usetex=True)
 
@@ -58,7 +58,7 @@ class Cataloger(object):
             from .sxs import Waveform_SXS
             wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
             
-        elif self.catalog=='rit'
+        elif self.catalog=='rit':
             from .rit import Waveform_RIT
             wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
         
@@ -234,15 +234,31 @@ class Cataloger(object):
             self.data[name]['Optimizer'] = Optimizer(self.data[name]['Waveform'], **optimizer_opts)
         pass
 
-    def __is_in_valid_range(self, name, ranges):
+    def __is_in_valid_range(self, name, ranges,):
         """
         Check if a certain waveform is in the specified
         ranges (for example: ranges={'pph0':[1,10]})
+        Ranges can also contain 'check_pph_lso'.
+        If check_pph_lso is True, then check also if the pph of 
+        the simulation is above the LSO value
         """
         meta  = self.data[name]['Waveform'].metadata
         for key in ranges:
-            if key not in meta:
-                raise ValueError(f'{key} is not a metadata entry!')
+            if key=='check_pph_lso':
+                q     = meta['q']
+                chi1z = meta['chi1z']
+                chi2z = meta['chi2z']
+                nu    = meta['nu']
+                m1    = q/(1+q)
+                m2    = 1/(1+q)
+                a0    = m1*chi1z + m2*chi2z 
+                pph_lso = GetLSO(nu,a0)
+                if meta['pph0']<pph_lso:
+                    return False
+                else:
+                    continue
+            elif key not in meta:
+                raise ValueError(f'{key} is not a valid option in ranges!')
             x = meta[key]
             if x<ranges[key][0] or x>ranges[key][1]:
               return False
