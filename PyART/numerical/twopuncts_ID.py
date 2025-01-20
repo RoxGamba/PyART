@@ -175,7 +175,7 @@ class TwoPunctID(object):
                 energies[idx] = E_ADM
         return energies
 
-    def fit_iter(self, P0, dP, npoints=4, poly_order=None, verbose=None, show_plot=False, save_plot=True, x0_position='centered', nproc=1):
+    def fit_iter(self, P0, dP, npoints=4, poly_order=None, verbose=None, show_plot=False, save_plot=False, x0_position='centered', nproc=1):
         if verbose is None: verbose = self.verbose
         P    = P0
         Pmin = 0
@@ -267,32 +267,33 @@ class TwoPunctID(object):
         E_rescaled  = energy_scaler.transform(self.E)
         Pf_rescaled = np.polyval(b, E_rescaled) 
         Pf          = momentum_scaler.inverse_transform(Pf_rescaled)
-
-        xlabs = [r'$x_{\rm fit}$', r'$E_{\rm ADM}$']
-        ylabs = [r'$y_{\rm fit}$', r'$P_{\rm ADM}$']
-        fig, axs = plt.subplots(2,1,figsize=(10,7))
-        axs[0].scatter(x,y, zorder=2, c='k')
-        axs[0].plot(x_fine, p, zorder=1, color=[1,0,0])
-        axs[0].axhline(Pf_rescaled, zorder=3)
-        axs[1].scatter(energies, momenta, zorder=2)
-        axs[1].plot(energies_fine, fitted_momenta, zorder=1, color=[1,0.5,0])
-        axs[1].axhline(Pf, zorder=3)
-        for i in range(2):
-            axs[i].grid()
-            axs[i].set_xlabel(xlabs[i], fontsize=15)
-            axs[i].set_ylabel(ylabs[i], fontsize=15)
-        if save_plot:
-            figname = f'tp_E{self.E:.3f}_L{self.L:.3f}_iter{self.iteration:d}.png'
-            figname = os.path.join(self.outdir, figname)
-            plt.savefig(figname, dpi=200, bbox_inches='tight')
-        if show_plot: 
-            plt.show()
-        else:
-            plt.close()
+        
+        if save_plot or show_plot:
+            xlabs = [r'$x_{\rm fit}$', r'$E_{\rm ADM}$']
+            ylabs = [r'$y_{\rm fit}$', r'$P_{\rm ADM}$']
+            fig, axs = plt.subplots(2,1,figsize=(10,7))
+            axs[0].scatter(x,y, zorder=2, c='k')
+            axs[0].plot(x_fine, p, zorder=1, color=[1,0,0])
+            axs[0].axhline(Pf_rescaled, zorder=3)
+            axs[1].scatter(energies, momenta, zorder=2)
+            axs[1].plot(energies_fine, fitted_momenta, zorder=1, color=[1,0.5,0])
+            axs[1].axhline(Pf, zorder=3)
+            for i in range(2):
+                axs[i].grid()
+                axs[i].set_xlabel(xlabs[i], fontsize=15)
+                axs[i].set_ylabel(ylabs[i], fontsize=15)
+            if save_plot:
+                figname = f'tp_E{self.E:.3f}_L{self.L:.3f}_iter{self.iteration:d}.png'
+                figname = os.path.join(self.outdir, figname)
+                plt.savefig(figname, dpi=200, bbox_inches='tight')
+            if show_plot: 
+                plt.show()
+            else:
+                plt.close()
         return Pf
     
     def fit_iterations(self, P0=None, step_rel=0.15, tol=1e-10, resize_factor=100, itermax=5, npoints=4, \
-                             poly_order=None, verbose=None, nproc=1, save_plot=True, show_plot=False):
+                             poly_order=None, verbose=None, nproc=1, save_plot=False, show_plot=False):
         if verbose is None: verbose = self.verbose
         if P0 is None and self.E > 1-tol:
             nu = self.q/(1+self.q)**2

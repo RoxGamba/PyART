@@ -59,7 +59,7 @@ def compute_hphc(hlm, phi=0, i=0, modes=[(2,2)]):
         if emm!=0:
             Alm = hlm[k]['A']
         else:
-            Alm = hlm[k]['h']/2
+            Alm = hlm[k]['z']/2
         plm = hlm[k]['p']
         Hp  = Alm*np.exp(-1j*plm)
         Hn  = (-1)**ell*Alm*np.exp( 1j*plm)
@@ -80,7 +80,7 @@ def taper(t, h, M, alpha, tau, Msuns=1.):
     return (window*h)
 
 def get_multipole_dict(wave):
-    return {'real':wave.real, 'imag':wave.imag, 'h':wave,
+    return {'real':wave.real, 'imag':wave.imag, 'z':wave,
             'A':np.abs(wave), 'p':-np.unwrap(np.angle(wave))}
 
 

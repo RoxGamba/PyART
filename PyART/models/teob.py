@@ -81,7 +81,7 @@ def convert_hlm(hlm):
         p   = hlm[key][1]
         hlm_conv[(ell, emm)] = {'real': A*np.cos(p), 'imag': -1*A*np.sin(p),
                                 'A'   : A, 'p' : p,
-                                'h'   : A*np.exp(-1j*p)
+                                'z'   : A*np.exp(-1j*p)
                                 }
     return hlm_conv
 
@@ -90,7 +90,7 @@ def CreateDict(M=1., q=1,
                chi1z=0., chi2z=0, 
                chi1x=0., chi2x=0,
                chi1y=0., chi2y=0,
-               l1=0, l2=0, 
+               LambdaAl2=0, LambdaBl2=0, 
                iota=0, f0=0.0035, srate=4096., df = 1./128.,
                phi_ref = 0.,
                ecc = 1e-8, r_hyp = 0, H_hyp = 0, J_hyp=0, anomaly = np.pi,
@@ -122,8 +122,8 @@ def CreateDict(M=1., q=1,
             'chi2x'              : chi2x,
             'chi1y'              : chi1y,
             'chi2y'              : chi2y,
-            'LambdaAl2'          : l1,
-            'LambdaBl2'          : l2,
+            'LambdaAl2'          : LambdaAl2,
+            'LambdaBl2'          : LambdaBl2,
             'distance'           : 1.,
             'initial_frequency'  : f0,
             'use_geometric_units': use_geom,
@@ -207,28 +207,28 @@ def PotentialMinimum(rvec,pph,q,chi1,chi2):
     if len(peaks)>0:
         Vmin = V[peaks[0]]
     else:
-        Vmin = 1 
+        Vmin = 1
     return Vmin
 
-def search_apastron(q, chi1, chi2, pph, E, step_size=0.1):
+def search_radial_turning_points(q, chi1, chi2, pph, E, step_size=0.1):
     def fzero(r):
         V = SpinHamiltonian(r, pph, q, chi1, chi2)
         return E-V
     r_infty = 200
     bracketed_intervals = bracketing(fzero, 2, r_infty, step_size=step_size)
-    approx_r_apa = bracketed_intervals[-1][0]
-    # debug
-    #import matplotlib.pyplot as plt # for debug
-    #rvec = np.linspace(2, 200, num=1000)
-    #V = RadialPotential(rvec, pph, q, chi1 ,chi2)
-    #plt.figure
-    #plt.plot(rvec, V)
-    #plt.axhline(E)
-    #plt.show()
+    approx_r_apa  = bracketed_intervals[-1][0]
+    approx_r_peri = bracketed_intervals[0][1]
     if len(bracketed_intervals)<3:
-        r_apa = None
+        r_apa  = None
+        r_peri = None
     else:
-        r_apa = brentq(fzero, approx_r_apa-step_size, approx_r_apa+step_size)
+        r_apa  = brentq(fzero, approx_r_apa -step_size, approx_r_apa +step_size)
+        r_peri = brentq(fzero, approx_r_peri-step_size, approx_r_peri+step_size)
+    return r_peri, r_apa
+
+def search_apastron(q, chi1, chi2, pph, E, step_size=0.1):
+    # kept only for retro-compatibility
+    _, r_apa = search_radial_turning_points(q, chi1, chi2, pph, E, step_size=step_size) 
     return r_apa
 
 def PotentialPlot(E0,pph0,q,chi1,chi2):
