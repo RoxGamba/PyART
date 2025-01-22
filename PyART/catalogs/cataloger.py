@@ -368,14 +368,16 @@ class Cataloger(object):
                      mass_max   = 200, 
                      N          = 20,
                      cmap       = 'jet', 
-                     mm_settings= None,
+                     json_load  = None, # load if not None
+                     json_save  = None, # save if not None
+                     mm_settings= None, 
                      ranges     = {'pph0':[1,10]},
                      cmap_var   = 'E0byM',
                      hlines     = [],
-                     savepng    = True,
-                     figname    = None,
+                     figname    = None, # save if not None
                      ):
 
+        if figname is not None: savepng = True
 
         # select waveforms and get colors
         subset       = self.find_subset(ranges=ranges)
@@ -387,43 +389,52 @@ class Cataloger(object):
         masses = np.linspace(mass_min, mass_max, num=N)    
         
         # start setting up the JSON file
-        mm_data = {}
-        mm_data['masses']     = list(masses)
-        mm_data['options']    = {}
-        mm_data['mismatches'] = {}
-        mm_data['options']['mm_settings'] = mm_settings
+        if json_load is None:
+            mm_data = {}
+            mm_data['masses']     = list(masses)
+            mm_data['options']    = {}
+            mm_data['mismatches'] = {}
+            mm_data['options']['mm_settings'] = mm_settings
 
-        vrs = ['q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z', 'E0byM', 'pph0']
+            vrs = ['q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z', 'E0byM', 'pph0']
+
+
+            for i, name in enumerate(subset):
+                if mm_settings is None:
+                    if self.data[name]['Optimizer'] is not None:
+                        if self.verbose: print(f'Using settings from {name} optimizer')
+                        mm_settings = self.data[name]['Optimizer'].mm_settings
+                    else:
+                        raise ValueError('No mm_settings provided and no Optimizer available')
+                print(f'mm for: {name}')
+                mm = masses*0
+                eob = self.get_model_waveform(name)
+                nr  = self.data[name]['Waveform']
+                                
+                for j, M in enumerate(masses):
+                    mm_settings['M'] = M 
+                    matcher   = Matcher(nr, eob, settings=mm_settings)
+                    mm[j]     = matcher.mismatch
+                    
+                mm_data['mismatches'][name] = {}
+                mm_data['mismatches'][name]['mm_vs_M'] = list(mm)
+                mm_data['mismatches'][name]['mm_max']  = max(mm)
+                mm_data['mismatches'][name]['mm_min']  = min(mm)
+
+                for vr in vrs:
+                    mm_data['mismatches'][name][vr] = self.quantity_from_dataset(name, vr)
+        
+        elif isinstance(json_load, str):
+            with open(json_load, 'r') as file:
+                mm_data = json.load(file) 
+        
+        else:
+            raise ValueError('Invalid format for mm_json')
 
         _, ax = plt.subplots(1,1,figsize=(8,6))
-
         for i, name in enumerate(subset):
-            if mm_settings is None:
-                if self.data[name]['Optimizer'] is not None:
-                    if self.verbose: print(f'Using settings from {name} optimizer')
-                    mm_settings = self.data[name]['Optimizer'].mm_settings
-                else:
-                    raise ValueError('No mm_settings provided and no Optimizer available')
-            print(f'mm for: {name}')
-            mm = masses*0
-            eob = self.get_model_waveform(name)
-            nr  = self.data[name]['Waveform']
-                            
-            for j, M in enumerate(masses):
-                mm_settings['M'] = M 
-                matcher   = Matcher(nr, eob, settings=mm_settings)
-                mm[j]     = matcher.mismatch
-                
-            mm_data['mismatches'][name] = {}
-            mm_data['mismatches'][name]['mm_vs_M'] = list(mm)
-            mm_data['mismatches'][name]['mm_max']  = max(mm)
-            mm_data['mismatches'][name]['mm_min']  = min(mm)
-
-            for vr in vrs:
-                mm_data['mismatches'][name][vr] = self.quantity_from_dataset(name, vr)
-
             cidx = cmap_indices[i]
-            ax.plot(masses, mm, label=name, c=colors[cidx], lw=0.6)
+            ax.plot(masses, mm_data['mismatches'][name]['mm_vs_M'], label=name, c=colors[cidx], lw=0.6)
         
         styles  = ['-', '--', '-.']
         nstyles = len(styles)
@@ -444,16 +455,16 @@ class Cataloger(object):
         plt.yscale('log')
         plt.grid()
 
-        if savepng:
-            if figname is None:
-                figname = f'mismatches_{self.catalog}_{cmap_var}.png'
+        if figname is None:
+            figname = f'mismatches_{self.catalog}_{cmap_var}.png'
             plt.savefig(figname,dpi=200,bbox_inches='tight')
             print(f'Figure saved: {figname}')
         plt.show()
-
-        with open(self.json_file, 'w') as file:
-            file.write(json.dumps(mm_data,indent=2))
-            print(f'JSON file saved: {self.json_file}')
+        
+        if isinstance(json_save, str):
+            with open(json_save, 'w') as file:
+                file.write(json.dumps(mm_data,indent=2))
+                print(f'JSON file saved: {json_save}')
 
         return
 
