@@ -159,9 +159,9 @@ class ScatteringAngle:
         
         min_r  = min(self.r)
         if self.r_cutoff_in_low<min_r:
-            print('+++ Warning +++\nmin(r)={:.2f}<r_cutoff_in_low={:.2f}'.format(min_r, self.r_cutoff_in_low))  
+            print('+++ Warning +++\nmin(r)={:.2f}>r_cutoff_in_low={:.2f}'.format(min_r, self.r_cutoff_in_low))  
         if self.r_cutoff_out_low<min_r:
-            print('+++ Warning +++\nmin(r)={:.2f}<r_cutoff_out_low={:.2f}'.format(min_r, self.r_cutoff_out_low))  
+            print('+++ Warning +++\nmin(r)={:.2f}>r_cutoff_out_low={:.2f}'.format(min_r, self.r_cutoff_out_low))  
 
         self.p_in   = fit_in['polynomials']
         self.b_in   = b_in
