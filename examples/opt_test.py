@@ -46,7 +46,17 @@ else:
     
 if args.kind_ic=='e0f0':
     bounds = {'e0':[0,0.7], 'f0':[None, None]}
+    bounds_iter = {'eps_initial': {'e0':0.1, 'f0':0.01},
+                   'eps_factors': {'e0':2,   'f0':2},
+                   'bad_mm'     : 1e-2,
+                   'max_iter'   : 3
+                  }
 else:
+    bounds_iter = {'eps_initial': {'E0byM':5e-3, 'pph0':1e-2},
+                   'eps_factors': {'E0byM':4,    'pph0':2},
+                   'bad_mm'     : 1e-2,
+                   'max_iter'   : 3
+                  }
     bounds = {'E0byM':[None,None], 'pph0':[None,None]}
 
 if args.catalog=='rit':
@@ -72,11 +82,6 @@ if args.catalog=='sxs':
 
 minimizer = {'kind':'dual_annealing', 'opt_maxfun':args.maxfun, 'opt_max_iter':args.opt_max_iter, 'opt_seed':190521}
 
-bounds_iter = {'eps_initial': {'E0byM':5e-3, 'pph0':1e-2},
-               'eps_factors': {'E0byM':4,    'pph0':2},
-               'bad_mm'     : 1e-2,
-               'max_iter'   : 3
-              }
 
 opt = Optimizer(ebbh, kind_ic=args.kind_ic, mm_settings=mm_settings,
                       use_nqc=args.use_nqc,

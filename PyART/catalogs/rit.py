@@ -58,7 +58,8 @@ class Waveform_RIT(Waveform):
 
         # psi4 available
         self.psi_path  = os_ut.find_dirs_with_token(self.sim_path, 'ExtrapPsi4')[0]
-        self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
+        #self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
+        self.mtdt_psi4 = os.path.join(self.psi_path, 'Metadata')
         if psi_load:
             _, self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
             self.load_psi4lm()
