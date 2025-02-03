@@ -182,7 +182,7 @@ class Waveform_LVKNR(Waveform):
             with open(path, "r") as f:
                 first_line = f.readline().strip()
                 return first_line.startswith("version https://git-lfs.github.com")
-        except FileNotFoundError:
+        except UnicodeDecodeError:
             return False
 
 if __name__ == '__main__':
