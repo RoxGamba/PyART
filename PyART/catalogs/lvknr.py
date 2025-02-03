@@ -20,30 +20,41 @@ class Waveform_LVKNR(Waveform):
 
     def __init__(
             self,
-            path   =None,
-            ID     = None,
-            ellmax = 8,
-            load_m0 = True,
-            download = False,
+            lvcnr_path = None,
+            catalog    = 'SXS',
+            ID         = None,
+            ellmax     = 8,
+            load_m0    = True,
+            download   = False,
             nu_rescale = False,
             **kwargs
         ):
     
         super().__init__()
-        if path is None:
-            raise ValueError("Please provide a path to the waveform file")
         
+        if lvcnr_path is None:
+            raise FileNotFoundError("Please provide a path to the LVCNR catalog.")
+        if ID is None:
+            raise FileNotFoundError("Please provide a simulation ID.")
+        if catalog not in ['SXS', 'BAM', 'Cardiff-UIB','GeorgiaTech','RIT']:
+            raise NameError(f"{catalog} catalog not supported.")
+
         self.ID = ID
-        self.data_path = os.path.join(path, ID)
-        self.ellmax    = ellmax
-        self.load_m0   = load_m0
-        self.nu_rescale= nu_rescale
+        self.lvcnr_path = lvcnr_path 
+        self.catalog    = catalog
+        self.data_path  = os.path.join(lvcnr_path, catalog, ID)
+        self.ellmax     = ellmax
+        self.load_m0    = load_m0
+        self.nu_rescale = nu_rescale
 
         if os.path.exists(self.data_path) == False:
+            raise FileNotFoundError(f"The simulation {ID} does not exist.")
+        
+        if self._is_git_lfs_pointer(self.data_path):
             if download == True:
-                print("The path ", self.sxs_data_path, " does not exist.")
+                print("The path ", self.lvcnr_path, " does not exist.")
                 print("Downloading the simulation from the LVCNR catalog.")
-                self.download_simulation(ID=ID, path=path)
+                self.download_simulation(ID=ID)
             else:
                 print("Use download=True to download the simulation from the LVCNR catalog.")
                 raise FileNotFoundError(f"The path {self.data_path} does not exist.")
@@ -155,13 +166,24 @@ class Waveform_LVKNR(Waveform):
 
         pass
 
-    def download_simulation(self, ID, path):
+    def download_simulation(self, ID):
         """
-        Download the simulation from the LVCNR catalog
+        Download the simulation from the LVCNR catalog.
         """
-
-        # download the simulation
+        os.system(f"cd {self.lvcnr_path}/{self.catalog} && git lfs pull --include {ID}")
         pass
+
+    def _is_git_lfs_pointer(self, path):
+        """
+        Check if a file is still a Git LFS pointer (not downloaded)
+        """
+        
+        try:
+            with open(path, "r") as f:
+                first_line = f.readline().strip()
+                return first_line.startswith("version https://git-lfs.github.com")
+        except FileNotFoundError:
+            return False
 
 if __name__ == '__main__':
     
