@@ -252,13 +252,14 @@ def delta_a_b(a, xa, b, xb, N=500):
     delta_ab = a_n - b_n 
     return x, delta_ab, a_n, b_n
 
-def vec_differences(x1,y1,x2,y2,a,b,dx,diff_kind='abs',fabs=False,interp_kind='cubic'):
+def vec_differences(x1,y1,x2,y2,a,b,dx,diff_kind='abs',fabs=False,interp_kind='cubic',ensure_unique=False):
     """
     Compute differences between arrays with different lengths
     """
     xs  = np.linspace(a,b,num=int((b-a)/dx))
-    y1s = spline(x1,y1,xs,kind=interp_kind)
-    y2s = spline(x2,y2,xs,kind=interp_kind)
+    
+    y1s = spline(x1,y1,xs,kind=interp_kind,ensure_unique=ensure_unique)
+    y2s = spline(x2,y2,xs,kind=interp_kind,ensure_unique=ensure_unique)
     if diff_kind=='abs':
         dys =  y1s-y2s
     elif diff_kind=='rel':
@@ -376,10 +377,13 @@ def interpolate_hlm(u, hlm, u_new, kind='cubic'):
     p_i  = spline(u, phi,         u_new, kind=kind)
     return re_i, im_i, A_i, p_i
 
-def find_Amax(t, Alm, height=0.15):
+def find_Amax(t, Alm, height=0.15, return_idx=False):
     peaks, _ = find_peaks(Alm, height=height)
     i_mrg = peaks[-1]
-    return t[i_mrg], Alm[i_mrg]
+    if return_idx:
+        return t[i_mrg], Alm[i_mrg], i_mrg
+    else:
+        return t[i_mrg], Alm[i_mrg]
 
 ## Derivatives and integration
 
