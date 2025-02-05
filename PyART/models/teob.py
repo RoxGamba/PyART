@@ -64,7 +64,8 @@ class Waveform_EOB(Waveform):
         Prstar = self.dyn['Prstar']
         Pr     = np.zeros_like(Prstar)
         for i in range(len(Pr)):
-            A, B   = EOB.eob_metricAB_py(self.dyn['r'][i], self.pars['q'])
+            A, B   = EOB.eob_metricAB_py(self.dyn['r'][i], self.pars['q'], 
+                                         self.pars['chi1z'], self.pars['chi2z'])
             Pr[i]  = Prstar[i]*np.sqrt(B/A)
         return Pr
 
