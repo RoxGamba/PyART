@@ -7,7 +7,7 @@ from multiprocessing import Process
 from ..analysis.match  import Matcher
 from ..analysis.opt_ic import Optimizer
 from ..models.teob import CreateDict
-from ..models.teob import Waveform_EOB, GetLSO
+from ..models.teob import Waveform_EOB, get_pph_lso
 
 matplotlib.rc('text', usetex=True)
 
@@ -252,7 +252,7 @@ class Cataloger(object):
                 m1    = q/(1+q)
                 m2    = 1/(1+q)
                 a0    = m1*chi1z + m2*chi2z 
-                pph_lso = GetLSO(nu,a0)
+                pph_lso = get_pph_lso(nu,a0)
                 if meta['pph0']<pph_lso:
                     return False
                 else:

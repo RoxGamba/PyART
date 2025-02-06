@@ -246,7 +246,7 @@ def PotentialPlot(E0,pph0,q,chi1,chi2):
     plt.show()
     return
 
-def GetLSO(nu,a0):
+def get_pph_lso(nu,a0):
     return EOB.pph_lso_spin_py(nu,a0)
 
 #---------------------
