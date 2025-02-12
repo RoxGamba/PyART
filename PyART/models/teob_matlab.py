@@ -48,6 +48,25 @@ eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s
 quit;
 """
 
+matlab_base_leob = """
+addpath('${code_dir}TEOBRun/');
+addpath('${code_dir}TEOBRun/parfiles/');
+addpath('${code_dir}PointMass/');
+
+evalc("SetNaming('new')");
+evalc("eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend})");
+quit;
+"""
+matlab_base_leob_loud = """
+addpath('${code_dir}TEOBRun/');
+addpath('${code_dir}TEOBRun/parfiles/');
+addpath('${code_dir}PointMass/');
+
+evalc("SetNaming('new')");
+eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend});
+quit;
+"""
+
 class Waveform_EOBMatlab(Waveform):
     """
     Class to handle EOB waveforms generated with the Matlab code
@@ -70,6 +89,8 @@ class Waveform_EOBMatlab(Waveform):
         self.verbose   = verbose
         self.load_insp = load_insp
         self.hyp       = True if self.pars['H_hyp'] is not None else False
+        self.leob      = pars['leob']
+
         if self.hyp and self.pars['j_hyp'] is None:
             raise ValueError("For hyperbolic orbits, H_hyp and j_hyp must be provided.")
         if self.hyp and not self.load_insp:
@@ -80,6 +101,11 @@ class Waveform_EOBMatlab(Waveform):
                 self.template = Template(matlab_base_hyp_loud)
             else:
                 self.template = Template(matlab_base_hyp)
+        elif self.leob:
+            if self.verbose:
+                self.template = Template(matlab_base_leob_loud)
+            else:
+                self.template = Template(matlab_base_leob)
         else:
             if self.verbose:
                 self.template = Template(matlab_base_loud)
@@ -87,9 +113,9 @@ class Waveform_EOBMatlab(Waveform):
                 self.template = Template(matlab_base)
 
         self.wavefile, self.dynfile = matnames(self.pars['q'], chi1=self.pars['chi1z'], chi2=self.pars['chi2z'],
-                                               ecc=self.pars['ecc'], omg0=self.pars['initial_frequency'],
-                                               E0=self.pars['H_hyp'], L0=self.pars['j_hyp'], r0=self.pars['r_hyp'],
-                                               nr=self.pars['nr'])
+                                               ecc=self.pars['ecc'], omg0=self.pars['initial_frequency']*2*np.pi,
+                                               E0=self.pars['H_hyp'], L0=self.pars['j_hyp'], r0=self.pars['r0'],
+                                               nr=self.pars['nr'], leob=self.leob)
 
         if self.run == True:
             self._run_matlab()
@@ -124,7 +150,7 @@ class Waveform_EOBMatlab(Waveform):
                          "chi1": self.pars['chi1z'], "chi2": self.pars['chi2z'],
                          "E0": self.pars['H_hyp'], "L0": self.pars['j_hyp'],
                          "Tmax": ", 'Tmax', {}".format(self.pars['ode_tmax']),
-                         "r0": ", 'r0', {}".format(self.pars['r_hyp']),
+                         "r0": ", 'r0', {}".format(self.pars['r0']),
                          "c3_s": ", 'cN3LO', {}".format(self.pars['cN3LO']) if self.pars['cN3LO'] is not None else "",
                          "a6_s": ", 'a6', {}".format(self.pars['a6c']) if self.pars['a6c'] is not None else "",
                          "nr_s": ", 'nrid', '{}'".format(self.pars['nr']) if self.pars['nr'] is not None else "",
@@ -136,6 +162,24 @@ class Waveform_EOBMatlab(Waveform):
                          "H_model": ", 'H_model', '{}'".format(self.pars['H_model']),
                          "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0)
                          }
+        elif self.leob:
+            temp_dict = {"code_dir": self.code_dir,
+                         "q": self.pars['q'], 
+                         "irf": self.pars['iresum'],
+                         "chi1": self.pars['chi1z'], "chi2": self.pars['chi2z'],
+                         "omg_ap_s": ", 'omg_ap', {}".format(self.pars['initial_frequency']*2.*np.pi) if self.pars['initial_frequency'] is not None else "",
+                         "Tmax": ", 'Tmax', {}".format(self.pars['ode_tmax']),
+                         "r0": ", 'r0', {}".format(self.pars['r0']) if self.pars['r0'] is not None else "",
+                         "c3_s": ", 'cN3LO', {}".format(self.pars['cN3LO']) if self.pars['cN3LO'] is not None else "",
+                         "a6_s": ", 'a6', {}".format(self.pars['a6c']) if self.pars['a6c'] is not None else "",
+                         "nr_s": ", 'nrid', '{}'".format(self.pars['nr']) if self.pars['nr'] is not None else "",
+                         "outdir_s": ", 'outdir', '{}'".format(self.dir),
+                         "ell_s": ", 'l_max', {}".format(self.pars['l_max']),
+                         "newlogs": ", 'newlogs', {}".format(self.pars['newlogs']),
+                         "rho22_SO_resum": ", 'rho22_SO_resum', {}".format(self.pars['rho22_SO_resum']),
+                         "rholm": ", 'rholm', '{}'".format(self.pars['rholm']),
+                         "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0)
+            }
         else:
             temp_dict = {"code_dir": self.code_dir,
                          "q": self.pars['q'], 
@@ -181,7 +225,7 @@ class Waveform_EOBMatlab(Waveform):
                 h *= np.sqrt((l + 3)*(l + 2)*(l + 1)*l)
                 self._hlm[(l+1, m)] = {'real': h.real, 'imag': h.imag,
                                        'A':    abs(h), 'p': -np.unwrap(np.angle(h)),
-                                       'h':    h}
+                                       'z':    h}
         self.domain = 'Time'
 
         self._hp, self._hc = wfu.compute_hphc(self._hlm, modes=list(self._hlm.keys()))
@@ -195,7 +239,7 @@ class Waveform_EOBMatlab(Waveform):
                     h *= np.sqrt((l + 3)*(l + 2)*(l + 1)*l)
                     self.hlm_inspl[(l+1, m)] = {'real': h.real, 'imag': h.imag,
                                            'A':    abs(h), 'p': -np.unwrap(np.angle(h)),
-                                           'h':    h}
+                                           'z':    h}
             
             s = mat['s/inspl_mrg/ell/emm']
             self.hlm_inspl_mrg = {}
@@ -205,7 +249,7 @@ class Waveform_EOBMatlab(Waveform):
                     h *= np.sqrt((l + 3)*(l + 2)*(l + 1)*l)
                     self.hlm_inspl_mrg[(l+1, m)] = {'real': h.real, 'imag': h.imag,
                                            'A':    abs(h), 'p': -np.unwrap(np.angle(h)),
-                                           'h':    h}
+                                           'z':    h}
         pass
 
     def _load_dyn(self):
@@ -236,7 +280,7 @@ class Waveform_EOBMatlab(Waveform):
         pass
 
 
-def matnames(q, chi1=0, chi2=0, ecc=0, omg0=0.02, E0=None, L0=None, r0=None, nr=None):
+def matnames(q, chi1=0, chi2=0, ecc=0, omg0=0.02, E0=None, L0=None, r0=None, nr=None, leob=False):
     """
     Name of dynamics, wave mat files
     """
@@ -251,6 +295,14 @@ def matnames(q, chi1=0, chi2=0, ecc=0, omg0=0.02, E0=None, L0=None, r0=None, nr=
             L0s = '_L0_{:.6g}'.format(L0)
             r0s = '_r0_{:.6g}'.format(r0)
             return 'Waves_' + base + E0s + L0s + r0s + '.mat', 'Dynam_' + base + E0s + L0s + r0s + '.mat'
+        elif leob:
+            if r0 is not None and r0 > 0:
+                ids = '_r0_{:.6g}'.format(r0)
+            elif omg0 is not None:
+                ids = '_omg0_{:.6g}'.format(omg0)
+            else:
+                raise ValueError('matnames(): provide one of r0 or omg0 for LEOB.')
+            return 'Waves_' + base + '_leob.mat', 'Dynam_' + base + ids + '_leob.mat'
         else:
             eccs  = '' if ecc < 1.e-5 else '_ecc_{:.3g}'.format(ecc)
             omgs  = '_omg0_{:.6g}'.format(omg0)
@@ -263,14 +315,16 @@ def CreateDict(M=1., q=1,
                chi1y=0., chi2y=0.,
                f0=0.0035, ecc=1e-8, 
                l_max=2, ode_tmax=1e+6, ode_rend=None,
-               r_hyp=10000., H_hyp=None, J_hyp=None,
+               r0=None, H_hyp=None, J_hyp=None,
                cN3LO=None, a6c=None,
                nr=None,
                Hmod="std",
                rho22_SO_resum=0,
                newlogs=1,
                rholm="newlogs",
-               use_nqc=True):
+               use_nqc=True,
+               leob=False,
+               iresum=0):
         """
         Create the dictionary of parameters for EOBRunPy
         """
@@ -299,10 +353,17 @@ def CreateDict(M=1., q=1,
             'newlogs'            : newlogs,
             'rholm'              : rholm,
             'ode_rend'           : ode_rend,
-            'r_hyp'              : r_hyp,
+            'r0'                 : r0,
             'H_hyp'              : H_hyp,
             'j_hyp'              : J_hyp,
-        }         
+            'leob'               : leob,
+            'iresum'             : iresum,
+        }
+
+        if leob:
+            if r0 is not None and f0 is not None:
+                print('WARNING: both r0 and f0 provided for LEOB; using r0.')
+                pardic['initial_frequency'] = None
 
         return pardic
 

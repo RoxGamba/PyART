@@ -112,7 +112,7 @@ def convert_hlm(hlm):
         p   = -np.unwrap(np.angle(hlm[key]))
         hlm_conv[key] = {'real': A*np.cos(p), 'imag': -1*A*np.sin(p),
                                 'A'   : A, 'p' : p,
-                                'h'   : A*np.exp(-1j*p)
+                                'z'   : A*np.exp(-1j*p)
                                 }
     return hlm_conv
 
