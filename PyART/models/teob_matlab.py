@@ -54,7 +54,7 @@ addpath('${code_dir}TEOBRun/parfiles/');
 addpath('${code_dir}PointMass/');
 
 evalc("SetNaming('new')");
-evalc("eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend})");
+evalc("eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${SS_leob})");
 quit;
 """
 matlab_base_leob_loud = """
@@ -63,7 +63,7 @@ addpath('${code_dir}TEOBRun/parfiles/');
 addpath('${code_dir}PointMass/');
 
 evalc("SetNaming('new')");
-eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend});
+eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${SS_leob});
 quit;
 """
 
@@ -178,7 +178,8 @@ class Waveform_EOBMatlab(Waveform):
                          "newlogs": ", 'newlogs', {}".format(self.pars['newlogs']),
                          "rho22_SO_resum": ", 'rho22_SO_resum', {}".format(self.pars['rho22_SO_resum']),
                          "rholm": ", 'rholm', '{}'".format(self.pars['rholm']),
-                         "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0)
+                         "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0),
+                         "SS_leob": ", 'SS_leob', {}".format(self.pars['SS_leob'] if self.pars['SS_leob'] is not None else '')
             }
         else:
             temp_dict = {"code_dir": self.code_dir,
@@ -324,7 +325,8 @@ def CreateDict(M=1., q=1,
                rholm="newlogs",
                use_nqc=True,
                leob=False,
-               iresum=0):
+               iresum=0,
+               SS_leob='P23'):
         """
         Create the dictionary of parameters for EOBRunPy
         """
@@ -358,6 +360,7 @@ def CreateDict(M=1., q=1,
             'j_hyp'              : J_hyp,
             'leob'               : leob,
             'iresum'             : iresum,
+            'SS_leob'            : SS_leob,
         }
 
         if leob:
