@@ -179,7 +179,7 @@ class Waveform_EOBMatlab(Waveform):
                          "rho22_SO_resum": ", 'rho22_SO_resum', {}".format(self.pars['rho22_SO_resum']),
                          "rholm": ", 'rholm', '{}'".format(self.pars['rholm']),
                          "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0),
-                         "SS_leob": ", 'SS_leob', {}".format(self.pars['SS_leob'] if self.pars['SS_leob'] is not None else '')
+                         "SS_leob": ", 'SS_leob', '{}'".format(self.pars['SS_leob'] if self.pars['SS_leob'] is not None else '')
             }
         else:
             temp_dict = {"code_dir": self.code_dir,
