@@ -115,9 +115,10 @@ class Optimizer(object):
             chi1 = ref_Waveform.metadata['chi1z'] 
             chi2 = ref_Waveform.metadata['chi2z'] 
             flags_str = ''
-            for flag in ref_Waveform.metadata['flags']:
-                flags_str += flag + ', '
-            flags_str = flags_str[:-2]
+            if 'flags' in ref_Waveform.metadata:
+                for flag in ref_Waveform.metadata['flags']:
+                    flags_str += flag + ', '
+                flags_str = flags_str[:-2]
             print( '###########################################')
             print(f'###          Running Optimizer          ###')
             print( '###########################################\n')
@@ -363,9 +364,14 @@ class Optimizer(object):
     def generate_EOB(self, ICs={'f0':None, 'e0':None}):
         ref_meta = self.ref_Waveform.metadata
         # Set all the intrinsic parameters that are not in ICs
-        default_intrinsic =  ['M', 'q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z']
+        default_intrinsic =  ['M', 'q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 
+                              'chi2y', 'chi2z', 'LambdaAl2', 'LambdaBl2']
         for ic in ICs: 
             if ic in default_intrinsic: default_intrinsic.remove(ic)
+        
+        if 'LambdaAl2' not in ref_meta: ref_meta['LambdaAl2'] = 0.0
+        if 'LambdaBl2' not in ref_meta: ref_meta['LambdaBl2'] = 0.0
+        
         sub_meta = {key: ref_meta[key] for key in default_intrinsic}
         sub_meta['use_nqc']  = self.use_nqc
         sub_meta['ode_tmax'] = 3e+4

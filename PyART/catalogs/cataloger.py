@@ -361,6 +361,8 @@ class Cataloger(object):
     def mm_at_M(self, name, M, mm_settings = None):
         
         eob = self.get_model_waveform(name)
+        print(eob.dyn['Pphi'][0])
+        print(eob.dyn['E'][0])
         nr  = self.data[name]['Waveform']
         mm_settings['M'] = M 
         matcher   = Matcher(nr, eob, settings=mm_settings)

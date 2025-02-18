@@ -135,10 +135,10 @@ class Waveform_CoRe(Waveform):
 
         q  = float(metadata['q'])
         nu = q/(1+q)**2
-        metadata['nu']   = nu
-        metadata['pph0'] = float(metadata['J0'])
-        metadata['J0']   = float(metadata['J0'])*nu
-        metadata['E0byM'] = float(metadata['E0'])
+        metadata['nu']    = nu
+        metadata['J0']    = float(metadata['J0'])
+        metadata['pph0']  = metadata['J0']/(nu*metadata['M']**2)
+        metadata['E0byM'] = float(metadata['E0'])/metadata['M']
         metadata['chi1x'] = metadata['S1'][0]
         metadata['chi1y'] = metadata['S1'][1]
         metadata['chi1z'] = metadata['S1'][2]
@@ -148,6 +148,15 @@ class Waveform_CoRe(Waveform):
         metadata['LambdaAl2'] = metadata['Lambda_ell_A'][0]
         metadata['LambdaBl2'] = metadata['Lambda_ell_B'][0]
         metadata['f0'] = metadata['f0']/(2*np.pi)
+        
+        if metadata['LambdaAl2']>0 and metadata['LambdaBl2']>0:
+            kind = 'BNS'
+        elif metadata['LambdaAl2']<1 and metadata['LambdaBl2']<1:
+            kind = 'BBH' # should not be present in CoRe
+        else:
+            kind = 'BHNS'
+        metadata['flags'] = [kind] 
+            
         return metadata
     
     def load_hlm(self, kind = 'h5'):
