@@ -39,7 +39,6 @@ class Waveform_EOB(Waveform):
 
     # python wf func
     def _run_py(self):
-        print(self.pars)
         if self.pars['domain']:
             f, rhp,ihp,rhc,ihc, hflm, dyn, _ = EOB.EOBRunPy(self.pars)
             self._f   = f
