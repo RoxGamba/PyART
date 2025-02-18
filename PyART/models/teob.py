@@ -39,6 +39,7 @@ class Waveform_EOB(Waveform):
 
     # python wf func
     def _run_py(self):
+        print(self.pars)
         if self.pars['domain']:
             f, rhp,ihp,rhc,ihc, hflm, dyn, _ = EOB.EOBRunPy(self.pars)
             self._f   = f
@@ -111,7 +112,10 @@ def CreateDict(M=1., q=1,
                 if r_apa is None:
                     raise RuntimeError(f'Apastron not found, check initial conditon: E={H_hyp:.5f}, pph={J_hyp:.5f}')
                 r_hyp = r_apa - 1e-2 # small tol to avoid numerical issues
-
+        
+        if r_hyp is None:
+            r_hyp = 0
+        
         pardic = {
             'M'                  : M,
             'q'                  : q,
