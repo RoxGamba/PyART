@@ -100,18 +100,21 @@ class Cataloger(object):
             eob    = Waveform_EOB(params)
         return eob
 
-    def plot_waves(self, cmap='rainbow'):
+    def plot_waves(self, cmap='rainbow', legend=False):
         mycmap = plt.get_cmap(cmap)
         colors = mycmap(np.linspace(0,1,self.nsims))
         plt.figure(figsize=(8,6))
         for i, name in enumerate(self.data):
             wave = self.data[name]['Waveform']
+            label = wave.metadata['name']
             if (2,2) in wave.hlm:
                 try:
                     tmrg,_,_,_ = wave.find_max()
-                    plt.plot(wave.u-tmrg, wave.hlm[(2,2)]['A'], c=colors[i])
+                    plt.plot(wave.u-tmrg, wave.hlm[(2,2)]['A'], c=colors[i], label=label)
                 except:
-                    plt.plot(wave.u, wave.hlm[(2,2)]['A'], c=colors[i])
+                    plt.plot(wave.u, wave.hlm[(2,2)]['A'], c=colors[i], label=label)
+        if legend:
+            plt.legend()
         plt.show()
         pass
     
