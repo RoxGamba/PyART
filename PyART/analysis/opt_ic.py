@@ -148,6 +148,7 @@ class Optimizer(object):
         
         if run_optimization:
             random.seed(self.minimizer['opt_seed'])
+            np.random.seed(self.minimizer['opt_seed'])
             dashes    = '-'*45
             asterisks = '*'*45
             
@@ -547,7 +548,7 @@ class Optimizer(object):
                     'mm_opt'       : mm_opt, 
                     }
         for ky in kys:
-            opt_data[ky]        = vs_ref[ky]
+            opt_data[ky] = vs_ref[ky] if ky in vs_ref else None
             opt_data[ky+'_opt'] = opts[ky]
         
         if eob_opt is not None and self.json_save_dyn:
