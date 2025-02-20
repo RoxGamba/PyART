@@ -6,7 +6,8 @@ except ModuleNotFoundError:
     print("WARNING: bajes not installed.")
 
 from ..waveform import Waveform
-from bajes.obs.gw import Waveform as bWf
+from bajes.obs.gw.approx.nrpm import NRPM
+from bajes.obs.gw.utils import lambda_2_kappa
 from bajes.obs.gw import __approx_dict__
 
 # todo: use astropy units or similar
@@ -33,23 +34,24 @@ conversion_dict_from_bajes = {
 
 conversion_dict_to_bajes = {k:v for v,k in conversion_dict_from_bajes.items()}
 
-class Waveform_BaJes(Waveform):
+class Waveform_NRPM(Waveform):
     """
-    Class to wrap BaJes waveforms
+    Class to attach NRPM to waveforms
     """
 
     def __init__(
                     self, 
-                    pars=None, 
+                    pars=None,
+                    waveform = None,
                     geom_units=False
                 ):
         super().__init__()
         self.__set__default_pars__()
         self.pars        = {**self.pars, **pars}
         self.pars_bajes  = self.__convert_pars__()
+        self.wf          = waveform
         self._kind = 'BaJes'
-        self.__initialize_generator__()
-        self.__run__(geom_units=geom_units)
+        self.__attach__()
 
     def __set__default_pars__(self):
         self.pars = {  'approx'      :  'TEOBResumS',
@@ -75,62 +77,58 @@ class Waveform_BaJes(Waveform):
                 pars[key] = self.pars[key]
         return pars
 
-    def __initialize_generator__(self):
+    def __NRPM__(self, phi_last):
 
-        seglen = self.pars['seglen']
-        srate  = self.pars['srate']
-        freqs  =  np.linspace(0,srate/2,seglen*srate//2+1)
+        params = self.pars
+        seglen = params['seglen']
+        srate  = params['srate']
+        Mtot   = params['mtot']
+        q      = params['q']
 
-        self.generator = bWf(freqs, 
-                             srate= srate, 
-                             seglen=seglen, 
-                             approx=self.pars_bajes['approx'],
-                             )
+        kappa2T = lambda_2_kappa(params['mtot']/(1.+1./params['q']),
+                             params['mtot']/(1.+ params['q']),
+                             params['lambda1'], params['lambda2'])
+
+        _, _, h22_nrpm = NRPM(srate, seglen, Mtot, q, kappa2T, 1., 0., phi_last,
+             f_merg=None, alpha=None, beta = None, phi_kick = None, 
+             recal = None, output = True)
+
+        # remove initial zeros, this will start at seglen/2
+        h22_nrpm = h22_nrpm[len(h22_nrpm)//2:]      
+        h22_nrpm /= (msun_m*Mtot)
+        return h22_nrpm
+
+    def __attach__(self):
+
+        h22_inspiral = self.wf.hlm[(2,2)]['z']
+        phi_mrg      = self.wf.hlm[(2,2)]['p'][np.argmax(np.abs(h22_inspiral))]
+        h22_nrpm     = self.__NRPM__(phi_mrg)
+    
+        # remove tail before merger and rescale
+        amp_fact     = np.max(abs(h22_inspiral))/np.max(abs(h22_nrpm))
+        h22_nrpm     *= amp_fact
         
-        if __approx_dict__[self.pars_bajes['approx']]['domain'] == 'time':
-            self._domain = 'Time'
-            self.dx = 1./srate
-        elif __approx_dict__[self.pars_bajes['approx']]['domain'] == 'freq':
-            self._domain = 'Freq'
-            self.dx = 1./seglen
-        else:
-            raise ValueError('Domain not recognized')
+        # cut
+        idx_max_nrpm = np.argmax(np.abs(h22_nrpm))
+        h22_nrpm     = h22_nrpm[idx_max_nrpm:]
+
+        idx_max_insp = np.argmax(np.abs(h22_inspiral))
+        h22_inspiral = h22_inspiral[:idx_max_insp]
+
+        # time arrays
+        t_nrpm = np.arange(len(h22_nrpm))/self.pars['srate']
+        t_nrpm /= (self.pars['mtot']*msun_s)
+        t_inspiral = self.wf.u[:idx_max_insp]
+
+        # build h
+        h = np.append(h22_inspiral, h22_nrpm) 
+        t = np.append(t_inspiral, t_nrpm)
         
-        pass
-
-    def __run__(self, geom_units=False, remove_padding=True):
-        
-        hp, hc = self.generator.compute_hphc(self.pars_bajes)
-        dx     = self.dx
-
-        if remove_padding:
-            # remove the zero padding at the beginning
-            # and the end of the waveform
-            idx = np.where(abs(hp) > 1e-25)            
-            hp, hc = hp[idx], hc[idx]
-
-        conv_factor = 1
-        if geom_units:
-            M  = self.pars['M']
-            Dl = self.pars['distance']
-            if self._domain == 'Time':
-               conv_factor = M*msun_m/(Dl*mpc_m)
-               dx          /= (M*msun_s)
-            elif self._domain == 'Freq':
-               conv_factor = M*M*msun_m*msun_s/(Dl*mpc_m)
-               dx          *= (M*msun_s)
-
-        hp, hc = hp/conv_factor, hc/conv_factor
-        x      = np.arange(len(hp))*dx
-
-        self._hp = hp
-        self._hc = hc
-        if self._domain == 'Time':
-            self._u = x
-        else:
-            self._f = x
-
-        return x, hp, hc
+        self._u  = t
+        self._t  = t
+        self._hlm[(2,2)] = {'A': np.abs(h), 'p': np.unwrap(np.angle(h)), 
+                            'z': h, 'real': np.real(h), 'imag': np.imag(h)
+                            }
 
            
 
