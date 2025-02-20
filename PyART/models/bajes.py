@@ -51,6 +51,7 @@ class Waveform_NRPM(Waveform):
         self.pars_bajes  = self.__convert_pars__()
         self.wf          = waveform
         self._kind = 'BaJes'
+        self.domain = 'Time'
         self.__attach__()
 
     def __set__default_pars__(self):
@@ -86,12 +87,12 @@ class Waveform_NRPM(Waveform):
         q      = params['q']
 
         kappa2T = lambda_2_kappa(params['mtot']/(1.+1./params['q']),
-                             params['mtot']/(1.+ params['q']),
-                             params['lambda1'], params['lambda2'])
+                                 params['mtot']/(1.+ params['q']),
+                                 params['lambda1'], params['lambda2'])
 
         _, _, h22_nrpm = NRPM(srate, seglen, Mtot, q, kappa2T, 1., 0., phi_last,
-             f_merg=None, alpha=None, beta = None, phi_kick = None, 
-             recal = None, output = True)
+             f_merg=None, alpha=None, beta = None, phi_kick = params['NRPM_phi_pm'], 
+             recal = params['recal'], output = True)
 
         # remove initial zeros, this will start at seglen/2
         h22_nrpm = h22_nrpm[len(h22_nrpm)//2:]      
@@ -100,7 +101,7 @@ class Waveform_NRPM(Waveform):
 
     def __attach__(self):
 
-        h22_inspiral = self.wf.hlm[(2,2)]['z']
+        h22_inspiral = self.wf.hlm[(2,2)]['A']*np.exp(-1j*self.wf.hlm[(2,2)]['p'])
         phi_mrg      = self.wf.hlm[(2,2)]['p'][np.argmax(np.abs(h22_inspiral))]
         h22_nrpm     = self.__NRPM__(phi_mrg)
     
@@ -116,17 +117,22 @@ class Waveform_NRPM(Waveform):
         h22_inspiral = h22_inspiral[:idx_max_insp]
 
         # time arrays
-        t_nrpm = np.arange(len(h22_nrpm))/self.pars['srate']
-        t_nrpm /= (self.pars['mtot']*msun_s)
+        t_nrpm     = np.arange(len(h22_nrpm))/self.pars['srate']
+        t_nrpm    /= (self.pars['mtot']*msun_s)
         t_inspiral = self.wf.u[:idx_max_insp]
 
         # build h
         h = np.append(h22_inspiral, h22_nrpm) 
         t = np.append(t_inspiral, t_nrpm)
+
+        # interpolate everything
+        dt   = t[1] - t[0]
+        tnew = np.arange(t[0], t[-1]+dt, dt) + dt
+        h    = np.interp(tnew, t, h) 
         
-        self._u  = t
-        self._t  = t
-        self._hlm[(2,2)] = {'A': np.abs(h), 'p': np.unwrap(np.angle(h)), 
+        self._u  = tnew
+        self._t  = tnew
+        self._hlm[(2,2)] = {'A': np.abs(h), 'p': -np.unwrap(np.angle(h)), 
                             'z': h, 'real': np.real(h), 'imag': np.imag(h)
                             }
 
