@@ -460,6 +460,7 @@ class Optimizer(object):
         if verbose is None: verbose = self.verbose
         kys     = self.opt_vars
         bounds  = self.opt_bounds
+        meta    = self.ref_Waveform.metadata
 
         # Treat variables which are in common with the reference
         kys_ref = [ky for ky in kys if ky in self.ref_Waveform.metadata] # common keys
@@ -528,14 +529,17 @@ class Optimizer(object):
             self.match_against_ref(eob_opt, mm_settings=temp_settings)
         
         opt_data = { 
-                    # store also some attributes, just for convenience 
-                    'q'            : self.ref_Waveform.metadata['q'],
-                    'chi1x'        : self.ref_Waveform.metadata['chi1x'],
-                    'chi1y'        : self.ref_Waveform.metadata['chi1y'],
-                    'chi1z'        : self.ref_Waveform.metadata['chi1z'],
-                    'chi2x'        : self.ref_Waveform.metadata['chi2x'],
-                    'chi2y'        : self.ref_Waveform.metadata['chi2y'],
-                    'chi2z'        : self.ref_Waveform.metadata['chi2z'],
+                    # store also some attributes, just for convenience
+                    'M'            : meta['M'],
+                    'q'            : meta['q'],
+                    'chi1x'        : meta['chi1x'],
+                    'chi1y'        : meta['chi1y'],
+                    'chi1z'        : meta['chi1z'],
+                    'chi2x'        : meta['chi2x'],
+                    'chi2y'        : meta['chi2y'],
+                    'chi2z'        : meta['chi2z'],
+                    'LambdaAl2'    : meta['LambdaAl2'] if 'LambdaAl2' in meta else 0.,
+                    'LambdaBl2'    : meta['LambdaBl2'] if 'LambdaBl2' in meta else 0.,
                     'initial_frequency_mm' : self.mm_settings['initial_frequency_mm'],
                     'final_frequency_mm'   : self.mm_settings['final_frequency_mm'],
                     'opt_seed'     : self.minimizer['opt_seed'],

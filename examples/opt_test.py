@@ -5,19 +5,21 @@ from PyART.analysis.opt_ic import Optimizer
 from PyART.catalogs.sxs    import Waveform_SXS
 from PyART.catalogs.rit    import Waveform_RIT
 from PyART.catalogs.icc    import Waveform_ICC
+from PyART.catalogs.core   import Waveform_CoRe
 from PyART.analysis.match  import Matcher
 
 matplotlib.rc('text', usetex=True)
 
 repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], \
                              stdout=subprocess.PIPE).communicate()[0].rstrip().decode('utf-8')
-sxs_path = os.path.join(repo_path, 'examples/local_data/sxs/')
-rit_path = os.path.join(repo_path, 'examples/local_data/rit/')
-icc_path = os.path.join(repo_path, 'examples/local_data/icc/')
+sxs_path  = os.path.join(repo_path, 'examples/local_data/sxs/')
+rit_path  = os.path.join(repo_path, 'examples/local_data/rit/')
+icc_path  = os.path.join(repo_path, 'examples/local_data/icc/')
+core_path = os.path.join(repo_path, 'examples/local_data/core/')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--catalog', required=True, type=str, 
-                                 choices=['rit','sxs', 'icc'],   help='Catalog')
+                                 choices=['rit','sxs', 'icc', 'core'],   help='Catalog')
 parser.add_argument('-i', '--id', default=1,         type=int,   help='Simulatoion ID. If not specified, download hard-coded ID list')
 parser.add_argument('--maxfun',       default=100,   type=int,   help='Maxfun in dual annealing')
 parser.add_argument('--use_nqc', action='store_true',            help='Use NQC')  
@@ -64,6 +66,10 @@ if args.catalog=='rit':
 
 elif args.catalog=='sxs':
     ebbh = Waveform_SXS(path=sxs_path, download=args.download, ID=args.id, order="Extrapolated_N3.dir", ellmax=7,  nu_rescale=True)
+
+elif args.catalog=='core':
+    ebbh = Waveform_CoRe(path=core_path, download=args.download, ID=args.id, nu_rescale=True, 
+                         run='R01', cut_at_mrg=True)
 
 elif args.catalog=='icc':
     ebbh = Waveform_ICC(path=icc_path, ID=args.id, integrate=True, nu_rescale=True, 

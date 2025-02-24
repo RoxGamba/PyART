@@ -31,7 +31,7 @@ class Matcher(object):
         self.settings = self.__default_parameters__()
         if settings:
             self.settings.update(settings)
-        self.modes = settings.get('modes', [])
+        self.modes = self.settings.get('modes', [])
         del settings 
             
         # Choose the appropriate mismatch function
