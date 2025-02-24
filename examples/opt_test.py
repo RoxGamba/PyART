@@ -12,7 +12,7 @@ matplotlib.rc('text', usetex=True)
 
 repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], \
                              stdout=subprocess.PIPE).communicate()[0].rstrip().decode('utf-8')
-sxs_path  = os.path.join(repo_path, 'examples/local_data/sxs/')
+sxs_path  = os.path.join(repo_path, 'tmp/')#'examples/local_data/sxs/')
 rit_path  = os.path.join(repo_path, 'examples/local_data/rit/')
 icc_path  = os.path.join(repo_path, 'examples/local_data/icc/')
 core_path = os.path.join(repo_path, 'examples/local_data/core/')

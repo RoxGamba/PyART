@@ -26,6 +26,7 @@ class Waveform_SXS(Waveform):
                     load_m0       = False,
                     nu_rescale    = False,
                     src           = 'BBH',
+                    basename      = None, # if None, use default according to src
                 ):
         super().__init__()
         if isinstance(ID, int):
@@ -44,12 +45,13 @@ class Waveform_SXS(Waveform):
         self.domain        = 'Time'
         self.nu_rescale    = nu_rescale
         
-        if src=='BBH':
-            basename = 'rhOverM_Asymptotic_GeometricUnits_CoM.h5'
-        elif src=='BHNS':
-            basename = 'rhOverM_Asymptotic_GeometricUnits.h5'
-        else:
-            raise ValueError('basename is None, but unknown src!')
+        if basename is None:
+            if src=='BBH':
+                basename = 'rhOverM_Asymptotic_GeometricUnits_CoM.h5'
+            elif src=='BHNS':
+                basename = 'rhOverM_Asymptotic_GeometricUnits.h5'
+            else:
+                raise ValueError('basename is None, but unknown src!')
         self.basename = basename
 
         self.check_cut_consistency()
