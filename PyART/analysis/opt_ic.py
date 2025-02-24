@@ -107,6 +107,8 @@ class Optimizer(object):
             self.minimize = self.__minimize__dynesty__
         elif minimizer['kind'] == 'dual_annealing':
             self.minimize = self.__minimize_annealing_
+        elif minimizer['kind'] == 'differential_evolution':
+            self.minimize = self.__minimize_differential_evo_
         else:
             raise ValueError(f'Unknown minimizer kind: {minimizer["kind"]}')
 
@@ -585,6 +587,9 @@ class Optimizer(object):
                            'opt_maxfun': 1000, 
                            'opt_seed': 190521,
 
+                           # differiantial_evolution options 
+                           'opt_workers':1,
+                           
                            # dynesty options
                            'nlive'  : 10,
                            'maxiter': 10000,
@@ -607,6 +612,29 @@ class Optimizer(object):
                                                 seed   = seed, 
                                                 x0     = x0,
                                                 bounds = bounds_array,
+                                            )
+        
+        opt_pars     = opt_result['x']
+        opts         = {kys[i]: opt_pars[i] for i in range(len(kys))}
+        mm_opt       = opt_result['fun']
+        return opts, mm_opt
+    
+    def __minimize_differential_evo_(self, f, x0, bounds_array, kys):
+        """
+        Minimize with differential evolution. 
+        """
+        maxiter = self.minimizer.get('opt_maxfun', 1000)
+        seed    = self.minimizer.get('opt_seed', 190521)
+        workers = self.minimizer.get('opt_workers', 1) 
+        x0      = x0
+
+        opt_result   = optimize.differential_evolution(
+                                                f,
+                                                maxiter = maxiter, 
+                                                seed    = seed, 
+                                                x0      = x0,
+                                                workers = workers,
+                                                bounds  = bounds_array,
                                             )
         
         opt_pars     = opt_result['x']
