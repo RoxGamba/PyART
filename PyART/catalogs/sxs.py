@@ -25,24 +25,32 @@ class Waveform_SXS(Waveform):
                     download_psi4 = False,
                     load_m0       = False,
                     nu_rescale    = False,
-                    # Allow for other SXS h5 files 
-                    basename      = "rhOverM_Asymptotic_GeometricUnits_CoM.h5"
+                    src           = 'BBH',
                 ):
         super().__init__()
         if isinstance(ID, int):
             ID = f'{ID:04}'
             
         self.ID            = ID
-        self.sxs_data_path = os.path.join(path,'SXS_BBH_'+ID)
+        self.sxs_data_path = os.path.join(path,'SXS_'+src+'_'+ID)
         self.order         = order
         self.level         = level
         self.cut_N         = cut_N
         self.cut_U         = cut_U
         self.ellmax        = ellmax
         self._kind         = 'SXS'
+        self.src           = src
         self.nr            = None
         self.domain        = 'Time'
         self.nu_rescale    = nu_rescale
+        
+        if src=='BBH':
+            basename = 'rhOverM_Asymptotic_GeometricUnits_CoM.h5'
+        elif src=='BHNS':
+            basename = 'rhOverM_Asymptotic_GeometricUnits.h5'
+        else:
+            raise ValueError('basename is None, but unknown src!')
+        self.basename = basename
 
         self.check_cut_consistency()
         if os.path.exists(self.sxs_data_path) == False:
@@ -55,7 +63,7 @@ class Waveform_SXS(Waveform):
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
         
         if isinstance(self.level, int):
-            fname = self.get_lev_fname(basename=basename)
+            fname = self.get_lev_fname(basename=self.basename)
             if os.path.exists(fname):
                 self.nr = h5py.File(fname)
             else:
@@ -65,7 +73,7 @@ class Waveform_SXS(Waveform):
             ref_lv_max = 6
             ref_lv_min = 1
             for lvn in range(ref_lv_max,ref_lv_min,-1):
-                fname = self.get_lev_fname(level=lvn,basename="rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+                fname = self.get_lev_fname(level=lvn,basename=self.basename)
                 if os.path.exists(fname):
                     self.nr    = h5py.File(fname)
                     self.level = lvn 
@@ -100,7 +108,7 @@ class Waveform_SXS(Waveform):
         if isinstance(basename, str): tojoin.append(basename)
         return os.path.join(self.sxs_data_path, *tojoin)
     
-    def download_simulation(self, ID='0001', src='BBH',path=None, dowload_psi4=False):
+    def download_simulation(self, ID='0001', path=None, dowload_psi4=False):
         """
         Download the simulation from the SXS catalog; requires the sxs module
         """
@@ -110,31 +118,34 @@ class Waveform_SXS(Waveform):
             print("Setting the download (cache) directory to ", path)
             os.environ['SXSCACHEDIR'] = path
 
-        nm = 'SXS:'+src+':'+ID
+        nm = 'SXS:'+self.src+':'+ID
 
         _  = sxs.load(nm+'/Lev/'+"metadata.json")
-        _  = sxs.load(nm+'/Lev/'+"rhOverM_Asymptotic_GeometricUnits_CoM.h5")
+        _  = sxs.load(nm+'/Lev/'+self.basename)
         _  = sxs.load(nm+'/Lev/'+"Horizons.h5")
         if dowload_psi4:
-            _  = sxs.load(nm+'/Lev/'+"rMPsi4_Asymptotic_GeometricUnits_CoM.h5")
+            psi4_basename = self.basename.replace('rhOverM', 'rMPsi4')
+            _  = sxs.load(nm+'/Lev/'+psi4_basename)
         
+        sxs_dir = 'SXS_'+self.src+'_'+ID
+
         # find folder(s) corresponding to the name, mkdir the new one
         flds = [f for f in os.listdir(os.environ['SXSCACHEDIR']) if nm in f]
-        if not os.path.exists(os.path.join(path,'SXS_BBH_'+ID)):
-            os.mkdir(os.path.join(path,'SXS_BBH_'+ID))
+        if not os.path.exists(os.path.join(path,sxs_dir)):
+            os.mkdir(os.path.join(path,sxs_dir))
 
         # move the files in the folders to the new folder
         for fld in flds:
             for lev in os.listdir(os.path.join(os.environ['SXSCACHEDIR'],fld)):
                 try: 
                     # move each Lev folder
-                    print(os.path.join(os.environ['SXSCACHEDIR'],fld,lev),'-->',os.path.join(path,'SXS_BBH_'+ID,lev))
-                    os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,lev), os.path.join(path,'SXS_BBH_'+ID,lev))
+                    print(os.path.join(os.environ['SXSCACHEDIR'],fld,lev),'-->',os.path.join(path,sxs_dir,lev))
+                    os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,lev), os.path.join(path,sxs_dir,lev))
                 except Exception:
                     # Lev already exists, move the files
                     for file in os.listdir(os.path.join(os.environ['SXSCACHEDIR'],fld,lev)):
-                        print(os.path.join(os.environ['SXSCACHEDIR'],fld,lev,file),'-->',os.path.join(path,'SXS_BBH_'+ID,lev,file))
-                        os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,lev,file), os.path.join(path,'SXS_BBH_'+ID,lev,file))
+                        print(os.path.join(os.environ['SXSCACHEDIR'],fld,lev,file),'-->',os.path.join(path,sxs_dir,lev,file))
+                        os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,lev,file), os.path.join(path,sxs_dir,lev,file))
                     os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld,lev))
 
             # delete the empty folder
@@ -151,19 +162,53 @@ class Waveform_SXS(Waveform):
         # TODO : 1) check if these quantities are mass-rescaled or not
         #        2) here we are using initial quantities, not ref. The
         #           reason is that ADM integrals are not given at ref time
+
+        def is_valid(key, vtype=None):
+            if key not in ometa:
+                return False
+            if isinstance(ometa[key], str):
+                return False
+            if vtype is not None: # check var-type if provided
+                return isinstance(ometa[key], vtype)
+            return True
+
         M1 = ometa['reference_mass1']
-        M2 = ometa['reference_mass2']
+        if is_valid('reference_mass2', vtype=float):
+            M2 = ometa['reference_mass2']
+        else:
+            print('+++ Warning +++ reference_mass2 not found or invalid! Usinig initial masses')
+            M1 = ometa['initial_mass1']
+            M2 = ometa['initial_mass2']
+
         q  = M2/M1
         if q<1:
             q = 1/q
         nu = q/(1+q)**2
         M  = M1 + M2
-        hS1  = np.array(ometa['reference_dimensionless_spin1']) 
-        hS2  = np.array(ometa['reference_dimensionless_spin2']) 
+        hS1  = np.array(ometa['reference_dimensionless_spin1'])
+        if is_valid('reference_dimensionless_spin2'):
+            hS2 = np.array(ometa['reference_dimensionless_spin2']) 
+        else:
+            hS2 = np.array([0.,0.,0.]) 
         pos1 = np.array(ometa['reference_position1'])
         pos2 = np.array(ometa['reference_position2'])
         r0   = np.linalg.norm(pos1-pos2)
-        afv  = np.array(ometa['remnant_dimensionless_spin'])
+        
+        try:
+            Mf = float(ometa['remnant_mass']) 
+            if is_valid('remnant_dimensionless_spin'):
+                afv = np.array(ometa['remnant_dimensionless_spin'])
+            elif is_valid('remnant_spin'):
+                afv = np.array(ometa['remnant_spin'])/Mf**2
+            else:
+                raise ValueError("Unknown key for remnant's spin or invalid value")
+            afz = afv[2] 
+        except Exception as e:
+            print(f'Failed in reading remnant properties: {e}')
+            Mf  = None
+            afv = None
+            afz = None
+
         if isinstance(ometa['alternative_names'], list):
             name = ometa['alternative_names'][1]
         else:
@@ -181,6 +226,14 @@ class Waveform_SXS(Waveform):
         J0   = np.array(ometa['initial_ADM_angular_momentum'])
         Lz   = J0 - hS1*M1*M1 - hS2*M2*M2
         pph0 = Lz[2]/(M*M*nu) 
+        
+        orb_freq_ometa = ometa['reference_orbital_frequency']
+        if isinstance(orb_freq_ometa,float):
+            f0 = orb_freq_ometa/np.pi
+        elif len(orb_freq_ometa)==3:
+            f0 = orb_freq_ometa[2]/np.pi
+        else:
+            raise RuntimeError('Unknown format for reference_orbital_frequency')
 
         metadata = {'name'       : name, # i.e. store as name 'SXS:BBH:ID'
                     'ref_time'   : ometa['reference_time'],
@@ -205,7 +258,7 @@ class Waveform_SXS(Waveform):
                     'e0'         : ecc,
                     # frequencies
                     'f0v'        : np.array(ometa['reference_orbital_frequency'])/np.pi,
-                    'f0'         : ometa['reference_orbital_frequency'][2]/np.pi,
+                    'f0'         : f0, 
                     # ADM quantities (INITIAL, not REF)
                     'E0'         : ometa['initial_ADM_energy'],
                     'P0'         : np.array(ometa['initial_ADM_linear_momentum']),
@@ -214,9 +267,9 @@ class Waveform_SXS(Waveform):
                     'E0byM'      : ometa['initial_ADM_energy']/M,
                     'pph0'       : pph0,
                     # remnant
-                    'Mf'         : ometa['remnant_mass'],
+                    'Mf'         : Mf,
                     'afv'        : afv,
-                    'af'         : afv[2],
+                    'af'         : afz,
                     'scat_angle' : None,
                    }
         metadata['flags'] = cat_ut.get_flags(metadata)
@@ -323,8 +376,9 @@ class Waveform_SXS(Waveform):
         pass
 
     def load_psi4lm(self, ellmax=None, load_m0=False):
-
-        fname = self.get_lev_fname(level=self.level,basename="rMPsi4_Asymptotic_GeometricUnits_CoM.h5")
+        
+        psi4_basename = self.basename.replace('rhOverM', 'rMPsi4')
+        fname = self.get_lev_fname(level=self.level,basename=psi4_basename)
         if os.path.exists(fname):
             self.nr_psi = h5py.File(fname)
 

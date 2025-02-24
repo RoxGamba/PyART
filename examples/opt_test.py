@@ -34,6 +34,7 @@ parser.add_argument('--json_file',    default=None,              help='JSON file
 parser.add_argument('--overwrite',    action='store_true',       help='Overwrite option (json)')
 parser.add_argument('--taper_alpha',    type=float, default=0.50, help="Taper alpha")
 parser.add_argument('--taper_start',    type=float, default=0.10, help="Taper start")
+parser.add_argument('--source',     default='BBH',                help="Source, BBH or BHNS (only SXS)")
 args = parser.parse_args()
 
 mm_settings = {'cut_second_waveform':True, 'initial_frequency_mm':10, 'M':100, 'final_frequency_mm':1024,
@@ -65,7 +66,7 @@ if args.catalog=='rit':
     ebbh = Waveform_RIT(path=rit_path, download=args.download, ID=args.id, nu_rescale=True)
 
 elif args.catalog=='sxs':
-    ebbh = Waveform_SXS(path=sxs_path, download=args.download, ID=args.id, order="Extrapolated_N3.dir", ellmax=7,  nu_rescale=True)
+    ebbh = Waveform_SXS(path=sxs_path, download=args.download, ID=args.id, order="Extrapolated_N3.dir", ellmax=7,  nu_rescale=True, src=args.source)
 
 elif args.catalog=='core':
     ebbh = Waveform_CoRe(path=core_path, download=args.download, ID=args.id, nu_rescale=True, 
