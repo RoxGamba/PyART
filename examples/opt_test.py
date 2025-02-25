@@ -70,7 +70,7 @@ elif args.catalog=='sxs':
 
 elif args.catalog=='core':
     ebbh = Waveform_CoRe(path=core_path, download=args.download, ID=args.id, nu_rescale=True, 
-                         run='R01', cut_at_mrg=True)
+                         run=None, cut_at_mrg=True)
 
 elif args.catalog=='icc':
     ebbh = Waveform_ICC(path=icc_path, ID=args.id, integrate=True, nu_rescale=True, 

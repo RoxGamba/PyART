@@ -298,6 +298,8 @@ class Waveform_RIT(Waveform):
                     'chi2x'      : chi2x,  # dimensionless
                     'chi2y'      : chi2y,
                     'chi2z'      : chi2z,
+                    'LambdaAl2'  : 0.,
+                    'LambdaBl2'  : 0.,
                     # positions
                     'pos1'       : np.array([0,0,+D/2]),
                     'pos2'       : np.array([0,0,-D/2]),

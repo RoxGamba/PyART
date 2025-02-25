@@ -99,6 +99,8 @@ class Waveform_ICC(Waveform):
                 'chi2x'      : 0,
                 'chi2y'      : 0,
                 'chi2z'      : ometa['chi2'],
+                'LambdaAl2'  : 0.,
+                'LambdaBl2'  : 0.,
                 'r0'         : ometa['D'],
                 'e0'         : ometa['ecc'],
                 'E0'         : ometa['E0'],

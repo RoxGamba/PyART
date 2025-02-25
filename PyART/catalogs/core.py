@@ -5,7 +5,8 @@ import h5py
 import glob
 import os
 
-from ..waveform import  Waveform
+from ..waveform import Waveform
+from ..utils    import os_utils
 
 ## Conversion dictionary
 conversion_dict_floats = {
@@ -37,7 +38,7 @@ class Waveform_CoRe(Waveform):
     def __init__(self,
                  path='../dat/CoRe/',
                  ID      = '0001',
-                 run     = 'R01',
+                 run     =  None, # if None, select highest resolution
                  code    = 'BAM',
                  kind    = 'h5',
                  mtdt_path=None,
@@ -67,7 +68,34 @@ class Waveform_CoRe(Waveform):
                 raise FileNotFoundError(f"The path {self.core_data_path} does not exist.")
         
         self.simpath = self.core_data_path
-        self.runpath = os.path.join(self.simpath, run)
+        
+        if self.run is None:
+            # select the highest resolution (smaller grid_spacing_min)
+            subdirs = os_utils.find_dirs_with_token(self.core_data_path, 'R0') # assume less than 10 runs
+            most_accurate_run = None
+            dx_min = 1e+6
+            for subdir in subdirs:
+                meta_Rfile = os.path.join(subdir,'metadata.txt')
+                dx = None
+                with open(meta_Rfile, 'r') as file:
+                    for line in file:
+                        if 'grid_spacing_min' in line:
+                            _, value_str = line.strip().split('=')
+                            break
+                try:
+                    dx = float(value_str)
+                except Exception as e:
+                    print(f'Error while reading grid_spacing_min from {meta_Rfile}: {e}')
+                if dx is None:
+                    continue
+                if dx<dx_min:
+                    dx_min = dx
+                    most_accurate_run = subdir
+            self.run     = most_accurate_run.replace(self.core_data_path+'/', '')
+            self.runpath = most_accurate_run #os.path.join(self.simpath, self.run)
+        else:
+            self.runpath = os.path.join(self.simpath, self.run)
+            
         # read metadata
         if mtdt_path is None:
             mtdt_path = os.path.join(self.simpath,'metadata_main.txt')
@@ -299,7 +327,7 @@ def radius_extrap_polynomial(ys, rs, K):
     compute the asymptotic value of y as r goes to infinity from an Kth
     order polynomial in 1/r, e.g.
 
-        yi = y_infty + \sum_i=k^K ci / ri^k,
+        yi = y_infty + \\sum_i=k^K ci / ri^k,
 
     where y_infty and the K coefficients ci are determined through a least
     squares polynomial fit from the above data.

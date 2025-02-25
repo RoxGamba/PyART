@@ -236,6 +236,23 @@ class Waveform_SXS(Waveform):
             f0 = orb_freq_ometa[2]/np.pi
         else:
             raise RuntimeError('Unknown format for reference_orbital_frequency')
+        
+
+        if self.src=='BBH':
+            LambdaAl2 = 0.
+            LambdaBl2 = 0.
+        elif self.src=='BHNS':
+            if name=='SXS:BHNS:0001':
+                LambdaAl2 = 526.
+                LambdaBl2 = 526.
+            elif name=='SXS:BHNS:0003':
+                LambdaAl2 = 624.
+                LambdaBl2 = 624.
+            else:
+                LambdaAl2 = 791.
+                LambdaBl2 = 791.
+        else:
+            raise RuntimeError(f'Unknown source: {self.src}')
 
         metadata = {'name'       : name, # i.e. store as name 'SXS:BBH:ID'
                     'ref_time'   : ometa['reference_time'],
@@ -253,6 +270,8 @@ class Waveform_SXS(Waveform):
                     'chi2x'      : hS2[0],  # dimensionless
                     'chi2y'      : hS2[1],
                     'chi2z'      : hS2[2],
+                    'LambdaAl2'  : LambdaAl2,
+                    'LambdaBl2'  : LambdaBl2,
                     # positions
                     'pos1'       : pos1,
                     'pos2'       : pos2,
