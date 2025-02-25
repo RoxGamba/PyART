@@ -46,10 +46,10 @@ class Waveform_SXS(Waveform):
         self.nu_rescale    = nu_rescale
         
         if basename is None:
-            if src=='BBH':
-                basename = 'rhOverM_Asymptotic_GeometricUnits_CoM.h5'
-            elif src=='BHNS':
+            if src=='BHNS'and int(self.ID)<=7:
                 basename = 'rhOverM_Asymptotic_GeometricUnits.h5'
+            elif (src=='BHNS' and int(self.ID)>7) or src=='BBH':
+                basename = 'rhOverM_Asymptotic_GeometricUnits_CoM.h5'
             else:
                 raise ValueError('basename is None, but unknown src!')
         self.basename = basename
@@ -69,19 +69,19 @@ class Waveform_SXS(Waveform):
             if os.path.exists(fname):
                 self.nr = h5py.File(fname)
             else:
-                raise FileNotFoundError('SXS path found, but the requested level ({self.level:d}) is not available!')
+                raise FileNotFoundError(f'SXS path found, but the requested level ({self.level:d}) is not available!')
 
         elif self.level is None:
             ref_lv_max = 6
             ref_lv_min = 1
-            for lvn in range(ref_lv_max,ref_lv_min,-1):
+            for lvn in range(ref_lv_max,ref_lv_min-1,-1):
                 fname = self.get_lev_fname(level=lvn,basename=self.basename)
                 if os.path.exists(fname):
                     self.nr    = h5py.File(fname)
                     self.level = lvn 
                     break
                 elif lvn==ref_lv_min:
-                    raise RuntimeError('No data for ref-levels:[{ref_lv_min:d},{ref_lv_max:d}] found')
+                    raise RuntimeError(f'No data for ref-levels:[{ref_lv_min:d},{ref_lv_max:d}] found')
         
         else:
             raise RuntimeError(f'Invalid input for level: {self.level}')
@@ -225,10 +225,32 @@ class Waveform_SXS(Waveform):
         else:
             ecc = float(ecc)
         
-        J0   = np.array(ometa['initial_ADM_angular_momentum'])
-        Lz   = J0 - hS1*M1*M1 - hS2*M2*M2
-        pph0 = Lz[2]/(M*M*nu) 
+        # Read ADM quantities. If not available (e.g. BHNS:0008 or BHNS:0009)
+        # set to None
+        if 'initial_ADM_angular_momentum' in ometa:
+            J0   = np.array(ometa['initial_ADM_angular_momentum'])
+            J0z  = J0[2]
+            Lz   = J0 - hS1*M1*M1 - hS2*M2*M2
+            pph0 = Lz[2]/(M*M*nu) 
+        else:
+            print('Warning! No angular momentum found')
+            J0   = None
+            J0z  = None
+            Lz   = None
+            pph0 = None
         
+        if 'initial_ADM_energy' in ometa:
+            E0    = ometa['initial_ADM_energy']
+            E0byM = E0/M
+        else:
+            E0    = None
+            E0byM = None
+        
+        if 'initial_ADM_linear_momentum' in ometa: 
+            P0v = np.array(ometa['initial_ADM_linear_momentum'])
+        else:
+            P0v = None
+
         orb_freq_ometa = ometa['reference_orbital_frequency']
         if isinstance(orb_freq_ometa,float):
             f0 = orb_freq_ometa/np.pi
@@ -237,19 +259,19 @@ class Waveform_SXS(Waveform):
         else:
             raise RuntimeError('Unknown format for reference_orbital_frequency')
         
-
+        # Set Lambda(s)
         if self.src=='BBH':
             LambdaAl2 = 0.
             LambdaBl2 = 0.
         elif self.src=='BHNS':
             if name=='SXS:BHNS:0001':
-                LambdaAl2 = 526.
+                LambdaAl2 = 0.
                 LambdaBl2 = 526.
             elif name=='SXS:BHNS:0003':
-                LambdaAl2 = 624.
+                LambdaAl2 = 0.
                 LambdaBl2 = 624.
             else:
-                LambdaAl2 = 791.
+                LambdaAl2 = 0.
                 LambdaBl2 = 791.
         else:
             raise RuntimeError(f'Unknown source: {self.src}')
@@ -281,11 +303,11 @@ class Waveform_SXS(Waveform):
                     'f0v'        : np.array(ometa['reference_orbital_frequency'])/np.pi,
                     'f0'         : f0, 
                     # ADM quantities (INITIAL, not REF)
-                    'E0'         : ometa['initial_ADM_energy'],
-                    'P0'         : np.array(ometa['initial_ADM_linear_momentum']),
+                    'E0'         : E0,
+                    'P0'         : P0v,
                     'J0'         : J0,
-                    'Jz0'        : J0[2],
-                    'E0byM'      : ometa['initial_ADM_energy']/M,
+                    'Jz0'        : J0z,
+                    'E0byM'      : E0byM, 
                     'pph0'       : pph0,
                     # remnant
                     'Mf'         : Mf,

@@ -66,7 +66,8 @@ def get_flags(meta, thres_spin=1e-5, thres_q=1e-3, thres_e0=1e-3):
     else:
         flags.append('unequal-mass')
     
-    if meta['E0byM']>=1:
+
+    if meta['E0byM'] is not None and meta['E0byM']>=1:
         flags.append('hyperbolic')
     elif meta['e0'] is None:
         flags.append('elliptic')
