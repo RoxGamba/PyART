@@ -264,18 +264,20 @@ class Waveform_SXS(Waveform):
             LambdaAl2 = 0.
             LambdaBl2 = 0.
         elif self.src=='BHNS':
+            LambdaAl2 = 0.
             if name=='SXS:BHNS:0001':
-                LambdaAl2 = 0.
                 LambdaBl2 = 526.
             elif name=='SXS:BHNS:0003':
-                LambdaAl2 = 0.
-                LambdaBl2 = 624.
-            else:
-                LambdaAl2 = 0.
+                LambdaBl2 = 607.
+            elif int(self.ID)<=9:
                 LambdaBl2 = 791.
+            else:
+                raise RuntimeError(f'Unknown LambdaBl2!')
+            if M2>M1:
+                raise RuntimeError(f'BHNS: M2>M1 but Lambda1 (LambdaAl2) is zero!')
         else:
             raise RuntimeError(f'Unknown source: {self.src}')
-
+      
         metadata = {'name'       : name, # i.e. store as name 'SXS:BBH:ID'
                     'ref_time'   : ometa['reference_time'],
                     # masses and spins 
