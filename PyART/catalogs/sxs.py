@@ -187,13 +187,29 @@ class Waveform_SXS(Waveform):
             q = 1/q
         nu = q/(1+q)**2
         M  = M1 + M2
-        if is_valid('reference_dimensionless_spin2') and \
-           is_valid('reference_dimensionless_spin1'):
-            hS1 = np.array(ometa['reference_dimensionless_spin1']) 
-            hS2 = np.array(ometa['reference_dimensionless_spin2']) 
-        else:
-            hS1 = np.array(ometa['initial_dimensionless_spin1']) 
-            hS2 = np.array(ometa['initial_dimensionless_spin2']) 
+
+        def read_spin_variable(spin_idx):
+            attempts = ['reference_dimensionless_spin', 
+                        'initial_dimensionless_spin',
+                        'reference_spin']
+            for attempt in attempts:
+                key = attempt+str(spin_idx)
+                if is_valid(key):
+                    hS = np.array(ometa[key])
+                    if attempt=='reference_':
+                        if spin_idx==1:
+                            hS = hS/M1**2
+                        elif spin_idx==2:
+                            hS = hS/M2**2
+                    break
+            return hS, attempt
+        
+        hS1, skey1 = read_spin_variable(1)
+        hS2, skey2 = read_spin_variable(2)
+        
+        if not skey1==skey2:
+            print(f'Warning: using different spin-entries! {skey1} and {skey2}')
+
         pos1 = np.array(ometa['reference_position1'])
         pos2 = np.array(ometa['reference_position2'])
         r0   = np.linalg.norm(pos1-pos2)
