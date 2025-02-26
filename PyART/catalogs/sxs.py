@@ -187,11 +187,13 @@ class Waveform_SXS(Waveform):
             q = 1/q
         nu = q/(1+q)**2
         M  = M1 + M2
-        hS1  = np.array(ometa['reference_dimensionless_spin1'])
-        if is_valid('reference_dimensionless_spin2'):
+        if is_valid('reference_dimensionless_spin2') and \
+           is_valid('reference_dimensionless_spin1'):
+            hS1 = np.array(ometa['reference_dimensionless_spin1']) 
             hS2 = np.array(ometa['reference_dimensionless_spin2']) 
         else:
-            hS2 = np.array([0.,0.,0.]) 
+            hS1 = np.array(ometa['initial_dimensionless_spin1']) 
+            hS2 = np.array(ometa['initial_dimensionless_spin2']) 
         pos1 = np.array(ometa['reference_position1'])
         pos2 = np.array(ometa['reference_position2'])
         r0   = np.linalg.norm(pos1-pos2)
