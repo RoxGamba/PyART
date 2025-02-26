@@ -73,7 +73,6 @@ class Waveform_SACRA(Waveform):
         lines  = lines[1:]
         info   = []
         keys   = header.split(',')
-        keys[0] = keys[0].lower() # Name ---> name
         for line in lines:
             line = line.replace('\\', '')
             if len(line)<1:
