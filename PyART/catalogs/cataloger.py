@@ -73,6 +73,10 @@ class Cataloger(object):
         elif self.catalog=='grahyp':
             from .gra_hyp import Waveform_GRAHyp
             wave = Waveform_GRAHyp(path=self.path, ID=ID, **add_opts)
+        
+        elif self.catalog=='sacra':
+            from .sacra import Waveform_SACRA
+            wave = Waveform_SACRA(path=self.path, ID=ID, **add_opts)
 
         else:
             raise ValueError(f'Unknown catalog: {self.catalog}')

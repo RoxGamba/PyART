@@ -15,15 +15,14 @@ class Waveform_SACRA(Waveform):
     Tullio.
     """
     def __init__(self,
-                 path        = './SACRA',
-                 ID          = None,   # SACRA do not have "official" ID, but we consider 
-                                       # the line of the sacra.info file. If provided, search
-                                       # waveform according to this value
-                 name        = None,   # alternative to ID
-                 datapath    = './',   # path with SACRA BHNS data (assume same structure as in 
-                                       # /data/numrel/SACRA/BHNS)
-                 nu_rescale  = False,
-                 cut_final   = 150     # cut waveform after tmrg+150 (if None, do not cut) 
+                 ID         = None,   # SACRA do not have "official" ID, but we consider 
+                                   # the line of the sacra.info file. If provided, search
+                                   # waveform according to this value
+                 name       = None,   # alternative to ID
+                 path       = './',   # path with SACRA BHNS data (assume same structure as in 
+                                      # /data/numrel/SACRA/BHNS)
+                 nu_rescale = False,
+                 cut_final  = 150     # cut waveform after tmrg+150 (if None, do not cut) 
                  ) -> None:
         
         super().__init__()
@@ -46,7 +45,7 @@ class Waveform_SACRA(Waveform):
         self.name       = name
         self.ID         = ID
         self.info       = info
-        self.datapath   = datapath        
+        self.path       = path        
         self.nu_rescale = nu_rescale  
         self.cut_final  = cut_final
 
@@ -160,20 +159,20 @@ class Waveform_SACRA(Waveform):
         X = None
         piecewise = None
         for subdir in subdirs:
-            full_path = os.path.join(self.datapath, subdir, fname2p)
+            full_path = os.path.join(self.path, subdir, fname2p)
             if os.path.exists(full_path):
                 X = np.loadtxt(full_path)
                 piecewise = 2
                 break
         
         if X is None: # if fname not found in 2-piecewise polytrops, search in 4-piecewise
-            full_path = os.path.join(self.datapath, 'gw4pwp', fname4p)
+            full_path = os.path.join(self.path, 'gw4pwp', fname4p)
             if os.path.exists(full_path):
                 piecewise = 4
                 X = np.loadtxt(full_path)
          
         if X is None: # if still None, we cry
-            raise FileNotFoundError(f'No {fname2p:20s} or {fname4p:20s} in {self.datapath}')
+            raise FileNotFoundError(f'No {fname2p:20s} or {fname4p:20s} in {self.path}')
         
         if piecewise is not None:
             u  = X[:,0]
@@ -191,7 +190,7 @@ class Waveform_SACRA(Waveform):
             for m in range(0,l+1):
                 self._hlm[(l,m)] = {'real':my_zeros, 'imag':my_zeros, 
                                     'z':my_zeros, 'A':my_zeros, 'p':my_zeros}
-        self._u          = u   
+        self._u = u   
         self._hlm[(2,2)] = wf_utils.get_multipole_dict(h)
         
         pass 
