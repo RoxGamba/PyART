@@ -298,14 +298,15 @@ class Matcher(object):
         if settings['debug'] and wf1.domain=='Time' and wf2.domain=='Time' and not self.cache:
             self._debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings,
                                        tap_times_w1 = tap_times_w1,
-                                       tap_times_w2 = tap_times_w2
+                                       tap_times_w2 = tap_times_w2,
+                                       mm=1-m 
                                        )
         out = {'h1f':h1f, 'h2f':h2f}
         return m, out
 
     def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings, 
                               tap_times_w1=None, tap_times_w2=None,
-                              six_panels=False):
+                              six_panels=False, mm=None):
         """
         Plot waveforms and PSD for debugging.
         """
@@ -376,7 +377,9 @@ class Matcher(object):
             if i==FT_panels[0]:
                 plt.yscale('log')
                 plt.xscale('log')
-                
+        if mm is not None:
+            plt.subplot(figm,fign,1)
+            plt.title(f'mismatch: {mm:.3e}')
         plt.tight_layout()
         if 'save' not in settings.keys():
             #print("not saving")

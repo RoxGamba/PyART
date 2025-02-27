@@ -6,6 +6,8 @@ import pathlib
 
 from ..waveform import Waveform
 from ..utils    import cat_utils, wf_utils, utils
+from ..analysis.match import condition_td_waveform
+from pycbc.types.timeseries import TimeSeries
 
 class Waveform_SACRA(Waveform):
     """
@@ -48,6 +50,7 @@ class Waveform_SACRA(Waveform):
         self.path       = path        
         self.nu_rescale = nu_rescale  
         self.cut_final  = cut_final
+        self.domain     = 'Time'
 
         self.load_metadata()
         self.load_hlm()
@@ -90,7 +93,7 @@ class Waveform_SACRA(Waveform):
                     sim_dict[ky] = parts[i].replace(' ', '')
             info.append(sim_dict)
         return info
-
+    
     def load_metadata(self):
         q  = self.info['q']
         nu = q/(1+q)**2
@@ -99,6 +102,11 @@ class Waveform_SACRA(Waveform):
         m1 = M - m2 
         S1 = np.array([0.,0.,self.info['a_BH']*m1*m1])
         S2 = np.array([0.,0.,0.])
+        MOmega0 = self.info['MOmega0']
+        if MOmega0 is None:
+            f0 = None 
+        else:
+            f0 = MOmega0/np.pi
         metadata = {'name'      : self.info['name'],
                     'ref_time'  : None,
                     'm1'        : m1,
@@ -126,8 +134,8 @@ class Waveform_SACRA(Waveform):
                     'pph0'      : None,
                     'pos1'      : None,
                     'pos2'      : None,
-                    'f0v'       : np.array([0.,0.,self.info['MOmega0']]),
-                    'f0'        : self.info['MOmega0'],
+                    'f0v'       : np.array([0.,0.,f0]),
+                    'f0'        : f0,
                     'Mf'        : self.info['Xf'],
                     'af'        : self.info['af'],
                     'afv'       : np.array([0.,0.,self.info['af']]),
@@ -192,7 +200,32 @@ class Waveform_SACRA(Waveform):
         self._u = u   
         self._hlm[(2,2)] = wf_utils.get_multipole_dict(h)
         
+        if self.metadata['f0'] is None:
+            f0 = self.get_MOmega0_from_FFT(h,u)
+            print(f'Updating f0 using estimate from FT: {f0:.5f}')
+            self.metadata['f0']  = f0
+            self.metadata['f0v'] = np.array([0.,0.,f0])
         pass 
+
+    def get_MOmega0_from_FFT(self,h,u):
+        condition_settings = {'tlen':len(h)*4,
+                              'pad_end_frac':0.5,
+                              'taper':'sigmoid',
+                              'taper_start':0.1,
+                              'taper_end'  : 0.05,
+                              'taper_alpha':0.02,
+                              'taper_alpha_end':0.02,
+                              'M':1.,
+                              }
+        dt = u[1]-u[0]
+        hT = TimeSeries(h.real,dt)
+        hw = condition_td_waveform(hT, condition_settings)
+        hf = hw.to_frequencyseries()
+        f  = hf.get_sample_frequencies()
+        imaxFT = np.argmax(hf)
+        # 1.3 is a tolerance, should not be there in principle 
+        f0_FT  = f[imaxFT]/1.3 
+        return f0_FT
 
 
 
