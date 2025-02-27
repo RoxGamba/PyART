@@ -45,6 +45,7 @@ class Waveform_CoRe(Waveform):
                  ell_emms='all',
                  download=False,
                  cut_at_mrg=False,
+                 cut_junk  = None,
                  nu_rescale=False,
                  )->None:
 
@@ -103,10 +104,13 @@ class Waveform_CoRe(Waveform):
 
         # read data
         self.load_hlm(kind = kind)
-
+        
         # remove postmerger
         if cut_at_mrg:
             self.cut_at_mrg()
+        
+        if cut_junk:
+            self.cut(cut_junk)
 
         pass
 
@@ -155,12 +159,16 @@ class Waveform_CoRe(Waveform):
                     try:
                         metadata[conversion_dict_floats[key]] = float(val.strip())
                     except ValueError:
-                        metadata[conversion_dict_floats[key]] = val.strip()
+                        if key=='id_eccentricity':
+                            print('Invalid id_eccentricity! Setting ecc=0.')
+                            metadata[conversion_dict_floats[key]] = 0.
+                        else:
+                            metadata[conversion_dict_floats[key]] = val.strip()
                 elif key in conversion_dict_vectors.keys():
                     metadata[conversion_dict_vectors[key]] = vector_string_to_array(val)
                 else:
                     metadata[key] = val.strip()
-
+        
         q  = float(metadata['q'])
         nu = q/(1+q)**2
         metadata['nu']    = nu

@@ -99,6 +99,7 @@ class Cataloger(object):
             cd_args = CreateDict.__code__.co_varnames
             newpars = {ky:val for ky,val in params.items() if ky in cd_args} 
             params  = CreateDict(**newpars)
+            
             # have a slightly lower f0
             params['initial_frequency'] = 0.95*params['initial_frequency']
             eob    = Waveform_EOB(params)
