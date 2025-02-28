@@ -328,8 +328,26 @@ def CreateDict(M=1., q=1,
                iresum=0,
                SS_leob='P23'):
         """
-        Create the dictionary of parameters for EOBRunPy
+        Create the dictionary of parameters for teobresumsmatlab
         """
+
+        if a6c is None:
+            a6_d = ""
+        elif isinstance(a6c, float):
+            a6_d = a6c
+        elif isinstance(a6c, str):
+            a6_d = "'{}'".format(a6c)
+        else:
+            raise ValueError("a6c must be a float or a string.")
+        
+        if cN3LO is None:
+            c3_d = ""
+        elif isinstance(cN3LO, float):
+            c3_d = cN3LO
+        elif isinstance(cN3LO, str):
+            c3_d = "'{}'".format(cN3LO)
+        else:
+            raise ValueError("a6c must be a float or a string.")
 
         pardic = {
             'M'                  : M,
@@ -347,8 +365,8 @@ def CreateDict(M=1., q=1,
             'l_max'              : l_max,
             'ecc'                : ecc,
             'ode_tmax'           : ode_tmax,
-            'a6c'                : a6c,
-            'cN3LO'              : cN3LO,
+            'a6c'                : a6_d,
+            'cN3LO'              : c3_d,
             'nr'                 : nr,
             'H_model'            : Hmod,
             'rho22_SO_resum'     : rho22_SO_resum,
