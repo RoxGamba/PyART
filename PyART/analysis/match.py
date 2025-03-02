@@ -80,8 +80,19 @@ class Matcher(object):
                 #plt.plot(WaveForm1.u, WaveForm1.hlm[lm]['real'])
                 #plt.plot(WaveForm2.u, WaveForm2.hlm[lm]['real'], ls='--')
             #plt.show()
-
         
+        if self.settings['f0_from_merger']:
+            if self.settings['kind']!='single-mode' or \
+                len(self.modes)>1:
+                  raise ValueError("The option 'f0_from_merger' can be used only with a single mode") 
+            mode = self.modes[0]
+            u_mrg,_,_,_,i_mrg = WaveForm1.find_max(return_idx=True)
+            p1    = WaveForm1.hlm[mode]['p']
+            Omg1  = np.abs(np.gradient(p1, WaveForm1.u))
+            Omg10_postmrg = Omg1[i_mrg]
+            f0_postmrg = Omg10_postmrg/(self.settings['M']*ut.Msun*2*np.pi)
+            self.settings['initial_frequency_mm'] = f0_postmrg
+
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
@@ -226,6 +237,8 @@ class Matcher(object):
             'geom'                 : True,
             'cut_longer'           : False, # cut longer waveform
             'cut_second_waveform'  : False, # cut waveform2 if longer than waveform1
+            'f0_from_merger'       : False, # Use frequency at merger as initial_frequency_mm
+                                            # (computed from WaveForm1)
         }
     
     def _get_psd(self, flen, df, fmin):
