@@ -92,15 +92,16 @@ os.makedirs(new_dir, exist_ok=True)
 
 sims_qeq1_nospin = count_subdirs('qeq1_nospin')
 sims_qeq1_spin   = count_subdirs('qeq1_spin')
-sims_qdf1_nospin = count_subdirs('qdf1_nospin') 
+#sims_qdf1_nospin = count_subdirs('qdf1_nospin') 
 sims_scat        = count_subdirs('scattering_ICC')
 
 nsims_qeq1_nospin = len(sims_qeq1_nospin)
 nsims_qeq1_spin   = len(sims_qeq1_spin)
-nsims_qdf1_nospin = len(sims_qdf1_nospin)
+#nsims_qdf1_nospin = len(sims_qdf1_nospin)
 nsims_scat        = len(sims_scat)
 
-all_sims = sims_qeq1_nospin + sims_qeq1_spin + sims_qdf1_nospin + sims_scat
+#all_sims = sims_qeq1_nospin + sims_qeq1_spin + sims_qdf1_nospin + sims_scat
+all_sims = sims_qeq1_nospin + sims_qeq1_spin + sims_scat
 
 # load mergers, which have a global json with meta
 for i, sim in enumerate(all_sims):
@@ -122,7 +123,8 @@ for i, sim in enumerate(all_sims):
         
         bool_q1     = abs(q-1)<1e-5
         bool_nospin = abs(chi1)<1e-10 and abs(chi2)<1e-10
-        if not bool_q1: 
+        if not bool_q1:
+            raise RuntimeError('q>1 are inaccurate!')
             datadir = 'qdf1_nospin'
         elif bool_nospin:
             datadir = 'qeq1_nospin'
