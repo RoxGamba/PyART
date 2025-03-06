@@ -21,8 +21,9 @@ class Waveform_SXS(Waveform):
                     cut_N         = None,
                     cut_U         = None,
                     ellmax        = 8,
+                    load          = ['hlm','metadata'],
                     download      = False,
-                    download_psi4 = False,
+                    downloads     = ['hlm','metadata'],
                     load_m0       = False,
                     nu_rescale    = False,
                     src           = 'BBH',
@@ -59,7 +60,7 @@ class Waveform_SXS(Waveform):
             if download:
                 print("The path ", self.sxs_data_path, " does not exist.")
                 print("Downloading the simulation from the SXS catalog.")
-                self.download_simulation(ID=ID, path=path, dowload_psi4=download_psi4)
+                self.download_simulation(ID=ID, path=path, downloads=downloads)
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
@@ -72,12 +73,14 @@ class Waveform_SXS(Waveform):
                 raise FileNotFoundError(f'SXS path found, but the requested level ({self.level:d}) is not available!')
 
         elif self.level is None:
-            ref_lv_max = 6
+            ref_lv_max = 7
             ref_lv_min = 1
+            if 'hlm' not in load:
+                self.basename='metadata.json'
             for lvn in range(ref_lv_max,ref_lv_min-1,-1):
                 fname = self.get_lev_fname(level=lvn,basename=self.basename)
                 if os.path.exists(fname):
-                    self.nr    = h5py.File(fname)
+                    if 'hlm' in load: self.nr    = h5py.File(fname)
                     self.level = lvn 
                     break
                 elif lvn==ref_lv_min:
@@ -86,8 +89,8 @@ class Waveform_SXS(Waveform):
         else:
             raise RuntimeError(f'Invalid input for level: {self.level}')
         
-        self.load_metadata()
-        self.load_hlm(load_m0=load_m0)
+        if 'metadata' in load: self.load_metadata()
+        if 'hlm'      in load: self.load_hlm(load_m0=load_m0)
         pass
     
     def check_cut_consistency(self):
@@ -110,7 +113,7 @@ class Waveform_SXS(Waveform):
         if isinstance(basename, str): tojoin.append(basename)
         return os.path.join(self.sxs_data_path, *tojoin)
     
-    def download_simulation(self, ID='0001', path=None, dowload_psi4=False):
+    def download_simulation(self, ID='0001', path=None, downloads=['hlm','metadata']):
         """
         Download the simulation from the SXS catalog; requires the sxs module
         """
@@ -121,11 +124,11 @@ class Waveform_SXS(Waveform):
             os.environ['SXSCACHEDIR'] = path
 
         nm = 'SXS:'+self.src+':'+ID
-
-        _  = sxs.load(nm+'/Lev/'+"metadata.json")
-        _  = sxs.load(nm+'/Lev/'+self.basename)
-        _  = sxs.load(nm+'/Lev/'+"Horizons.h5")
-        if dowload_psi4:
+        
+        if 'metadata' in downloads: _  = sxs.load(nm+'/Lev/'+"metadata.json")
+        if 'hlm'      in downloads: _  = sxs.load(nm+'/Lev/'+self.basename)
+        if 'horizons' in downloads: _  = sxs.load(nm+'/Lev/'+"Horizons.h5")
+        if 'psi4'     in downloads:
             psi4_basename = self.basename.replace('rhOverM', 'rMPsi4')
             _  = sxs.load(nm+'/Lev/'+psi4_basename)
         
@@ -162,7 +165,7 @@ class Waveform_SXS(Waveform):
         self.ometadata = ometa # store also original metadata, for completeness
         
         # TODO : 1) check if these quantities are mass-rescaled or not
-        #        2) here we are using initial quantities, not ref. The
+        #        2) here we are using initial quantities, not ref. The
         #           reason is that ADM integrals are not given at ref time
 
         def is_valid(key, vtype=None):
@@ -344,7 +347,10 @@ class Waveform_SXS(Waveform):
 
     def load_horizon(self):
         horizon = h5py.File(self.get_lev_fname(basename="Horizons.h5"))
-    
+   
+        mA = horizon['AhA.dir']['ChristodoulouMass.dat']
+        mB = horizon['AhB.dir']['ChristodoulouMass.dat']
+
         chiA = horizon["AhA.dir/chiInertial.dat"]
         chiB = horizon["AhB.dir/chiInertial.dat"]
         xA   = horizon["AhA.dir/CoordCenterInertial.dat"]
@@ -355,6 +361,8 @@ class Waveform_SXS(Waveform):
         self._dyn['chi2']  = chiB
         self._dyn['x1']    = xA
         self._dyn['x2']    = xB
+        self._dyn['mA']    = mA
+        self._dyn['mB']    = mB
 
         pass
 
