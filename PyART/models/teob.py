@@ -98,6 +98,7 @@ def CreateDict(M=1., q=1,
                interp="yes", arg_out="yes", use_geom="yes", 
                use_mode_lm=[1], ode_tmax=1e+7,
                cN3LO=None, a6c=None,
+               use_flm_h='LO',
                use_nqc=True):
         """
         Create the dictionary of parameters for EOBRunPy
@@ -149,6 +150,7 @@ def CreateDict(M=1., q=1,
             'spin_flx'           : 'EOB',
             'spin_interp_domain' : 0,
             'ode_tmax'           : ode_tmax,
+            'use_flm_h'          : use_flm_h,
         }
 
         if not use_nqc:

@@ -55,12 +55,17 @@ class Waveform_SXS(Waveform):
                 raise ValueError('basename is None, but unknown src!')
         self.basename = basename
 
+        if level is not None and isinstance(level, int):
+            levpath = f'{self.sxs_data_path}/Lev{level}'
+        else:
+            levpath = self.sxs_data_path
+
         self.check_cut_consistency()
-        if os.path.exists(self.sxs_data_path) == False:
+        if os.path.exists(levpath) == False:
             if download:
                 print("The path ", self.sxs_data_path, " does not exist.")
                 print("Downloading the simulation from the SXS catalog.")
-                self.download_simulation(ID=ID, path=path, downloads=downloads)
+                self.download_simulation(ID=ID, path=path, downloads=downloads, level=level)
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
@@ -113,7 +118,7 @@ class Waveform_SXS(Waveform):
         if isinstance(basename, str): tojoin.append(basename)
         return os.path.join(self.sxs_data_path, *tojoin)
     
-    def download_simulation(self, ID='0001', path=None, downloads=['hlm','metadata']):
+    def download_simulation(self, ID='0001', path=None, downloads=['hlm','metadata'],level=None):
         """
         Download the simulation from the SXS catalog; requires the sxs module
         """
@@ -124,13 +129,16 @@ class Waveform_SXS(Waveform):
             os.environ['SXSCACHEDIR'] = path
 
         nm = 'SXS:'+self.src+':'+ID
-        
-        if 'metadata' in downloads: _  = sxs.load(nm+'/Lev/'+"metadata.json")
-        if 'hlm'      in downloads: _  = sxs.load(nm+'/Lev/'+self.basename)
-        if 'horizons' in downloads: _  = sxs.load(nm+'/Lev/'+"Horizons.h5")
+        if level is not None:
+            nm_ld = nm+ f'/Lev{level}/'
+        else:
+            nm_ld = nm+ '/Lev/'
+        if 'metadata' in downloads: _  = sxs.load(nm_ld+"metadata.json")
+        if 'hlm'      in downloads: _  = sxs.load(nm_ld+self.basename)
+        if 'horizons' in downloads: _  = sxs.load(nm_ld+"Horizons.h5")
         if 'psi4'     in downloads:
             psi4_basename = self.basename.replace('rhOverM', 'rMPsi4')
-            _  = sxs.load(nm+'/Lev/'+psi4_basename)
+            _  = sxs.load(nm_ld+psi4_basename)
         
         sxs_dir = 'SXS_'+self.src+'_'+ID
 
@@ -348,11 +356,11 @@ class Waveform_SXS(Waveform):
     def load_horizon(self):
         horizon = h5py.File(self.get_lev_fname(basename="Horizons.h5"))
    
-        mA = horizon['AhA.dir']['ChristodoulouMass.dat']
-        mB = horizon['AhB.dir']['ChristodoulouMass.dat']
+        mA = horizon['AhA.dir']['ArealMass.dat']
+        mB = horizon['AhB.dir']['ArealMass.dat']
 
-        chiA = horizon["AhA.dir/chiInertial.dat"]
-        chiB = horizon["AhB.dir/chiInertial.dat"]
+        chiA = horizon["AhA.dir/DimensionfulInertialSpinMag.dat"]
+        chiB = horizon["AhB.dir/DimensionfulInertialSpinMag.dat"]
         xA   = horizon["AhA.dir/CoordCenterInertial.dat"]
         xB   = horizon["AhB.dir/CoordCenterInertial.dat"]
 
