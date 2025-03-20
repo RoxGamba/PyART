@@ -192,7 +192,7 @@ class ScatteringAngle:
         chi        = th_inf_out-th_inf_in-180
         return chi, th_inf_in, th_inf_out
     
-    def compute_chi_hypfit(self, swap_ab=True, verbose=None):
+    def compute_chi_hypfit(self, verbose=None):
         if verbose is None: verbose = self.verbose
         angles = np.zeros((2,2))
         th_start = None
