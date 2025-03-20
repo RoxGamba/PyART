@@ -31,7 +31,6 @@ class ScatteringAngle:
         
         # use hypfit instead
         self.hypfit            = False
-        self.hypfit_plot       = False
 
         for key, value in kwargs.items():
             if hasattr(self,key):
@@ -167,7 +166,7 @@ class ScatteringAngle:
         self.th_out = th[mask_out]
         
         if self.hypfit:
-            self.chi_hypfit = self.compute_chi_hypfit()
+            self.chi_hypfit, _ = self.compute_chi_hypfit()
         else:
             self.chi_hypfit = None
 
@@ -193,26 +192,29 @@ class ScatteringAngle:
         chi        = th_inf_out-th_inf_in-180
         return chi, th_inf_in, th_inf_out
     
-    def compute_chi_hypfit(self):
+    def compute_chi_hypfit(self, swap_ab=True):
         angles = np.zeros((2,2))
         th_start = None
         th_end   = None
+        fits     = {}
         for i in range(2):
             if i==0:
                 th = self.th_in
                 r  = self.r_in
                 th_start = th[0]
+                fit_key = 'in'
             else: 
                 th = self.th_out
                 r  = self.r_out
                 th_end = th[-1]
+                fit_key = 'out'
             x = r*np.cos(th)
             y = r*np.sin(th)
             ABCDF     = fit_quadratic(x, y)
             canonical = quadratic_to_canonical(ABCDF)
-            swap_ab = True
-            if self.hypfit_plot:
-                plot_hypfit(x, y, canonical, swap_ab=swap_ab, rlim=max(r))
+            
+            fits[fit_key] = {'x':x, 'y':y, 'r':r, 'th':th, 'canonical':canonical, 'ABCDF':ABCDF}
+            
             A = ABCDF[0]
             B = ABCDF[1]
             C = ABCDF[2]
@@ -227,7 +229,14 @@ class ScatteringAngle:
         chi_deg += 180*n_pi
         if self.verbose:
             print('chi hypfit       : {:.4f}'.format(chi_deg))
-        return chi_deg
+        return chi_deg, fits
+    
+    def plot_hypfit(self, swap_ab_list=[True,True]):
+        _, fits = self.compute_chi_hypfit()
+        for i, fit in enumerate(fits):
+            plot_hypfit(fit['x'], fit['y'], fit['canonical'], 
+                        swap_ab=swap_ab_list[i], rlim=max(fit['r']))
+        pass
 
     def save_plot(self,show=True,save=False,figname='plot.png'):
         if save:
@@ -245,7 +254,7 @@ class ScatteringAngle:
         y  = self.y
         th = self.th
         fig,axs = plt.subplots(2,2, figsize=(9,7))
-        if self.file_format!='EOB':
+        if 'x1' in self.puncts:
             axs[0,0].plot(self.x1,self.y1)
             axs[0,0].plot(self.x2,self.y2)
             axs[0,0].set_ylabel(r'$y$', fontsize=15)

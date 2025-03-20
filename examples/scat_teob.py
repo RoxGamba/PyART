@@ -31,7 +31,7 @@ for i in range(n_conf):
     
     if E_final>1:
         scat = ScatteringAngle(puncts=eob.dyn, nmin=2, nmax=10, n_extract=None,
-                               hypfit=True, hypfit_plot=False,
+                               hypfit=True,
                                r_cutoff_in_low=cutoff_min,  r_cutoff_in_high=eob.dyn['r'][0],
                                r_cutoff_out_low=cutoff_min, r_cutoff_out_high=None, verbose=True)
         conf['scat'] = scat
