@@ -52,7 +52,7 @@ def hyp_branches(canonical):
     x2, y2 = hyp_parametrization(th2,canonical)
     return x1, y1, x2, y2  
     
-def plot_fit(x,y,canonical_fit, rlim=10, swap_ab=False):
+def plot_hypfit(x,y,canonical_fit, rlim=10, swap_ab=False):
     if swap_ab:
         tmp = canonical_fit[0]
         canonical_fit[0] = canonical_fit[1]
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     else:
       swap_ab = False
 
-    plot_fit(x,y,canonical_fit,swap_ab=swap_ab)
+    plot_hypfit(x,y,canonical_fit,swap_ab=swap_ab)
 
     # Compare fitted coeff with original ones
     names = ['a', 'b', 'ph', 'x0', 'y0']
