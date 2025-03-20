@@ -35,6 +35,7 @@ for i in range(n_conf):
                                r_cutoff_in_low=cutoff_min,  r_cutoff_in_high=eob.dyn['r'][0],
                                r_cutoff_out_low=cutoff_min, r_cutoff_out_high=None, verbose=True)
         conf['scat'] = scat
+        #scat.plot_hypfit()
     else:
         print('Capture!')
 

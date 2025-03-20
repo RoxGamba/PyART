@@ -192,7 +192,8 @@ class ScatteringAngle:
         chi        = th_inf_out-th_inf_in-180
         return chi, th_inf_in, th_inf_out
     
-    def compute_chi_hypfit(self, swap_ab=True):
+    def compute_chi_hypfit(self, swap_ab=True, verbose=None):
+        if verbose is None: verbose = self.verbose
         angles = np.zeros((2,2))
         th_start = None
         th_end   = None
@@ -227,13 +228,13 @@ class ScatteringAngle:
         
         n_pi     = np.floor( (th_end-th_start-chi_rad)/np.pi )
         chi_deg += 180*n_pi
-        if self.verbose:
-            print('chi hypfit       : {:.4f}'.format(chi_deg))
+        if verbose: print('chi hypfit       : {:.4f}'.format(chi_deg))
         return chi_deg, fits
     
     def plot_hypfit(self, swap_ab_list=[True,True]):
         _, fits = self.compute_chi_hypfit()
-        for i, fit in enumerate(fits):
+        for i, key in enumerate(fits):
+            fit = fits[key]
             plot_hypfit(fit['x'], fit['y'], fit['canonical'], 
                         swap_ab=swap_ab_list[i], rlim=max(fit['r']))
         pass
