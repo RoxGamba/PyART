@@ -76,6 +76,7 @@ class Waveform_EOBMatlab(Waveform):
                     pars=None,
                     code_dir="/home/danilo.chiaramello/teobresumsmatlab/",
                     data_dir="/data/prometeo/danilo.chiaramello/teob_seob/data/matlab_data/",
+                    source="/usr/local/src/R2020b/bin/matlab",
                     run=False,
                     verbose=False,
                     load_insp=False
@@ -85,6 +86,7 @@ class Waveform_EOBMatlab(Waveform):
         self._kind     = 'EOB'
         self.code_dir  = code_dir
         self.dir       = data_dir
+        self.source    = source
         self.run       = run
         self.verbose   = verbose
         self.load_insp = load_insp
@@ -209,7 +211,7 @@ class Waveform_EOBMatlab(Waveform):
         with open(self.dir + 'runmatlab.m', 'w') as f:
             f.write(code)
         
-        out = subprocess.run(["/usr/local/src/R2020b/bin/matlab",  "-nojvm", "-nodesktop", "-nodisplay", "-nosplash", "-batch", "run('{}')".format(self.dir + 'runmatlab.m')], capture_output=True)
+        out = subprocess.run(["{}".format(self.source),  "-nojvm", "-nodesktop", "-nodisplay", "-nosplash", "-batch", "run('{}')".format(self.dir + 'runmatlab.m')], capture_output=True)
         if self.verbose:
             print(out.stdout.decode('UTF-8'))
         return 0
@@ -332,7 +334,7 @@ def CreateDict(M=1., q=1,
         """
 
         if a6c is None:
-            a6_d = ""
+            a6_d = None
         elif isinstance(a6c, float):
             a6_d = a6c
         elif isinstance(a6c, str):
@@ -341,7 +343,7 @@ def CreateDict(M=1., q=1,
             raise ValueError("a6c must be a float or a string.")
         
         if cN3LO is None:
-            c3_d = ""
+            c3_d = None
         elif isinstance(cN3LO, float):
             c3_d = cN3LO
         elif isinstance(cN3LO, str):
