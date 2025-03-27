@@ -355,9 +355,9 @@ class Waveform_SXS(Waveform):
 
     def load_horizon(self):
         horizon = h5py.File(self.get_lev_fname(basename="Horizons.h5"))
-   
-        mA = horizon['AhA.dir']['ArealMass.dat']
-        mB = horizon['AhB.dir']['ArealMass.dat']
+
+        mA = horizon['AhA.dir']['ChristodoulouMass.dat']
+        mB = horizon['AhB.dir']['ChristodoulouMass.dat']
 
         chiA = horizon["AhA.dir/DimensionfulInertialSpinMag.dat"]
         chiB = horizon["AhB.dir/DimensionfulInertialSpinMag.dat"]
