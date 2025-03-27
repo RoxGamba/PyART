@@ -16,7 +16,7 @@ class Waveform_SXS(Waveform):
                     self,
                     path          = '../dat/SXS/',
                     ID            = '0001',
-                    order         = "Extrapolated_N2.dir",
+                    order         = "Extrapolated_N3.dir",
                     level         = None,
                     cut_N         = None,
                     cut_U         = None,
