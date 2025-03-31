@@ -16,7 +16,7 @@ addpath('${code_dir}TEOBRun/parfiles/');
 addpath('${code_dir}PointMass/');
 
 evalc("SetNaming('new')");
-evalc("eob_run_spin_eccentric_Pade33(${q}, 'single', ${chi1}, ${chi2}${ecc_s}${omg_ap_s}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${Tmax}${newlogs}${rho22_SO_resum}${rend})");
+evalc("eob_run_spin_eccentric_Pade33(${q}, 'single', ${chi1}, ${chi2}${ecc_s}${omg_ap_s}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${Tmax}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
 quit;
 """
 matlab_base_loud = """
@@ -25,7 +25,7 @@ addpath('${code_dir}TEOBRun/parfiles/');
 addpath('${code_dir}PointMass/');
 
 evalc("SetNaming('new')");
-eob_run_spin_eccentric_Pade33(${q}, 'single', ${chi1}, ${chi2}${ecc_s}${omg_ap_s}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${Tmax}${newlogs}${rho22_SO_resum}${rend});
+eob_run_spin_eccentric_Pade33(${q}, 'single', ${chi1}, ${chi2}${ecc_s}${omg_ap_s}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${Tmax}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg});
 quit;
 """
 
@@ -35,7 +35,7 @@ addpath('${code_dir}TEOBRun/parfiles/');
 addpath('${code_dir}PointMass/');
 
 evalc("SetNaming('new')");
-evalc("eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${newlogs}${rho22_SO_resum}${rend})");
+evalc("eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
 quit;
 """
 matlab_base_hyp_loud = """
@@ -44,7 +44,7 @@ addpath('${code_dir}TEOBRun/parfiles/');
 addpath('${code_dir}PointMass/');
 
 evalc("SetNaming('new')");
-eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${newlogs}${rho22_SO_resum}${rend});
+eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg});
 quit;
 """
 
@@ -54,7 +54,7 @@ addpath('${code_dir}TEOBRun/parfiles/');
 addpath('${code_dir}PointMass/');
 
 evalc("SetNaming('new')");
-evalc("eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${SS_leob})");
+evalc("eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${SS_leob}${nqc_amp}${nqc_omg})");
 quit;
 """
 matlab_base_leob_loud = """
@@ -63,7 +63,7 @@ addpath('${code_dir}TEOBRun/parfiles/');
 addpath('${code_dir}PointMass/');
 
 evalc("SetNaming('new')");
-eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${SS_leob});
+eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${SS_leob}${nqc_amp}${nqc_omg});
 quit;
 """
 
@@ -162,7 +162,9 @@ class Waveform_EOBMatlab(Waveform):
                          "rho22_SO_resum": ", 'rho22_SO_resum', {}".format(self.pars['rho22_SO_resum']),
                          "rholm": ", 'rholm', '{}'".format(self.pars['rholm']),
                          "H_model": ", 'H_model', '{}'".format(self.pars['H_model']),
-                         "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0)
+                         "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0),
+                         "nqc_amp": ", 'nqc_amp_params', {}".format(self.pars['nqc_amp_params']) if self.pars['nqc_amp_params'] is not None else 2,
+                         "nqc_omg": ", 'nqc_omg_params', {}".format(self.pars['nqc_omg_params']) if self.pars['nqc_omg_params'] is not None else 2,
                          }
         elif self.leob:
             temp_dict = {"code_dir": self.code_dir,
@@ -181,7 +183,9 @@ class Waveform_EOBMatlab(Waveform):
                          "rho22_SO_resum": ", 'rho22_SO_resum', {}".format(self.pars['rho22_SO_resum']),
                          "rholm": ", 'rholm', '{}'".format(self.pars['rholm']),
                          "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0),
-                         "SS_leob": ", 'SS_leob', '{}'".format(self.pars['SS_leob'] if self.pars['SS_leob'] is not None else '')
+                         "SS_leob": ", 'SS_leob', '{}'".format(self.pars['SS_leob'] if self.pars['SS_leob'] is not None else ''),
+                         "nqc_amp": ", 'nqc_amp_params', {}".format(self.pars['nqc_amp_params']) if self.pars['nqc_amp_params'] is not None else 2,
+                         "nqc_omg": ", 'nqc_omg_params', {}".format(self.pars['nqc_omg_params']) if self.pars['nqc_omg_params'] is not None else 2,
             }
         else:
             temp_dict = {"code_dir": self.code_dir,
@@ -199,7 +203,9 @@ class Waveform_EOBMatlab(Waveform):
                          "rholm": ", 'rholm', '{}'".format(self.pars['rholm']),
                          "H_model": ", 'H_model', '{}'".format(self.pars['H_model']),
                          "Tmax": ", 'Tmax', {}".format(self.pars['ode_tmax']),
-                         "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0)
+                         "rend": ", 'rend', {}".format(self.pars['ode_rend'] if self.pars['ode_rend'] is not None else 0),
+                         "nqc_amp": ", 'nqc_amp_params', {}".format(self.pars['nqc_amp_params']) if self.pars['nqc_amp_params'] is not None else 2,
+                         "nqc_omg": ", 'nqc_omg_params', {}".format(self.pars['nqc_omg_params']) if self.pars['nqc_omg_params'] is not None else 2,
                          }
         return temp_dict
 
@@ -326,6 +332,7 @@ def CreateDict(M=1., q=1,
                newlogs=1,
                rholm="newlogs",
                use_nqc=True,
+               nqc_amp=2, nqc_omg=2,
                leob=False,
                iresum=0,
                SS_leob='P23'):
@@ -381,6 +388,8 @@ def CreateDict(M=1., q=1,
             'leob'               : leob,
             'iresum'             : iresum,
             'SS_leob'            : SS_leob,
+            'nqc_amp_params'     : nqc_amp,
+            'nqc_omg_params'     : nqc_omg,
         }
 
         if leob:
