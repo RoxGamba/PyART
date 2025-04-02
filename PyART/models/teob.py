@@ -72,12 +72,21 @@ class Waveform_EOB(Waveform):
 def convert_hlm(hlm):
     from ..utils import wf_utils as wfu
     """
-    Convert the hlm dictionary from k to (ell, emm) notation
+    Convert the hlm dictionary from k to (ell, emm) notation.
+    Still not very good, but better than before.
     """
     hlm_conv = {}
     for key in hlm.keys():
-        ell = wfu.k_to_ell(int(key))
-        emm = wfu.k_to_emm(int(key))
+        if '-' in key:
+            akey = abs(int(key))
+            ell = wfu.k_to_ell(int(akey))
+            emm = -1*wfu.k_to_emm(int(akey))
+        elif len(key) ==2 and '0' in key:
+            ell = int(key[0])
+            emm = 0
+        else:
+            ell = wfu.k_to_ell(int(key))
+            emm = wfu.k_to_emm(int(key))
         A   = hlm[key][0]
         p   = hlm[key][1]
         hlm_conv[(ell, emm)] = {'real': A*np.cos(p), 'imag': -1*A*np.sin(p),
