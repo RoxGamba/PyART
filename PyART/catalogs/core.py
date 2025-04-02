@@ -112,6 +112,9 @@ class Waveform_CoRe(Waveform):
         if cut_junk:
             self.cut(cut_junk)
 
+        # Let's cut at mergr + 10 M     
+        DeltaT = self.u[-1] - (t_mrg + 10)
+        self.cut(DeltaT, from_the_end=True)
         pass
 
     def download_simulation(self, ID='BAM_0001', path='.',protocol='https',verbose=False):
@@ -164,6 +167,7 @@ class Waveform_CoRe(Waveform):
                             metadata[conversion_dict_floats[key]] = 0.
                         else:
                             metadata[conversion_dict_floats[key]] = val.strip()
+
                 elif key in conversion_dict_vectors.keys():
                     metadata[conversion_dict_vectors[key]] = vector_string_to_array(val)
                 else:
@@ -183,8 +187,7 @@ class Waveform_CoRe(Waveform):
         metadata['chi2z'] = metadata['S2'][2]
         metadata['LambdaAl2'] = metadata['Lambda_ell_A'][0]
         metadata['LambdaBl2'] = metadata['Lambda_ell_B'][0]
-        metadata['f0'] = metadata['f0']/(2*np.pi)
-        
+        metadata['f0'] = metadata['f0']/(2*np.pi)        
         if metadata['LambdaAl2']>0 and metadata['LambdaBl2']>0:
             kind = 'BNS'
         elif metadata['LambdaAl2']<1 and metadata['LambdaBl2']<1:
@@ -192,7 +195,7 @@ class Waveform_CoRe(Waveform):
         else:
             kind = 'BHNS'
         metadata['flags'] = [kind] 
-            
+
         return metadata
     
     def load_hlm(self, kind = 'h5'):
@@ -335,7 +338,7 @@ def radius_extrap_polynomial(ys, rs, K):
     compute the asymptotic value of y as r goes to infinity from an Kth
     order polynomial in 1/r, e.g.
 
-        yi = y_infty + \\sum_i=k^K ci / ri^k,
+      yi = y_infty + \\sum_i=k^K ci / ri^k,
 
     where y_infty and the K coefficients ci are determined through a least
     squares polynomial fit from the above data.

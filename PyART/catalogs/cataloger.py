@@ -59,6 +59,7 @@ class Cataloger(object):
             wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
             
         elif self.catalog=='rit':
+
             from .rit import Waveform_RIT
             wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
         
@@ -99,7 +100,6 @@ class Cataloger(object):
             cd_args = CreateDict.__code__.co_varnames
             newpars = {ky:val for ky,val in params.items() if ky in cd_args} 
             params  = CreateDict(**newpars)
-            
             # have a slightly lower f0
             params['initial_frequency'] = 0.95*params['initial_frequency']
             eob    = Waveform_EOB(params)
@@ -120,6 +120,7 @@ class Cataloger(object):
                     plt.plot(wave.u, wave.hlm[(2,2)]['A'], c=colors[i], label=label)
         if legend:
             plt.legend()
+
         plt.show()
         pass
     
@@ -243,6 +244,7 @@ class Cataloger(object):
         pass
 
     def __is_in_valid_range(self, name, ranges,):
+
         """
         Check if a certain waveform is in the specified
         ranges (for example: ranges={'pph0':[1,10]})
@@ -384,7 +386,6 @@ class Cataloger(object):
                      hlines     = [],
                      figname    = None, # save if not None
                      ):
-
         if figname is not None: savepng = True
 
         # select waveforms and get colors

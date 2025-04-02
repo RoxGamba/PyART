@@ -9,6 +9,10 @@ import numpy as np
 from scipy.optimize import minimize_scalar, dual_annealing
 from ..utils import utils as ut
 from ..utils import wf_utils as wf_ut
+try:
+    import lal
+except ModuleNotFoundError:
+    print("WARNING: lal not installed.")
 
 #PyCBC imports
 from pycbc.filter import sigmasq, matched_filter_core, overlap_cplx, optimized_match, matched_filter,compute_max_snr_over_sky_loc_stat_no_phase
@@ -79,8 +83,7 @@ class Matcher(object):
                 WaveForm2._hlm[lm] = wf_ut.get_multipole_dict(h)
                 #plt.plot(WaveForm1.u, WaveForm1.hlm[lm]['real'])
                 #plt.plot(WaveForm2.u, WaveForm2.hlm[lm]['real'], ls='--')
-            #plt.show()
-        
+            #plt.show()        
         if self.settings['f0_from_merger']:
             if self.settings['kind']!='single-mode' or \
                 len(self.modes)>1:
@@ -92,7 +95,7 @@ class Matcher(object):
             Omg10_postmrg = Omg1[i_mrg]
             f0_postmrg = Omg10_postmrg/(self.settings['M']*ut.Msun*2*np.pi)
             self.settings['initial_frequency_mm'] = f0_postmrg
-
+        
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
@@ -106,6 +109,7 @@ class Matcher(object):
         # Compute and store the mismatch
         mm, out = self.match_f(wf1,wf2,self.settings)
         self.mismatch= 1 - mm
+        self.match_out = out
         if 'h1f' in out and 'h2f' in out:
             self.h1f = out['h1f']
             self.h2f = out['h2f']
@@ -173,7 +177,7 @@ class Matcher(object):
             M       = self.settings['M'] 
             dT_resc = dT/(M*ut.Msun)
             new_u   = np.arange(u[0], u[-1], dT_resc)
-            hp = ut.spline(u, hp, new_u, kind=kind) 
+            hp = ut.spline(u, hp, new_u, kind=kind)
             hc = ut.spline(u, hc, new_u, kind=kind) 
         return TimeSeries(hp, dT), TimeSeries(hc, dT), new_u
     
@@ -206,7 +210,9 @@ class Matcher(object):
         tl   = (LM-1)*dT
         tN   = ut.nextpow2(resize_factor*tl)
         tlen = int(tN/dT)
-        return tlen
+        if tlen < LM:
+            print(tlen, LM)
+        return tlen if tlen > LM else LM
 
     def __default_parameters__(self):
         """
@@ -296,16 +302,32 @@ class Matcher(object):
             h2f = h2.to_frequencyseries()
         else:
             h2f = h2_nc
+
+        if isinstance(settings['initial_frequency_mm'], str):
+            if 'fAM' in settings['initial_frequency_mm']:
+                fAM = h1f.sample_frequencies[np.argmax(abs(h1f))]
+                fms = settings['initial_frequency_mm']
+                if fms.split('fAM')[1] == '':
+                    settings['initial_frequency_mm'] = eval(fms.split('fAM')[0])*fAM
+                else:
+                    settings['initial_frequency_mm'] = max(eval(fms.split('fAM')[0])*fAM, eval(fms.split('fAM')[1]))
+        
+        if isinstance(settings['final_frequency_mm'], str):
+            if 'A' in settings['final_frequency_mm']:
+                thr = float(settings['final_frequency_mm'].split('A')[1])
+                j_f = np.where(abs(h1f)/(Mref*lal.MTSUN_SI) > thr)[0][0] - 1
+                settings['final_frequency_mm'] = h1f.sample_frequencies[j_f]
         
         assert len(h1f) == len(h2f)
         df   = 1.0 / h1f.duration
         flen = len(h1f)//2 + 1
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
          
-        m, _ = optimized_match(h1f, h2f, 
+        m, j_shift, ph_shift = optimized_match(h1f, h2f, 
                                psd=psd, 
                                low_frequency_cutoff=settings['initial_frequency_mm'], 
-                               high_frequency_cutoff=settings['final_frequency_mm']
+                               high_frequency_cutoff=settings['final_frequency_mm'],
+                               return_phase=True
                                )
         
         if settings['debug'] and wf1.domain=='Time' and wf2.domain=='Time' and not self.cache:
@@ -314,7 +336,8 @@ class Matcher(object):
                                        tap_times_w2 = tap_times_w2,
                                        mm=1-m 
                                        )
-        out = {'h1f':h1f, 'h2f':h2f}
+
+        out = {'h1f': h1f, 'h2f': h2f, 'j_shift': j_shift*h2.delta_t, 'ph_shift': ph_shift}
         return m, out
 
     def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings, 

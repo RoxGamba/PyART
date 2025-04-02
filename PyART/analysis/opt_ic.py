@@ -374,7 +374,7 @@ class Optimizer(object):
         
         if 'LambdaAl2' not in ref_meta: ref_meta['LambdaAl2'] = 0.0
         if 'LambdaBl2' not in ref_meta: ref_meta['LambdaBl2'] = 0.0
-        
+
         sub_meta = {key: ref_meta[key] for key in default_intrinsic}
         sub_meta['use_nqc']  = self.use_nqc
         sub_meta['ode_tmax'] = 3e+4
@@ -589,7 +589,7 @@ class Optimizer(object):
 
                            # differiantial_evolution options 
                            'opt_workers':1,
-                           
+
                            # dynesty options
                            'nlive'  : 10,
                            'maxiter': 10000,
@@ -641,7 +641,7 @@ class Optimizer(object):
         opts         = {kys[i]: opt_pars[i] for i in range(len(kys))}
         mm_opt       = opt_result['fun']
         return opts, mm_opt
-    
+
     def __minimize__dynesty__(self, f, x0, bounds_array, kys):
         """
         Minimize with dynesty.

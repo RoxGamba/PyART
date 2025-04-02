@@ -414,7 +414,6 @@ class Waveform_SXS(Waveform):
 
     def load_horizon(self):
         horizon = h5py.File(self.get_lev_fname(basename="Horizons.h5"))
-
         mA = horizon['AhA.dir']['ChristodoulouMass.dat']
         mB = horizon['AhB.dir']['ChristodoulouMass.dat']
 
@@ -424,6 +423,8 @@ class Waveform_SXS(Waveform):
         xB   = horizon["AhB.dir/CoordCenterInertial.dat"]
 
         self._dyn['t']     = chiA[:,0]
+        self._dyn['m1']    = mA
+        self._dyn['m2']    = mB
         self._dyn['chi1']  = chiA
         self._dyn['chi2']  = chiB
         self._dyn['x1']    = xA
