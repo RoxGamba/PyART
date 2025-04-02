@@ -16,7 +16,7 @@ class Waveform_SXS(Waveform):
                     self,
                     path          = '../dat/SXS/',
                     ID            = '0001',
-                    order         = "Extrapolated_N3.dir",
+                    order         = 2,
                     level         = None,
                     cut_N         = None,
                     cut_U         = None,
@@ -27,6 +27,7 @@ class Waveform_SXS(Waveform):
                     load_m0       = False,
                     nu_rescale    = False,
                     src           = 'BBH',
+                    ignore_deprecation = False,
                     basename      = None, # if None, use default according to src
                 ):
         super().__init__()
@@ -65,7 +66,9 @@ class Waveform_SXS(Waveform):
             if download:
                 print("The path ", self.sxs_data_path, " does not exist.")
                 print("Downloading the simulation from the SXS catalog.")
-                self.download_simulation(ID=ID, path=path, downloads=downloads, level=level)
+                self.download_simulation(ID=ID, path=path, downloads=downloads, level=level, 
+                                         ignore_deprecation=ignore_deprecation,
+                                         extrapolation_order=order)
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
                 raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
@@ -113,16 +116,21 @@ class Waveform_SXS(Waveform):
         e.g. /my/sxs/path/Lev4/my_basename
         If basename is None, then return only /my/sxs/path/Lev4
         """
+        
+        if not isinstance(basename, str):
+            raise ValueError('basename must be a string!')
         if level is None: level = self.level
-        tojoin = [f'Lev{level:d}']
-        if isinstance(basename, str): tojoin.append(basename)
-        return os.path.join(self.sxs_data_path, *tojoin)
+
+        tojoin = f'Lev{level:d}/{basename}'
+        return os.path.join(self.sxs_data_path, tojoin)
     
-    def download_simulation(self, ID='0001', path=None, downloads=['hlm','metadata'],level=None):
+    def download_simulation(self, ID='0001', path=None, downloads=['hlm','metadata'],level=None, ignore_deprecation=False,
+                            extrapolation_order=None):
         """
         Download the simulation from the SXS catalog; requires the sxs module
         """
-        import sxs
+
+        import sxs as sxsmod
 
         if path is not None:
             print("Setting the download (cache) directory to ", path)
@@ -132,37 +140,88 @@ class Waveform_SXS(Waveform):
         if level is not None:
             nm_ld = nm+ f'/Lev{level}/'
         else:
-            nm_ld = nm+ '/Lev/'
-        if 'metadata' in downloads: _  = sxs.load(nm_ld+"metadata.json")
-        if 'hlm'      in downloads: _  = sxs.load(nm_ld+self.basename)
-        if 'horizons' in downloads: _  = sxs.load(nm_ld+"Horizons.h5")
-        if 'psi4'     in downloads:
-            psi4_basename = self.basename.replace('rhOverM', 'rMPsi4')
-            _  = sxs.load(nm_ld+psi4_basename)
+            nm_ld = nm
+        
+        sxs_sim = sxsmod.load(nm_ld,
+                              extrapolation_order = extrapolation_order, 
+                              ignore_deprecation = ignore_deprecation)
+
+        if 'hlm'      in downloads: _     = sxs_sim.h 
+        if 'metadata' in downloads: mtdt  = sxs_sim.metadata
+        if 'horizons' in downloads: _     = sxs_sim.horizons
         
         sxs_dir = 'SXS_'+self.src+'_'+ID
-
+        
         # find folder(s) corresponding to the name, mkdir the new one
         flds = [f for f in os.listdir(os.environ['SXSCACHEDIR']) if nm in f]
         if not os.path.exists(os.path.join(path,sxs_dir)):
             os.mkdir(os.path.join(path,sxs_dir))
 
-        # move the files in the folders to the new folder
+        # move the files in the folders to the new folder and find lev
+        lev = None
         for fld in flds:
-            for lev in os.listdir(os.path.join(os.environ['SXSCACHEDIR'],fld)):
-                try: 
-                    # move each Lev folder
-                    print(os.path.join(os.environ['SXSCACHEDIR'],fld,lev),'-->',os.path.join(path,sxs_dir,lev))
-                    os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,lev), os.path.join(path,sxs_dir,lev))
-                except Exception:
-                    # Lev already exists, move the files
-                    for file in os.listdir(os.path.join(os.environ['SXSCACHEDIR'],fld,lev)):
-                        print(os.path.join(os.environ['SXSCACHEDIR'],fld,lev,file),'-->',os.path.join(path,sxs_dir,lev,file))
-                        os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,lev,file), os.path.join(path,sxs_dir,lev,file))
-                    os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld,lev))
+            for fls in os.listdir(os.path.join(os.environ['SXSCACHEDIR'],fld)):
+                try:
+                    # identify the Lev of the file
+                    if lev is None:
+                        lev   = fls.split(':')[0]
+                    this_lev  = lev + '_'
+                    this_file = fls.split(':')[1:][0]
+                except:
+                    this_lev  = ''
+                    this_file = fls
+                # move each file, renaming
+                print(os.path.join(os.environ['SXSCACHEDIR'],fld,fls),'-->',os.path.join(path,sxs_dir,this_lev+this_file))
+                os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,fls), os.path.join(path,sxs_dir,this_lev+this_file))
 
-            # delete the empty folder
-            os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld))
+        # prepare to dump the modes in the old format, for retrocompatibility
+
+        # create the related Lev directory
+        lev_dir = os.path.join(path,sxs_dir,lev)
+        if not os.path.exists(lev_dir):
+            os.mkdir(lev_dir)
+        if 'hlm' in downloads:
+            import h5py
+            from itertools import product
+
+            extp = f'Extrapolated_N{extrapolation_order}.dir'
+            to_h5file = {
+               extp : {}
+            }
+            wav    = sxs_sim.h
+            ellmax = 8#wav.ellmax
+            modes  = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if l >= np.abs(m)]
+            for mode in modes:
+                mode_string = 'Y_l' + str(mode[0]) + '_m' + str(mode[1]) + '.dat'
+                to_h5file[extp][mode_string] = wav[mode_string]
+
+            # create the h5 file
+            h5file = h5py.File(os.path.join(path,sxs_dir,lev,f'rhOverM_Asymptotic_GeometricUnits_CoM.h5'), 'w')    
+            save_dict_to_h5(h5file, to_h5file)
+            h5file.close()
+
+        if 'horizons' in downloads:
+            import h5py
+            to_h5file = {}
+            hrz = sxs_sim.horizons
+            # fill the dictionary
+            for kk in ['AhA.dir','AhB.dir']:
+                to_h5file[kk] = {}
+                for key in ['CoordCenterInertial', 'ChristodoulouMass',  'DimensionfulInertialSpinMag']:
+                    to_h5file[kk][key] = hrz[f'{kk}/{key}']
+            
+            # create the h5 file
+            h5file = h5py.File(os.path.join(path,sxs_dir,lev,f'Horizons.h5'), 'w')
+            save_dict_to_h5(h5file, to_h5file)
+            h5file.close()
+
+        # dump the metadata in a json
+        with open(os.path.join(path,sxs_dir,lev,f'metadata.json'), 'w') as file:
+            json.dump(mtdt, file, indent=2)
+            file.close()
+
+        # delete the empty folder
+        os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld))
 
         pass
     
@@ -415,7 +474,7 @@ class Waveform_SXS(Waveform):
 
     def load_hlm(self, ellmax=None, load_m0=False):
         if ellmax==None: ellmax=self.ellmax
-        order   = self.order
+        order   = f'Extrapolated_N{self.order}.dir'
         
         if not hasattr(self, 'metadata'):
             raise RuntimeError('Load metadata before loading hlm!')
@@ -423,7 +482,8 @@ class Waveform_SXS(Waveform):
         from itertools import product
 
         modes = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if (m!=0 or load_m0) and l >= np.abs(m)]
-       
+
+        
         tmp_u = self.nr[order]['Y_l2_m2.dat'][:, 0]
         
         self.check_cut_consistency()
@@ -519,3 +579,18 @@ class Waveform_SXS(Waveform):
         self._psi4lm = dict_psi4lm
 
 
+
+def save_dict_to_h5(h5file, dictionary, path="/"):
+    """
+    Recursively save a nested dictionary to an HDF5 file.
+    """
+    for key, value in dictionary.items():
+        key_path = f"{path}/{key}" if path != "/" else key
+        
+        if isinstance(value, dict):
+            group = h5file.create_group(key_path)  # Create a group for nested dicts
+            save_dict_to_h5(group, value)  # Recurse
+        elif isinstance(value, (int, float, str, bytes)):
+            h5file.attrs[key] = value  # Store scalars and strings as attributes
+        else:
+            h5file.create_dataset(key_path, data=value)  # Store arrays
