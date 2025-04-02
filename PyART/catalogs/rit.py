@@ -238,7 +238,7 @@ class Waveform_RIT(Waveform):
                 key                = key.strip()
                 ometa[key] = val
             
-            kind = 'initial' # initial or relaxed (but no relaxed-separation in meta)
+            kind = 'relaxed' # initial or relaxed (but no relaxed-separation in meta)
             if kind=='initial':
                 ref_time = 0
             elif kind=='relaxed':
