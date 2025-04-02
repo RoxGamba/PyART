@@ -11,27 +11,31 @@ from ..utils       import utils as ut
 class Optimizer(object):
     """
     Class to compute EOB initial data that minimize mismatch
-    with reference waveform
+    with reference waveform.
     """
     def __init__(self,
                  ref_Waveform,
 
                  # option for dual annealing
-                 kind_ic      = 'E0pph0', # implemented: e0f0, E0pph0
-                 opt_seed     = 190521,
-                 opt_maxfun   = 100,
+                 kind_ic      = 'E0pph0',           # kind of ICs to optimize over
+                 vrs          = ['H_hyp', 'j_hyp'], # variables to optimize over, default is ['H_hyp', 'j_hyp']
+                 map_function = None,               # function to map variables to EOB parameters
+                 use_nqc      = True,
+                 r0_eob       = None,               # use a fixed value for r_hyp in EOB model, if None it will be computed by TEOB
+
+                 # model-specific options
+                 model_opts   = {},
 
                  # loop on different initial guesses (nested in bound-iters)
                  opt_max_iter = 1,     # max opt iters (i.e. using different initial guesses) if mm_thres is not reached
                  opt_good_mm  = 5e-3,  # interrupt opt-iters if mm is below this threshold
 
-                 # Option for bounds and iterations
-                 opt_bounds   = None,  # specify bounds (None or [[x1,x2],[y1,y2]] )
-                 eps_initial  = 1e-2,  # initial bound eps, used if some opt bounds are not specified
-                 eps_factor   = 2,     # increase-factor for eps at each eps-iter
-                 eps_max_iter = 1,     # If true, iterate on eps-bounds
-                 eps_bad_mm   = 0.1,   # if after opt_max_iter(s) we are still above this threshold, 
-                                       # increase bound-eps (if eps_max_iter>1)
+                 # Option for bounds and iterations on bounds
+                 opt_bounds   = None,  # specify bounds (None or {'key1': [x1,x2], 'key2': [y1,None], ...} )
+                 bounds_iter  = {},    # options to use when iterating over bounds 
+                 
+                 # minimizer options
+                 minimizer = {'kind': 'dual_annealing'},
                  
                  # cache
                  use_matcher_cache = False, 
@@ -39,7 +43,7 @@ class Optimizer(object):
                  # json-output options
                  json_file    = None,  # JSON file with mm (must be consistent with current options). If None, do not print data 
                  overwrite    = False, # overwrite JSON with new mm-computation
-                 
+                 json_save_dyn = False, # save dynamics in JSON 
                  # other options
                  mm_settings  = None,  # options for Matcher (dictionary)
                  verbose      = True,
@@ -50,24 +54,24 @@ class Optimizer(object):
         self.opt_Waveform = None
 
         self.kind_ic      = kind_ic
-        self.opt_seed     = opt_seed
-        self.opt_maxfun   = opt_maxfun
+        self.use_nqc      = use_nqc
+        self.r0_eob       = r0_eob
+        self.model_opts   = model_opts
         
         self.opt_max_iter = opt_max_iter
         self.opt_good_mm  = opt_good_mm
+        self.opt_data     = None
 
         self.opt_bounds   = opt_bounds
-        self.eps_initial  = eps_initial
-        self.eps_factor   = eps_factor
-        self.eps_max_iter = eps_max_iter
-        self.eps_bad_mm   = eps_bad_mm
         
         self.use_matcher_cache = use_matcher_cache
 
-        self.json_file    = json_file
-        self.overwrite    = overwrite
-        self.verbose      = verbose
-        
+        self.json_file     = json_file
+        self.json_save_dyn = json_save_dyn
+        self.overwrite     = overwrite
+        self.verbose       = verbose
+        self.debug         = debug
+
         # mismatch settings
         self.mm_settings = Matcher.__default_parameters__(0) 
         if isinstance(mm_settings, dict):
@@ -77,25 +81,35 @@ class Optimizer(object):
             print("Warning: using the option 'cut_longer' during optimization should be avoided!")
         if not self.mm_settings['cut_second_waveform'] and self.verbose:
             print("Warning: using the option 'cut_second_waveform' during optimization is strongly suggested!")
-        
-        # set up things according to IC-kind
-        if kind_ic=='e0f0':
-            e0_nr = self.ref_Waveform.metadata['e0']
-            if e0_nr is None or e0_nr>=1:
-                if self.verbose: print('Invalid e0 in NR waveform! Overwriting with e0=0.5')
-                self.ref_Waveform.metadata['e0'] = 0.5
-            ic_keys = ['e0', 'f0']
-        elif kind_ic=='E0pph0':
-            ic_keys = ['E0byM', 'pph0']
-        else:
-            raise ValueError('Unknown IC kind: {kind_ic}')
-        self.ic_keys = ic_keys
-        
-        # update bounds
+                          
+        # decide IC vars based on kind_ic
+        self.__set_variables(vrs)
+        if map_function is not None:
+            if self.map_function is None:
+                self.map_function = map_function
+            else:
+                print('Warning: map_function is not None, but kind_ic is not "choose"')
+                print('         user-input map_function will be ignored.')            
+
         if self.opt_bounds is None:
-            self.opt_bounds = [[None,None],[None,None]]
-        self.__update_bounds(eps=eps_initial)
-          
+            self.opt_bounds = {var: [None, None] for var in self.opt_vars}
+        # update bounds iterator
+        self.__bounds_iter_defaults__()
+        self.bounds_iter = {**self.bounds_iter, **bounds_iter}
+        # update bounds
+        self.__update_bounds(eps=self.bounds_iter['eps_initial'])
+
+        # set minimizer
+        self.__minimizer__defaults__()
+        self.minimizer = {**self.minimizer, **minimizer}
+        self.annealing_counter = 0
+        if minimizer['kind'] == 'dynesty':
+            self.minimize = self.__minimize__dynesty__
+        elif minimizer['kind'] == 'dual_annealing':
+            self.minimize = self.__minimize_annealing_
+        else:
+            raise ValueError(f'Unknown minimizer kind: {minimizer["kind"]}')
+
         if verbose:
             q    = ref_Waveform.metadata['q']
             chi1 = ref_Waveform.metadata['chi1z'] 
@@ -110,52 +124,41 @@ class Optimizer(object):
             print(f'Reference waveform : {ref_Waveform.metadata["name"]}')
             print(f'(q, chi1z, chi2z)  : ({q:.2f}, {chi1:.2f}, {chi2:.2f})')
             print(f'binary type        : {flags_str}')
-            print(f'Variables for ICs  : {ic_keys[0]}, {ic_keys[1]}')
+            print(f'Variables for ICs  : {self.opt_vars}')
             print(' ')
 
         mm_data  = self.load_or_create_mismatches()
         ref_name = self.ref_Waveform.metadata['name']
         
-        opt_data      = None
-        self.opt_data = opt_data
-
         run_optimization = True
+        opt_data = None
         if ref_name in mm_data['mismatches']:
             opt_data = mm_data['mismatches'][ref_name]
-            # TODO: commented this part. Seems useless. Double check 
-#            opt_data['q']     = self.ref_Waveform.metadata['q']
-#            opt_data['chi1x'] = self.ref_Waveform.metadata['chi1x']
-#            opt_data['chi1y'] = self.ref_Waveform.metadata['chi1y']
-#            opt_data['chi1z'] = self.ref_Waveform.metadata['chi1z']
-#            opt_data['chi2x'] = self.ref_Waveform.metadata['chi2x']
-#            opt_data['chi2y'] = self.ref_Waveform.metadata['chi2y']
-#            opt_data['chi2z'] = self.ref_Waveform.metadata['chi2z']
-#            mm_data['mismatches'][ref_name] = opt_data
-#            with open(json_file, 'w') as file:
-#                file.write(json.dumps(mm_data,indent=2))
-            if not overwrite or opt_data['mm_opt']<eps_bad_mm:
+
+            if not overwrite or opt_data['mm_opt']<self.bounds_iter['bad_mm']:
                 run_optimization = False
             if verbose: 
                 print(f'Loading mismatch from {self.json_file}')
-                print('Optimal ICs  : {:s}={:.5f}, {:s}:{:.5f}'.format(opt_data['kx'], opt_data['x_opt'],
-                                                                  opt_data['ky'], opt_data['y_opt']))
+                print('Optimal ICs  :')
+                for ky in self.opt_vars:
+                    print(f'                {ky:5s} : {opt_data[ky+"_opt"]:.15f}')
                 print('Original mm  : {:.3e}'.format(opt_data['mm0']))
                 print('Optimized mm : {:.3e}\n'.format(opt_data['mm_opt']))
         
         if run_optimization:
-            random.seed(self.opt_seed)
+            random.seed(self.minimizer['opt_seed'])
             dashes    = '-'*45
             asterisks = '*'*45
             
-            eps = self.eps_initial
+            eps = copy.copy(self.bounds_iter['eps_initial'])
             
             t0 = time.perf_counter()
             # i-loop on different search bounds
-            for i in range(1, self.eps_max_iter+1): 
-                if self.eps_max_iter>1 and self.verbose:
+            for i in range(1, self.bounds_iter['max_iter']+1): 
+                if self.bounds_iter['max_iter']>1 and self.verbose:
                     print(f'\n{asterisks}\nSearch bounds (eps) iteration  #{i:d}\n{asterisks}')
                  
-                # j-loop on different initial gueses 
+                # j-loop on different initial gueses
                 for j in range(1, self.opt_max_iter+1):
                     if self.verbose: print(f'{dashes}\nOptimization iteration #{j:d}\n{dashes}')
                     if i==1 and j==1 and opt_data is None: # if first iter of both loops
@@ -168,26 +171,28 @@ class Optimizer(object):
                     if opt_data['mm_opt']<=self.opt_good_mm:
                         break
                 
-                if opt_data['mm_opt']<=self.eps_bad_mm:
+                if opt_data['mm_opt']<=self.bounds_iter['bad_mm']:
                     # if the mismatch is good according to eps-standard, then break
                     break
                 
-                elif i<self.eps_max_iter:
+                elif i<self.bounds_iter['max_iter']:
                     # otherwise, increase the bound search (if we are not at the last iter)
-                    flat_old_bounds = [item for sublist in self.opt_bounds for item in sublist]
+                    flat_old_bounds = [item for key in self.opt_bounds for item in self.opt_bounds[key]]
                     
-                    self.opt_bounds = [ [None,None], [None,None] ]
-                    eps *= self.eps_factor
+                    kys = self.opt_vars
+                    self.opt_bounds = {kys[0]:[None,None], kys[1]:[None,None]}
+                    for ky in eps:
+                        eps[ky] *= self.bounds_iter['eps_factors'][ky]
                     self.__update_bounds(eps=eps)
-                    flat_new_bounds = [item for sublist in self.opt_bounds for item in sublist]
+                    flat_new_bounds = [item for key in self.opt_bounds for item in self.opt_bounds[key]]
                     print('\nIncreasing search bounds: [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_old_bounds))
                     print('                  ----> : [{:.3f},{:.3f}], [{:.3f},{:.3f}]'.format(*flat_new_bounds))
                 
                 else:
                     mm_opt = opt_data['mm_opt']
                     print( '\n++++++++++++++++++++++++++++++++++++++')
-                    print(f'+++  Reached eps_max_iter : {self.eps_max_iter:2d}     +++')
-                    print(f'+++  mm_opt : {mm_opt:.2e} > {self.eps_bad_mm:.2e}  +++')
+                    print(f'+++  Reached eps_max_iter : {self.bounds_iter["max_iter"]:2d}     +++')
+                    print(f'+++  mm_opt : {mm_opt:.2e} > {self.bounds_iter["bad_mm"]:.2e}  +++')
                     print( '++++++++++++++++++++++++++++++++++++++')
                     
             mm_data['mismatches'][ref_name] = opt_data
@@ -199,25 +204,76 @@ class Optimizer(object):
             if json_file is not None: 
                 self.save_mismatches(mm_data)
         self.opt_data = opt_data
-        self.opt_Waveform = self.generate_EOB(ICs={self.ic_keys[0]:opt_data['x_opt'], 
-                                                  self.ic_keys[1]:opt_data['y_opt']})
-        
-        if debug:
-            self.mm_settings['debug'] = True
-            self.match_against_ref(self.opt_Waveform)
         pass
-    
-    def __update_bounds(self, eps=1e-2):
-        kx = self.ic_keys[0]
-        ky = self.ic_keys[1]
-        vx_ref = self.ref_Waveform.metadata[kx]
-        vy_ref = self.ref_Waveform.metadata[ky]
-        default_bounds = [ [vx_ref*(1-eps), vx_ref*(1+eps)],
-                           [vy_ref*(1-eps), vy_ref*(1+eps)] ]
-        for i in range(2):
+
+    def __set_variables(self, vrs):
+        """
+        Set the variables to optimize over depending on the kind of ICs
+        """
+        if self.kind_ic == 'choose':
+            self.opt_vars     = vrs
+            self.map_function = None # Needs to be defined by the user
+        elif self.kind_ic == 'e0f0':
+            self.opt_vars = ['e0', 'f0']
+            self.map_function = lambda x: {'ecc':x['e0'], 'f0':x['f0']} # map to EOB pars
+        elif self.kind_ic == 'E0pph0':
+            self.opt_vars = ['E0byM', 'pph0']
+            self.map_function = lambda x: {'H_hyp':x['E0byM'], 'J_hyp':x['pph0']}
+        elif self.kind_ic == 'phi0theta0':
+            self.opt_vars = ['phi_ref', 'theta']
+
+            def rotate_in_plane_spins(chiA,chiB,theta=0.):
+                """
+                Perform a rotation of the in-plane spins by an angle theta
+                """
+                from scipy.spatial.transform import Rotation
+
+                zaxis    = np.array([0, 0, 1])
+                r        = Rotation.from_rotvec(theta*zaxis)
+                chiA_rot = r.apply(chiA)
+                chiB_rot = r.apply(chiB)
+                return chiA_rot, chiB_rot
+
+            def func(vrs):
+                theta   = vrs['theta']
+                phi_ref = vrs['phi_ref']
+                chiA = np.array([vrs['chi1x'], vrs['chi1y'], vrs['chi1z']])
+                chiB = np.array([vrs['chi2x'], vrs['chi2y'], vrs['chi2z']])
+
+                # rotate in-plane spin components by theta
+                chiA_rot, chiB_rot = rotate_in_plane_spins(chiA,chiB,theta=theta)
+                rotated = {
+                        'chi1x'  : chiA_rot[0], 'chi1y': chiA_rot[1], 'chi1z': chiA_rot[2],
+                        'chi2x'  : chiB_rot[0], 'chi2y': chiB_rot[1], 'chi2z': chiB_rot[2],
+                        'phi_ref': phi_ref,
+                        }
+                return rotated
+
+            self.map_function = func
+        else:
+            raise ValueError(f'Unknown kind of ICs: {self.kind_ic}')
+        pass
+
+    def __update_bounds(self, eps=None):
+        """
+        Set the bounds for the optimization; if the bounds are not specified,
+        set them to the reference value (read from metadata) +/- eps
+        """
+        if eps is None: eps = self.bounds_iter['eps_initial']
+        vls = []
+        for ky in self.opt_vars:
+            try:
+                vls.append(self.ref_Waveform.metadata[ky])
+            except KeyError:
+                print(f'WARNING: update bounds, {ky} not found in metadata. Setting to 1.')
+                vls.append(1)
+        
+        default_bounds = {ky: [vl*(1-eps[ky]), vl*(1+eps[ky])] for ky,vl in zip(self.opt_vars, vls)}
+
+        for ky in self.opt_vars:
             for j in range(2):
-                if self.opt_bounds[i][j] is None:
-                    self.opt_bounds[i][j] = default_bounds[i][j]
+                if self.opt_bounds[ky][j] is None:
+                    self.opt_bounds[ky][j] = default_bounds[ky][j]
         pass
 
     def load_or_create_mismatches(self): 
@@ -236,8 +292,9 @@ class Optimizer(object):
         del loc_mm_settings['final_frequency_mm']
         
         # options to store/read in JSON 
-        options = {'opt_maxfun'   : self.opt_maxfun, 
+        options = {'minimizer'    : self.minimizer,
                    'kind_ic'      : self.kind_ic,
+                   'vars'         : self.opt_vars,
                    'mm_settings'  : loc_mm_settings,
                   } 
 
@@ -281,19 +338,23 @@ class Optimizer(object):
         if json_file is None: json_file = self.json_file
         if json_file is None: # i.e., if self.json_file is None
             pass 
+        
         sim_name = self.ref_Waveform.metadata['name']
         creating_new_file = True 
         if os.path.exists(json_file) and not overwrite:
             with open(json_file, 'r') as file:
                 json_data = json.loads(file.read())
+            
             creating_new_file = False
             if sim_name in json_data['mismatches']:
                 print(f'   ---> File {json_file} alreay exists and contains {sim_name}, but overwriting is off.')
                 json_file = json_file.replace('.json', '_new.json')
                 print(f'   ---> writing on file: {json_file}')
                 creating_new_file = True
+
         with open(json_file, 'w') as file:
             file.write(json.dumps(data,indent=2))
+
         if verbose: 
             action = 'Created' if creating_new_file else 'Updated'
             print(f'{action} {json_file}\n')
@@ -301,36 +362,35 @@ class Optimizer(object):
 
     def generate_EOB(self, ICs={'f0':None, 'e0':None}):
         ref_meta = self.ref_Waveform.metadata
-        # define subset of info to generate EOB waveform
-        keys_to_use =  ['M', 'q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z']
-        sub_meta = {key: ref_meta[key] for key in keys_to_use}
-         
-        # kind-specific input
-        def return_IC(key):
-            if key not in ICs:
-                raise RuntimeError('Specify f0 in ICs!')
-            elif ICs[key] is None:
-                return ref_meta[key]
+        # Set all the intrinsic parameters that are not in ICs
+        default_intrinsic =  ['M', 'q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z']
+        for ic in ICs: 
+            if ic in default_intrinsic: default_intrinsic.remove(ic)
+        sub_meta = {key: ref_meta[key] for key in default_intrinsic}
+        sub_meta['use_nqc']  = self.use_nqc
+        sub_meta['ode_tmax'] = 3e+4
+
+        # map the ICs (and the other intrinsic pars) to the EOB parameters
+        mapped_ids = self.map_function({**ICs, **sub_meta})
+
+        if 'H_hyp' in mapped_ids or 'J_hyp' in mapped_ids:
+            if self.r0_eob == 'read':
+                # start close to the NR value, a little earlier
+                mapped_ids['r_hyp'] = ref_meta['r0']*1.1
             else:
-                return ICs[key]
+                if self.r0_eob is not None:
+                    if self.r0_eob < ref_meta['r0']:
+                        print(f'Warning: r0_eob={self.r0_eob} is smaller than the NR value r0={ref_meta["r0"]}')
+                        print('         Setting r0_eob to NR value')
+                        mapped_ids['r_hyp'] = ref_meta['r0']
+                    else:
+                        mapped_ids['r_hyp'] = self.r0_eob
+                mapped_ids['r_hyp']         = self.r0_eob  # if None, it will be computed in the EOB model
         
-        if self.kind_ic=='quasi-circ': # here only for testing
-            sub_meta['f0'] = return_IC('f0')
-        
-        elif self.kind_ic=='e0f0':
-            sub_meta['ecc'] = return_IC('e0')
-            sub_meta['f0']  = return_IC('f0')
-
-        elif self.kind_ic=='E0pph0':
-            sub_meta['H_hyp'] = return_IC('E0byM')
-            sub_meta['J_hyp'] = return_IC('pph0')
-            sub_meta['r_hyp'] = None # computed in CreateDict
-
-        else: 
-            raise ValueError(f'Unknown kind of ICs: {kind}')
-       
-        sub_meta['ode_tmax'] = 2e+4
-        # return generated EOB waveform 
+        # add the mapped ICs to the sub_meta dictionary & additional model options
+        # and run
+        sub_meta.update(mapped_ids)
+        sub_meta.update(self.model_opts)
         try:
             pars        = CreateDict(**sub_meta)
             eob_wave    = Waveform_EOB(pars=pars)
@@ -341,25 +401,18 @@ class Optimizer(object):
             eob_wave = None
         return eob_wave
     
-    def generate_opt_EOB(self, opt_data=None, verbose=None):
-        if verbose is  None: verbose  = self.verbose
-        if opt_data is None: opt_data = self.opt_data
-        if opt_data is None:
-            if verbose: print('Optimal ICs not found! Returning None')
-            opt_Waveform = None
-        else:
-            kx = self.ic_keys[0]
-            ky = self.ic_keys[1]
-            opt_Waveform = self.generate_EOB(ICs={kx:opt_data['x_opt'], 
-                                                  ky:opt_data['y_opt']})
-        return opt_Waveform
-
-    def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False, return_matcher=False, cache={}):
-        if verbose is None: verbose = self.verbose
+    def match_against_ref(self, eob_Waveform, verbose=None, iter_loop=False, return_matcher=False, cache={}, mm_settings=None):
+        if verbose     is None: verbose     = self.verbose
+        if mm_settings is None: mm_settings = self.mm_settings
         if eob_Waveform is not None:
-            matcher = Matcher(self.ref_Waveform, eob_Waveform, pre_align=False,
-                              settings=self.mm_settings, cache=cache)
-            mm = matcher.mismatch
+            try:
+                matcher = Matcher(self.ref_Waveform, eob_Waveform,
+                                  settings=mm_settings, cache=cache)
+                mm = matcher.mismatch
+            except Exception as e:
+                print('Error while computing match: ', e)
+                matcher = None
+                mm = 1.0
         else:
             matcher = None
             mm = 1.0
@@ -371,56 +424,68 @@ class Optimizer(object):
         else:
             return mm
     
-    def __func_to_minimize(self, vxy, verbose=None, cache={}):
+    def __func_to_minimize(self, x, kys, verbose=None, cache={}):
         if verbose is None: verbose = self.verbose
-        kx = self.ic_keys[0]
-        ky = self.ic_keys[1]
-        eob_Waveform = self.generate_EOB(ICs={kx:vxy[0], ky:vxy[1]})
+        # reassemble the ICs
+        vs = {kys[i]: x[i] for i in range(len(kys))}
+        eob_Waveform = self.generate_EOB(ICs=vs)
         if eob_Waveform is not None:
             mm = self.match_against_ref(eob_Waveform, verbose=self.verbose, iter_loop=True, cache=cache)
         else:
             if self.kind_ic=='E0pph0':
-                pph0 = vxy[1]
+                pph0 = vs['pph0']
                 ref_meta = self.ref_Waveform.metadata
                 q    = ref_meta['q']
                 chi1 = ref_meta['chi1z']
                 chi2 = ref_meta['chi2z']
                 rvec = np.linspace(2,20,num=200)
                 Vmin = PotentialMinimum(rvec,pph0,q,chi1,chi2)
-                dV   = Vmin-vxy[0]
+                dV   = Vmin-vs['E0byM']
             else:
                 dV = 0
             mm = 1 + dV
         return mm
 
     def optimize_mismatch(self, use_ref_guess=True, verbose=None):
+        """
+        Optimize the mismatch between the reference waveform and the other model waveform.
+        """
         if verbose is None: verbose = self.verbose
-        kx = self.ic_keys[0]
-        ky = self.ic_keys[1]
-        vx_ref  = self.ref_Waveform.metadata[kx]
-        vy_ref  = self.ref_Waveform.metadata[ky]
-         
-        bounds = self.opt_bounds
-        if vx_ref<bounds[0][0] and vx_ref>bounds[0][1]:
-            print('Warning! Reference value for {:s} is outside searching interval: [{:.2e},{:.2e}]'.format(ks,  bounds[0][0],  bounds[0][1]))
-        if vy_ref<bounds[1][0] and vy_ref>bounds[1][1]:
-            print('Warning! Reference value for {:s} is outside searching interval: [{:.2e},{:.2e}]'.format(ks,  bounds[1][0],  bounds[1][1]))
-        
+        kys     = self.opt_vars
+        bounds  = self.opt_bounds
+
+        # Treat variables which are in common with the reference
+        kys_ref = [ky for ky in kys if ky in self.ref_Waveform.metadata] # common keys
+        vs_ref  = {ky: self.ref_Waveform.metadata[ky] for ky in kys_ref} # reference values
+        for ky in kys_ref:
+            vv = vs_ref[ky]
+            if vv<bounds[ky][0] or vv>bounds[ky][1]:
+                print('Warning! Reference value for {:s} is outside searching interval: [{:.2e},{:.2e}]'.format(ky,  bounds[ky][0],  bounds[ky][1]))
         if use_ref_guess:
-            vxy0 = np.array([vx_ref,vy_ref])
+            # use reference values whenever possible
+            vs0 = vs_ref
         else:
-            vx0  = random.uniform(bounds[0][0], bounds[0][1])
-            vy0  = random.uniform(bounds[1][0], bounds[1][1])
-            vxy0 = np.array([vx0, vy0])
+            # random initial guess
+            vs0 = {ky: np.random.uniform(bounds[ky][0], bounds[ky][1]) for ky in kys}
         
-        mm0, matcher0 = self.match_against_ref(self.generate_EOB(ICs={kx:vxy0[0], ky:vxy0[1]}),
-                                               iter_loop=False, return_matcher=True)
+        # randomly select the variables which are not in common with the reference
+        for ky in kys:
+            if ky not in kys_ref:
+                vs0[ky] = np.random.uniform(bounds[ky][0], bounds[ky][1])
+
+        # reference match
+        mm0, matcher0 = self.match_against_ref(self.generate_EOB(ICs=vs0),
+                                                                iter_loop=False, 
+                                                                return_matcher=True
+                                              )
         if verbose:
             print(f'Original  mismatch    : {mm0:.3e}')
-            print( 'Optimization interval : {:5s} in [{:.2e}, {:.2e}]'.format(kx, bounds[0][0], bounds[0][1]))
-            print( '                      : {:5s} in [{:.2e}, {:.2e}]'.format(ky, bounds[1][0], bounds[1][1]))
-            print(f'Initial guess         : {kx:5s} : {vxy0[0]:.15f}')
-            print(f'                        {ky:5s} : {vxy0[1]:.15f}')
+            print( 'Optimization interval :')
+            for ky in kys:
+                print(f'                        {ky:5s} : [{bounds[ky][0]:.3e},{bounds[ky][1]:.3e}]')
+            print(f'Initial guess         :')
+            for ky in kys: 
+                print(f'                        {ky:5s} : {vs0[ky]:.15f}')
         
         if self.use_matcher_cache:
             if matcher0 is None:
@@ -430,54 +495,31 @@ class Optimizer(object):
                 cache = {'h1f':matcher0.h1f, 'M':matcher0.settings['M']}
         else:
             cache = {}
-
-        f = lambda vxy : self.__func_to_minimize(vxy, verbose=verbose, cache=cache)
-
-        self.annealing_counter = 1
-
-        t0_annealing = time.perf_counter()
-        opt_result = optimize.dual_annealing(f, maxfun=self.opt_maxfun, 
-                                                seed=self.opt_seed, x0=vxy0,
-                                                bounds=bounds)
-        opt_pars     = opt_result['x']
-        x_opt, y_opt = opt_pars[0], opt_pars[1]
-        mm_opt = opt_result['fun']
         
+        # prepare for annealing
+        x0           = [vs0[ky] for ky in kys]
+        bounds_array = np.array([[bounds[ky][0], bounds[ky][1]] for ky in kys])
+        f = lambda x : self.__func_to_minimize(x, kys, verbose=verbose, cache=cache)
+
+        t0_annealing  = time.perf_counter()
+        opts, mm_opt  = self.minimize(f, x0, bounds_array, kys)
+
         if verbose:
             print( '  >> mismatch - iter  : {:.3e} - {:3d}'.format(mm_opt, self.annealing_counter), end='\r')
             print(f'Optimized mismatch    : {mm_opt:.3e}')
-            print(f'Optimal ICs           : {kx:5s} : {x_opt:.15f}')
-            print(f'                        {ky:5s} : {y_opt:.15f}')
-            print( 'Annealing time        : {:.1f} s'.format(time.perf_counter()-t0_annealing))
+            print(f'Optimal ICs           :' )
+            for ky in kys:
+                print(f'                        {ky:5s} : {opts[ky]:.15f}')
+            print( 'Minimization time        : {:.1f} s'.format(time.perf_counter()-t0_annealing))
         
-        opt_eob = self.generate_opt_EOB(opt_data={'x_opt':x_opt, 'y_opt':y_opt})
-        if opt_eob is not None:
-            r0_eob = opt_eob.dyn['r'][0]
-        else:
-            r0_eob = None
-
-        # fixing EOB IDs according to cut-option in matcher
-#        if opt_eob is not None and self.mm_settings['cut']:
-#            print(self.mm_settings)
-#            u_ref = self.ref_Waveform.u
-#            u_eob = opt_eob.u
-#            umrg_ref,_,_,_ = self.ref_Waveform.find_max()#-u_ref[0]
-#            umrg_eob,_,_,_ = opt_eob.find_max()#-u_eob[0]
-#            
-#            tmrg_ref,_,_,_ = self.ref_Waveform.find_max()-u_ref[0]
-#            tmrg_eob,_,_,_ = opt_eob.find_max()-u_eob[0]
-#            DeltaT = tmrg_eob-tmrg_ref
-#            import matplotlib.pyplot as plt # FIXME: only for debug, to remove
-#            plt.figure
-#            plt.plot(u_ref-umrg_ref, self.ref_Waveform.hlm[(2,2)]['real'], label='rn ref')
-#            plt.plot(u_eob-umrg_eob, opt_eob.hlm[(2,2)]['real'], label='eob')
-#            
-#            if DeltaT>0:
-#                opt_eob.cut(DeltaT)
-#                plt.plot(opt_eob.u-umrg_eob, opt_eob.hlm[(2,2)]['real'], label='eob', ls='--')
-#            plt.legend()
-#            plt.show()
-
+        # generate the eob waveform corresponding to the optimal ICs
+        eob_opt = self.generate_EOB(ICs=opts)
+        
+        if self.debug:
+            temp_settings = copy.copy(self.mm_settings)
+            temp_settings['debug'] = True
+            self.match_against_ref(eob_opt, mm_settings=temp_settings)
+        
         opt_data = { 
                     # store also some attributes, just for convenience 
                     'q'            : self.ref_Waveform.metadata['q'],
@@ -489,31 +531,132 @@ class Optimizer(object):
                     'chi2z'        : self.ref_Waveform.metadata['chi2z'],
                     'initial_frequency_mm' : self.mm_settings['initial_frequency_mm'],
                     'final_frequency_mm'   : self.mm_settings['final_frequency_mm'],
-                    'opt_seed'     : self.opt_seed,
+                    'opt_seed'     : self.minimizer['opt_seed'],
                     'opt_max_iter' : self.opt_max_iter,
                     'opt_good_mm'  : self.opt_good_mm,
-                    'eps_initial'  : self.eps_initial,
-                    'eps_max_iter' : self.eps_max_iter,
-                    'eps_bad_mm'   : self.eps_bad_mm,
-                    'eps_initial'  : self.eps_initial,
-                    'eps_factor'   : self.eps_factor,
+                    'bounds_iter'  : self.bounds_iter,
                     # optimization results
-                    'kx'           : kx, 
-                    'ky'           : ky,
-                    'x_ref'        : vx_ref, 
-                    'y_ref'        : vy_ref,
                     'bounds'       : bounds, 
-                    'x0'           : vxy0[0], 
-                    'y0'           : vxy0[1], 
                     'mm0'          : mm0,
-                    'r0_eob'       : r0_eob,
-                    'x_opt'        : x_opt, 
-                    'y_opt'        : y_opt,
                     'mm_opt'       : mm_opt, 
                     }
+        for ky in kys:
+            opt_data[ky]        = vs_ref[ky]
+            opt_data[ky+'_opt'] = opts[ky]
+        
+        if eob_opt is not None and self.json_save_dyn:
+            dyn0 = eob_opt.dyn
+            dyn0 = {ky: list(dyn0[ky]) for ky in dyn0.keys()}
+        else:
+            dyn0 = None
+        opt_data['dyn0'] = dyn0
         
         return opt_data
+    
+    def __bounds_iter_defaults__(self):
+        self.bounds_iter = {
+                            'eps_initial': {},    # initial epsilon values 
+                            'eps_factors': {},    # increase-factor for eps at each eps-iter
+                            'max_iter'   : 1,     # If true, iterate on eps-bounds
+                            'bad_mm'     : 0.1,   # if after opt_max_iter(s) we are still above this threshold 
+        }
+        for ky in self.opt_vars:
+            self.bounds_iter['eps_initial'][ky] = 1e-2
+            self.bounds_iter['eps_factors'][ky] = 2
+        pass
 
+    def __minimizer__defaults__(self):
+        """
+        Set the default minimizer options.
+        """
+        self.minimizer = { # annealing options
+                           'kind': 'dual_annealing', 
+                           'opt_maxfun': 1000, 
+                           'opt_seed': 190521,
 
+                           # dynesty options
+                           'nlive'  : 10,
+                           'maxiter': 10000,
+                           'maxcall': 10000,
+                           'print_progress': True,
+        }
+        pass
+
+    def __minimize_annealing_(self, f, x0, bounds_array, kys):
+        """
+        Minimize with dual annealing. 
+        """
+        maxiter = self.minimizer.get('opt_maxfun', 1000)
+        seed    = self.minimizer.get('opt_seed', 190521)
+        x0      = x0
+
+        opt_result   = optimize.dual_annealing(
+                                                f,
+                                                maxfun = maxiter, 
+                                                seed   = seed, 
+                                                x0     = x0,
+                                                bounds = bounds_array,
+                                            )
+        
+        opt_pars     = opt_result['x']
+        opts         = {kys[i]: opt_pars[i] for i in range(len(kys))}
+        mm_opt       = opt_result['fun']
+        return opts, mm_opt
+    
+    def __minimize__dynesty__(self, f, x0, bounds_array, kys):
+        """
+        Minimize with dynesty.
+        NOTE: largely untested!
+        """
+        from dynesty import NestedSampler
+
+        # Define the dimensionality of our problem.
+        ndim     = len(kys)
+        progress = self.minimizer.get('print_progress', True)
+        nlive    = self.minimizer.get('nlive'  , 1024)
+        maxiter  = self.minimizer.get('maxiter', 10000)
+        maxcall  = self.minimizer.get('maxcall', 10000)
+
+        def loglike(x):
+            """
+            The log-likelihood function.
+            We use the mismatch weighted over the min_thrs, squared
+            """
+            logl = -0.5*(f(x)/0.001)**2
+            if np.isnan(logl) or np.isinf(logl):
+                return -np.inf
+            return logl
+
+        def prior_transform(u):
+            """
+            Map the unit cube to the parameter space, assuming
+            uniform priors on the parameters.
+            """
+            return [bounds_array[i][0] + u[i] * (bounds_array[i][1] - bounds_array[i][0]) for i in range(ndim)]
+
+        # Define our sampler.
+        sampler = NestedSampler(loglike, 
+                                prior_transform, 
+                                ndim, 
+                                nlive=nlive, 
+                                sample="rwalk",  # Specify rwalk as the sampling method
+                                bound="multi",   # Use a multi-ellipsoid bound    
+                                )  
+        sampler.run_nested(maxiter=maxiter, maxcall=maxcall,print_progress=progress, dlogz=0.1)
+
+        # return just the maxL point
+        maxL   = sampler.results.logl.argmax()
+        opts   = {kys[i]: sampler.results.samples[maxL][i] for i in range(len(kys))}
+        mm_opt = f(sampler.results.samples[maxL])
+
+        # make the traceplot
+        if self.verbose:
+            from dynesty import plotting as dyplot
+            fig, _ = dyplot.traceplot(sampler.results,
+                             show_titles=True,
+                             trace_cmap='viridis')
+            fig.savefig('traceplot.png')
+
+        return opts, mm_opt
 
 

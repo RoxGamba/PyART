@@ -119,6 +119,7 @@ for i, sim in enumerate(all_sims):
         q    = meta['q']
         chi1 = meta['chi1']
         chi2 = meta['chi2']
+        
         bool_q1     = abs(q-1)<1e-5
         bool_nospin = abs(chi1)<1e-10 and abs(chi2)<1e-10
         if not bool_q1: 
@@ -147,22 +148,21 @@ for i, sim in enumerate(all_sims):
         M1 = bbh_meta['initial-bh-puncture-adm-mass1']
         M2 = bbh_meta['initial-bh-puncture-adm-mass2']
         D  = abs(bbh_meta['initial-bh-position1x'] - bbh_meta['initial-bh-position2x'])
+        M            = M1+M2
         meta['q']    = M1/M2
-        meta['chi1'] = bbh_meta['initial-bh-spin1z']
-        meta['chi2'] = bbh_meta['initial-bh-spin2z']
-        meta['E0']   = bbh_meta['initial-ADM-energy']
-        meta['J0']   = bbh_meta['initial-ADM-angular-momentumz']
+        meta['chi1'] = bbh_meta['initial-bh-spin1z']/M1**2
+        meta['chi2'] = bbh_meta['initial-bh-spin2z']/M2**2
+        meta['E0']   = bbh_meta['initial-ADM-energy']/M
+        meta['J0']   = bbh_meta['initial-ADM-angular-momentumz']/M**2
         meta['ecc']  = None
-        meta['D']    = D
-        px = bbh_meta['initial-bh-momentum1x']
-        py = bbh_meta['initial-bh-momentum1y']
+        meta['D']    = D/M
+        px = bbh_meta['initial-bh-momentum1x']/M
+        py = bbh_meta['initial-bh-momentum1y']/M
         meta['P0'] = [px,py,0]
         
         puncts = load_puncts(sim_path)
         if puncts is not None and puncts['r'][-1]>25:
-            punct0 = np.column_stack( (puncts['t'], puncts['t'], puncts['x0'], puncts['y0'], puncts['z0']) )
-            punct1 = np.column_stack( (puncts['t'], puncts['t'], puncts['x1'], puncts['y1'], puncts['z1']) )
-            scat   = ScatteringAngle(punct0=punct0, punct1=punct1, file_format='GRA',
+            scat   = ScatteringAngle(puncts=puncts,
                                  nmin=2, nmax=5, n_extract=4,
                                  r_cutoff_out_low=25, r_cutoff_out_high=None,
                                  r_cutoff_in_low=25, r_cutoff_in_high=100,

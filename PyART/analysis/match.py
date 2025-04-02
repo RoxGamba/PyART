@@ -8,6 +8,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize_scalar, dual_annealing
 from ..utils import utils as ut
+from ..utils import wf_utils as wf_ut
+try:
+    import lal
+except ModuleNotFoundError:
+    print("WARNING: lal not installed.")
 
 #PyCBC imports
 from pycbc.filter import sigmasq, matched_filter_core, overlap_cplx, optimized_match, matched_filter,compute_max_snr_over_sky_loc_stat_no_phase
@@ -23,7 +28,6 @@ class Matcher(object):
                  WaveForm1,
                  WaveForm2,
                  settings  = None,
-                 pre_align = False,
                  cache     = {}, # {} or {'h1f':h1f, 'h2f':h2f, 'M':M} (can specify also only h1f or h2f) 
                  ) -> None:
         
@@ -39,6 +43,10 @@ class Matcher(object):
             self.match_f = self._compute_mm_single_mode
         elif self.settings['kind'].lower() == 'hm' or 'prec' in self.settings['kind'].lower():
             self.match_f = self._compute_mm_skymax
+        elif self.settings['kind'].lower() == 'hm-overlap':
+            if self.settings['modes-or-pol'] == 'modes':
+                raise ValueError("Only 'pol' is allowed for 'hm-overlap' kind")
+            self.match_f = self._compute_overlap_skymax
         else:
             raise ValueError(f"Kind '{settings['kind']}' not recognized")
         
@@ -54,20 +62,44 @@ class Matcher(object):
             elif DeltaT<0 and self.settings['cut_longer']:
                 WaveForm1.cut(-DeltaT)
         
+        if self.settings['pre_align']:
+            # pre-align
+            umrg1,_,_,_ = WaveForm1.find_max()
+            umrg2,_,_,_ = WaveForm2.find_max()
+            
+            # shift time of second waveform 
+            shift = umrg1-umrg2
+            WaveForm2._u = WaveForm2._u+shift
+            
+            # fix WaveForm2.hlm[(2,2)] with (approximate) phase difference 
+            t0     = max(WaveForm1.u[0], WaveForm2.u[0])+self.settings['pre_align_shift']
+            i01    = np.where(WaveForm1.u>=t0)[0][0] 
+            i02    = np.where(WaveForm2.u>=t0)[0][0]
+            dphi22 = WaveForm1.hlm[(2,2)]['p'][i01] - WaveForm2.hlm[(2,2)]['p'][i02] 
+            #plt.figure
+            for lm in self.settings['modes']:
+                
+                h = WaveForm2.hlm[lm]['z']*np.exp(-1j*dphi22/2*lm[1])
+                WaveForm2._hlm[lm] = wf_ut.get_multipole_dict(h)
+                #plt.plot(WaveForm1.u, WaveForm1.hlm[lm]['real'])
+                #plt.plot(WaveForm2.u, WaveForm2.hlm[lm]['real'], ls='--')
+            #plt.show()
 
+        
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
 
         # align to improve subsequent tapering (applied before matching computation)
-        if pre_align: 
-            wf1, wf2 = self.pre_alignment(wf1, wf2)
+        #if pre_align: 
+        #    wf1, wf2 = self.pre_alignment(wf1, wf2)
         
         # Determine time length for resizing
         self.settings['tlen'] = self._find_tlen(wf1, wf2, resize_factor=self.settings['resize_factor'])
         # Compute and store the mismatch
         mm, out = self.match_f(wf1,wf2,self.settings)
         self.mismatch= 1 - mm
+        self.match_out = out
         if 'h1f' in out and 'h2f' in out:
             self.h1f = out['h1f']
             self.h2f = out['h2f']
@@ -94,19 +126,32 @@ class Matcher(object):
         
         if self.settings['modes-or-pol']=='pol':
             # Get updated time and hp/hc-TimeSeries
-            if not hasattr(WaveForm, 'hp'):
-                WaveForm.compute_hphc()
+            # compute hphc, eventually again. WaveForm might have been cut/pre-aligned
+            if WaveForm.hp is None:
+                coa_phase = self.settings['pol_phase']
+                incl      = self.settings['pol_incl']
+                WaveForm.compute_hphc(coa_phase, incl, modes=self.modes)
             wf.hp, wf.hc, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, WaveForm.hp, WaveForm.hc, isgeom=isgeom)
 
         # also update the modes in a TimeSeries
         wf.modes = {}
 
         #for k in WaveForm.hlm.keys():
-        for k in self.settings['modes']: 
+        wf.mrg_idx = None
+        for k in self.settings['modes']:
             re = WaveForm.hlm[k]['real']
             im = WaveForm.hlm[k]['imag']
             re_lm, im_lm, wf.u = self._mass_rescaled_TimeSeries(WaveForm.u, re, im, isgeom=isgeom)
             wf.modes[k] = {'real':re_lm, 'imag':im_lm}
+            if k[0]==2 and k[1]==2:
+                umrg, _, _, _ = WaveForm.find_max()
+                C = wf.u[ 0]
+                D = wf.u[-1]
+                A = WaveForm.u[ 0]
+                B = WaveForm.u[-1]
+                umrg_TS = (D-C)*(umrg-A)/(B-A)+C
+                wf.mrg_idx = np.where(wf.u>=umrg_TS)[0][0]
+
         return wf
 
     def _mass_rescaled_TimeSeries(self, u, hp, hc, isgeom=True, kind='cubic'):
@@ -122,20 +167,20 @@ class Matcher(object):
             M       = self.settings['M'] 
             dT_resc = dT/(M*ut.Msun)
             new_u   = np.arange(u[0], u[-1], dT_resc)
-            hp = ut.spline(u, hp, new_u, kind=kind) 
+            hp = ut.spline(u, hp, new_u, kind=kind)
             hc = ut.spline(u, hc, new_u, kind=kind) 
         return TimeSeries(hp, dT), TimeSeries(hc, dT), new_u
     
-    def pre_alignment(self, wf1, wf2):
-        """
-        Align waveforms (TimeSeries) before feeding 
-        them to the conditioning/matching functions. 
-        This is needed to improve tapering-consistency
-        """
-        if not self.settings['taper']:
-            warnings.warn('Pre-alignment is not needed if no tapering is applied!')
-        # and now? 
-        return wf1, wf2
+#    def pre_alignment(self, wf1, wf2):
+#        """
+#        Align waveforms (TimeSeries) before feeding 
+#        them to the conditioning/matching functions. 
+#        This is needed to improve tapering-consistency
+#        """
+#        if not self.settings['taper']:
+#            warnings.warn('Pre-alignment is not needed if no tapering is applied!')
+#        # and now? 
+#        return wf1, wf2
 
     def _find_tlen(self, wf1, wf2, resize_factor=2):
         """
@@ -148,13 +193,16 @@ class Matcher(object):
             h1 = TimeSeries(wf1.hp, dT)
             h2 = TimeSeries(wf2.hp, dT)
         else:
-            h1 = TimeSeries(wf1.modes[(2,2)]['real'], dT)
-            h2 = TimeSeries(wf2.modes[(2,2)]['real'], dT)
+            mode_keys = list(wf1.modes.keys())
+            h1 = TimeSeries(wf1.modes[mode_keys[0]]['real'], dT)
+            h2 = TimeSeries(wf2.modes[mode_keys[0]]['real'], dT)
         LM   = max(len(h1), len(h2))
         tl   = (LM-1)*dT
         tN   = ut.nextpow2(resize_factor*tl)
         tlen = int(tN/dT)
-        return tlen
+        if tlen < LM:
+            print(tlen, LM)
+        return tlen if tlen > LM else LM
 
     def __default_parameters__(self):
         """
@@ -164,6 +212,8 @@ class Matcher(object):
             'kind'                 : 'single-mode',
             'modes-or-pol'         : 'modes',
             'modes'                : [(2,2)],
+            'pre_align'            : True,
+            'pre_align_shift'      : 0.,
             'initial_frequency_mm' : 20.,
             'final_frequency_mm'   : 2048.,
             'psd'                  : 'aLIGOZeroDetHighPower',
@@ -174,9 +224,10 @@ class Matcher(object):
             'eff_pols'             : np.linspace(0,np.pi,1),
             'pad_end_frac'         : 0.5,  # fraction of pad after the signal
             'taper'                : 'sigmoid', # None, 'sigmoid', or 'tukey'
-            'taper_start'          : 0.05, # parameter for sigmoid or tukey window
+            'taper_start'          : 0.10, # parameter for sigmoid or tukey window
             'taper_end'            : None, # parameter for sigmoid or tukey window
-            'taper_alpha'          : 2.0,  # alpha parameter for sigmoid or tukey (will be M-normalized)
+            'taper_alpha'          : 0.5,  # alpha parameter for sigmoid or tukey (will be M-normalized)
+            'taper_alpha_end'      : None, # if specified, use this alpha for the end (only with sigmoid)
             'resize_factor'        : 4,
             'debug'                : False,
             'geom'                 : True,
@@ -225,7 +276,8 @@ class Matcher(object):
         if 'h1f' in self.cache and np.isclose(Mref, self.cache['M'], atol=1e-14):
             h1f = self.cache['h1f']
         elif wf1.domain=='Time':
-            h1, tap_times_w1 = condition_td_waveform(h1_nc, settings, return_tap_times=True)
+            h1, tap_times_w1 = condition_td_waveform(h1_nc, settings, mrg_idx=wf1.mrg_idx,
+                                                     return_tap_times=True)
             h1f = h1.to_frequencyseries()
         else:
             h1f = h1_nc
@@ -233,20 +285,37 @@ class Matcher(object):
         if 'h2f' in self.cache and np.isclose(Mref, self.cache['M'], atol=1e-14):
             h2f = self.cache['h2f']
         elif wf2.domain=='Time':
-            h2, tap_times_w2 = condition_td_waveform(h2_nc, settings, return_tap_times=True)
+            h2, tap_times_w2 = condition_td_waveform(h2_nc, settings, mrg_idx=wf2.mrg_idx,
+                                                     return_tap_times=True)
             h2f = h2.to_frequencyseries()
         else:
             h2f = h2_nc
+
+        if isinstance(settings['initial_frequency_mm'], str):
+            if 'fAM' in settings['initial_frequency_mm']:
+                fAM = h1f.sample_frequencies[np.argmax(abs(h1f))]
+                fms = settings['initial_frequency_mm']
+                if fms.split('fAM')[1] == '':
+                    settings['initial_frequency_mm'] = eval(fms.split('fAM')[0])*fAM
+                else:
+                    settings['initial_frequency_mm'] = max(eval(fms.split('fAM')[0])*fAM, eval(fms.split('fAM')[1]))
+        
+        if isinstance(settings['final_frequency_mm'], str):
+            if 'A' in settings['final_frequency_mm']:
+                thr = float(settings['final_frequency_mm'].split('A')[1])
+                j_f = np.where(abs(h1f)/(Mref*lal.MTSUN_SI) > thr)[0][0] - 1
+                settings['final_frequency_mm'] = h1f.sample_frequencies[j_f]
         
         assert len(h1f) == len(h2f)
         df   = 1.0 / h1f.duration
         flen = len(h1f)//2 + 1
         psd  = self._get_psd(flen, df, settings['initial_frequency_mm'])
          
-        m, _ = optimized_match(h1f, h2f, 
+        m, j_shift, ph_shift = optimized_match(h1f, h2f, 
                                psd=psd, 
                                low_frequency_cutoff=settings['initial_frequency_mm'], 
-                               high_frequency_cutoff=settings['final_frequency_mm']
+                               high_frequency_cutoff=settings['final_frequency_mm'],
+                               return_phase=True
                                )
         
         if settings['debug'] and wf1.domain=='Time' and wf2.domain=='Time' and not self.cache:
@@ -254,7 +323,8 @@ class Matcher(object):
                                        tap_times_w1 = tap_times_w1,
                                        tap_times_w2 = tap_times_w2
                                        )
-        out = {'h1f':h1f, 'h2f':h2f}
+
+        out = {'h1f': h1f, 'h2f': h2f, 'j_shift': j_shift*h2.delta_t, 'ph_shift': ph_shift}
         return m, out
 
     def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings, 
@@ -287,13 +357,13 @@ class Matcher(object):
         plt.subplot(figm,fign,1)
         plt.title('Real part of waveforms before conditioning')
         plt.plot(h1_nc.sample_times, h1_nc, label='h1 unconditioned', color='blue', linestyle='-')
-        plt.plot(h2_nc.sample_times, h2_nc, label='h2 unconditioned', color='green', linestyle='-')
+        plt.plot(h2_nc.sample_times, h2_nc, label='h2 unconditioned', color='green', linestyle='--')
         plt.legend()
 
         plt.subplot(figm,fign,2)
         plt.title('Real part of waveforms after conditioning')
         plt.plot(h1.sample_times, h1, label='h1 conditioned', color='blue')
-        plt.plot(h2.sample_times, h2, label='h2 conditioned', color='green')
+        plt.plot(h2.sample_times, h2, label='h2 conditioned', color='green', ls='--')
         if tap_times_w1 is not None:
             t1 = tap_times_w1['t1']
             t2 = tap_times_w1['t2']
@@ -338,6 +408,38 @@ class Matcher(object):
         else:
             print("Saving to ", settings['save'])
             plt.savefig(f"{settings['save']}", dpi=100, bbox_inches='tight')
+
+    def _compute_overlap_skymax(self, wf1, wf2, settings):
+        """
+        Same as compute_mm_skymax, but without numerical
+        optimization of the orbital phase. Uses directly
+        the polarizations of the waveforms, instead of the modes.
+        This has to be specified for a **single** value of 
+        effective polarization.
+        """
+
+        k          = settings['eff_pols']
+        # target
+        sp,sx      = wf1.hp, wf1.hc
+        sp         = condition_td_waveform(sp, settings)
+        sx         = condition_td_waveform(sx, settings)
+        spf        = sp.to_frequencyseries() 
+        sxf        = sx.to_frequencyseries()
+        s          = np.cos(k)*spf + np.sin(k)*sxf
+        
+        # model
+        hp, hc     = wf2.hp, wf2.hc
+        hp         = condition_td_waveform(hp, settings)
+        hc         = condition_td_waveform(hc, settings)
+        hpf        = hp.to_frequencyseries()
+        hcf        = hc.to_frequencyseries()
+
+        psd        = self._get_psd(len(spf), spf.delta_f, settings['initial_frequency_mm'])
+        
+        return sky_and_time_maxed_overlap(s, hpf, hcf, 
+                                                    psd,self.settings['initial_frequency_mm'],
+                                                    self.settings['final_frequency_mm'], kind=self.settings['kind']
+                                                    ), {}
 
     def _compute_mm_skymax(self, wf1, wf2, settings):
         """
@@ -414,7 +516,7 @@ class Matcher(object):
         return 1. - res
         
 ### other functions, not just code related to the class
-def condition_td_waveform(h_in, settings, return_tap_times=False):
+def condition_td_waveform(h_in, settings, return_tap_times=False, mrg_idx=None):
     """
     Condition the waveforms before computing the mismatch.
     h is already a TimeSeries
@@ -430,15 +532,22 @@ def condition_td_waveform(h_in, settings, return_tap_times=False):
     h.resize(hlen+npad_after)
     h_numpy = np.pad(h, (npad_before, 0), mode='constant')
     h = TimeSeries(h_numpy, delta_t=h.delta_t)
-    
-    if isinstance(settings['taper'], str):#=='sigmoid':
+    if isinstance(settings['taper'], str):
         tap1 = settings['taper_start']
         tap2 = settings['taper_end']
-        t1 = npad_before + hlen*tap1     if (tap1 is not None and tap1>0) else None
+        if mrg_idx is None:
+            wlen = hlen
+        else:
+            wlen = mrg_idx
+        t1 = npad_before + wlen*tap1     if (tap1 is not None and tap1>0) else None
         t2 = npad_before + hlen*(1-tap2) if (tap2 is not None and tap2>0) else None
         t  = np.linspace(0, tlen-1, num=tlen)
         alpha_M = settings['taper_alpha']/settings['M']
-        h  = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha_M, kind=settings['taper'])
+        if settings['taper_alpha_end'] is not None:
+            alpha_end_M = settings['taper_alpha_end']/settings['M']
+        else:
+            alpha_end_M = alpha_M
+        h  = ut.taper_waveform(t, h, t1=t1, t2=t2, alpha=alpha_M, alpha_end=alpha_end_M, kind=settings['taper'])
     else:
         t1 = None
         t2 = None
@@ -486,7 +595,7 @@ def sky_and_time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, kind='hm'):
                             sigmasq=1.,
                             low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq,)
     
-    if kind.lower() == 'hm':
+    if 'hm' in kind.lower():
         det_stat = compute_max_snr_over_sky_loc_stat_no_phase(Iplus, 
                                                                     Icross, 
                                                                     hphccorr=hphc_corr,

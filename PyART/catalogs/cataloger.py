@@ -1,14 +1,13 @@
-import os, json, matplotlib
+import sys, os, json, matplotlib, time, copy
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
-
-from .sxs import Waveform_SXS
-from .rit import Waveform_RIT
-from .icc import Waveform_ICC
+from multiprocessing import Process
 
 from ..analysis.match  import Matcher
 from ..analysis.opt_ic import Optimizer
+from ..models.teob import CreateDict
+from ..models.teob import Waveform_EOB
 
 matplotlib.rc('text', usetex=True)
 
@@ -30,8 +29,8 @@ class Cataloger(object):
         self.sim_list  = sim_list
         self.verbose   = verbose
         if json_file is None:
-            date     = datetime.now()
-            fmt_date = date.strftime("%Y%m%d")
+            date      = datetime.now()
+            fmt_date  = date.strftime("%Y%m%d")
             json_file = f'mismatches_{self.catalog}_{fmt_date}.json'            
         self.json_file = json_file
         #self.mm_data   = self.read_mismatches_json() 
@@ -54,17 +53,53 @@ class Cataloger(object):
     def get_Waveform(self, ID, add_opts={}, verbose=None):
         if verbose is None: verbose = self.verbose
         if verbose: print(f'Loading {self.catalog} waveform with ID:{ID:04}')
+          
         if self.catalog=='sxs':
+            from .sxs import Waveform_SXS
             wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
-                                #order='Extrapolated_N3.dir', ellmax=7)
-        elif self.catalog=='rit':
+            
+        elif self.catalog=='rit'
+            from .rit import Waveform_RIT
             wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
+        
         elif self.catalog=='icc':
+            from .icc import Waveform_ICC
             wave = Waveform_ICC(path=self.path, ID=ID, **add_opts)
+
+        elif self.catalog=='core':
+            from .core import Waveform_CoRe
+            wave = Waveform_CoRe(path=self.path, ID=ID, **add_opts)
+        
+        elif self.catalog=='grahyp':
+            from .gra_hyp import Waveform_GRAHyp
+            wave = Waveform_GRAHyp(path=self.path, ID=ID, **add_opts)
+
         else:
             raise ValueError(f'Unknown catalog: {self.catalog}')
         return wave
     
+    def get_model_waveform(self, name, add_opts={}, verbose=None):
+        """
+        Compute the waveform with the model corresponding to a catalog ID
+        """
+        if self.data[name]['Optimizer'] is not None:
+            optimizer = self.data[name]['Optimizer']
+            kys   = optimizer.opt_vars
+            x_opt = optimizer.opt_data[kys[0]+'_opt']
+            y_opt = optimizer.opt_data[kys[1]+'_opt']
+            ICs = {kys[0]:x_opt, kys[1]:y_opt}
+            eob = optimizer.generate_EOB(ICs=ICs)
+        else:
+            # Create a mock optimizer
+            params  = self.data[name]['Waveform'].metadata
+            cd_args = CreateDict.__code__.co_varnames
+            newpars = {ky:val for ky,val in params.items() if ky in cd_args} 
+            params  = CreateDict(**newpars)
+            # have a slightly lower f0
+            params['initial_frequency'] = 0.95*params['initial_frequency']
+            eob    = Waveform_EOB(params)
+        return eob
+
     def plot_waves(self, cmap='rainbow'):
         mycmap = plt.get_cmap(cmap)
         colors = mycmap(np.linspace(0,1,self.nsims))
@@ -72,22 +107,133 @@ class Cataloger(object):
         for i, name in enumerate(self.data):
             wave = self.data[name]['Waveform']
             if (2,2) in wave.hlm:
-                tmrg,Amrg,_,_ = wave.find_max()
-                plt.plot(wave.u-tmrg, wave.hlm[(2,2)]['A'], c=colors[i])
+                try:
+                    tmrg,_,_,_ = wave.find_max()
+                    plt.plot(wave.u-tmrg, wave.hlm[(2,2)]['A'], c=colors[i])
+                except:
+                    plt.plot(wave.u, wave.hlm[(2,2)]['A'], c=colors[i])
         plt.show()
         pass
     
-    def optimize_mismatches(self, optimizer_opts={}, verbose=None, ranges={'pph0':[1,10]}):
+    def optimize_mismatches_batch(self, batch, optimizer_opts={}, verbose=None):
         if verbose is None: verbose = self.verbose
-        # set some options according to class-instance
-        optimizer_opts['json_file'] = self.json_file
         optimizer_opts['verbose']   = verbose
         # run optimizer on all the waveforms
-        subset = self.find_subset(ranges)
+        for name in batch:
+            # store on JSON
+            Optimizer(self.data[name]['Waveform'], **optimizer_opts)
+        pass
+    
+    def process_with_redirect(self, process_id, nproc, opts={}):
+        """
+        If we are running in parallel, use log files. 
+        Otherwise, use stdout
+        """
+        if nproc>1:
+            now_str  = datetime.now().strftime('%Y%m%d_%H-%M-%S')
+            log_file = f'{now_str:s}_cataloger_process_{process_id}.log'
+            print(f'Logfile #{process_id:d}: {log_file}')
+            with open(log_file, 'w') as file:
+                sys.stdout = file
+                sys.stderr = file
+                try:
+                    self.optimize_mismatches_batch(**opts)
+                finally:
+                    sys.stdout = sys.__stdout__ 
+                    sys.stderr = sys.__stderr__
+        else:
+            self.optimize_mismatches_batch(**opts)
+        pass
+
+    def optimize_mismatches(self, optimizer_opts={}, verbose=None, ranges={'pph0':[1,10]}, nproc=1):
+        optimizer_opts['json_file'] = self.json_file
+        optimizer_opts['verbose']   = True
+        
+        subset  = self.find_subset(ranges)
+        nsubset = len(subset)
+        if nsubset<nproc:
+            print(f'Warning! More processes than configurations, reducing nproc to {nsubset}')
+            nproc = nsubset 
+        
+        if nproc==1 or nsubset==1:
+            self.optimize_mismatches_batch(batch=subset, optimizer_opts=optimizer_opts) 
+        
+        else:
+            batches    = []
+            batch_size = len(subset) // nproc
+            remainder  = len(subset)  % nproc
+            start = 0
+            for i in range(nproc):
+                current_size = batch_size + 1 if i < remainder else batch_size
+                batches.append(subset[start:start + current_size])
+                start += current_size
+            
+            for i in range(len(batches)):
+                print(batches[i][0], batches[i][-1])
+             
+            processes = []
+            json_tmp_list = []
+            print('Redirecting output in logfiles')
+            for i in range(nproc):
+                # get name for temporary JSON file 
+                json_file_tmp = optimizer_opts['json_file']
+                json_file_tmp = json_file_tmp.replace('.json', f'_{i:d}.json')
+                json_tmp_list.append(json_file_tmp)
+                
+                # copy json_file (if exists) in temp file. Otherwise temp created by Optimizer  
+                if os.path.exists(self.json_file):
+                    with open(self.json_file, 'r') as source:
+                        with open(json_file_tmp, 'w') as new: 
+                            new.write(source.read())
+
+                # create optimizer_opts with temporary JSON file
+                optimizer_opts_tmp = copy.deepcopy(optimizer_opts)
+                optimizer_opts_tmp['json_file'] = json_file_tmp
+                # launch process
+                process = Process(target=self.process_with_redirect,
+                                  kwargs={'process_id':i,
+                                          'nproc':nproc,
+                                          'opts':{
+                                              'batch':batches[i],
+                                              'optimizer_opts':optimizer_opts_tmp, 
+                                              'verbose':verbose}
+                                              }
+                                             )
+                processes.append(process)
+                process.start()
+            
+            # wait for processes to finish 
+            for process in processes:
+                process.join()
+                
+            # info stored in the temporary JSONs, collect info
+            # 1) load original json file if it exists, otherwise load first temp file
+            if os.path.exists(self.json_file):
+                json_base = self.json_file
+            else:
+                json_base = json_tmp_list[0]
+            with open(json_base, 'r') as file:
+                json_data = json.loads(file.read())
+            # 2) add info from temporary json, delete temporary json 
+            for json_tmp in json_tmp_list:
+                with open(json_tmp, 'r') as file:
+                    json_data_tmp = json.loads(file.read())
+                mismatches = json_data_tmp['mismatches']
+                for key in mismatches:
+                    if key not in json_data:
+                        json_data['mismatches'][key] = mismatches[key]
+                os.remove(json_tmp)
+            with open(self.json_file, 'w') as file:
+                file.write(json.dumps(json_data,indent=2))
+            
+        # read collated json
+        optimizer_opts['json_file'] = self.json_file
+        optimizer_opts['verbose']   = False
+        optimizer_opts['overwrite'] = False
         for name in subset:
             self.data[name]['Optimizer'] = Optimizer(self.data[name]['Waveform'], **optimizer_opts)
         pass
-    
+
     def __is_in_valid_range(self, name, ranges):
         """
         Check if a certain waveform is in the specified
@@ -193,18 +339,28 @@ class Cataloger(object):
         plt.show()
         return         
 
-    def plot_mm_vs_M(self, 
+    def mm_at_M(self, name, M, mm_settings = None):
+        
+        eob = self.get_model_waveform(name)
+        nr  = self.data[name]['Waveform']
+        mm_settings['M'] = M 
+        matcher   = Matcher(nr, eob, settings=mm_settings)
+        return matcher.mismatch
+    
+    def mm_vs_M(self, 
                      mass_min   = 100, 
                      mass_max   = 200, 
-                     N          = 20, 
+                     N          = 20,
                      cmap       = 'jet', 
+                     mm_settings= None,
                      ranges     = {'pph0':[1,10]},
                      cmap_var   = 'E0byM',
                      hlines     = [],
                      savepng    = True,
                      figname    = None,
                      ):
-         
+
+
         # select waveforms and get colors
         subset       = self.find_subset(ranges=ranges)
         colors_dict  = self.get_colors_for_subset(subset,cmap_var=cmap_var, cmap_name=cmap)
@@ -212,20 +368,44 @@ class Cataloger(object):
         cmap_indices = colors_dict['indices']
         cmap_range   = colors_dict['range']
 
-        masses = np.linspace(mass_min, mass_max, num=N)
+        masses = np.linspace(mass_min, mass_max, num=N)    
+        
+        # start setting up the JSON file
+        mm_data = {}
+        mm_data['masses']     = list(masses)
+        mm_data['options']    = {}
+        mm_data['mismatches'] = {}
+        mm_data['options']['mm_settings'] = mm_settings
 
-        fig, ax = plt.subplots(1,1,figsize=(8,6))
+        vrs = ['q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z', 'E0byM', 'pph0']
+
+        _, ax = plt.subplots(1,1,figsize=(8,6))
+
         for i, name in enumerate(subset):
+            if mm_settings is None:
+                if self.data[name]['Optimizer'] is not None:
+                    if self.verbose: print(f'Using settings from {name} optimizer')
+                    mm_settings = self.data[name]['Optimizer'].mm_settings
+                else:
+                    raise ValueError('No mm_settings provided and no Optimizer available')
             print(f'mm for: {name}')
             mm = masses*0
-            mm_settings = self.data[name]['Optimizer'].mm_settings
-            eob = self.data[name]['Optimizer'].generate_opt_EOB()
+            eob = self.get_model_waveform(name)
             nr  = self.data[name]['Waveform']
-            pph0_nr = nr.metadata['pph0']
+                            
             for j, M in enumerate(masses):
                 mm_settings['M'] = M 
-                matcher = Matcher(nr, eob, pre_align=False, settings=mm_settings)
-                mm[j] = matcher.mismatch
+                matcher   = Matcher(nr, eob, settings=mm_settings)
+                mm[j]     = matcher.mismatch
+                
+            mm_data['mismatches'][name] = {}
+            mm_data['mismatches'][name]['mm_vs_M'] = list(mm)
+            mm_data['mismatches'][name]['mm_max']  = max(mm)
+            mm_data['mismatches'][name]['mm_min']  = min(mm)
+
+            for vr in vrs:
+                mm_data['mismatches'][name][vr] = self.quantity_from_dataset(name, vr)
+
             cidx = cmap_indices[i]
             ax.plot(masses, mm, label=name, c=colors[cidx], lw=0.6)
         
@@ -254,6 +434,11 @@ class Cataloger(object):
             plt.savefig(figname,dpi=200,bbox_inches='tight')
             print(f'Figure saved: {figname}')
         plt.show()
+
+        with open(self.json_file, 'w') as file:
+            file.write(json.dumps(mm_data,indent=2))
+            print(f'JSON file saved: {self.json_file}')
+
         return
 
 

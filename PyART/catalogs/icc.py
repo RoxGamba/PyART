@@ -16,37 +16,39 @@ class Waveform_ICC(Waveform):
     (catalog not yet public, this might be updated at some point)
     """
     def __init__(self,
-                 path        = './',
-                 ID          = '0001',
-                 ellmax      = 8,
-                 integrate   = False,
-                 integr_opts = {},  # options to integrate Psi4
-                 load_puncts = False,
-                 nu_rescale  = False,
+                 path            = './',
+                 ID              = '0001',
+                 ellmax          = 8,
+                 tmax_after_peak = 200.,  # cut psi4lm after tmax+this val 
+                 integrate       = False,
+                 integr_opts     = {},    # options to integrate Psi4
+                 load_puncts     = False,
+                 nu_rescale      = False,
                  ):
         super().__init__()
         
         if isinstance(ID, int):
             ID = f'{ID:04}'
-        self.path        = path
-        self.ID          = ID
-        self.sim_path    = os.path.join(self.path, 'ICC_BBH_'+self.ID)
-        self.domain      = 'Time'
-        self._kind       = 'ICC'
-        self.ellmax      = ellmax
-        self.nu_rescale  = nu_rescale
+        self.path            = path
+        self.ID              = ID
+        self.sim_path        = os.path.join(self.path, 'ICC_BBH_'+self.ID)
+        self.domain          = 'Time'
+        self._kind           = 'ICC'
+        self.ellmax          = ellmax
+        self.tmax_after_peak = tmax_after_peak
+        self.nu_rescale      = nu_rescale
 
         # define self.metadata and self.ometadata (original)
         self.load_metadata()
 
         # load puncts
         if load_puncts:
-            self.puncts = self.load_puncts()
+            self.load_puncts()
         else:
             self.puncts = None
         
         # define self.psi4lm, self.t_psi4 and self.r_extr
-        self.load_psi4lm(tmax_after_peak=200)
+        self.load_psi4lm(tmax_after_peak=self.tmax_after_peak)
         
         if integrate:
             # get hlm and dhlm by psi4-integration
@@ -62,7 +64,7 @@ class Waveform_ICC(Waveform):
             self.load_hlm()
         
         if not self.dothlm:
-            self.compute_dothlm(factor=self.metadata['nu'])
+            self.compute_dothlm(factor=self.metadata['nu'], only_warn=True)
         pass
 
     def load_metadata(self):
@@ -105,8 +107,8 @@ class Waveform_ICC(Waveform):
                 'J0'         : np.array([0,0,Jz]),
                 'pph0'       : Lz/(nu*M*M),
                 'E0byM'      : ometa['E0'],
-                'pos1'       : np.array([0,0,+ometa['D']/2]),
-                'pos2'       : np.array([0,0,-ometa['D']/2]),
+                'pos1'       : np.array([+ometa['D']/2,0,0]),
+                'pos2'       : np.array([-ometa['D']/2,0,0]),
                 'f0v'        : None,
                 'f0'         : None,
                 'Mf'         : None,
@@ -142,7 +144,8 @@ class Waveform_ICC(Waveform):
         else:
             print("Warning: no punctures' tracks found!")
             pdict = None
-        return pdict
+        self.puncts = pdict
+        return
      
     def load_multipole_txtfile(self, fname_token, raise_error=True, ellmax=None):
         if ellmax is None: ellmax = self.ellmax
@@ -162,7 +165,7 @@ class Waveform_ICC(Waveform):
         for l in range(ellmax+1):
             for m in range(l+1):
                 mydict[(l,m)] = {'real':zeros, 'imag':zeros, 'A':zeros,
-                                 'p':zeros, 'h':zeros}
+                                 'p':zeros, 'z':zeros}
         for f in files:
             l   = ut.extract_value_from_str(f, 'l')
             m   = ut.extract_value_from_str(f, 'm')
@@ -180,14 +183,15 @@ class Waveform_ICC(Waveform):
         self._psi4lm = dict_psi4
         self.r_extr  = ut.extract_value_from_str(files[0], 'r')
         
-        try:
-            tmax_psi4,_,_,_ = self.find_max(wave='psi4lm', height=3e-04)
-            DeltaT_end = self.t_psi4[-1]-(tmax_psi4+tmax_after_peak)
-        except Exception as e:
-            print(f'Error while searching max of psi4 time: {e}')
-            DeltaT_end = 0
-        if DeltaT_end>0:
-            self.cut(DeltaT_end, from_the_end=True, cut_psi4lm=True)
+        if tmax_after_peak is not None:
+            try:
+                tmax_psi4,_,_,_ = self.find_max(wave='psi4lm', height=1e-04)
+                DeltaT_end = self.t_psi4[-1]-(tmax_psi4+tmax_after_peak)
+            except Exception as e:
+                print(f'Error while searching max of psi4 time: {e}')
+                DeltaT_end = 0
+            if DeltaT_end>0:
+                self.cut(DeltaT_end, from_the_end=True, cut_psi4lm=True)
         pass
     
     def load_hlm(self):
