@@ -35,6 +35,7 @@ parser.add_argument('--overwrite',    action='store_true',       help='Overwrite
 parser.add_argument('--taper_alpha',    type=float, default=0.50, help="Taper alpha")
 parser.add_argument('--taper_start',    type=float, default=0.10, help="Taper start")
 parser.add_argument('--source',     default='BBH',                help="Source, BBH or BHNS (only SXS)")
+
 args = parser.parse_args()
 
 mm_settings = {'cut_second_waveform':True, 'initial_frequency_mm':10, 'M':100, 'final_frequency_mm':1024,

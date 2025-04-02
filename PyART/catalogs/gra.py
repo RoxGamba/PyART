@@ -35,7 +35,7 @@ class Waveform_GRA(Waveform):
         self.r_ext  = r_ext
         self.rescale = rescale
         # comment out the following for the moment
-        # self.load_metadata(mtdt_path)
+        self.load_metadata(mtdt_path)
         self.load_hlm(extrap=ext, ellmax=ellmax, r_ext=r_ext)
         pass
 
