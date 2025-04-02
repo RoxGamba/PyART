@@ -470,7 +470,7 @@ class Optimizer(object):
         for ky in kys_ref:
             vv = vs_ref[ky]
             if vv<bounds[ky][0] or vv>bounds[ky][1]:
-                print('Warning! Reference value for {:s} is outside searching interval: [{:.2e},{:.2e}]'.format(ky,  bounds[ky][0],  bounds[ky][1]))
+                print('Warning! Reference value for {:s} is outside searching interval: {:.2e} not in [{:.2e},{:.2e}]'.format(ky,  vv, bounds[ky][0],  bounds[ky][1]))
         if use_ref_guess:
             # use reference values whenever possible
             vs0 = vs_ref
