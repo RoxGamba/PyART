@@ -51,7 +51,9 @@ class Waveform_CoRe(Waveform):
                  )->None:
 
         super().__init__()
-        ID                  = code+f'_{ID:04}'
+        if isinstance(ID, int):
+            ID = f'{ID:04}'
+        ID                  = code+f'_{ID}'
         self.ID             = ID
         self.run            = run
         self.ell_emms       = ell_emms
@@ -112,10 +114,6 @@ class Waveform_CoRe(Waveform):
         
         if cut_junk:
             self.cut(cut_junk)
-
-        # Let's cut at mergr + 10 M     
-        DeltaT = self.u[-1] - (t_mrg + 10)
-        self.cut(DeltaT, from_the_end=True)
         pass
 
     def download_simulation(self, ID='BAM_0001', path='.',protocol='https',verbose=False):
