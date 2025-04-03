@@ -47,6 +47,7 @@ class Waveform_CoRe(Waveform):
                  cut_at_mrg=False,
                  cut_junk  = None,
                  nu_rescale=False,
+                 K         = 1, # order of polynomial for extrapolation
                  )->None:
 
         super().__init__()
@@ -103,7 +104,7 @@ class Waveform_CoRe(Waveform):
         self.metadata = self.load_metadata(mtdt_path)
 
         # read data
-        self.load_hlm(kind = kind)
+        self.load_hlm(kind = kind, K=K)
         
         # remove postmerger
         if cut_at_mrg:
@@ -198,18 +199,18 @@ class Waveform_CoRe(Waveform):
 
         return metadata
     
-    def load_hlm(self, kind = 'h5'):
+    def load_hlm(self, kind = 'h5', K=1):
         if kind == 'txt':
             self.read_h_txt(self.runpath)
         elif kind == 'h5':
-            self.read_h_h5(self.runpath)
+            self.read_h_h5(self.runpath, K=K)
         else:
             raise NameError('kind not recognized')
         
-    def read_h_h5(self, basepath):
+    def read_h_h5(self, basepath, K=1):
         """
         Read modes from the h5 file.
-        Extract both the modes at ifinite radius
+        Extract both the modes at finite radius
         and extrapolate to infinity using a K=1 polynomial
         """
         self.dfile = os.path.join(basepath,'data.h5')
@@ -280,7 +281,7 @@ class Waveform_CoRe(Waveform):
                         f = interpolate.interp1d(t_xtp[i], y)
                         ynew.append(f(tnew))
                     
-                    res.append(radius_extrap_polynomial(ynew, r_xtp, 1))
+                    res.append(radius_extrap_polynomial(ynew, r_xtp, K))
 
                 A_fre, p_fre = res
                 # reconstruct complex waveform

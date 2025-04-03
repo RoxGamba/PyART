@@ -96,9 +96,6 @@ class Waveform_LVKNR(Waveform):
         self.metadata['initial_frequency'] = flow*Msun_s
         self.metadata['eccentricity']   = f.attrs['eccentricity']
 
-        # also add SI quantities, useful for loading the waveform
-        # (because of the INSANE way LALSimulation functions are written...)
-
         self.metadata['m1SI']   = m1 * lal.MSUN_SI
         self.metadata['m2SI']   = m2 * lal.MSUN_SI
         self.metadata['frefSI'] = flow

@@ -76,14 +76,12 @@ class Matcher(object):
             i01    = np.where(WaveForm1.u>=t0)[0][0] 
             i02    = np.where(WaveForm2.u>=t0)[0][0]
             dphi22 = WaveForm1.hlm[(2,2)]['p'][i01] - WaveForm2.hlm[(2,2)]['p'][i02] 
-            #plt.figure
+
             for lm in self.settings['modes']:
                 
                 h = WaveForm2.hlm[lm]['z']*np.exp(-1j*dphi22/2*lm[1])
                 WaveForm2._hlm[lm] = wf_ut.get_multipole_dict(h)
-                #plt.plot(WaveForm1.u, WaveForm1.hlm[lm]['real'])
-                #plt.plot(WaveForm2.u, WaveForm2.hlm[lm]['real'], ls='--')
-            #plt.show()        
+     
         if self.settings['f0_from_merger']:
             if self.settings['kind']!='single-mode' or \
                 len(self.modes)>1:
@@ -100,9 +98,6 @@ class Matcher(object):
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
 
-        # align to improve subsequent tapering (applied before matching computation)
-        #if pre_align: 
-        #    wf1, wf2 = self.pre_alignment(wf1, wf2)
         
         # Determine time length for resizing
         self.settings['tlen'] = self._find_tlen(wf1, wf2, resize_factor=self.settings['resize_factor'])
@@ -180,17 +175,6 @@ class Matcher(object):
             hp = ut.spline(u, hp, new_u, kind=kind)
             hc = ut.spline(u, hc, new_u, kind=kind) 
         return TimeSeries(hp, dT), TimeSeries(hc, dT), new_u
-    
-#    def pre_alignment(self, wf1, wf2):
-#        """
-#        Align waveforms (TimeSeries) before feeding 
-#        them to the conditioning/matching functions. 
-#        This is needed to improve tapering-consistency
-#        """
-#        if not self.settings['taper']:
-#            warnings.warn('Pre-alignment is not needed if no tapering is applied!')
-#        # and now? 
-#        return wf1, wf2
 
     def _find_tlen(self, wf1, wf2, resize_factor=2):
         """
@@ -408,7 +392,6 @@ class Matcher(object):
             plt.axvline(settings['initial_frequency_mm'], lw=0.8, c='r')
             plt.axvline(settings['final_frequency_mm'],   lw=0.8, c='r')
             plt.grid()
-            #plt.ylim(1e-6, max(1.2*max(Af1),1.2*max(Af2),0.1))
             plt.legend()
             if i==FT_panels[0]:
                 plt.yscale('log')
@@ -418,7 +401,6 @@ class Matcher(object):
             plt.title(f'mismatch: {mm:.3e}')
         plt.tight_layout()
         if 'save' not in settings.keys():
-            #print("not saving")
             plt.show()
         else:
             print("Saving to ", settings['save'])
