@@ -64,19 +64,29 @@ class Waveform_EOB(Waveform):
         Prstar = self.dyn['Prstar']
         Pr     = np.zeros_like(Prstar)
         for i in range(len(Pr)):
-            A, B   = EOB.eob_metricAB_py(self.dyn['r'][i], self.pars['q'])
+            A, B   = EOB.eob_metricAB_py(self.dyn['r'][i], self.pars['q'], 
+                                         self.pars['chi1z'], self.pars['chi2z'])
             Pr[i]  = Prstar[i]*np.sqrt(B/A)
         return Pr
 
 def convert_hlm(hlm):
     from ..utils import wf_utils as wfu
     """
-    Convert the hlm dictionary from k to (ell, emm) notation
+    Convert the hlm dictionary from k to (ell, emm) notation.
+    Still not very good, but better than before.
     """
     hlm_conv = {}
     for key in hlm.keys():
-        ell = wfu.k_to_ell(int(key))
-        emm = wfu.k_to_emm(int(key))
+        if '-' in key:
+            akey = abs(int(key))
+            ell = wfu.k_to_ell(int(akey))
+            emm = -1*wfu.k_to_emm(int(akey))
+        elif len(key) ==2 and '0' in key:
+            ell = int(key[0])
+            emm = 0
+        else:
+            ell = wfu.k_to_ell(int(key))
+            emm = wfu.k_to_emm(int(key))
         A   = hlm[key][0]
         p   = hlm[key][1]
         hlm_conv[(ell, emm)] = {'real': A*np.cos(p), 'imag': -1*A*np.sin(p),
@@ -93,10 +103,11 @@ def CreateDict(M=1., q=1,
                LambdaAl2=0, LambdaBl2=0, 
                iota=0, f0=0.0035, srate=4096., df = 1./128.,
                phi_ref = 0.,
-               ecc = 1e-8, r_hyp = 0, H_hyp = 0, J_hyp=0, anomaly = np.pi,
+               ecc = 1e-8, r_hyp = None, H_hyp = 0, J_hyp=0, anomaly = np.pi,
                interp="yes", arg_out="yes", use_geom="yes", 
-               use_mode_lm=[1], ode_tmax=1e+6,
+               use_mode_lm=[1], ode_tmax=1e+7,
                cN3LO=None, a6c=None,
+               use_flm_h='LO',
                use_nqc=True):
         """
         Create the dictionary of parameters for EOBRunPy
@@ -110,7 +121,10 @@ def CreateDict(M=1., q=1,
                 if r_apa is None:
                     raise RuntimeError(f'Apastron not found, check initial conditon: E={H_hyp:.5f}, pph={J_hyp:.5f}')
                 r_hyp = r_apa - 1e-2 # small tol to avoid numerical issues
-
+        
+        if r_hyp is None:
+            r_hyp = 0
+        
         pardic = {
             'M'                  : M,
             'q'                  : q,
@@ -145,6 +159,7 @@ def CreateDict(M=1., q=1,
             'spin_flx'           : 'EOB',
             'spin_interp_domain' : 0,
             'ode_tmax'           : ode_tmax,
+            'use_flm_h'          : use_flm_h,
         }
 
         if not use_nqc:
@@ -244,6 +259,9 @@ def PotentialPlot(E0,pph0,q,chi1,chi2):
     plt.axhline(Vmin,  c='c')
     plt.show()
     return
+
+def get_pph_lso(nu,a0):
+    return EOB.pph_lso_spin_py(nu,a0)
 
 #---------------------
 # Span parameterspace

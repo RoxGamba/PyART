@@ -87,6 +87,8 @@ class Waveform_GRAHyp(Waveform):
                 'chi2x'      : chi2[0],
                 'chi2y'      : chi2[1],
                 'chi2z'      : chi2[2],
+                'LambdaAl2'  : 0.,
+                'LambdaBl2'  : 0.,
                 'r0'         : ometa['initial_separation'],
                 'e0'         : None,
                 'E0'         : ometa['M_ADM'],

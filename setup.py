@@ -36,5 +36,6 @@ setup(
     include_package_data=True,
     package_data={
         'PyART.numerical': ['twopuncts.dummy'],
+        'PyART.catalogs' : ['sacra.info'],
     },
 )

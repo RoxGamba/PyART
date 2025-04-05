@@ -58,7 +58,8 @@ class Waveform_RIT(Waveform):
 
         # psi4 available
         self.psi_path  = os_ut.find_dirs_with_token(self.sim_path, 'ExtrapPsi4')[0]
-        self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
+        #self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
+        self.mtdt_psi4 = os.path.join(self.psi_path, 'Metadata')
         if psi_load:
             _, self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
             self.load_psi4lm()
@@ -89,7 +90,7 @@ class Waveform_RIT(Waveform):
         
         file_path = os.path.dirname(__file__) # this is in the build/lib
         repo_path = file_path.split('PyART/')[0]
-        script_path = os.path.join(repo_path, 'PyART/PyART/catalogs/')
+        script_path = os.path.join(repo_path, 'PyART/catalogs/')
         if urls_json is None: # use default name
            urls_json = os.path.join(script_path,'rit_urls.json')
         elif not isinstance(urls_json, str): 
@@ -237,7 +238,7 @@ class Waveform_RIT(Waveform):
                 key                = key.strip()
                 ometa[key] = val
             
-            kind = 'initial' # initial or relaxed (but no relaxed-separation in meta)
+            kind = 'relaxed' # initial or relaxed (but no relaxed-separation in meta)
             if kind=='initial':
                 ref_time = 0
             elif kind=='relaxed':
@@ -297,6 +298,8 @@ class Waveform_RIT(Waveform):
                     'chi2x'      : chi2x,  # dimensionless
                     'chi2y'      : chi2y,
                     'chi2z'      : chi2z,
+                    'LambdaAl2'  : 0.,
+                    'LambdaBl2'  : 0.,
                     # positions
                     'pos1'       : np.array([0,0,+D/2]),
                     'pos2'       : np.array([0,0,-D/2]),

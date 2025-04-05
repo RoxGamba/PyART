@@ -35,7 +35,7 @@ class Matcher(object):
         self.settings = self.__default_parameters__()
         if settings:
             self.settings.update(settings)
-        self.modes = settings.get('modes', [])
+        self.modes = self.settings.get('modes', [])
         del settings 
             
         # Choose the appropriate mismatch function
@@ -76,23 +76,28 @@ class Matcher(object):
             i01    = np.where(WaveForm1.u>=t0)[0][0] 
             i02    = np.where(WaveForm2.u>=t0)[0][0]
             dphi22 = WaveForm1.hlm[(2,2)]['p'][i01] - WaveForm2.hlm[(2,2)]['p'][i02] 
-            #plt.figure
+
             for lm in self.settings['modes']:
                 
                 h = WaveForm2.hlm[lm]['z']*np.exp(-1j*dphi22/2*lm[1])
                 WaveForm2._hlm[lm] = wf_ut.get_multipole_dict(h)
-                #plt.plot(WaveForm1.u, WaveForm1.hlm[lm]['real'])
-                #plt.plot(WaveForm2.u, WaveForm2.hlm[lm]['real'], ls='--')
-            #plt.show()
-
+     
+        if self.settings['f0_from_merger']:
+            if self.settings['kind']!='single-mode' or \
+                len(self.modes)>1:
+                  raise ValueError("The option 'f0_from_merger' can be used only with a single mode") 
+            mode = self.modes[0]
+            u_mrg,_,_,_,i_mrg = WaveForm1.find_max(return_idx=True)
+            p1    = WaveForm1.hlm[mode]['p']
+            Omg1  = np.abs(np.gradient(p1, WaveForm1.u))
+            Omg10_postmrg = Omg1[i_mrg]
+            f0_postmrg = Omg10_postmrg/(self.settings['M']*ut.Msun*2*np.pi)
+            self.settings['initial_frequency_mm'] = f0_postmrg
         
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1)
         wf2 = self._wave2locobj(WaveForm2)
 
-        # align to improve subsequent tapering (applied before matching computation)
-        #if pre_align: 
-        #    wf1, wf2 = self.pre_alignment(wf1, wf2)
         
         # Determine time length for resizing
         self.settings['tlen'] = self._find_tlen(wf1, wf2, resize_factor=self.settings['resize_factor'])
@@ -170,17 +175,6 @@ class Matcher(object):
             hp = ut.spline(u, hp, new_u, kind=kind)
             hc = ut.spline(u, hc, new_u, kind=kind) 
         return TimeSeries(hp, dT), TimeSeries(hc, dT), new_u
-    
-#    def pre_alignment(self, wf1, wf2):
-#        """
-#        Align waveforms (TimeSeries) before feeding 
-#        them to the conditioning/matching functions. 
-#        This is needed to improve tapering-consistency
-#        """
-#        if not self.settings['taper']:
-#            warnings.warn('Pre-alignment is not needed if no tapering is applied!')
-#        # and now? 
-#        return wf1, wf2
 
     def _find_tlen(self, wf1, wf2, resize_factor=2):
         """
@@ -233,6 +227,8 @@ class Matcher(object):
             'geom'                 : True,
             'cut_longer'           : False, # cut longer waveform
             'cut_second_waveform'  : False, # cut waveform2 if longer than waveform1
+            'f0_from_merger'       : False, # Use frequency at merger as initial_frequency_mm
+                                            # (computed from WaveForm1)
         }
     
     def _get_psd(self, flen, df, fmin):
@@ -321,7 +317,8 @@ class Matcher(object):
         if settings['debug'] and wf1.domain=='Time' and wf2.domain=='Time' and not self.cache:
             self._debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings,
                                        tap_times_w1 = tap_times_w1,
-                                       tap_times_w2 = tap_times_w2
+                                       tap_times_w2 = tap_times_w2,
+                                       mm=1-m 
                                        )
 
         out = {'h1f': h1f, 'h2f': h2f, 'j_shift': j_shift*h2.delta_t, 'ph_shift': ph_shift}
@@ -329,7 +326,7 @@ class Matcher(object):
 
     def _debug_plot_waveforms(self, h1_nc, h2_nc, h1, h2, psd, settings, 
                               tap_times_w1=None, tap_times_w2=None,
-                              six_panels=False):
+                              six_panels=False, mm=None):
         """
         Plot waveforms and PSD for debugging.
         """
@@ -395,15 +392,15 @@ class Matcher(object):
             plt.axvline(settings['initial_frequency_mm'], lw=0.8, c='r')
             plt.axvline(settings['final_frequency_mm'],   lw=0.8, c='r')
             plt.grid()
-            #plt.ylim(1e-6, max(1.2*max(Af1),1.2*max(Af2),0.1))
             plt.legend()
             if i==FT_panels[0]:
                 plt.yscale('log')
                 plt.xscale('log')
-                
+        if mm is not None:
+            plt.subplot(figm,fign,1)
+            plt.title(f'mismatch: {mm:.3e}')
         plt.tight_layout()
         if 'save' not in settings.keys():
-            #print("not saving")
             plt.show()
         else:
             print("Saving to ", settings['save'])

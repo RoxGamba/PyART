@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import matplotlib
 from ..utils import utils
+from .hypfit import fit_quadratic, quadratic_to_canonical, plot_hypfit 
 
 matplotlib.rc('text', usetex=True)
 
@@ -15,16 +16,21 @@ class ScatteringAngle:
     """
     def __init__(self, **kwargs):
         
-        self.puncts           = None
-        self.nmin             = 2
-        self.nmax             = 10
-        self.n_extract        = None
-        self.r_cutoff_in_low  = 25
-        self.r_cutoff_in_high = 80
-        self.r_cutoff_out_low = 25
-        self.r_cutoff_out_high= None
-        self.use_single_punct = None # None, 0, or 1
-        self.verbose          = True
+        self.puncts            = None
+        self.use_single_punct  = None # None, 0, or 1
+        self.verbose           = True
+
+        # options used for u-poly extrapolation
+        self.nmin              = 2
+        self.nmax              = 10
+        self.n_extract         = None
+        self.r_cutoff_in_low   = 25
+        self.r_cutoff_in_high  = 80
+        self.r_cutoff_out_low  = 25
+        self.r_cutoff_out_high = None
+        
+        # use hypfit instead
+        self.hypfit            = False
 
         for key, value in kwargs.items():
             if hasattr(self,key):
@@ -82,7 +88,10 @@ class ScatteringAngle:
             th = self.puncts['phi']
             x  = r*np.cos(th) 
             y  = r*np.sin(th) 
-            
+        
+        else: 
+            raise RuntimeError('Invalid keys in puncts. Use t,r,phi for EOB, or t,x0,y0,x1,y1 for NR.')
+
         self.t  = t
         self.x  = x
         self.y  = y
@@ -145,7 +154,6 @@ class ScatteringAngle:
             print('theta inf in     : {:8.4f} +- {:6.4f}'.format(th_inf_in, fit_err_in))
             print('theta inf out    : {:8.4f} +- {:6.4f}'.format(th_inf_out, fit_err_out))
             print('scattering angle : {:8.4f} +- {:6.4f}'.format(chi, fit_err))
-            print('  ')
         
         self.t_in   =  t[mask_in]
         self.r_in   =  r[mask_in]
@@ -157,18 +165,23 @@ class ScatteringAngle:
         self.u_out  =  1/self.r_out
         self.th_out = th[mask_out]
         
+        if self.hypfit:
+            self.chi_hypfit, _ = self.compute_chi_hypfit()
+        else:
+            self.chi_hypfit = None
+
         min_r  = min(self.r)
         if self.r_cutoff_in_low<min_r:
-            print('+++ Warning +++\nmin(r)={:.2f}<r_cutoff_in_low={:.2f}'.format(min_r, self.r_cutoff_in_low))  
+            print('+++ Warning +++\nmin(r)={:.2f}>r_cutoff_in_low={:.2f}'.format(min_r, self.r_cutoff_in_low))  
         if self.r_cutoff_out_low<min_r:
-            print('+++ Warning +++\nmin(r)={:.2f}<r_cutoff_out_low={:.2f}'.format(min_r, self.r_cutoff_out_low))  
+            print('+++ Warning +++\nmin(r)={:.2f}>r_cutoff_out_low={:.2f}'.format(min_r, self.r_cutoff_out_low))  
 
         self.p_in   = fit_in['polynomials']
         self.b_in   = b_in
         self.p_out  = fit_out['polynomials']
         self.b_out  = b_out
         
-        self.chi = chi
+        self.chi     = chi
         self.fit_err = fit_err
             
         return
@@ -179,6 +192,53 @@ class ScatteringAngle:
         chi        = th_inf_out-th_inf_in-180
         return chi, th_inf_in, th_inf_out
     
+    def compute_chi_hypfit(self, verbose=None):
+        if verbose is None: verbose = self.verbose
+        angles = np.zeros((2,2))
+        th_start = None
+        th_end   = None
+        fits     = {}
+        for i in range(2):
+            if i==0:
+                th = self.th_in
+                r  = self.r_in
+                th_start = th[0]
+                fit_key = 'in'
+            else: 
+                th = self.th_out
+                r  = self.r_out
+                th_end = th[-1]
+                fit_key = 'out'
+            x = r*np.cos(th)
+            y = r*np.sin(th)
+            ABCDF     = fit_quadratic(x, y)
+            canonical = quadratic_to_canonical(ABCDF)
+            
+            fits[fit_key] = {'x':x, 'y':y, 'r':r, 'th':th, 'canonical':canonical, 'ABCDF':ABCDF}
+            
+            A = ABCDF[0]
+            B = ABCDF[1]
+            C = ABCDF[2]
+            sqrt_delta = np.sqrt(B*B-A*C)
+            m1 = A/(-B + sqrt_delta ) # angular coeff of asympt 
+            m2 = A/(-B - sqrt_delta ) 
+            angles[i,:] = np.arctan(np.array([m1,m2]))/2/np.pi*360
+        chi_deg = angles[1,0]-angles[0,1]
+        chi_rad = chi_deg/180*np.pi 
+        
+        n_pi     = np.floor( (th_end-th_start-chi_rad)/np.pi )
+        chi_deg += 180*n_pi
+        if verbose: print('chi hypfit       : {:.4f}'.format(chi_deg))
+        return chi_deg, fits
+    
+    def plot_hypfit(self, swap_ab_list=[True,True]):
+        _, fits = self.compute_chi_hypfit()
+        for i, key in enumerate(fits):
+            fit = fits[key]
+            plot_hypfit(fit['x'], fit['y'], fit['canonical'], 
+                        swap_ab=swap_ab_list[i], rlim=max(fit['r']))
+        pass
+
     def save_plot(self,show=True,save=False,figname='plot.png'):
         if save:
             plt.savefig(figname,dpi=200,bbox_inches='tight')
@@ -195,7 +255,7 @@ class ScatteringAngle:
         y  = self.y
         th = self.th
         fig,axs = plt.subplots(2,2, figsize=(9,7))
-        if self.file_format!='EOB':
+        if 'x1' in self.puncts:
             axs[0,0].plot(self.x1,self.y1)
             axs[0,0].plot(self.x2,self.y2)
             axs[0,0].set_ylabel(r'$y$', fontsize=15)

@@ -12,7 +12,9 @@ KEYS = ['name',
         'S1', 'S2',       # spins (3-vector)
         'chi1x', 'chi2x', # dimensionless spin x-components 
         'chi1y', 'chi2y', # dimensionless spin y-components 
-        'chi1z', 'chi2z', # dimensionless spin z-components 
+        'chi1z', 'chi2z', # dimensionless spin z-components
+        'LambdaAl2', 
+        'LambdaBl2',
         'r0',             # distance
         'e0',             # eccentricity 
         'E0', 'Jz0',      # ADM scalars 
@@ -45,7 +47,7 @@ def check_metadata(meta, raise_err=True):
             errwarn(f"Key '{rkey}' is required but not found in metadata!", raise_err=raise_err)
     for key in meta:
         if not key in KEYS:
-            errwarn(f"Unknown key '{key}'! If you think this is correct, updated catalog_utils.py", raise_err=raise_err)
+            errwarn(f"Unknown key '{key}'! If you think this is correct, updated cat_utils.py", raise_err=raise_err)
     pass
 
 def get_flags(meta, thres_spin=1e-5, thres_q=1e-3, thres_e0=1e-3):
@@ -64,7 +66,8 @@ def get_flags(meta, thres_spin=1e-5, thres_q=1e-3, thres_e0=1e-3):
     else:
         flags.append('unequal-mass')
     
-    if meta['E0byM']>=1:
+
+    if meta['E0byM'] is not None and meta['E0byM']>=1:
         flags.append('hyperbolic')
     elif meta['e0'] is None:
         flags.append('elliptic')

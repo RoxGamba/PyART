@@ -48,14 +48,20 @@ class Waveform_SEOB(Waveform):
         self._hlm = hlm
 
         self._hp, self._hc = wfu.compute_hphc(hlm, modes=list(hlm.keys()))
+        if self.pars["approximant"]=='SEOBNRv5EHM':
+            idx_H    = 8
+            idx_MOmg = 9
+        else:
+            idx_H    = 5
+            idx_MOmg = 6
         self._dyn = {'t'     : self.SEOB.model.dynamics[:,0],
                      'r'     : self.SEOB.model.dynamics[:,1],
                      'phi'   : self.SEOB.model.dynamics[:,2],
                      'Pr'    : self.SEOB.model.dynamics[:,3],
                      'Pphi'  : self.SEOB.model.dynamics[:,4],
-                     'E'     : self.SEOB.model.dynamics[:,5]*nu,
-                     'MOmega': self.SEOB.model.dynamics[:,6],
-                     }
+                     'E'     : self.SEOB.model.dynamics[:,idx_H]*nu,
+                     'MOmega': self.SEOB.model.dynamics[:,idx_MOmg],
+                    }
         self.domain = 'Time'
         return 0
     
@@ -123,6 +129,8 @@ def CreateDict(M=1., q=1,
                dist=100.,
                iota=0, f0=0.0035, df=1./128., dt=1./2048,
                phi_ref = 0.,
+               e0 = 0.0, 
+               rel_anomaly = np.pi,
                use_geom="yes", 
                approx="SEOBNRv5HM",
                use_mode_lm=[(2,2)]):
@@ -143,6 +151,8 @@ def CreateDict(M=1., q=1,
                 "inclination"         : iota,
                 "phi_ref"             : phi_ref,
                 "f22_start"           : f0,
+                "eccentricity"        : e0,
+                "rel_anomaly"         : rel_anomaly,
                 "deltaF"              : df,
                 "deltaT"              : dt,
                 "ModeArray"           : use_mode_lm,

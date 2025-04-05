@@ -76,6 +76,8 @@ class Waveform_GRA(Waveform):
                     'chi2x'    : hS2[0],  # dimensionless
                     'chi2y'    : hS2[1],
                     'chi2z'    : hS2[2],
+                    'LambdaAl2': 0.,
+                    'LambdaBl2': 0.,
                     # positions
                     'pos1'     : pos1,
                     'pos2'     : pos2,

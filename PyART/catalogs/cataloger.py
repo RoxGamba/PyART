@@ -7,7 +7,7 @@ from multiprocessing import Process
 from ..analysis.match  import Matcher
 from ..analysis.opt_ic import Optimizer
 from ..models.teob import CreateDict
-from ..models.teob import Waveform_EOB
+from ..models.teob import Waveform_EOB, get_pph_lso
 
 matplotlib.rc('text', usetex=True)
 
@@ -58,7 +58,8 @@ class Cataloger(object):
             from .sxs import Waveform_SXS
             wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
             
-        elif self.catalog=='rit'
+        elif self.catalog=='rit':
+
             from .rit import Waveform_RIT
             wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
         
@@ -73,6 +74,10 @@ class Cataloger(object):
         elif self.catalog=='grahyp':
             from .gra_hyp import Waveform_GRAHyp
             wave = Waveform_GRAHyp(path=self.path, ID=ID, **add_opts)
+        
+        elif self.catalog=='sacra':
+            from .sacra import Waveform_SACRA
+            wave = Waveform_SACRA(path=self.path, ID=ID, **add_opts)
 
         else:
             raise ValueError(f'Unknown catalog: {self.catalog}')
@@ -100,18 +105,22 @@ class Cataloger(object):
             eob    = Waveform_EOB(params)
         return eob
 
-    def plot_waves(self, cmap='rainbow'):
+    def plot_waves(self, cmap='rainbow', legend=False):
         mycmap = plt.get_cmap(cmap)
         colors = mycmap(np.linspace(0,1,self.nsims))
         plt.figure(figsize=(8,6))
         for i, name in enumerate(self.data):
             wave = self.data[name]['Waveform']
+            label = wave.metadata['name']
             if (2,2) in wave.hlm:
                 try:
                     tmrg,_,_,_ = wave.find_max()
-                    plt.plot(wave.u-tmrg, wave.hlm[(2,2)]['A'], c=colors[i])
+                    plt.plot(wave.u-tmrg, wave.hlm[(2,2)]['A'], c=colors[i], label=label)
                 except:
-                    plt.plot(wave.u, wave.hlm[(2,2)]['A'], c=colors[i])
+                    plt.plot(wave.u, wave.hlm[(2,2)]['A'], c=colors[i], label=label)
+        if legend:
+            plt.legend()
+
         plt.show()
         pass
     
@@ -234,15 +243,32 @@ class Cataloger(object):
             self.data[name]['Optimizer'] = Optimizer(self.data[name]['Waveform'], **optimizer_opts)
         pass
 
-    def __is_in_valid_range(self, name, ranges):
+    def __is_in_valid_range(self, name, ranges,):
+
         """
         Check if a certain waveform is in the specified
         ranges (for example: ranges={'pph0':[1,10]})
+        Ranges can also contain 'check_pph_lso'.
+        If check_pph_lso is True, then check also if the pph of 
+        the simulation is above the LSO value
         """
         meta  = self.data[name]['Waveform'].metadata
         for key in ranges:
-            if key not in meta:
-                raise ValueError(f'{key} is not a metadata entry!')
+            if key=='check_pph_lso':
+                q     = meta['q']
+                chi1z = meta['chi1z']
+                chi2z = meta['chi2z']
+                nu    = meta['nu']
+                m1    = q/(1+q)
+                m2    = 1/(1+q)
+                a0    = m1*chi1z + m2*chi2z 
+                pph_lso = get_pph_lso(nu,a0)
+                if meta['pph0']<pph_lso:
+                    return False
+                else:
+                    continue
+            elif key not in meta:
+                raise ValueError(f'{key} is not a valid option in ranges!')
             x = meta[key]
             if x<ranges[key][0] or x>ranges[key][1]:
               return False
@@ -352,14 +378,15 @@ class Cataloger(object):
                      mass_max   = 200, 
                      N          = 20,
                      cmap       = 'jet', 
-                     mm_settings= None,
+                     json_load  = None, # load if not None
+                     json_save  = None, # save if not None
+                     mm_settings= None, 
                      ranges     = {'pph0':[1,10]},
                      cmap_var   = 'E0byM',
                      hlines     = [],
-                     savepng    = True,
-                     figname    = None,
+                     figname    = None, # save if not None
                      ):
-
+        if figname is not None: savepng = True
 
         # select waveforms and get colors
         subset       = self.find_subset(ranges=ranges)
@@ -371,17 +398,23 @@ class Cataloger(object):
         masses = np.linspace(mass_min, mass_max, num=N)    
         
         # start setting up the JSON file
-        mm_data = {}
-        mm_data['masses']     = list(masses)
-        mm_data['options']    = {}
-        mm_data['mismatches'] = {}
-        mm_data['options']['mm_settings'] = mm_settings
-
+        if isinstance(json_load, str) and os.path.exists(json_load):
+            with open(json_load, 'r') as file:
+                mm_data = json.load(file) 
+        
+        else:
+            mm_data = {}
+            mm_data['masses']     = list(masses)
+            mm_data['options']    = {}
+            mm_data['mismatches'] = {}
+            mm_data['options']['mm_settings'] = mm_settings
+        
         vrs = ['q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z', 'E0byM', 'pph0']
 
-        _, ax = plt.subplots(1,1,figsize=(8,6))
-
         for i, name in enumerate(subset):
+            if name in mm_data['mismatches']:
+                continue
+            
             if mm_settings is None:
                 if self.data[name]['Optimizer'] is not None:
                     if self.verbose: print(f'Using settings from {name} optimizer')
@@ -406,8 +439,10 @@ class Cataloger(object):
             for vr in vrs:
                 mm_data['mismatches'][name][vr] = self.quantity_from_dataset(name, vr)
 
+        _, ax = plt.subplots(1,1,figsize=(8,6))
+        for i, name in enumerate(subset):
             cidx = cmap_indices[i]
-            ax.plot(masses, mm, label=name, c=colors[cidx], lw=0.6)
+            ax.plot(masses, mm_data['mismatches'][name]['mm_vs_M'], label=name, c=colors[cidx], lw=0.6)
         
         styles  = ['-', '--', '-.']
         nstyles = len(styles)
@@ -428,16 +463,16 @@ class Cataloger(object):
         plt.yscale('log')
         plt.grid()
 
-        if savepng:
-            if figname is None:
-                figname = f'mismatches_{self.catalog}_{cmap_var}.png'
+        if figname is None:
+            figname = f'mismatches_{self.catalog}_{cmap_var}.png'
             plt.savefig(figname,dpi=200,bbox_inches='tight')
             print(f'Figure saved: {figname}')
         plt.show()
-
-        with open(self.json_file, 'w') as file:
-            file.write(json.dumps(mm_data,indent=2))
-            print(f'JSON file saved: {self.json_file}')
+        
+        if isinstance(json_save, str):
+            with open(json_save, 'w') as file:
+                file.write(json.dumps(mm_data,indent=2))
+                print(f'JSON file saved: {json_save}')
 
         return
 

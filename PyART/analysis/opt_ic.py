@@ -107,6 +107,8 @@ class Optimizer(object):
             self.minimize = self.__minimize__dynesty__
         elif minimizer['kind'] == 'dual_annealing':
             self.minimize = self.__minimize_annealing_
+        elif minimizer['kind'] == 'differential_evolution':
+            self.minimize = self.__minimize_differential_evo_
         else:
             raise ValueError(f'Unknown minimizer kind: {minimizer["kind"]}')
 
@@ -115,9 +117,10 @@ class Optimizer(object):
             chi1 = ref_Waveform.metadata['chi1z'] 
             chi2 = ref_Waveform.metadata['chi2z'] 
             flags_str = ''
-            for flag in ref_Waveform.metadata['flags']:
-                flags_str += flag + ', '
-            flags_str = flags_str[:-2]
+            if 'flags' in ref_Waveform.metadata:
+                for flag in ref_Waveform.metadata['flags']:
+                    flags_str += flag + ', '
+                flags_str = flags_str[:-2]
             print( '###########################################')
             print(f'###          Running Optimizer          ###')
             print( '###########################################\n')
@@ -147,6 +150,7 @@ class Optimizer(object):
         
         if run_optimization:
             random.seed(self.minimizer['opt_seed'])
+            np.random.seed(self.minimizer['opt_seed'])
             dashes    = '-'*45
             asterisks = '*'*45
             
@@ -363,9 +367,14 @@ class Optimizer(object):
     def generate_EOB(self, ICs={'f0':None, 'e0':None}):
         ref_meta = self.ref_Waveform.metadata
         # Set all the intrinsic parameters that are not in ICs
-        default_intrinsic =  ['M', 'q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 'chi2y', 'chi2z']
+        default_intrinsic =  ['M', 'q', 'chi1x', 'chi1y', 'chi1z', 'chi2x', 
+                              'chi2y', 'chi2z', 'LambdaAl2', 'LambdaBl2']
         for ic in ICs: 
             if ic in default_intrinsic: default_intrinsic.remove(ic)
+        
+        if 'LambdaAl2' not in ref_meta: ref_meta['LambdaAl2'] = 0.0
+        if 'LambdaBl2' not in ref_meta: ref_meta['LambdaBl2'] = 0.0
+
         sub_meta = {key: ref_meta[key] for key in default_intrinsic}
         sub_meta['use_nqc']  = self.use_nqc
         sub_meta['ode_tmax'] = 3e+4
@@ -453,6 +462,7 @@ class Optimizer(object):
         if verbose is None: verbose = self.verbose
         kys     = self.opt_vars
         bounds  = self.opt_bounds
+        meta    = self.ref_Waveform.metadata
 
         # Treat variables which are in common with the reference
         kys_ref = [ky for ky in kys if ky in self.ref_Waveform.metadata] # common keys
@@ -460,7 +470,7 @@ class Optimizer(object):
         for ky in kys_ref:
             vv = vs_ref[ky]
             if vv<bounds[ky][0] or vv>bounds[ky][1]:
-                print('Warning! Reference value for {:s} is outside searching interval: [{:.2e},{:.2e}]'.format(ky,  bounds[ky][0],  bounds[ky][1]))
+                print('Warning! Reference value for {:s} is outside searching interval: {:.2e} not in [{:.2e},{:.2e}]'.format(ky,  vv, bounds[ky][0],  bounds[ky][1]))
         if use_ref_guess:
             # use reference values whenever possible
             vs0 = vs_ref
@@ -521,14 +531,17 @@ class Optimizer(object):
             self.match_against_ref(eob_opt, mm_settings=temp_settings)
         
         opt_data = { 
-                    # store also some attributes, just for convenience 
-                    'q'            : self.ref_Waveform.metadata['q'],
-                    'chi1x'        : self.ref_Waveform.metadata['chi1x'],
-                    'chi1y'        : self.ref_Waveform.metadata['chi1y'],
-                    'chi1z'        : self.ref_Waveform.metadata['chi1z'],
-                    'chi2x'        : self.ref_Waveform.metadata['chi2x'],
-                    'chi2y'        : self.ref_Waveform.metadata['chi2y'],
-                    'chi2z'        : self.ref_Waveform.metadata['chi2z'],
+                    # store also some attributes, just for convenience
+                    'M'            : meta['M'],
+                    'q'            : meta['q'],
+                    'chi1x'        : meta['chi1x'],
+                    'chi1y'        : meta['chi1y'],
+                    'chi1z'        : meta['chi1z'],
+                    'chi2x'        : meta['chi2x'],
+                    'chi2y'        : meta['chi2y'],
+                    'chi2z'        : meta['chi2z'],
+                    'LambdaAl2'    : meta['LambdaAl2'] if 'LambdaAl2' in meta else 0.,
+                    'LambdaBl2'    : meta['LambdaBl2'] if 'LambdaBl2' in meta else 0.,
                     'initial_frequency_mm' : self.mm_settings['initial_frequency_mm'],
                     'final_frequency_mm'   : self.mm_settings['final_frequency_mm'],
                     'opt_seed'     : self.minimizer['opt_seed'],
@@ -541,7 +554,7 @@ class Optimizer(object):
                     'mm_opt'       : mm_opt, 
                     }
         for ky in kys:
-            opt_data[ky]        = vs_ref[ky]
+            opt_data[ky] = vs_ref[ky] if ky in vs_ref else None
             opt_data[ky+'_opt'] = opts[ky]
         
         if eob_opt is not None and self.json_save_dyn:
@@ -574,6 +587,9 @@ class Optimizer(object):
                            'opt_maxfun': 1000, 
                            'opt_seed': 190521,
 
+                           # differiantial_evolution options 
+                           'opt_workers':1,
+
                            # dynesty options
                            'nlive'  : 10,
                            'maxiter': 10000,
@@ -603,6 +619,29 @@ class Optimizer(object):
         mm_opt       = opt_result['fun']
         return opts, mm_opt
     
+    def __minimize_differential_evo_(self, f, x0, bounds_array, kys):
+        """
+        Minimize with differential evolution. 
+        """
+        maxiter = self.minimizer.get('opt_maxfun', 1000)
+        seed    = self.minimizer.get('opt_seed', 190521)
+        workers = self.minimizer.get('opt_workers', 1) 
+        x0      = x0
+
+        opt_result   = optimize.differential_evolution(
+                                                f,
+                                                maxiter = maxiter, 
+                                                seed    = seed, 
+                                                x0      = x0,
+                                                workers = workers,
+                                                bounds  = bounds_array,
+                                            )
+        
+        opt_pars     = opt_result['x']
+        opts         = {kys[i]: opt_pars[i] for i in range(len(kys))}
+        mm_opt       = opt_result['fun']
+        return opts, mm_opt
+
     def __minimize__dynesty__(self, f, x0, bounds_array, kys):
         """
         Minimize with dynesty.

@@ -5,7 +5,8 @@ import h5py
 import glob
 import os
 
-from ..waveform import  Waveform
+from ..waveform import Waveform
+from ..utils    import os_utils
 
 ## Conversion dictionary
 conversion_dict_floats = {
@@ -37,18 +38,22 @@ class Waveform_CoRe(Waveform):
     def __init__(self,
                  path='../dat/CoRe/',
                  ID      = '0001',
-                 run     = 'R01',
+                 run     =  None, # if None, select highest resolution
                  code    = 'BAM',
                  kind    = 'h5',
                  mtdt_path=None,
                  ell_emms='all',
                  download=False,
                  cut_at_mrg=False,
+                 cut_junk  = None,
                  nu_rescale=False,
+                 K         = 1, # order of polynomial for extrapolation
                  )->None:
 
         super().__init__()
-        ID                  = code+f'_{ID:04}'
+        if isinstance(ID, int):
+            ID = f'{ID:04}'
+        ID                  = code+f'_{ID}'
         self.ID             = ID
         self.run            = run
         self.ell_emms       = ell_emms
@@ -67,19 +72,48 @@ class Waveform_CoRe(Waveform):
                 raise FileNotFoundError(f"The path {self.core_data_path} does not exist.")
         
         self.simpath = self.core_data_path
-        self.runpath = os.path.join(self.simpath, run)
+        
+        if self.run is None:
+            # select the highest resolution (smaller grid_spacing_min)
+            subdirs = os_utils.find_dirs_with_token(self.core_data_path, 'R0') # assume less than 10 runs
+            most_accurate_run = None
+            dx_min = 1e+6
+            for subdir in subdirs:
+                meta_Rfile = os.path.join(subdir,'metadata.txt')
+                dx = None
+                with open(meta_Rfile, 'r') as file:
+                    for line in file:
+                        if 'grid_spacing_min' in line:
+                            _, value_str = line.strip().split('=')
+                            break
+                try:
+                    dx = float(value_str)
+                except Exception as e:
+                    print(f'Error while reading grid_spacing_min from {meta_Rfile}: {e}')
+                if dx is None:
+                    continue
+                if dx<dx_min:
+                    dx_min = dx
+                    most_accurate_run = subdir
+            self.run     = most_accurate_run.replace(self.core_data_path+'/', '')
+            self.runpath = most_accurate_run #os.path.join(self.simpath, self.run)
+        else:
+            self.runpath = os.path.join(self.simpath, self.run)
+            
         # read metadata
         if mtdt_path is None:
             mtdt_path = os.path.join(self.simpath,'metadata_main.txt')
         self.metadata = self.load_metadata(mtdt_path)
 
         # read data
-        self.load_hlm(kind = kind)
-
+        self.load_hlm(kind = kind, K=K)
+        
         # remove postmerger
         if cut_at_mrg:
             self.cut_at_mrg()
-
+        
+        if cut_junk:
+            self.cut(cut_junk)
         pass
 
     def download_simulation(self, ID='BAM_0001', path='.',protocol='https',verbose=False):
@@ -127,18 +161,23 @@ class Waveform_CoRe(Waveform):
                     try:
                         metadata[conversion_dict_floats[key]] = float(val.strip())
                     except ValueError:
-                        metadata[conversion_dict_floats[key]] = val.strip()
+                        if key=='id_eccentricity':
+                            print('Invalid id_eccentricity! Setting ecc=0.')
+                            metadata[conversion_dict_floats[key]] = 0.
+                        else:
+                            metadata[conversion_dict_floats[key]] = val.strip()
+
                 elif key in conversion_dict_vectors.keys():
                     metadata[conversion_dict_vectors[key]] = vector_string_to_array(val)
                 else:
                     metadata[key] = val.strip()
-
+        
         q  = float(metadata['q'])
         nu = q/(1+q)**2
-        metadata['nu']   = nu
-        metadata['pph0'] = float(metadata['J0'])
-        metadata['J0']   = float(metadata['J0'])*nu
-        metadata['E0byM'] = float(metadata['E0'])
+        metadata['nu']    = nu
+        metadata['J0']    = float(metadata['J0'])
+        metadata['pph0']  = metadata['J0']/(nu*metadata['M']**2)
+        metadata['E0byM'] = float(metadata['E0'])/metadata['M']
         metadata['chi1x'] = metadata['S1'][0]
         metadata['chi1y'] = metadata['S1'][1]
         metadata['chi1z'] = metadata['S1'][2]
@@ -147,21 +186,29 @@ class Waveform_CoRe(Waveform):
         metadata['chi2z'] = metadata['S2'][2]
         metadata['LambdaAl2'] = metadata['Lambda_ell_A'][0]
         metadata['LambdaBl2'] = metadata['Lambda_ell_B'][0]
-        metadata['f0'] = metadata['f0']/(2*np.pi)
+        metadata['f0'] = metadata['f0']/(2*np.pi)        
+        if metadata['LambdaAl2']>0 and metadata['LambdaBl2']>0:
+            kind = 'BNS'
+        elif metadata['LambdaAl2']<1 and metadata['LambdaBl2']<1:
+            kind = 'BBH' # should not be present in CoRe
+        else:
+            kind = 'BHNS'
+        metadata['flags'] = [kind] 
+
         return metadata
     
-    def load_hlm(self, kind = 'h5'):
+    def load_hlm(self, kind = 'h5', K=1):
         if kind == 'txt':
             self.read_h_txt(self.runpath)
         elif kind == 'h5':
-            self.read_h_h5(self.runpath)
+            self.read_h_h5(self.runpath, K=K)
         else:
             raise NameError('kind not recognized')
         
-    def read_h_h5(self, basepath):
+    def read_h_h5(self, basepath, K=1):
         """
         Read modes from the h5 file.
-        Extract both the modes at ifinite radius
+        Extract both the modes at finite radius
         and extrapolate to infinity using a K=1 polynomial
         """
         self.dfile = os.path.join(basepath,'data.h5')
@@ -232,7 +279,7 @@ class Waveform_CoRe(Waveform):
                         f = interpolate.interp1d(t_xtp[i], y)
                         ynew.append(f(tnew))
                     
-                    res.append(radius_extrap_polynomial(ynew, r_xtp, 1))
+                    res.append(radius_extrap_polynomial(ynew, r_xtp, K))
 
                 A_fre, p_fre = res
                 # reconstruct complex waveform
@@ -290,7 +337,7 @@ def radius_extrap_polynomial(ys, rs, K):
     compute the asymptotic value of y as r goes to infinity from an Kth
     order polynomial in 1/r, e.g.
 
-        yi = y_infty + \sum_i=k^K ci / ri^k,
+      yi = y_infty + \\sum_i=k^K ci / ri^k,
 
     where y_infty and the K coefficients ci are determined through a least
     squares polynomial fit from the above data.
