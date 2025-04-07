@@ -567,14 +567,11 @@ class Waveform_SXS(Waveform):
         dict_psi4lm = {}
         t = self.u
         for ky in self.hlm.keys():
-            h = self.hlm[ky]['h']
-            dh      = np.zeros_like(h)
-            ddh     = np.zeros_like(h)
-            dh[1:]  = np.diff(h)/np.diff(t)
-            ddh[1:] = np.diff(dh)/np.diff(t)
+            h = self.hlm[ky]['z']
+            ddh             = np.gradient(np.gradient(h, t), t)
             dict_psi4lm[ky] = {'A': abs(ddh), 'p': -np.unwrap(np.angle(ddh)),
                                'real': ddh.real, 'imag': ddh.imag,
-                               'h': ddh}
+                               'z': ddh}
         self._psi4lm = dict_psi4lm
 
 
