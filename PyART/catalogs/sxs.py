@@ -207,7 +207,7 @@ class Waveform_SXS(Waveform):
             # fill the dictionary
             for kk in ['AhA.dir','AhB.dir']:
                 to_h5file[kk] = {}
-                for key in ['CoordCenterInertial', 'ChristodoulouMass',  'DimensionfulInertialSpinMag']:
+                for key in ['CoordCenterInertial.dat', 'ChristodoulouMass.dat',  'DimensionfulInertialSpinMag.dat']:
                     to_h5file[kk][key] = hrz[f'{kk}/{key}']
             
             # create the h5 file
@@ -414,23 +414,21 @@ class Waveform_SXS(Waveform):
 
     def load_horizon(self):
         horizon = h5py.File(self.get_lev_fname(basename="Horizons.h5"))
-        mA = horizon['AhA.dir']['ChristodoulouMass.dat']
-        mB = horizon['AhB.dir']['ChristodoulouMass.dat']
-
+        
+        mA   = horizon['AhA.dir']['ChristodoulouMass.dat']
+        mB   = horizon['AhB.dir']['ChristodoulouMass.dat']
         chiA = horizon["AhA.dir/DimensionfulInertialSpinMag.dat"]
         chiB = horizon["AhB.dir/DimensionfulInertialSpinMag.dat"]
         xA   = horizon["AhA.dir/CoordCenterInertial.dat"]
         xB   = horizon["AhB.dir/CoordCenterInertial.dat"]
 
-        self._dyn['t']     = chiA[:,0]
-        self._dyn['m1']    = mA
-        self._dyn['m2']    = mB
-        self._dyn['chi1']  = chiA
-        self._dyn['chi2']  = chiB
-        self._dyn['x1']    = xA
-        self._dyn['x2']    = xB
-        self._dyn['mA']    = mA
-        self._dyn['mB']    = mB
+        self._dyn['t']     = chiA[:, 0]
+        self._dyn['m1']    = mA[:, 1]
+        self._dyn['m2']    = mB[:, 1]
+        self._dyn['chi1']  = chiA[:, 1:]
+        self._dyn['chi2']  = chiB[:, 1:]
+        self._dyn['x1']    = xA[:, 1:]
+        self._dyn['x2']    = xB[:, 1:]
 
         pass
 
