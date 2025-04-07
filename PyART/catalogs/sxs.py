@@ -99,6 +99,8 @@ class Waveform_SXS(Waveform):
         
         if 'metadata' in load: self.load_metadata()
         if 'hlm'      in load: self.load_hlm(load_m0=load_m0)
+        if 'horizons' in load: self.load_horizons()
+        if 'psi4lm'   in load: self.load_psi4lm(load_m0=load_m0)
         pass
     
     def check_cut_consistency(self):
@@ -149,6 +151,7 @@ class Waveform_SXS(Waveform):
         if 'hlm'      in downloads: _     = sxs_sim.h 
         if 'metadata' in downloads: mtdt  = sxs_sim.metadata
         if 'horizons' in downloads: _     = sxs_sim.horizons
+        if 'psi4lm'   in downloads: _     = sxs_sim.psi4
         
         sxs_dir = 'SXS_'+self.src+'_'+ID
         
@@ -164,7 +167,7 @@ class Waveform_SXS(Waveform):
                 try:
                     # identify the Lev of the file
                     if lev is None:
-                        lev   = fls.split(':')[0]
+                        lev   = fls.split(':')[0] if 'Lev' in fls else None
                     this_lev  = lev + '_'
                     this_file = fls.split(':')[1:][0]
                 except:
@@ -200,6 +203,26 @@ class Waveform_SXS(Waveform):
             save_dict_to_h5(h5file, to_h5file)
             h5file.close()
 
+        if 'psi4lm' in downloads:
+            import h5py
+            from itertools import product
+
+            extp = f'Extrapolated_N{extrapolation_order}.dir'
+            to_h5file = {
+               extp : {}
+            }
+            wav    = sxs_sim.psi4
+            ellmax = 8#wav.ellmax
+            modes  = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if l >= np.abs(m)]
+            for mode in modes:
+                mode_string = 'Y_l' + str(mode[0]) + '_m' + str(mode[1]) + '.dat'
+                to_h5file[extp][mode_string] = wav[mode_string]
+
+            # create the h5 file
+            h5file = h5py.File(os.path.join(path,sxs_dir,lev,f'rMPsi4_Asymptotic_GeometricUnits_CoM.h5'), 'w')    
+            save_dict_to_h5(h5file, to_h5file)
+            h5file.close()
+
         if 'horizons' in downloads:
             import h5py
             to_h5file = {}
@@ -216,9 +239,10 @@ class Waveform_SXS(Waveform):
             h5file.close()
 
         # dump the metadata in a json
-        with open(os.path.join(path,sxs_dir,lev,f'metadata.json'), 'w') as file:
-            json.dump(mtdt, file, indent=2)
-            file.close()
+        if 'metadata' in downloads:
+            with open(os.path.join(path,sxs_dir,lev,f'metadata.json'), 'w') as file:
+                json.dump(mtdt, file, indent=2)
+                file.close()
 
         # delete the empty folder
         os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld))
