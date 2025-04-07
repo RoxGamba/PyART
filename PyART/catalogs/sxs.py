@@ -99,7 +99,7 @@ class Waveform_SXS(Waveform):
         
         if 'metadata' in load: self.load_metadata()
         if 'hlm'      in load: self.load_hlm(load_m0=load_m0)
-        if 'horizons' in load: self.load_horizons()
+        if 'horizons' in load: self.load_horizon()
         if 'psi4lm'   in load: self.load_psi4lm(load_m0=load_m0)
         pass
     
@@ -449,8 +449,8 @@ class Waveform_SXS(Waveform):
         self._dyn['t']     = chiA[:, 0]
         self._dyn['m1']    = mA[:, 1]
         self._dyn['m2']    = mB[:, 1]
-        self._dyn['chi1']  = chiA[:, 1:]
-        self._dyn['chi2']  = chiB[:, 1:]
+        self._dyn['chi1']  = chiA[:, 1]
+        self._dyn['chi2']  = chiB[:, 1]
         self._dyn['x1']    = xA[:, 1:]
         self._dyn['x2']    = xB[:, 1:]
 
@@ -545,7 +545,7 @@ class Waveform_SXS(Waveform):
             self.nr_psi = h5py.File(fname)
 
         if ellmax==None: ellmax=self.ellmax
-        order   = self.order
+        order   = f"Extrapolated_N{self.order}.dir"
 
         if not hasattr(self, 'metadata'):
             raise RuntimeError('Load metadata before loading hlm!')
