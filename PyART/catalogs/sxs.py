@@ -228,9 +228,9 @@ class Waveform_SXS(Waveform):
             to_h5file = {}
             hrz = sxs_sim.horizons
             # fill the dictionary
-            for kk in ['AhA.dir','AhB.dir']:
+            for kk in ['AhA.dir','AhB.dir','AhC.dir']:
                 to_h5file[kk] = {}
-                for key in ['CoordCenterInertial.dat', 'ChristodoulouMass.dat',  'DimensionfulInertialSpinMag.dat']:
+                for key in ['CoordCenterInertial.dat', 'ChristodoulouMass.dat', 'DimensionfulInertialSpinMag.dat', 'chiInertial.dat']:
                     to_h5file[kk][key] = hrz[f'{kk}/{key}']
             
             # create the h5 file
@@ -598,7 +598,23 @@ class Waveform_SXS(Waveform):
                                'z': ddh}
         self._psi4lm = dict_psi4lm
 
+    def to_lvk(self, modes='all'):
+        """ 
+        Convert the data to LVK format, output an
+        SXS_BBH_XXXX_ResY.h5 file
 
+        Wrapper function to the `convert_sxs_to_lvc.py` from
+        https://github.com/sxs-collaboration/catalog_tools/tree/master
+        """        
+        from ..utils import convert_sxs_to_lvc as conv
+
+        conv.convert_simulation(f'{self.sxs_data_path}/Lev{self.level}',
+                                self.level,
+                                modes,
+                                self.sxs_data_path,
+                                None
+                                )
+        pass
 
 def save_dict_to_h5(h5file, dictionary, path="/"):
     """
