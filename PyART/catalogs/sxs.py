@@ -99,6 +99,8 @@ class Waveform_SXS(Waveform):
         
         if 'metadata' in load: self.load_metadata()
         if 'hlm'      in load: self.load_hlm(load_m0=load_m0)
+        if 'horizons' in load: self.load_horizon()
+        if 'psi4lm'   in load: self.load_psi4lm(load_m0=load_m0)
         pass
     
     def check_cut_consistency(self):
@@ -149,6 +151,7 @@ class Waveform_SXS(Waveform):
         if 'hlm'      in downloads: _     = sxs_sim.h 
         if 'metadata' in downloads: mtdt  = sxs_sim.metadata
         if 'horizons' in downloads: _     = sxs_sim.horizons
+        if 'psi4lm'   in downloads: _     = sxs_sim.psi4
         
         sxs_dir = 'SXS_'+self.src+'_'+ID
         
@@ -164,7 +167,7 @@ class Waveform_SXS(Waveform):
                 try:
                     # identify the Lev of the file
                     if lev is None:
-                        lev   = fls.split(':')[0]
+                        lev   = fls.split(':')[0] if 'Lev' in fls else None
                     this_lev  = lev + '_'
                     this_file = fls.split(':')[1:][0]
                 except:
@@ -200,14 +203,34 @@ class Waveform_SXS(Waveform):
             save_dict_to_h5(h5file, to_h5file)
             h5file.close()
 
+        if 'psi4lm' in downloads:
+            import h5py
+            from itertools import product
+
+            extp = f'Extrapolated_N{extrapolation_order}.dir'
+            to_h5file = {
+               extp : {}
+            }
+            wav    = sxs_sim.psi4
+            ellmax = 8#wav.ellmax
+            modes  = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if l >= np.abs(m)]
+            for mode in modes:
+                mode_string = 'Y_l' + str(mode[0]) + '_m' + str(mode[1]) + '.dat'
+                to_h5file[extp][mode_string] = wav[mode_string]
+
+            # create the h5 file
+            h5file = h5py.File(os.path.join(path,sxs_dir,lev,f'rMPsi4_Asymptotic_GeometricUnits_CoM.h5'), 'w')    
+            save_dict_to_h5(h5file, to_h5file)
+            h5file.close()
+
         if 'horizons' in downloads:
             import h5py
             to_h5file = {}
             hrz = sxs_sim.horizons
             # fill the dictionary
-            for kk in ['AhA.dir','AhB.dir']:
+            for kk in ['AhA.dir','AhB.dir','AhC.dir']:
                 to_h5file[kk] = {}
-                for key in ['CoordCenterInertial', 'ChristodoulouMass',  'DimensionfulInertialSpinMag']:
+                for key in ['CoordCenterInertial.dat', 'ChristodoulouMass.dat', 'DimensionfulInertialSpinMag.dat', 'chiInertial.dat']:
                     to_h5file[kk][key] = hrz[f'{kk}/{key}']
             
             # create the h5 file
@@ -216,9 +239,10 @@ class Waveform_SXS(Waveform):
             h5file.close()
 
         # dump the metadata in a json
-        with open(os.path.join(path,sxs_dir,lev,f'metadata.json'), 'w') as file:
-            json.dump(mtdt, file, indent=2)
-            file.close()
+        if 'metadata' in downloads:
+            with open(os.path.join(path,sxs_dir,lev,f'metadata.json'), 'w') as file:
+                json.dump(mtdt, file, indent=2)
+                file.close()
 
         # delete the empty folder
         os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld))
@@ -414,23 +438,21 @@ class Waveform_SXS(Waveform):
 
     def load_horizon(self):
         horizon = h5py.File(self.get_lev_fname(basename="Horizons.h5"))
-        mA = horizon['AhA.dir']['ChristodoulouMass.dat']
-        mB = horizon['AhB.dir']['ChristodoulouMass.dat']
-
+        
+        mA   = horizon['AhA.dir']['ChristodoulouMass.dat']
+        mB   = horizon['AhB.dir']['ChristodoulouMass.dat']
         chiA = horizon["AhA.dir/DimensionfulInertialSpinMag.dat"]
         chiB = horizon["AhB.dir/DimensionfulInertialSpinMag.dat"]
         xA   = horizon["AhA.dir/CoordCenterInertial.dat"]
         xB   = horizon["AhB.dir/CoordCenterInertial.dat"]
 
-        self._dyn['t']     = chiA[:,0]
-        self._dyn['m1']    = mA
-        self._dyn['m2']    = mB
-        self._dyn['chi1']  = chiA
-        self._dyn['chi2']  = chiB
-        self._dyn['x1']    = xA
-        self._dyn['x2']    = xB
-        self._dyn['mA']    = mA
-        self._dyn['mB']    = mB
+        self._dyn['t']     = chiA[:, 0]
+        self._dyn['m1']    = mA[:, 1]
+        self._dyn['m2']    = mB[:, 1]
+        self._dyn['chi1']  = chiA[:, 1]
+        self._dyn['chi2']  = chiB[:, 1]
+        self._dyn['x1']    = xA[:, 1:]
+        self._dyn['x2']    = xB[:, 1:]
 
         pass
 
@@ -523,7 +545,7 @@ class Waveform_SXS(Waveform):
             self.nr_psi = h5py.File(fname)
 
         if ellmax==None: ellmax=self.ellmax
-        order   = self.order
+        order   = f"Extrapolated_N{self.order}.dir"
 
         if not hasattr(self, 'metadata'):
             raise RuntimeError('Load metadata before loading hlm!')
@@ -569,17 +591,30 @@ class Waveform_SXS(Waveform):
         dict_psi4lm = {}
         t = self.u
         for ky in self.hlm.keys():
-            h = self.hlm[ky]['h']
-            dh      = np.zeros_like(h)
-            ddh     = np.zeros_like(h)
-            dh[1:]  = np.diff(h)/np.diff(t)
-            ddh[1:] = np.diff(dh)/np.diff(t)
+            h = self.hlm[ky]['z']
+            ddh             = np.gradient(np.gradient(h, t), t)
             dict_psi4lm[ky] = {'A': abs(ddh), 'p': -np.unwrap(np.angle(ddh)),
                                'real': ddh.real, 'imag': ddh.imag,
-                               'h': ddh}
+                               'z': ddh}
         self._psi4lm = dict_psi4lm
 
+    def to_lvk(self, modes='all'):
+        """ 
+        Convert the data to LVK format, output an
+        SXS_BBH_XXXX_ResY.h5 file
 
+        Wrapper function to the `convert_sxs_to_lvc.py` from
+        https://github.com/sxs-collaboration/catalog_tools/tree/master
+        """        
+        from ..utils import convert_sxs_to_lvc as conv
+
+        conv.convert_simulation(f'{self.sxs_data_path}/Lev{self.level}',
+                                self.level,
+                                modes,
+                                self.sxs_data_path,
+                                None
+                                )
+        pass
 
 def save_dict_to_h5(h5file, dictionary, path="/"):
     """
