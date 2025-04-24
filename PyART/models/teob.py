@@ -105,6 +105,7 @@ def CreateDict(M=1., q=1,
                phi_ref = 0.,
                ecc = 1e-8, r_hyp = None, H_hyp = 0, J_hyp=0, anomaly = np.pi,
                interp="yes", arg_out="yes", use_geom="yes", 
+               tidal_model=None, 
                use_mode_lm=[1], ode_tmax=1e+7,
                cN3LO=None, a6c=None,
                use_flm_h='LO',
@@ -125,6 +126,19 @@ def CreateDict(M=1., q=1,
         if r_hyp is None:
             r_hyp = 0
         
+        tidal_opts = ["no", "NNLO", "TEOBRESUM", "TEOBRESUM3", "TEOBRESUM_BHNS", "undefined"]
+        if tidal_model is None:
+            if LambdaAl2<1 and LambdaBl2<1:
+                use_tidal = "no"
+            elif LambdaAl2>1 and LambdaBl2>1:
+                use_tidal = "TEOBRESUM3"
+            else:
+                use_tidal = "TEOBRESUM_BHNS"
+        elif isinstance(tidal_model, str) and tidal_model in tidal_opts:
+            use_tidal = tidal_model
+        else:
+            raise ValueError("Invalid option for tidal_model: ", tidal_model)
+        
         pardic = {
             'M'                  : M,
             'q'                  : q,
@@ -138,6 +152,7 @@ def CreateDict(M=1., q=1,
             'chi2y'              : chi2y,
             'LambdaAl2'          : LambdaAl2,
             'LambdaBl2'          : LambdaBl2,
+            'use_tidal'          : use_tidal,
             'distance'           : 1.,
             'initial_frequency'  : f0,
             'use_geometric_units': use_geom,
