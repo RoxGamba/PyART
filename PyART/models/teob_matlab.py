@@ -341,7 +341,7 @@ def matnames(q, chi1=0, chi2=0, ecc=0, omg0=0.02, E0=None, L0=None, r0=None, nr=
                 ids = '_omg0_{:.6g}'.format(omg0)
             else:
                 raise ValueError('matnames(): provide one of r0 or omg0 for LEOB.')
-            return 'Waves_' + base + '_leob.mat', 'Dynam_' + base + ids + '_leob.mat'
+            return 'Waves_' + base + ids + '_leob.mat', 'Dynam_' + base + ids + '_leob.mat'
         else:
             eccs  = '' if ecc < 1.e-5 else '_ecc_{:.3g}'.format(ecc)
             omgs  = '_omg0_{:.6g}'.format(omg0)
