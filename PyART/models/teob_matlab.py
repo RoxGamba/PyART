@@ -1,7 +1,5 @@
 import os, subprocess
 import numpy as np
-from scipy.optimize import brentq
-from scipy.signal   import find_peaks
 from scipy.io       import loadmat
 import matplotlib.pyplot as plt
 from string import Template
@@ -10,60 +8,25 @@ import h5py
 from ..waveform import Waveform
 from ..utils import wf_utils as wfu
 
-matlab_base = """
+matlab_setup_base = """
 addpath('${code_dir}TEOBRun/');
 addpath('${code_dir}TEOBRun/parfiles/');
 addpath('${code_dir}PointMass/');
-
 evalc("SetNaming('new')");
-evalc("eob_run_spin_eccentric_Pade33(${q}, 'single', ${chi1}, ${chi2}${ecc_s}${omg_ap_s}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${Tmax}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
-quit;
 """
-matlab_base_loud = """
-addpath('${code_dir}TEOBRun/');
-addpath('${code_dir}TEOBRun/parfiles/');
-addpath('${code_dir}PointMass/');
 
-evalc("SetNaming('new')");
-eob_run_spin_eccentric_Pade33(${q}, 'single', ${chi1}, ${chi2}${ecc_s}${omg_ap_s}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${Tmax}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg});
+matlab_base = """
+eval${verbose}("eob_run_spin_eccentric_Pade33(${q}, 'single', ${chi1}, ${chi2}${ecc_s}${omg_ap_s}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${Tmax}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
 quit;
 """
 
 matlab_base_hyp = """
-addpath('${code_dir}TEOBRun/');
-addpath('${code_dir}TEOBRun/parfiles/');
-addpath('${code_dir}PointMass/');
-
-evalc("SetNaming('new')");
-evalc("eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
-quit;
-"""
-matlab_base_hyp_loud = """
-addpath('${code_dir}TEOBRun/');
-addpath('${code_dir}TEOBRun/parfiles/');
-addpath('${code_dir}PointMass/');
-
-evalc("SetNaming('new')");
-eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg});
+eval${verbose}("eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
 quit;
 """
 
 matlab_base_leob = """
-addpath('${code_dir}TEOBRun/');
-addpath('${code_dir}TEOBRun/parfiles/');
-addpath('${code_dir}PointMass/');
-
-evalc("SetNaming('new')");
-evalc("eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${ASS_fact}${SSPM}${nqc_amp}${nqc_omg})");
-quit;
-"""
-matlab_base_leob_loud = """
-addpath('${code_dir}TEOBRun/');
-addpath('${code_dir}TEOBRun/parfiles/');
-addpath('${code_dir}PointMass/');
-
-evalc("SetNaming('new')");
-eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${ASS_fact}${SSPM}${nqc_amp}${nqc_omg});
+eval${verbose}("eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${ASS_fact}${SSPM}${nqc_amp}${nqc_omg})");
 quit;
 """
 
@@ -99,23 +62,14 @@ class Waveform_EOBMatlab(Waveform):
             print("WARNING: Inspiral-only waveform is needed for hyperbolic orbits.")
 
         if self.hyp:
-            if self.verbose:
-                self.template = Template(matlab_base_hyp_loud)
-            else:
-                self.template = Template(matlab_base_hyp)
+            self.template = Template(matlab_base_hyp)
         elif self.leob:
-            if self.verbose:
-                self.template = Template(matlab_base_leob_loud)
-            else:
-                self.template = Template(matlab_base_leob)
+            self.template = Template(matlab_base_leob)
         else:
-            if self.verbose:
-                self.template = Template(matlab_base_loud)
-            else:
-                self.template = Template(matlab_base)
+            self.template = Template(matlab_base)
 
         self.wavefile, self.dynfile = matnames(self.pars['q'], chi1=self.pars['chi1z'], chi2=self.pars['chi2z'],
-                                               ecc=self.pars['ecc'], omg0=self.pars['initial_frequency']*2*np.pi,
+                                               ecc=self.pars['ecc'], f0=self.pars['initial_frequency'],
                                                E0=self.pars['H_hyp'], L0=self.pars['j_hyp'], r0=self.pars['r0'],
                                                nr=self.pars['nr'], leob=self.leob)
 
@@ -174,74 +128,51 @@ class Waveform_EOBMatlab(Waveform):
         else:
             rend_val = "0"
             
+        temp_dict = {"verbose"       : "" if self.verbose else "c",
+                     "code_dir"      : self.code_dir,
+                     "q"             : self.pars['q'], 
+                     "chi1": self.pars['chi1z'], "chi2": self.pars['chi2z'],
+                     "c3_s"          : ", 'cN3LO', {}".format(c3_d) if c3_d is not None else "",
+                     "a6_s"          : ", 'a6', {}".format(a6_d) if a6_d is not None else "",
+                     "nr_s"          : ", 'nrid', '{}'".format(self.pars['nr']) if self.pars['nr'] is not None else "",
+                     "outdir_s"      : ", 'outdir', '{}'".format(self.dir),
+                     "ell_s"         : ", 'l_max', {}".format(self.pars['l_max']),
+                     "newlogs"       : ", 'newlogs', {}".format(self.pars['newlogs']),
+                     "rho22_SO_resum": ", 'rho22_SO_resum', {}".format(self.pars['rho22_SO_resum']),
+                     "rholm"         : ", 'rholm', '{}'".format(self.pars['rholm']),
+                     "H_model"       : ", 'H_model', '{}'".format(self.pars['H_model']),
+                     "Tmax"          : ", 'Tmax', {}".format(self.pars['ode_tmax']),
+                     "rend"          : ", 'rend', {}".format(rend_val),
+                     "nqc_amp"       : ", 'nqc_amp_params', {}".format(self.pars['nqc_amp_params']) if self.pars['nqc_amp_params'] is not None else 2,
+                     "nqc_omg"       : ", 'nqc_omg_params', {}".format(self.pars['nqc_omg_params']) if self.pars['nqc_omg_params'] is not None else 2,
+                     }
         if self.hyp:
-            temp_dict = {"code_dir": self.code_dir,
-                         "q": self.pars['q'], 
-                         "chi1": self.pars['chi1z'], "chi2": self.pars['chi2z'],
-                         "E0": self.pars['H_hyp'], "L0": self.pars['j_hyp'],
-                         "Tmax": ", 'Tmax', {}".format(self.pars['ode_tmax']),
-                         "r0": ", 'r0', {}".format(self.pars['r0']),
-                         "c3_s": ", 'cN3LO', {}".format(c3_d) if c3_d is not None else "",
-                         "a6_s": ", 'a6', {}".format(a6_d) if a6_d is not None else "",
-                         "nr_s": ", 'nrid', '{}'".format(self.pars['nr']) if self.pars['nr'] is not None else "",
-                         "outdir_s": ", 'outdir', '{}'".format(self.dir),
-                         "ell_s": ", 'l_max', {}".format(self.pars['l_max']),
-                         "newlogs": ", 'newlogs', {}".format(self.pars['newlogs']),
-                         "rho22_SO_resum": ", 'rho22_SO_resum', {}".format(self.pars['rho22_SO_resum']),
-                         "rholm": ", 'rholm', '{}'".format(self.pars['rholm']),
-                         "H_model": ", 'H_model', '{}'".format(self.pars['H_model']),
-                         "rend": ", 'rend', {}".format(rend_val),
-                         "nqc_amp": ", 'nqc_amp_params', {}".format(self.pars['nqc_amp_params']) if self.pars['nqc_amp_params'] is not None else 2,
-                         "nqc_omg": ", 'nqc_omg_params', {}".format(self.pars['nqc_omg_params']) if self.pars['nqc_omg_params'] is not None else 2,
-                         }
-        elif self.leob:
-            temp_dict = {"code_dir": self.code_dir,
-                         "q": self.pars['q'], 
-                         "irf": self.pars['iresum'],
-                         "chi1": self.pars['chi1z'], "chi2": self.pars['chi2z'],
-                         "omg_ap_s": ", 'omg_ap', {}".format(self.pars['initial_frequency']*2.*np.pi) if self.pars['initial_frequency'] is not None else "",
-                         "Tmax": ", 'Tmax', {}".format(self.pars['ode_tmax']),
-                         "r0": ", 'r0', {}".format(self.pars['r0']) if self.pars['r0'] is not None else "",
-                         "c3_s": ", 'cN3LO', {}".format(c3_d) if c3_d is not None else "",
-                         "a6_s": ", 'a6', {}".format(a6_d) if a6_d is not None else "",
-                         "nr_s": ", 'nrid', '{}'".format(self.pars['nr']) if self.pars['nr'] is not None else "",
-                         "outdir_s": ", 'outdir', '{}'".format(self.dir),
-                         "ell_s": ", 'l_max', {}".format(self.pars['l_max']),
-                         "newlogs": ", 'newlogs', {}".format(self.pars['newlogs']),
-                         "rho22_SO_resum": ", 'rho22_SO_resum', {}".format(self.pars['rho22_SO_resum']),
-                         "rholm": ", 'rholm', '{}'".format(self.pars['rholm']),
-                         "rend": ", 'rend', {}".format(rend_val),
-                         "ASS_fact": ", 'ASS_fact', '{}'".format(self.pars['ASS_fact'] if self.pars['ASS_fact'] is not None else ''),
-                         "SSPM": ", 'SSPM', '{}'".format(self.pars['SSPM'] if self.pars['SSPM'] is not None else ''),
-                         "nqc_amp": ", 'nqc_amp_params', {}".format(self.pars['nqc_amp_params']) if self.pars['nqc_amp_params'] is not None else 2,
-                         "nqc_omg": ", 'nqc_omg_params', {}".format(self.pars['nqc_omg_params']) if self.pars['nqc_omg_params'] is not None else 2,
-            }
+            temp_dict.update({"E0": self.pars['H_hyp'], "L0": self.pars['j_hyp'],
+                              "r0": ", 'r0', {}".format(self.pars['r0']),
+                              })
         else:
-            temp_dict = {"code_dir": self.code_dir,
-                         "q": self.pars['q'], 
-                         "chi1": self.pars['chi1z'], "chi2": self.pars['chi2z'],
-                         "ecc_s": ", 'ecc', {}".format(self.pars['ecc']),
-                         "omg_ap_s": ", 'omg_ap', {}".format(self.pars['initial_frequency']*2.*np.pi),
-                         "c3_s": ", 'cN3LO', {}".format(c3_d) if c3_d is not None else "",
-                         "a6_s": ", 'a6', {}".format(a6_d) if a6_d is not None else "",
-                         "nr_s": ", 'nrid', '{}'".format(self.pars['nr']) if self.pars['nr'] is not None else "",
-                         "outdir_s": ", 'outdir', '{}'".format(self.dir),
-                         "ell_s": ", 'l_max', {}".format(self.pars['l_max']),
-                         "newlogs": ", 'newlogs', {}".format(self.pars['newlogs']),
-                         "rho22_SO_resum": ", 'rho22_SO_resum', {}".format(self.pars['rho22_SO_resum']),
-                         "rholm": ", 'rholm', '{}'".format(self.pars['rholm']),
-                         "H_model": ", 'H_model', '{}'".format(self.pars['H_model']),
-                         "Tmax": ", 'Tmax', {}".format(self.pars['ode_tmax']),
-                         "rend": ", 'rend', {}".format(rend_val),
-                         "nqc_amp": ", 'nqc_amp_params', {}".format(self.pars['nqc_amp_params']) if self.pars['nqc_amp_params'] is not None else 2,
-                         "nqc_omg": ", 'nqc_omg_params', {}".format(self.pars['nqc_omg_params']) if self.pars['nqc_omg_params'] is not None else 2,
-                         }
+            temp_dict.update({"E0": "", "L0": "", "r0": ""})
+        if self.leob:
+            temp_dict.update({"irf"    : self.pars['iresum'],
+                             "omg_ap_s": ", 'omg_ap', {}".format(self.pars['initial_frequency']*2.*np.pi) if self.pars['initial_frequency'] is not None else "",
+                             "r0"      : ", 'r0', {}".format(self.pars['r0']) if self.pars['r0'] is not None else "",
+                             "ASS_fact": ", 'ASS_fact', '{}'".format(self.pars['ASS_fact'] if self.pars['ASS_fact'] is not None else ''),
+                             "SSPM"    : ", 'SSPM', '{}'".format(self.pars['SSPM'] if self.pars['SSPM'] is not None else ''),
+                             })
+        else:
+            temp_dict.update({"irf": "", "omg_ap_s": "", "r0": "", "ASS_fact": "", "SSPM": ""})
+        if not self.hyp and not self.leob:
+            temp_dict.update({"omg_ap_s": ", 'omg_ap', {}".format(self.pars['initial_frequency']*2.*np.pi),
+                              "ecc_s"   : ", 'ecc', {}".format(self.pars['ecc']),
+                             })
         return temp_dict
 
     def _run_matlab(self):
         temp_dict = self._convert_pars()
         
-        code = self.template.safe_substitute(**temp_dict)
+        setup_code = Template(matlab_setup_base).safe_substitute(**temp_dict)
+        run_code   = self.template.safe_substitute(**temp_dict)
+        code = f"{setup_code}{run_code}"
 
         with open(self.dir + 'runmatlab.m', 'w') as f:
             f.write(code)
@@ -319,7 +250,7 @@ class Waveform_EOBMatlab(Waveform):
         pass
 
 
-def matnames(q, chi1=0, chi2=0, ecc=0, omg0=0.02, E0=None, L0=None, r0=None, nr=None, leob=False):
+def matnames(q, chi1=0, chi2=0, ecc=0, f0=0.01/np.pi, E0=None, L0=None, r0=None, nr=None, leob=False):
     """
     Name of dynamics, wave mat files
     """
@@ -337,14 +268,14 @@ def matnames(q, chi1=0, chi2=0, ecc=0, omg0=0.02, E0=None, L0=None, r0=None, nr=
         elif leob:
             if r0 is not None and r0 > 0:
                 ids = '_r0_{:.6g}'.format(r0)
-            elif omg0 is not None:
-                ids = '_omg0_{:.6g}'.format(omg0)
+            elif f0 is not None:
+                ids = '_omg0_{:.6g}'.format(f0*2.*np.pi)
             else:
                 raise ValueError('matnames(): provide one of r0 or omg0 for LEOB.')
             return 'Waves_' + base + ids + '_leob.mat', 'Dynam_' + base + ids + '_leob.mat'
         else:
             eccs  = '' if ecc < 1.e-5 else '_ecc_{:.3g}'.format(ecc)
-            omgs  = '_omg0_{:.6g}'.format(omg0)
+            omgs  = '_omg0_{:.6g}'.format(f0*2.*np.pi)
             return 'Waves_' + base + omgs + eccs + '.mat', 'Dynam_' + base + omgs + eccs + '.mat'
 
 
