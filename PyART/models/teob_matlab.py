@@ -94,7 +94,7 @@ class Waveform_EOBMatlab(Waveform):
         return Eb, j
     
     def _check_dir(self):
-        if os.path.exists(self.dir + self.wavefile) == True and os.path.exists(self.dir + self.dynfile) == True:
+        if os.path.exists(os.path.join(self.dir, self.wavefile)) == True and os.path.exists(os.path.join(self.dir, self.dynfile)) == True:
             return 1
         else:
             return 0
@@ -119,7 +119,7 @@ class Waveform_EOBMatlab(Waveform):
         elif isinstance(self.pars['cN3LO'], str):
             c3_d = "'{}'".format(self.pars['cN3LO'])
         else:
-            raise ValueError("a6c must be a float or a string.")
+            raise ValueError("cN3LO must be a float or a string.")
         
         if isinstance(self.pars['ode_rend'], str):
             rend_val = f"'{self.pars['ode_rend']}'"
@@ -150,9 +150,7 @@ class Waveform_EOBMatlab(Waveform):
             temp_dict.update({"E0": self.pars['H_hyp'], "L0": self.pars['j_hyp'],
                               "r0": ", 'r0', {}".format(self.pars['r0']),
                               })
-        else:
-            temp_dict.update({"E0": "", "L0": "", "r0": ""})
-        if self.leob:
+        elif self.leob:
             temp_dict.update({"irf"    : self.pars['iresum'],
                              "omg_ap_s": ", 'omg_ap', {}".format(self.pars['initial_frequency']*2.*np.pi) if self.pars['initial_frequency'] is not None else "",
                              "r0"      : ", 'r0', {}".format(self.pars['r0']) if self.pars['r0'] is not None else "",
@@ -160,8 +158,6 @@ class Waveform_EOBMatlab(Waveform):
                              "SSPM"    : ", 'SSPM', '{}'".format(self.pars['SSPM'] if self.pars['SSPM'] is not None else ''),
                              })
         else:
-            temp_dict.update({"irf": "", "omg_ap_s": "", "r0": "", "ASS_fact": "", "SSPM": ""})
-        if not self.hyp and not self.leob:
             temp_dict.update({"omg_ap_s": ", 'omg_ap', {}".format(self.pars['initial_frequency']*2.*np.pi),
                               "ecc_s"   : ", 'ecc', {}".format(self.pars['ecc']),
                              })
@@ -184,7 +180,7 @@ class Waveform_EOBMatlab(Waveform):
         return 0
     
     def _load_hlm(self):
-        mat = h5py.File(self.dir + self.wavefile)
+        mat = h5py.File(os.path.join(self.dir, self.wavefile))
         s   = mat['s/inspl_mrg_rng/ell/emm']
 
         self._u = mat[mat[s[1][0]]['t'][1][0]][0]
@@ -223,7 +219,7 @@ class Waveform_EOBMatlab(Waveform):
         pass
 
     def _load_dyn(self):
-        mat = loadmat(self.dir + self.dynfile)
+        mat = loadmat(os.path.join(self.dir + self.dynfile))
 
         N_pt = len(mat['EOB']['T'][0,0])
 
@@ -245,8 +241,8 @@ class Waveform_EOBMatlab(Waveform):
         pass
 
     def clean_data(self):
-        os.remove(self.dir + self.wavefile)
-        os.remove(self.dir + self.dynfile)
+        os.remove(os.path.join(self.dir, self.wavefile))
+        os.remove(os.path.join(self.dir, self.dynfile))
         pass
 
 
@@ -292,7 +288,6 @@ def CreateDict(M=1., q=1,
                rho22_SO_resum=0,
                newlogs=1,
                rholm="newlogs",
-               use_nqc=True,
                nqc_amp=2, nqc_omg=2,
                leob=False,
                iresum=0,
