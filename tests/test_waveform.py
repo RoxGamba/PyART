@@ -1,5 +1,5 @@
 """
-Generial tests for the waveform class in PyART
+General tests for the waveform class in PyART
 """
 
 from PyART import waveform
