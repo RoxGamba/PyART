@@ -52,13 +52,13 @@ def rotate3(vector,alpha,beta,gamma,invert=False):
         # Check for consistent array shapes
         if not ( alpha.shape == beta.shape == gamma.shape ):
             # Let the people know and halt
-            error( 'input angles as arrays must have identical array shapes' )
+            raise ValueError( 'input angles as arrays must have identical array shapes' )
 
     # Validate input(s)
     if isinstance(vector,(list,tuple,ndarray)):
         vector = array(vector)
     else:
-        error('first input must be iterable compatible 3D vector; please check')
+        raise ValueError('first input must be iterable compatible 3D vector; please check')
 
 
     # Rotation around z''
@@ -122,14 +122,6 @@ def nextpow2(x):
     Return the next closest power of 2
     """
     return pow(2, ceil(np.log(x)/np.log(2)))
-
-def taper(t, h, M, alpha, tau):
-    " Taper a waveform using an hyperbolic tangent "
-    # TODO: not used in Matcher. Should we get rid of this?
-    raise RuntimeError('Deprecated?')
-    tm = t/(M*Msuns)
-    window = 0.5*(1.+np.tanh(tm*alpha-tau))
-    return (window*h)
 
 def safe_sigmoid(x, alpha, clip=None):
     """

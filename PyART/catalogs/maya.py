@@ -8,7 +8,7 @@ from ..waveform import  Waveform
 try:
     from mayawaves.coalescence import Coalescence
 except Exception:
-    raise ModuleNotFound("Need mayawaves to handle the MAYA catalog")
+    raise ImportError("Need mayawaves to handle the MAYA catalog")
 
 # This class is used to load the RIT data and store it in a convenient way
 class MAYA(Waveform):
