@@ -4,6 +4,7 @@ scipy>=1.13.0
 rich>=13.7.0
 matplotlib>=3.7.3
 pandas>=2.1.4
+astropy>=5.0.0
 
 # GW package dependencies
 # pycbc>=2.4.0
