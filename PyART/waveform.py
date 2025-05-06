@@ -305,6 +305,7 @@ class Waveform(object):
         """
         if modes is None:
             modes = self.psi4lm.keys()
+        psi4lm = {}
         dothlm = {}
         hlm    = {}
         t      = t_psi4
@@ -314,11 +315,13 @@ class Waveform(object):
             mode = IntegrateMultipole(l, m, t, psi4, **integr_opts, 
                                       mass=M, radius=radius, 
                                       integrand='psi4')
+            psi4lm[lm] = wf_ut.get_multipole_dict(mode.psi4)
             dothlm[lm] = wf_ut.get_multipole_dict(mode.dh)
             hlm[lm]    = wf_ut.get_multipole_dict(mode.h)
         self._u      = mode.u
         self._hlm    = hlm
         self._dothlm = dothlm
+        self._psi4lm = psi4lm
         return mode.integr_opts
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
