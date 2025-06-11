@@ -35,7 +35,11 @@ class Waveform_SXS(Waveform):
             ID = f'{ID:04}'
             
         self.ID            = ID
-        self.sxs_data_path = os.path.join(path,'SXS_'+src+'_'+ID)
+        sxs_folder = f'SXS_{src}_{ID}'
+        if os.path.basename(path) == sxs_folder:
+            self.sxs_data_path = path
+        else:
+            self.sxs_data_path = os.path.join(path, sxs_folder)
         self.order         = order
         self.level         = level
         self.cut_N         = cut_N
@@ -60,18 +64,22 @@ class Waveform_SXS(Waveform):
             levpath = f'{self.sxs_data_path}/Lev{self.level}'
         else:
             levpath = self.sxs_data_path
+            lev_dirs = [d for d in os.listdir(levpath)
+                        if os.path.isdir(os.path.join(levpath, d)) and d.startswith("Lev")]
+            if not lev_dirs:
+                levpath = None
 
         self.check_cut_consistency()
-        if os.path.exists(levpath) == False:
+        if levpath is None or not os.path.exists(levpath):
             if download:
-                print("The path ", self.sxs_data_path, " does not exist.")
+                print("The path ", self.sxs_data_path, " does not exist or contains no 'Lev*' directory.")
                 print("Downloading the simulation from the SXS catalog.")
                 self.download_simulation(ID=self.ID, path=path, downloads=downloads, level=self.level, 
-                                         ignore_deprecation=ignore_deprecation,
-                                         extrapolation_order=order)
+                                        ignore_deprecation=ignore_deprecation,
+                                        extrapolation_order=order)
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
-                raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
+                raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist or contains no 'Lev*' directory.")
         
         if isinstance(self.level, int):
             fname = self.get_lev_fname(basename=self.basename)
@@ -493,8 +501,7 @@ class Waveform_SXS(Waveform):
 
         
         tmp_u = self.nr[order]['Y_l2_m2.dat'][:, 0]
-        
-        self.check_cut_consistency()
+        # self.check_cut_consistency()
         if self.cut_N is None: self.cut_N = np.argwhere(tmp_u>=self.cut_U)[0][0] 
         if self.cut_U is None: self.cut_U = tmp_u[self.cut_N]
         
