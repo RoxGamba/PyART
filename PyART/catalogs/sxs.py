@@ -64,9 +64,12 @@ class Waveform_SXS(Waveform):
             levpath = f'{self.sxs_data_path}/Lev{self.level}'
         else:
             levpath = self.sxs_data_path
-            lev_dirs = [d for d in os.listdir(levpath)
-                        if os.path.isdir(os.path.join(levpath, d)) and d.startswith("Lev")]
-            if not lev_dirs:
+            if os.path.exists(levpath):
+                lev_dirs = [d for d in os.listdir(levpath)
+                            if os.path.isdir(os.path.join(levpath, d)) and d.startswith("Lev")]
+                if not lev_dirs:
+                    levpath = None
+            else:
                 levpath = None
 
         self.check_cut_consistency()
