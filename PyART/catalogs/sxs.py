@@ -35,7 +35,11 @@ class Waveform_SXS(Waveform):
             ID = f'{ID:04}'
             
         self.ID            = ID
-        self.sxs_data_path = os.path.join(path,'SXS_'+src+'_'+ID)
+        sxs_folder = f'SXS_{src}_{ID}'
+        if os.path.basename(path) == sxs_folder:
+            self.sxs_data_path = path
+        else:
+            self.sxs_data_path = os.path.join(path, sxs_folder)
         self.order         = order
         self.level         = level
         self.cut_N         = cut_N
@@ -56,22 +60,29 @@ class Waveform_SXS(Waveform):
                 raise ValueError('basename is None, but unknown src!')
         self.basename = basename
 
-        if level is not None and isinstance(level, int):
-            levpath = f'{self.sxs_data_path}/Lev{level}'
+        if self.level is not None and isinstance(self.level, int):
+            levpath = f'{self.sxs_data_path}/Lev{self.level}'
         else:
             levpath = self.sxs_data_path
+            if os.path.exists(levpath):
+                lev_dirs = [d for d in os.listdir(levpath)
+                            if os.path.isdir(os.path.join(levpath, d)) and d.startswith("Lev")]
+                if not lev_dirs:
+                    levpath = None
+            else:
+                levpath = None
 
         self.check_cut_consistency()
-        if os.path.exists(levpath) == False:
+        if levpath is None or not os.path.exists(levpath):
             if download:
-                print("The path ", self.sxs_data_path, " does not exist.")
+                print("The path ", self.sxs_data_path, " does not exist or contains no 'Lev*' directory.")
                 print("Downloading the simulation from the SXS catalog.")
-                self.download_simulation(ID=ID, path=path, downloads=downloads, level=level, 
-                                         ignore_deprecation=ignore_deprecation,
-                                         extrapolation_order=order)
+                self.download_simulation(ID=self.ID, path=path, downloads=downloads, level=self.level, 
+                                        ignore_deprecation=ignore_deprecation,
+                                        extrapolation_order=order)
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
-                raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist.")
+                raise FileNotFoundError(f"The path {self.sxs_data_path} does not exist or contains no 'Lev*' directory.")
         
         if isinstance(self.level, int):
             fname = self.get_lev_fname(basename=self.basename)
@@ -128,125 +139,106 @@ class Waveform_SXS(Waveform):
     
     def download_simulation(self, ID='0001', path=None, downloads=['hlm','metadata'],level=None, ignore_deprecation=False,
                             extrapolation_order=None):
+
         """
         Download the simulation from the SXS catalog; requires the sxs module
         """
-
+        import h5py
+        from itertools import product
         import sxs as sxsmod
 
         if path is not None:
             print("Setting the download (cache) directory to ", path)
             os.environ['SXSCACHEDIR'] = path
 
-        nm = 'SXS:'+self.src+':'+ID
+        # Define the simulation ID and load it
+        name = f'SXS:{self.src}:{ID}'
         if level is not None:
-            nm_ld = nm+ f'/Lev{level}/'
+            name_level = f'{name}/Lev{level}/'
         else:
-            nm_ld = nm
-        
-        sxs_sim = sxsmod.load(nm_ld,
-                              extrapolation_order = extrapolation_order, 
-                              ignore_deprecation = ignore_deprecation)
+            name_level = name
 
-        if 'hlm'      in downloads: _     = sxs_sim.h 
-        if 'metadata' in downloads: mtdt  = sxs_sim.metadata
-        if 'horizons' in downloads: _     = sxs_sim.horizons
-        if 'psi4lm'   in downloads: _     = sxs_sim.psi4
-        
-        sxs_dir = 'SXS_'+self.src+'_'+ID
-        
-        # find folder(s) corresponding to the name, mkdir the new one
-        flds = [f for f in os.listdir(os.environ['SXSCACHEDIR']) if nm in f]
-        if not os.path.exists(os.path.join(path,sxs_dir)):
-            os.mkdir(os.path.join(path,sxs_dir))
+        sxs_sim = sxsmod.load(name,
+                              extrapolation_order=extrapolation_order, 
+                              ignore_deprecation=ignore_deprecation,
+                              progress=True)
+        # Set Level if not already set
+        self.level = self.level or int(sxs_sim.Lev.replace("Lev", "")) # Guarantees int(self.level)
+        lev = f'Lev{self.level}'
 
-        # move the files in the folders to the new folder and find lev
-        lev = None
-        for fld in flds:
-            for fls in os.listdir(os.path.join(os.environ['SXSCACHEDIR'],fld)):
-                try:
-                    # identify the Lev of the file
-                    if lev is None:
-                        lev   = fls.split(':')[0] if 'Lev' in fls else None
-                    this_lev  = lev + '_'
-                    this_file = fls.split(':')[1:][0]
-                except:
-                    this_lev  = ''
-                    this_file = fls
-                # move each file, renaming
-                print(os.path.join(os.environ['SXSCACHEDIR'],fld,fls),'-->',os.path.join(path,sxs_dir,this_lev+this_file))
-                os.rename(os.path.join(os.environ['SXSCACHEDIR'],fld,fls), os.path.join(path,sxs_dir,this_lev+this_file))
+        # Create the output directory
+        sxs_dir = f'SXS_{self.src}_{ID}'
+        # Only add sxs_dir if it's not already the last part of the path
+        if not path.endswith(sxs_dir):
+            full_path = os.path.join(path, sxs_dir)
+        else:
+            full_path = path
 
-        # prepare to dump the modes in the old format, for retrocompatibility
+        out_dir = os.path.join(full_path, lev)
+        os.makedirs(out_dir, exist_ok=True)
 
-        # create the related Lev directory
-        lev_dir = os.path.join(path,sxs_dir,lev)
-        if not os.path.exists(lev_dir):
-            os.mkdir(lev_dir)
+        # Save hlm data if requested
         if 'hlm' in downloads:
-            import h5py
-            from itertools import product
-
+            wav = sxs_sim.h
             extp = f'Extrapolated_N{extrapolation_order}.dir'
-            to_h5file = {
-               extp : {}
-            }
-            wav    = sxs_sim.h
-            ellmax = 8#wav.ellmax
+            to_h5file = {extp : {}}
+            ellmax = 8 #wav.ellmax
             modes  = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if l >= np.abs(m)]
-            for mode in modes:
-                mode_string = 'Y_l' + str(mode[0]) + '_m' + str(mode[1]) + '.dat'
-                to_h5file[extp][mode_string] = wav[mode_string]
-
+            for ell, m in modes:
+                try:
+                    idx = wav.index(ell, m)
+                    mode_string = f'Y_l{ell}_m{m}.dat'
+                    data = np.column_stack((wav.time, wav[:, idx].real, wav[:, idx].imag))
+                    to_h5file[extp][mode_string] = data
+                except ValueError:
+                    print(f'Warning: Mode Y_l{ell}_m{m} not found in the waveform data! Skipping.')
+                    continue
             # create the h5 file
-            h5file = h5py.File(os.path.join(path,sxs_dir,lev,f'rhOverM_Asymptotic_GeometricUnits_CoM.h5'), 'w')    
+            h5file = h5py.File(os.path.join(out_dir, f'rhOverM_Asymptotic_GeometricUnits_CoM.h5'), 'w')    
             save_dict_to_h5(h5file, to_h5file)
             h5file.close()
 
+        # Save psi4lm data if requested
         if 'psi4lm' in downloads:
-            import h5py
-            from itertools import product
-
+            wav = sxs_sim.psi4
             extp = f'Extrapolated_N{extrapolation_order}.dir'
-            to_h5file = {
-               extp : {}
-            }
-            wav    = sxs_sim.psi4
-            ellmax = 8#wav.ellmax
+            to_h5file = {extp : {}}
+            ellmax = 8 # wav.ellmax
             modes  = [(l, m) for l, m in product(range(2, ellmax+1), range(-ellmax, ellmax+1)) if l >= np.abs(m)]
             for mode in modes:
                 mode_string = 'Y_l' + str(mode[0]) + '_m' + str(mode[1]) + '.dat'
-                to_h5file[extp][mode_string] = wav[mode_string]
+                if mode_string in wav:
+                    to_h5file[extp][mode_string] = wav[mode_string]
 
             # create the h5 file
-            h5file = h5py.File(os.path.join(path,sxs_dir,lev,f'rMPsi4_Asymptotic_GeometricUnits_CoM.h5'), 'w')    
+            h5file = h5py.File(os.path.join(out_dir, f'rMPsi4_Asymptotic_GeometricUnits_CoM.h5'), 'w')    
             save_dict_to_h5(h5file, to_h5file)
             h5file.close()
 
+        # Save horizons if requested
         if 'horizons' in downloads:
-            import h5py
-            to_h5file = {}
             hrz = sxs_sim.horizons
-            # fill the dictionary
-            for kk in ['AhA.dir','AhB.dir','AhC.dir']:
-                to_h5file[kk] = {}
-                for key in ['CoordCenterInertial.dat', 'ChristodoulouMass.dat', 'DimensionfulInertialSpinMag.dat', 'chiInertial.dat']:
-                    to_h5file[kk][key] = hrz[f'{kk}/{key}']
-            
+            to_h5file = {}
+            for object in ['AhA.dir', 'AhB.dir', 'AhC.dir']:
+                to_h5file[object] = {}
+                for key in ['CoordCenterInertial.dat', 'ChristodoulouMass.dat', 
+                            'DimensionfulInertialSpinMag.dat', 'chiInertial.dat']:
+                    try:
+                        to_h5file[object][key] = hrz[f'{object}/{key}']
+                    except KeyError:
+                        print(f'Warning: {object}/{key} not found in horizons data! Skipping.')
+                        continue
             # create the h5 file
-            h5file = h5py.File(os.path.join(path,sxs_dir,lev,f'Horizons.h5'), 'w')
+            h5file = h5py.File(os.path.join(out_dir, f'Horizons.h5'), 'w')
             save_dict_to_h5(h5file, to_h5file)
             h5file.close()
-
-        # dump the metadata in a json
+        
+        # Save metadata if requested
         if 'metadata' in downloads:
-            with open(os.path.join(path,sxs_dir,lev,f'metadata.json'), 'w') as file:
-                json.dump(mtdt, file, indent=2)
-                file.close()
-
-        # delete the empty folder
-        os.rmdir(os.path.join(os.environ['SXSCACHEDIR'],fld))
-
+            import json
+            with open(os.path.join(out_dir, 'metadata.json'), 'w') as file:
+                json.dump(sxs_sim.metadata, file, indent=2)
+        
         pass
     
     def load_metadata(self):
@@ -323,10 +315,14 @@ class Waveform_SXS(Waveform):
             afv = None
             afz = None
 
-        if isinstance(ometa['alternative_names'], list):
-            name = ometa['alternative_names'][1]
+        alt_names = ometa['alternative_names']
+        if isinstance(alt_names, list):
+            if len(alt_names) > 1:
+                name = alt_names[1]
+            else:
+                name = alt_names[0]
         else:
-            name = ometa['alternative_names']
+            name = alt_names
         
         ecc = ometa['reference_eccentricity']
         if isinstance(ecc, str): 
@@ -508,8 +504,7 @@ class Waveform_SXS(Waveform):
 
         
         tmp_u = self.nr[order]['Y_l2_m2.dat'][:, 0]
-        
-        self.check_cut_consistency()
+        # self.check_cut_consistency()
         if self.cut_N is None: self.cut_N = np.argwhere(tmp_u>=self.cut_U)[0][0] 
         if self.cut_U is None: self.cut_U = tmp_u[self.cut_N]
         
@@ -607,6 +602,14 @@ class Waveform_SXS(Waveform):
         https://github.com/sxs-collaboration/catalog_tools/tree/master
         """        
         from ..utils import convert_sxs_to_lvc as conv
+        print('Converting SXS data to LVK format...')
+        # Path to Horizons file
+        horizons_file = os.path.join(self.sxs_data_path, 
+                                     'Horizons.h5')
+
+        if not os.path.isfile(horizons_file):
+            print(f'Horizons file not found: {horizons_file}. Downloading it...')
+            self.download_simulation(ID=self.ID, path=self.sxs_data_path, downloads=['horizons'], level=self.level)
 
         conv.convert_simulation(f'{self.sxs_data_path}/Lev{self.level}',
                                 self.level,
@@ -616,17 +619,17 @@ class Waveform_SXS(Waveform):
                                 )
         pass
 
-def save_dict_to_h5(h5file, dictionary, path="/"):
+def save_dict_to_h5(h5group, dictionary):
     """
-    Recursively save a nested dictionary to an HDF5 file.
+    Recursively save a nested dictionary to an HDF5 group or file.
     """
     for key, value in dictionary.items():
-        key_path = f"{path}/{key}" if path != "/" else key
-        
         if isinstance(value, dict):
-            group = h5file.create_group(key_path)  # Create a group for nested dicts
-            save_dict_to_h5(group, value)  # Recurse
-        elif isinstance(value, (int, float, str, bytes)):
-            h5file.attrs[key] = value  # Store scalars and strings as attributes
+            subgroup = h5group.create_group(key)
+            save_dict_to_h5(subgroup, value)
         else:
-            h5file.create_dataset(key_path, data=value)  # Store arrays
+            try:
+                h5group.create_dataset(key, data=value)
+            except TypeError:
+                # Handle scalar values that cannot be turned into datasets
+                h5group.attrs[key] = value
