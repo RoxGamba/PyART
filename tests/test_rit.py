@@ -7,7 +7,7 @@ import os
 
 mode_keys = ['A', 'p', 'real', 'imag', 'z']
 
-def test_sxs():
+def test_rit():
     """
     Test the SXS download function.
     """
