@@ -146,6 +146,7 @@ class Waveform_SXS(Waveform):
         import h5py
         from itertools import product
         import sxs as sxsmod
+        import shutil
 
         if path is not None:
             print("Setting the download (cache) directory to ", path)
@@ -154,11 +155,11 @@ class Waveform_SXS(Waveform):
         # Define the simulation ID and load it
         name = f'SXS:{self.src}:{ID}'
         if level is not None:
-            name_level = f'{name}/Lev{level}/'
+            name_level = f'{name}/Lev{level}'
         else:
             name_level = name
 
-        sxs_sim = sxsmod.load(name,
+        sxs_sim = sxsmod.load(name_level,
                               extrapolation_order=extrapolation_order, 
                               ignore_deprecation=ignore_deprecation,
                               progress=True)
@@ -239,6 +240,12 @@ class Waveform_SXS(Waveform):
             with open(os.path.join(out_dir, 'metadata.json'), 'w') as file:
                 json.dump(sxs_sim.metadata, file, indent=2)
         
+        # find old SXS download foders and remove them
+        flds = [f for f in os.listdir(os.environ['SXSCACHEDIR']) if ID in f]
+        for fld in flds:
+            if ':' in fld:
+                shutil.rmtree(os.path.join(os.environ['SXSCACHEDIR'],fld))
+
         pass
     
     def load_metadata(self):
@@ -605,6 +612,7 @@ class Waveform_SXS(Waveform):
         print('Converting SXS data to LVK format...')
         # Path to Horizons file
         horizons_file = os.path.join(self.sxs_data_path, 
+                                     f'Lev{self.level}', 
                                      'Horizons.h5')
 
         if not os.path.isfile(horizons_file):
