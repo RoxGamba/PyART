@@ -14,7 +14,8 @@ def test_sxs():
     wf = rit.Waveform_RIT(  
                         ID        = '1362', 
                         path      = './', download=True,
-                        nu_rescale= False
+                        nu_rescale= False,
+                        urls_json='./catalog_rit.json'
                         )
     # check attributes
     assert wf.ID == '1362'

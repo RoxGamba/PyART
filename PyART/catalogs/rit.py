@@ -23,6 +23,7 @@ class Waveform_RIT(Waveform):
                  ell_emms    = 'all',
                  nu_rescale  = False, 
                  shorten_rng = True, # keep at most 300 M after merger
+                 urls_json = None,
                  ) -> None:
         
         super().__init__()
@@ -45,7 +46,7 @@ class Waveform_RIT(Waveform):
             if download:
                 print(f"The path {sim_path} does not exist.")
                 print("Downloading the simulation from the RIT catalog.")
-                self.download_data(ID=ID, path=sim_path)
+                self.download_data(ID=ID, path=sim_path, urls_json=urls_json)
             else:
                 print("Use download=True to download the simulation from the SXS catalog.")
                 raise FileNotFoundError(f"The path {sim_path} does not exist.")
