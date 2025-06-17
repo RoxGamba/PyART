@@ -32,7 +32,9 @@ def test_sxs():
     assert os.path.exists(f'SXS_BBH_0180/Lev{wf.level}/Horizons.h5')
 
     # check that the old folder was removed
-    flds  = os.listdir('.')
+    cache_dir = os.environ.get('SXSCACHEDIR')
+    assert cache_dir, "SXSCACHEDIR environment variable is not set."
+    flds = os.listdir(cache_dir)
     for fld in flds:
         if fld.startswith('SXS:BBH:0180'):
             assert False, f"Old folder {fld} still exists."
