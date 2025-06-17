@@ -386,7 +386,7 @@ class Waveform_RIT(Waveform):
     
     def __interp_qnt__(self, x, y, x_new):
 
-        f  = interpolate.interp1d(x, y)
+        f  = interpolate.interp1d(x, y, fill_value=0, bounds_error=False)
         yn = f(x_new)
 
         return yn
