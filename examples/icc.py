@@ -29,8 +29,8 @@ for ID in IDs:
 
     if args.integration_test:
         t    = icc.t_psi4
-        psi4 = icc.psi4lm[(2,2)]['h'] 
-        dh   = icc.dothlm[(2,2)]['h'] 
+        psi4 = icc.psi4lm[(2,2)]['z'] 
+        dh   = icc.dothlm[(2,2)]['z'] 
 
         #t         = icc.u
         #signal    = dh    # psi4
