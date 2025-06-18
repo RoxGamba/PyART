@@ -52,7 +52,7 @@ class Waveform_ICC(Waveform):
         
         if integrate:
             # get hlm and dhlm by psi4-integration
-            self.integr_opts = self.integrate_psi4lm(t_psi4=self.t_psi4, 
+            self.integr_opts = self.integrate_data(t_psi4=self.t_psi4, 
                                                    radius=self.r_extr, 
                                                    integr_opts=integr_opts, 
                                                    M=1, modes=[(2,2)])
