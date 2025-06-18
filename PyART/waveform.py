@@ -331,7 +331,7 @@ class Waveform(object):
     def integrate_psi4lm(self, t_psi4, radius, integr_opts={}, modes=None, M=1.):
         # just for retro-compatibility
         integr_opts['integrand'] = 'psi4'
-        return self.integrate(t_psi4, radius, integr_opts=integr_opts, modes=modes, M=M)
+        return self.integrate_data(t_psi4, radius, integr_opts=integr_opts, modes=modes, M=M)
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
