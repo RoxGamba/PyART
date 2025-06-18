@@ -299,7 +299,7 @@ class Waveform(object):
         self._domain = 'Frequency'
         pass
     
-    def integrate_psi4lm(self, t_psi4, radius, integr_opts={}, modes=None, M=1):
+    def integrate_data(self, t_psi4, radius, integr_opts={}, modes=None, M=1.):
         """
         Method to integrate psi4 extracted at finite distance
         """
@@ -311,10 +311,14 @@ class Waveform(object):
         t      = t_psi4
         for i, lm in enumerate(modes):
             l, m = lm
-            psi4 = self.psi4lm[lm]['z']
-            mode = IntegrateMultipole(l, m, t, psi4, **integr_opts, 
-                                      mass=M, radius=radius, 
-                                      integrand='psi4')
+            if integr_opts['integrand']=='psi4':
+                z = self.psi4lm[lm]['z']
+            elif integr_opts['integrand']=='news':
+                z = self.dothlm[lm]['z']
+            else:
+                raise ValueError('Unknown integrand: {integrand}')
+            mode = IntegrateMultipole(l, m, t, z, **integr_opts, 
+                                      mass=M, radius=radius)
             psi4lm[lm] = wf_ut.get_multipole_dict(mode.psi4)
             dothlm[lm] = wf_ut.get_multipole_dict(mode.dh)
             hlm[lm]    = wf_ut.get_multipole_dict(mode.h)
@@ -323,6 +327,11 @@ class Waveform(object):
         self._dothlm = dothlm
         self._psi4lm = psi4lm
         return mode.integr_opts
+    
+    def integrate_psi4lm(self, t_psi4, radius, integr_opts={}, modes=None, M=1.):
+        # just for retro-compatibility
+        integr_opts['integrand'] = 'psi4'
+        return self.integrate(t_psi4, radius, integr_opts=integr_opts, modes=modes, M=M)
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
