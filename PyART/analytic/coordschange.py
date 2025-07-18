@@ -26,6 +26,7 @@ def Cartesian2Polar(x, y, px, py):
 ##      EOB <-> ADM      ##
 ###########################
 # functions to convert EOB (cartesian) coordinates and momenta (qe,pe) to ADM (qa, pa). 
+# See Buonanno,Damour:9811091 and Bini,Damour:1210.2834 (Appendix E) 
 # memo: here momenta are mu-normalized
 def Eob2Adm(qe_vec, pe_vec, nu, PN_order):
     # shorthands
