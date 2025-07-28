@@ -9,7 +9,7 @@ mode_keys = ['A', 'p', 'real', 'imag', 'z']
 
 def test_rit():
     """
-    Test the SXS download function.
+    Test the RIT download function.
     """
     wf = rit.Waveform_RIT(  
                         ID        = '1362', 
