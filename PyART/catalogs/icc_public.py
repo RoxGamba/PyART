@@ -128,7 +128,7 @@ class Waveform_ICC(Waveform):
                 amp, phase = abs(h), -numpy.unwrap(numpy.angle(h))
                 hlm[(l, m)] = {
                     'real' : amp * numpy.cos(phase), 'imag' : amp * numpy.sin(phase),
-                    'A' : amp, 'phi' : phase,
+                    'A' : amp, 'p' : phase,
                     'z' : h}
         self._hlm = hlm
         pass
@@ -149,7 +149,7 @@ class Waveform_ICC(Waveform):
                 # amplitude and phase
                 amp, phase = abs(psi4), -numpy.unwrap(numpy.angle(psi4))
                 psi4lm[(l,m)] = {'real' : amp * numpy.cos(phase), 'imag' : amp * numpy.sin(phase),
-                                    'A' : amp, 'phi' : phase,
+                                    'A' : amp, 'p' : phase,
                                     'z' : psi4}
         self._psi4lm = psi4lm
         pass
