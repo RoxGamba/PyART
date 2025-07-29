@@ -301,7 +301,7 @@ class Waveform_RIT(Waveform):
             try:
                 f0 = float(ometa["freq-start-22"]) / 2  # FIXME
             except Exception:
-                f0 = None
+                f0 = 0.0
 
             J0 = np.array(
                 [
