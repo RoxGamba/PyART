@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'GWForge'
+project = 'PyART'
 copyright = '2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra'
 author = 'Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra'
 release = '0.0.1dev'
