@@ -272,7 +272,7 @@ class Waveform_RIT(Waveform):
                 chi2z = return_val_or_default(f'{kind}-chi2z',ometa)
                 
             D  = float(ometa['initial-separation']) 
-            f0 = float(ometa['freq-start-22'])/2 # FIXME
+            f0 = float(ometa['freq-start-22']) / 2 if ometa['freq-start-22'].strip() else 0.0 #Jugaad
 
             J0 = np.array([float(ometa['initial-ADM-angular-momentum-x']),
                            float(ometa['initial-ADM-angular-momentum-y']),
