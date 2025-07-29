@@ -1,0 +1,42 @@
+name: docs_pages_workflow
+ 
+# execute this workflow automatically when a we push to master
+on:
+  push:
+    branches: [ main ]
+ 
+jobs:
+ 
+  build_docs_job:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+ 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Set up Python
+        uses: actions/setup-python@v2.2.1
+        with:
+          python-version: 3.11
+ 
+      - name: Install dependencies
+        run: |
+          pip install sphinx>=4.2.0 myst-parser>=2.0.0 furo>=2023.9.10 sphinx-math-dollar
+          python -m pip install .
+
+      - name: make the sphinx docs
+        run: |
+          make -C docs clean 
+          # sphinx-apidoc -f -o docs/source . -H Test -e -t docs/source/_templates
+          make -C docs html
+          cd docs/build/html/
+          touch .nojekyll
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build/html
+          force_orphan: true
