@@ -1,0 +1,162 @@
+PyART.catalogs.sxs
+==================
+
+.. py:module:: PyART.catalogs.sxs
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.sxs.Waveform_SXS
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.catalogs.sxs.save_dict_to_h5
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_SXS(path='../dat/SXS/', ID='0001', order=2, level=None, cut_N=None, cut_U=None, ellmax=8, load=['hlm', 'metadata'], download=False, downloads=['hlm', 'metadata'], load_m0=False, nu_rescale=False, src='BBH', ignore_deprecation=False, basename=None)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle SXS waveforms
+   Assumes that the data is in the directory specified py `path`,
+   and that all simulations are stored in folders like SXS_BBH_XXXX,
+   each containing the various `LevY` folders.
+   e.g., the current default is
+       ../dat/SXS_BBH_XXXX/LevY/
+
+
+   .. py:attribute:: ID
+      :value: '0001'
+
+
+
+   .. py:attribute:: order
+      :value: 2
+
+
+
+   .. py:attribute:: level
+      :value: None
+
+
+
+   .. py:attribute:: cut_N
+      :value: None
+
+
+
+   .. py:attribute:: cut_U
+      :value: None
+
+
+
+   .. py:attribute:: ellmax
+      :value: 8
+
+
+
+   .. py:attribute:: _kind
+      :value: 'SXS'
+
+
+
+   .. py:attribute:: src
+      :value: 'BBH'
+
+
+
+   .. py:attribute:: nr
+      :value: None
+
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:attribute:: basename
+      :value: None
+
+
+
+   .. py:method:: check_cut_consistency()
+
+
+   .. py:method:: get_lev_fname(level=None, basename=None)
+
+      Return file-name in a SXS-path with specified level,
+      e.g. /my/sxs/path/Lev4/my_basename
+      If basename is None, then return only /my/sxs/path/Lev4
+
+
+
+   .. py:method:: download_simulation(ID='0001', path=None, downloads=['hlm', 'metadata'], level=None, ignore_deprecation=False, extrapolation_order=None)
+
+      Download the simulation from the SXS catalog; requires the sxs module
+
+
+
+   .. py:method:: load_metadata()
+
+
+   .. py:method:: load_horizon()
+
+
+   .. py:method:: compute_spins_at_tref(tref)
+
+      Compute the parallel and perpendicular components of the spins w.r.t L
+      at a reference time tref
+
+      :param tref: Reference time
+      :type tref: float
+
+      :returns: **chi1_L, chi1_perp, chi2_L, chi2_perp** -- The parallel and perpendicular components of the spins at tref
+      :rtype: float
+
+
+
+   .. py:method:: load_hlm(ellmax=None, load_m0=False)
+
+
+   .. py:method:: load_psi4lm(ellmax=None, load_m0=False)
+
+
+   .. py:method:: compute_psi4_from_hlm()
+
+      Compute the psi4lm by taking two time derivatives
+      of the hlm modes
+
+
+
+   .. py:method:: to_lvk(modes='all')
+
+      Convert the data to LVK format, output an
+      SXS_BBH_XXXX_ResY.h5 file
+
+      Wrapper function to the `convert_sxs_to_lvc.py` from
+      https://github.com/sxs-collaboration/catalog_tools/tree/master
+
+
+
+.. py:function:: save_dict_to_h5(h5group, dictionary)
+
+   Recursively save a nested dictionary to an HDF5 group or file.
+
+

@@ -1,0 +1,97 @@
+PyART.models.teob
+=================
+
+.. py:module:: PyART.models.teob
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.models.teob.module
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.models.teob.Waveform_EOB
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.models.teob.convert_hlm
+   PyART.models.teob.CreateDict
+   PyART.models.teob.TEOB_info
+   PyART.models.teob.SpinHamiltonian
+   PyART.models.teob.RadialPotential
+   PyART.models.teob.bracketing
+   PyART.models.teob.PotentialMinimum
+   PyART.models.teob.search_radial_turning_points
+   PyART.models.teob.search_apastron
+   PyART.models.teob.PotentialPlot
+   PyART.models.teob.get_pph_lso
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_EOB(pars=None)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle EOB waveforms
+
+
+   .. py:attribute:: pars
+      :value: None
+
+
+
+   .. py:attribute:: _kind
+      :value: 'EOB'
+
+
+
+   .. py:method:: compute_energetics()
+
+
+   .. py:method:: _run_py()
+
+
+   .. py:method:: get_Pr()
+
+
+.. py:function:: convert_hlm(hlm)
+
+.. py:function:: CreateDict(M=1.0, q=1, chi1z=0.0, chi2z=0, chi1x=0.0, chi2x=0, chi1y=0.0, chi2y=0, LambdaAl2=0, LambdaBl2=0, iota=0, f0=0.0035, srate=4096.0, df=1.0 / 128.0, phi_ref=0.0, ecc=1e-08, r_hyp=None, H_hyp=0, J_hyp=0, anomaly=np.pi, interp='yes', arg_out='yes', use_geom='yes', use_tidal=None, use_mode_lm=[1], ode_tmax=10000000.0, cN3LO=None, a6c=None, use_flm_h='LO', use_nqc=True)
+
+   Create the dictionary of parameters for EOBRunPy
+
+
+.. py:function:: TEOB_info(input_module, verbose=False)
+
+.. py:function:: SpinHamiltonian(r, pph, q, chi1, chi2, prstar=0.0)
+
+.. py:function:: RadialPotential(r, pph, q, chi1, chi2)
+
+.. py:function:: bracketing(f, start, end, step_size)
+
+.. py:function:: PotentialMinimum(rvec, pph, q, chi1, chi2)
+
+.. py:function:: search_radial_turning_points(q, chi1, chi2, pph, E, step_size=0.1)
+
+.. py:function:: search_apastron(q, chi1, chi2, pph, E, step_size=0.1)
+
+.. py:function:: PotentialPlot(E0, pph0, q, chi1, chi2)
+
+.. py:function:: get_pph_lso(nu, a0)
+
+.. py:data:: module
+

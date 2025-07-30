@@ -1,0 +1,174 @@
+PyART.numerical.twopuncts_ID
+============================
+
+.. py:module:: PyART.numerical.twopuncts_ID
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.numerical.twopuncts_ID.file_path
+   PyART.numerical.twopuncts_ID.file_dir
+   PyART.numerical.twopuncts_ID.DUMMY
+   PyART.numerical.twopuncts_ID.parser
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.numerical.twopuncts_ID.LinearScaler
+   PyART.numerical.twopuncts_ID.TwoPunctID
+
+
+Module Contents
+---------------
+
+.. py:data:: file_path
+   :value: b'.'
+
+
+.. py:data:: file_dir
+
+.. py:data:: DUMMY
+
+.. py:class:: LinearScaler(A, B, C, D)
+
+   .. py:attribute:: A
+
+
+   .. py:attribute:: B
+
+
+   .. py:attribute:: C
+
+
+   .. py:attribute:: D
+
+
+   .. py:method:: transform(x)
+
+
+   .. py:method:: inverse_transform(y)
+
+
+   .. py:method:: __lin_transf(A, B, C, D, x)
+
+
+.. py:class:: TwoPunctID(**kwargs)
+
+   Bases: :py:obj:`object`
+
+
+   .. py:attribute:: M
+      :value: 1.0
+
+
+
+   .. py:attribute:: q
+      :value: 1.0
+
+
+
+   .. py:attribute:: E
+      :value: 1.1
+
+
+
+   .. py:attribute:: E_min
+      :value: None
+
+
+
+   .. py:attribute:: L
+      :value: 1.0
+
+
+
+   .. py:attribute:: D
+      :value: 100
+
+
+
+   .. py:attribute:: chi1z
+      :value: 0.0
+
+
+
+   .. py:attribute:: chi2z
+      :value: 0.0
+
+
+
+   .. py:attribute:: npoints_A
+      :value: 8
+
+
+
+   .. py:attribute:: npoints_B
+      :value: 8
+
+
+
+   .. py:attribute:: npoints_phi
+      :value: 6
+
+
+
+   .. py:attribute:: TP_dummy
+
+
+   .. py:attribute:: TP_exe
+      :value: './TwoPunctures.x'
+
+
+
+   .. py:attribute:: outdir
+      :value: './'
+
+
+
+   .. py:attribute:: verbose
+      :value: False
+
+
+
+   .. py:attribute:: iteration
+      :value: None
+
+
+
+   .. py:attribute:: TP_pars
+
+
+   .. py:attribute:: TP_int_vars
+      :value: ['npoints_A', 'npoints_B', 'npoints_phi', 'give_bare_mass']
+
+
+
+   .. py:method:: create_TP_parfile(P, parfile=None, outdir=None)
+
+
+   .. py:method:: run_TP_from_parfile(parfile)
+
+
+   .. py:method:: read_TP_output(outfile)
+
+
+   .. py:method:: run_TP_wrapper(P, parfile=None, verbose=None)
+
+
+   .. py:method:: run_TP_parallel(momenta, batch)
+
+
+   .. py:method:: fit_iter(P0, dP, npoints=4, poly_order=None, verbose=None, show_plot=False, save_plot=False, x0_position='centered', nproc=1)
+
+
+   .. py:method:: fit_iterations(P0=None, step_rel=0.15, tol=1e-10, resize_factor=100, itermax=5, npoints=4, poly_order=None, verbose=None, nproc=1, save_plot=False, show_plot=False)
+
+
+.. py:data:: parser
+

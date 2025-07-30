@@ -1,0 +1,46 @@
+PyART.analytic.coordschange
+===========================
+
+.. py:module:: PyART.analytic.coordschange
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.analytic.coordschange.pi
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analytic.coordschange.Polar2Cartesian
+   PyART.analytic.coordschange.Cartesian2Polar
+   PyART.analytic.coordschange.Eob2Adm
+   PyART.analytic.coordschange.Adm2Eob
+   PyART.analytic.coordschange.eob_ID_to_ADM
+
+
+Module Contents
+---------------
+
+.. py:data:: pi
+
+.. py:function:: Polar2Cartesian(r, phi, pr, pphi)
+
+.. py:function:: Cartesian2Polar(x, y, px, py)
+
+.. py:function:: Eob2Adm(qe_vec, pe_vec, nu, PN_order)
+
+.. py:function:: Adm2Eob(qa_vec, pa_vec, nu, PN_order)
+
+.. py:function:: eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True)
+
+   eob_Wave is instance of PyART.models.teob.Waveform_EOB
+   Generate initial ID for NR simulations with initial
+   data from TwoPuncturesC
+
+

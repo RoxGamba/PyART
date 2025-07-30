@@ -1,0 +1,60 @@
+PyART.analysis.eccentricity_calc
+================================
+
+.. py:module:: PyART.analysis.eccentricity_calc
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.eccentricity_calc.EccentricityCalculator
+
+
+Module Contents
+---------------
+
+.. py:class:: EccentricityCalculator(h, pars, t=None, omg=None, kind='3PN')
+
+   .. py:attribute:: h
+
+
+   .. py:attribute:: t
+      :value: None
+
+
+
+   .. py:attribute:: omg
+      :value: None
+
+
+
+   .. py:attribute:: kind
+      :value: '3PN'
+
+
+
+   .. py:attribute:: pars
+
+
+   .. py:attribute:: e
+
+
+   .. py:method:: compute_eccentricity(kind)
+
+
+   .. py:method:: _compute_eccentricity_PN_EJ(kind)
+
+      Compute eccentricity from the waveform using the 3PN formula
+      Eq. 4.8 of https://arxiv.org/pdf/1507.07100.pdf
+      e_t in Harmonic coordinates
+
+
+
+   .. py:method:: _compute_eccentricity_gwecc(kind, tref_in=None, method='AmplitudeFits')
+
+      Compute eccentricity from the waveform using gw_eccentricity
+
+
+

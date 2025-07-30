@@ -1,0 +1,73 @@
+PyART.models.seob
+=================
+
+.. py:module:: PyART.models.seob
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.models.seob.Waveform_SEOB
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.models.seob.convert_hlm
+   PyART.models.seob.CreateDict
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_SEOB(pars=None)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class for SEOBNRv5HM waveforms
+   Uses pySEOBNR package
+
+
+   .. py:attribute:: pars
+      :value: None
+
+
+
+   .. py:attribute:: _kind
+      :value: 'SEOB'
+
+
+
+   .. py:attribute:: SEOB
+
+
+   .. py:method:: _run()
+
+
+   .. py:method:: check_pars()
+
+      Check and adjust pars dictionary
+
+
+
+   .. py:method:: compute_energetics()
+
+      Compute binding energy and angular momentum from dynamics.
+
+
+
+.. py:function:: convert_hlm(hlm)
+
+   Convert the hlm dictionary from SEOB to PyART notation
+
+
+.. py:function:: CreateDict(M=1.0, q=1, chi1z=0.0, chi2z=0, chi1x=0.0, chi2x=0, chi1y=0.0, chi2y=0, dist=100.0, iota=0, f0=0.0035, df=1.0 / 128.0, dt=1.0 / 2048, phi_ref=0.0, e0=0.0, rel_anomaly=np.pi, use_geom='yes', approx='SEOBNRv5HM', use_mode_lm=[(2, 2)])
+
+   Create the dictionary of parameters for pyseobnr->GenerateWaveform
+
+

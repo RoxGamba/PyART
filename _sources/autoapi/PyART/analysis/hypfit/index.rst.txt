@@ -1,0 +1,49 @@
+PyART.analysis.hypfit
+=====================
+
+.. py:module:: PyART.analysis.hypfit
+
+.. autoapi-nested-parse::
+
+   Module to fit rotated/traslated hyperbola
+   and extract the angle between asymptotes
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.analysis.hypfit.seed
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analysis.hypfit.fit_quadratic
+   PyART.analysis.hypfit.quadratic_to_canonical
+   PyART.analysis.hypfit.hyp_parametrization
+   PyART.analysis.hypfit.hyp_branches
+   PyART.analysis.hypfit.plot_hypfit
+
+
+Module Contents
+---------------
+
+.. py:function:: fit_quadratic(x, y)
+
+.. py:function:: quadratic_to_canonical(ABCDF)
+
+.. py:function:: hyp_parametrization(th, canonical)
+
+.. py:function:: hyp_branches(canonical)
+
+.. py:function:: plot_hypfit(x, y, canonical_fit, rlim=10, swap_ab=False)
+
+.. py:data:: seed
+   :value: 1
+
+

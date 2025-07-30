@@ -1,0 +1,45 @@
+PyART.utils.cat_utils
+=====================
+
+.. py:module:: PyART.utils.cat_utils
+
+.. autoapi-nested-parse::
+
+   Catalog utils
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.utils.cat_utils.KEYS
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.utils.cat_utils.errwarn
+   PyART.utils.cat_utils.check_metadata
+   PyART.utils.cat_utils.get_flags
+
+
+Module Contents
+---------------
+
+.. py:data:: KEYS
+   :value: ['name', 'ref_time', 'm1', 'm2', 'M', 'q', 'nu', 'S1', 'S2', 'chi1x', 'chi2x', 'chi1y', 'chi2y',...
+
+
+.. py:function:: errwarn(msg, raise_err=True)
+
+.. py:function:: check_metadata(meta, raise_err=True)
+
+   Check that given metadata satisfies PyART-requirements
+
+
+.. py:function:: get_flags(meta, thres_spin=1e-05, thres_q=0.001, thres_e0=0.001)
+

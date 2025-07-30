@@ -1,0 +1,209 @@
+PyART.models.teob_matlab
+========================
+
+.. py:module:: PyART.models.teob_matlab
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.models.teob_matlab.matlab_setup_base
+   PyART.models.teob_matlab.matlab_base
+   PyART.models.teob_matlab.matlab_base_hyp
+   PyART.models.teob_matlab.matlab_base_leob
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.models.teob_matlab.Waveform_EOBMatlab
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.models.teob_matlab.matnames
+   PyART.models.teob_matlab.CreateDict
+
+
+Module Contents
+---------------
+
+.. py:data:: matlab_setup_base
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      addpath('${code_dir}TEOBRun/');
+      addpath('${code_dir}TEOBRun/parfiles/');
+      addpath('${code_dir}PointMass/');
+      evalc("SetNaming('new')");
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:data:: matlab_base
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      eval${verbose}("eob_run_spin_eccentric_Pade33(${q}, 'single', ${chi1}, ${chi2}${ecc_s}${omg_ap_s}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${Tmax}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
+      quit;
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:data:: matlab_base_hyp
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      eval${verbose}("eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
+      quit;
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:data:: matlab_base_leob
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      eval${verbose}("eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${ASS_fact}${SSPM}${nqc_amp}${nqc_omg})");
+      quit;
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:class:: Waveform_EOBMatlab(pars=None, code_dir='/home/danilo.chiaramello/teobresumsmatlab/', data_dir='/data/prometeo/danilo.chiaramello/teob_seob/data/matlab_data/', source='/usr/local/src/R2020b/bin/matlab', run=False, verbose=False, load_insp=False)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle EOB waveforms generated with the Matlab code
+
+
+   .. py:attribute:: pars
+      :value: None
+
+
+
+   .. py:attribute:: _kind
+      :value: 'EOB'
+
+
+
+   .. py:attribute:: code_dir
+      :value: '/home/danilo.chiaramello/teobresumsmatlab/'
+
+
+
+   .. py:attribute:: dir
+      :value: '/data/prometeo/danilo.chiaramello/teob_seob/data/matlab_data/'
+
+
+
+   .. py:attribute:: source
+      :value: '/usr/local/src/R2020b/bin/matlab'
+
+
+
+   .. py:attribute:: run
+      :value: False
+
+
+
+   .. py:attribute:: verbose
+      :value: False
+
+
+
+   .. py:attribute:: load_insp
+      :value: False
+
+
+
+   .. py:attribute:: hyp
+      :value: True
+
+
+
+   .. py:attribute:: leob
+
+
+   .. py:method:: compute_energetics()
+
+
+   .. py:method:: _check_dir()
+
+
+   .. py:method:: _convert_pars()
+
+      Build dictionary for template, converting parameters as needed.
+
+
+
+   .. py:method:: _run_matlab()
+
+
+   .. py:method:: _load_hlm()
+
+
+   .. py:method:: _load_dyn()
+
+
+   .. py:method:: clean_data()
+
+
+.. py:function:: matnames(q, chi1=0, chi2=0, ecc=0, f0=0.01 / np.pi, E0=None, L0=None, r0=None, nr=None, leob=False)
+
+   Name of dynamics, wave mat files
+
+
+.. py:function:: CreateDict(M=1.0, q=1, chi1z=0.0, chi2z=0.0, chi1x=0.0, chi2x=0.0, chi1y=0.0, chi2y=0.0, f0=0.0035, ecc=1e-08, l_max=2, ode_tmax=1000000.0, ode_rend=None, r0=None, H_hyp=None, J_hyp=None, cN3LO=None, a6c=None, nr=None, Hmod='std', rho22_SO_resum=0, newlogs=1, rholm='newlogs', nqc_amp=2, nqc_omg=2, leob=False, iresum=0, ASS_fact='none', SSPM=4)
+
+   Create the dictionary of parameters for teobresumsmatlab
+
+

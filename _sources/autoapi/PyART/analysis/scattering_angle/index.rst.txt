@@ -1,0 +1,127 @@
+PyART.analysis.scattering_angle
+===============================
+
+.. py:module:: PyART.analysis.scattering_angle
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.scattering_angle.ScatteringAngle
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analysis.scattering_angle.ComputeChiFrom2Sims
+
+
+Module Contents
+---------------
+
+.. py:class:: ScatteringAngle(**kwargs)
+
+   Class to compute the scattering of a NR scattering simulation.
+   The error associated to the angle is linked to the uncertanties
+   of the extrapolation at infinity
+
+
+   .. py:attribute:: puncts
+      :value: None
+
+
+
+   .. py:attribute:: use_single_punct
+      :value: None
+
+
+
+   .. py:attribute:: verbose
+      :value: True
+
+
+
+   .. py:attribute:: nmin
+      :value: 2
+
+
+
+   .. py:attribute:: nmax
+      :value: 10
+
+
+
+   .. py:attribute:: n_extract
+      :value: None
+
+
+
+   .. py:attribute:: r_cutoff_in_low
+      :value: 25
+
+
+
+   .. py:attribute:: r_cutoff_in_high
+      :value: 80
+
+
+
+   .. py:attribute:: r_cutoff_out_low
+      :value: 25
+
+
+
+   .. py:attribute:: r_cutoff_out_high
+      :value: None
+
+
+
+   .. py:attribute:: hypfit
+      :value: False
+
+
+
+   .. py:attribute:: nfits
+      :value: 9
+
+
+
+   .. py:method:: get_xy()
+
+
+   .. py:method:: to_commonformat()
+
+
+   .. py:method:: compute_chi(verbose=None)
+
+
+   .. py:method:: compute_chi_from_fit(b_in, b_out, n)
+
+
+   .. py:method:: compute_chi_hypfit(verbose=None)
+
+
+   .. py:method:: plot_hypfit(swap_ab_list=[True, True])
+
+
+   .. py:method:: save_plot(show=True, save=False, figname='plot.png')
+
+
+   .. py:method:: plot_summary(show=True, save=False, figname=None)
+
+
+   .. py:method:: plot_fit_diffs(xvar='r', show=True, save=False, figname=None)
+
+
+   .. py:method:: plot_fit_extrapolation(xvar='u', show=True, save=False, figname=False)
+
+
+   .. py:method:: plot_fit_chi(show=True, save=False, figname=False)
+
+
+.. py:function:: ComputeChiFrom2Sims(path_hres=None, path_lres=None, puncts_hres=None, puncts_lres=None, verbose=False, vverbose=False, **kwargs)
+

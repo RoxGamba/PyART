@@ -1,0 +1,153 @@
+PyART.analysis.match
+====================
+
+.. py:module:: PyART.analysis.match
+
+.. autoapi-nested-parse::
+
+   Stuff for mismatches, still need to port the parallelization,
+   the precessing case and debug/test the code
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.match.Matcher
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analysis.match.condition_td_waveform
+   PyART.analysis.match.dual_annealing_wrap
+   PyART.analysis.match.sky_and_time_maxed_overlap
+   PyART.analysis.match.time_maxed_overlap
+
+
+Module Contents
+---------------
+
+.. py:class:: Matcher(WaveForm1, WaveForm2, settings=None, cache={})
+
+   Bases: :py:obj:`object`
+
+
+   Class to compute the match between two waveforms.
+
+
+   .. py:attribute:: cache
+
+
+   .. py:attribute:: settings
+
+
+   .. py:attribute:: modes
+
+
+   .. py:attribute:: mismatch
+
+
+   .. py:attribute:: match_out
+
+
+   .. py:method:: _wave2locobj(WaveForm, isgeom=True)
+
+      Extract useful information from WaveForm class
+      (see PyART/waveform.py) and store in a lambda-obj
+      that will be used in this Matcher class
+
+
+
+   .. py:method:: _mass_rescaled_TimeSeries(u, hp, hc, isgeom=True, kind='cubic')
+
+      Rescale waveforms with the mass used in settings
+      and return TimeSeries.
+      If the waveform is not in geom-units, the simply
+      return the TimeSeries
+
+
+
+   .. py:method:: _find_tlen(wf1, wf2, resize_factor=2)
+
+      Given two local-waveform objects (see wave2locobj()),
+      return the time-length to use in TD-waveform
+      conditioning (before match computation)
+
+
+
+   .. py:method:: __default_parameters__()
+
+      Default parameters for the mismatch calculation
+
+
+
+   .. py:method:: _get_psd(flen, df, fmin)
+
+      Get the PSD for the mismatch calculation
+
+
+
+   .. py:method:: _get_single_mode_nc(wf, settings)
+
+
+   .. py:method:: _compute_mm_single_mode(wf1, wf2, settings)
+
+      Compute the mismatch between two waveforms with only a single mode.
+      Use either h+ (modes-or-pol = 'pol') or the mode itself (modes-or-pol = 'modes')
+      This is true for non-precessing systems with a single (ell, |m|)
+
+
+
+   .. py:method:: _debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings, tap_times_w1=None, tap_times_w2=None, six_panels=False, mm=None)
+
+      Plot waveforms and PSD for debugging.
+
+
+
+   .. py:method:: _compute_overlap_skymax(wf1, wf2, settings)
+
+      Same as compute_mm_skymax, but without numerical
+      optimization of the orbital phase. Uses directly
+      the polarizations of the waveforms, instead of the modes.
+      This has to be specified for a **single** value of
+      effective polarization.
+
+
+
+   .. py:method:: _compute_mm_skymax(wf1, wf2, settings)
+
+      Compute the match between two waveforms with higher modes.
+      Use wf1 as a fixed target, and decompose wf2 in modes to find the
+      best orbital phase.
+
+
+
+   .. py:method:: skymax_match(s, wf, inc, psd, modes, dT=1.0 / 4096, fmin_mm=20.0, fmax=2048.0)
+
+
+.. py:function:: condition_td_waveform(h_in, settings, return_tap_times=False, mrg_idx=None)
+
+   Condition the waveforms before computing the mismatch.
+   h is already a TimeSeries
+
+
+.. py:function:: dual_annealing_wrap(func, bounds, maxfun=2000)
+
+.. py:function:: sky_and_time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, kind='hm')
+
+   Compute the sky and time maximized overlap between a signal and a template.
+   See https://arxiv.org/pdf/1709.09181 and Eq. 10 of https://arxiv.org/pdf/2207.01654
+
+
+.. py:function:: time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, max_pol=True)
+
+   Assume s is + only.
+   We allow for a polarization shift, i.e. a **global** change of sign in the waveform.
+   TODO: check if this is implemented correctly, see Sec. VD of https://arxiv.org/abs/1812.07865
+
+

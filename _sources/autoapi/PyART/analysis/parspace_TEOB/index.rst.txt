@@ -1,0 +1,135 @@
+PyART.analysis.parspace_TEOB
+============================
+
+.. py:module:: PyART.analysis.parspace_TEOB
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.analysis.parspace_TEOB.repo_path
+   PyART.analysis.parspace_TEOB.parser
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.parspace_TEOB.Spanner
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analysis.parspace_TEOB.build_colormap
+   PyART.analysis.parspace_TEOB.SpinHamiltonian
+   PyART.analysis.parspace_TEOB.RadialPotential
+   PyART.analysis.parspace_TEOB.EnergyLimitsSpin
+   PyART.analysis.parspace_TEOB.single_run_TEOB
+   PyART.analysis.parspace_TEOB.run_TEOB_list
+
+
+Module Contents
+---------------
+
+.. py:data:: repo_path
+   :value: ''
+
+
+.. py:function:: build_colormap(old_cmp_name, clr, peaks_list, discrete_cmap=False)
+
+   Outputs a colormap similar to old_cmp_name, but with a new specified RGBA color
+   associated to val.
+
+
+.. py:function:: SpinHamiltonian(r, pph, q, chi1, chi2)
+
+.. py:function:: RadialPotential(rmin, rmax, pph, q, chi1, chi2, N=100)
+
+.. py:function:: EnergyLimitsSpin(rmax, q, pph_hyp, chi1, chi2, N=100000)
+
+.. py:function:: single_run_TEOB(point, eobcommonpars)
+
+.. py:function:: run_TEOB_list(indeces, points, eobcommonpars)
+
+.. py:class:: Spanner(q, chi1, chi2, pph_min, pph_max, nj=100, update_pph_min=True, r0=1000, input_file=None, verbose=False, nproc=1, dump_npz=False, ignore_input_file=False, outdir=None)
+
+   Bases: :py:obj:`object`
+
+
+   .. py:attribute:: q
+
+
+   .. py:attribute:: nu
+
+
+   .. py:attribute:: chi1
+
+
+   .. py:attribute:: chi2
+
+
+   .. py:attribute:: nj
+      :value: 100
+
+
+
+   .. py:attribute:: r0
+      :value: 1000
+
+
+
+   .. py:attribute:: pph_min
+
+
+   .. py:attribute:: pph_max
+
+
+   .. py:attribute:: update_pph_min
+      :value: True
+
+
+
+   .. py:attribute:: input_file
+      :value: None
+
+
+
+   .. py:attribute:: verbose
+      :value: False
+
+
+
+   .. py:attribute:: outdir
+      :value: None
+
+
+
+   .. py:attribute:: eobcommonpars
+
+
+   .. py:method:: info_string(q_prec=2, chi1_prec=2, chi2_prec=2, r0_prec=0)
+
+
+   .. py:method:: parspace_populate()
+
+
+   .. py:method:: run_TEOB_parallel(nproc, dump_npz=False, ignore_input_file=False)
+
+
+   .. py:method:: qchi1chi2_list_str()
+
+
+   .. py:method:: get_NR_points(dset='GAUSS_2023', Emin=1.0, Emax=None, Jmin=None, Jmax=None)
+
+
+   .. py:method:: plot_parspace(marker_size=1, savepng=False, discrete_cmap=False, show='on', pph_max_plot=None, show_NR=False, dset='GAUSS_2023')
+
+
+.. py:data:: parser
+

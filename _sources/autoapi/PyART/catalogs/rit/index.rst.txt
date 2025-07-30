@@ -1,0 +1,170 @@
+PyART.catalogs.rit
+==================
+
+.. py:module:: PyART.catalogs.rit
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.catalogs.rit.psi_path
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.rit.Waveform_RIT
+   PyART.catalogs.rit.Catalog
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_RIT(path='../dat/RIT/', ID='0001', download=False, psi_load=True, h_load=True, mtdt_load=True, ell_emms='all', nu_rescale=False, shorten_rng=True, urls_json=None)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Parent class to handle waveforms
+   Children classes will inherit methods & propreties
+
+
+   .. py:attribute:: t_h
+      :value: None
+
+
+
+   .. py:attribute:: ell_emms
+      :value: 'all'
+
+
+
+   .. py:attribute:: metadata
+      :value: None
+
+
+
+   .. py:attribute:: metadata_psi4
+      :value: None
+
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:attribute:: shorten_rng
+      :value: True
+
+
+
+   .. py:attribute:: ID
+      :value: '0001'
+
+
+
+   .. py:attribute:: sim_path
+
+
+   .. py:attribute:: mtdt_path
+
+
+   .. py:attribute:: psi_path
+
+
+   .. py:attribute:: mtdt_psi4
+
+
+   .. py:method:: download_data(ID, path='./', urls_json=None, dump_urls=True)
+
+
+   .. py:method:: load_psi4lm()
+
+
+   .. py:method:: load_hlm()
+
+
+   .. py:method:: load_metadata(path)
+
+      load metadata for RIT catalog.
+      Meta with original keys are stored in ometadata,
+      metadata instead contain useful info with standard
+      naming (see e.g. SXS metadata)
+
+
+
+   .. py:method:: compute_initial_data()
+
+      Compute initial data (J0, S0, L0) from the metadata
+
+
+
+   .. py:method:: compute_dynamics()
+
+
+   .. py:method:: __interp_qnt__(x, y, x_new)
+
+
+.. py:class:: Catalog(path='./', ell_emms='all', ellmax=4, load_data=False, nonspinning=False, integr_opts=None, load_puncts=False, verbose=False)
+
+   Bases: :py:obj:`object`
+
+
+   .. py:attribute:: nonspinning
+      :value: False
+
+
+
+   .. py:attribute:: integr_opts
+      :value: None
+
+
+
+   .. py:attribute:: ellmax
+      :value: 4
+
+
+
+   .. py:attribute:: ell_emms
+      :value: 'all'
+
+
+
+   .. py:attribute:: data
+      :value: []
+
+
+
+   .. py:attribute:: catalog_meta
+      :value: []
+
+
+
+   .. py:method:: load_simulations_in_path(path, ell_emms, nonspinning=False, eccentric=True, verbose=False)
+
+      Load all simulations in path into self.data and all metadata into self.catalog_meta
+
+
+
+   .. py:method:: idx_from_value(value, key='name', single_idx=True)
+
+      Return idx with metadata[idx][key]=value.
+      If single_idx is False, return list of indeces
+      that satisfy the condition
+
+
+
+.. py:data:: psi_path
+   :value: 'Psi4/ExtrapPsi4_RIT-eBBH-1634-n100-ecc/'
+
+

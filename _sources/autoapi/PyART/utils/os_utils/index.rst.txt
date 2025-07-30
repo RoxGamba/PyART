@@ -1,0 +1,50 @@
+PyART.utils.os_utils
+====================
+
+.. py:module:: PyART.utils.os_utils
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.utils.os_utils.runcmd
+   PyART.utils.os_utils.find_dirs_with_subdirs
+   PyART.utils.os_utils.is_subdir
+   PyART.utils.os_utils.find_fnames_with_token
+   PyART.utils.os_utils.find_dirs_with_token
+
+
+Module Contents
+---------------
+
+.. py:function:: runcmd(cmd, workdir, out=None)
+
+   Execute cmd in workdir
+
+
+.. py:function:: find_dirs_with_subdirs(basedir, token)
+
+   Find directories that contain subdires
+   whose names contain the specified token
+   Return list
+
+
+.. py:function:: is_subdir(basedir, sdir)
+
+   Check if sdir is a subdir of basedir
+
+
+.. py:function:: find_fnames_with_token(basedir, token)
+
+   Find files in basedir that contains specified token.
+   Return list.
+
+
+.. py:function:: find_dirs_with_token(basedir, token)
+
+   Find subdirs in basedir that contains specified token.
+   Return list.
+
+

@@ -1,0 +1,137 @@
+PyART.analysis.integrate_wave
+=============================
+
+.. py:module:: PyART.analysis.integrate_wave
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.integrate_wave.IntegrateMultipole
+
+
+Module Contents
+---------------
+
+.. py:class:: IntegrateMultipole(l, m, t, data, mass, radius, integrand='psi4', method='FFI', f0=0.001, deg=0, poly_int=None, extrap_psi4=False, window=None, patch_opts={}, walpha=3)
+
+   Bases: :py:obj:`object`
+
+
+   Class for integrating multipole
+
+
+   .. py:attribute:: l
+
+
+   .. py:attribute:: m
+
+
+   .. py:attribute:: mass
+
+
+   .. py:attribute:: radius
+
+
+   .. py:attribute:: integrand
+      :value: 'psi4'
+
+
+
+   .. py:attribute:: method
+      :value: 'FFI'
+
+
+
+   .. py:attribute:: f0
+      :value: 0.001
+
+
+
+   .. py:attribute:: deg
+      :value: 0
+
+
+
+   .. py:attribute:: poly_int
+      :value: None
+
+
+
+   .. py:attribute:: extrap_psi4
+      :value: False
+
+
+
+   .. py:attribute:: window
+      :value: None
+
+
+
+   .. py:attribute:: walpha
+      :value: 3
+
+
+
+   .. py:attribute:: patch_opts
+
+
+   .. py:attribute:: t
+
+
+   .. py:attribute:: u
+
+
+   .. py:attribute:: integr_opts
+
+
+   .. py:method:: areal_radius()
+
+
+   .. py:method:: retarded_time()
+
+
+   .. py:method:: patch_psi4(psi4, t0, t1, t2, debug=False)
+
+      Patch psi4 before t1 and after t2 using
+      power-laws of (t-t0).
+      To be tested on high energy simulations
+
+
+
+   .. py:method:: extrapolate_psi4()
+
+
+   .. py:method:: apply_window(signal, window=[10, -10], walpha=3)
+
+
+   .. py:method:: freq_interval(signal)
+
+
+   .. py:method:: fixed_freq_int(signal, steps=1)
+
+      Fixed frequency integration
+      steps is the number of integrations performed
+
+
+
+   .. py:method:: remove_time_drift(signal)
+
+      Remove drift in TD integration using a fit.
+      If poly_int is specified, then fit only that part of the signal.
+
+
+
+   .. py:method:: time_domain_int(signal, steps=1)
+
+      Time domain integration with polynomial correction
+      The polynomial is obtained fitting the whole signal if poly_int is none,
+      otherwise consider only the interval specified; see remove_time_drift
+
+
+
+   .. py:method:: integrate(signal, steps=1)
+
+

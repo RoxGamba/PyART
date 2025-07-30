@@ -1,0 +1,183 @@
+PyART.analysis.opt_ic
+=====================
+
+.. py:module:: PyART.analysis.opt_ic
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.opt_ic.Optimizer
+
+
+Module Contents
+---------------
+
+.. py:class:: Optimizer(ref_Waveform, kind_ic='E0pph0', vrs=['H_hyp', 'j_hyp'], map_function=None, use_nqc=True, r0_eob=None, model_opts={}, opt_max_iter=1, opt_good_mm=0.005, opt_bounds=None, bounds_iter={}, minimizer={'kind': 'dual_annealing'}, use_matcher_cache=False, json_file=None, overwrite=False, json_save_dyn=False, mm_settings=None, verbose=True, debug=False)
+
+   Bases: :py:obj:`object`
+
+
+   Class to compute EOB initial data that minimize mismatch
+   with reference waveform.
+
+
+   .. py:attribute:: ref_Waveform
+
+
+   .. py:attribute:: opt_Waveform
+      :value: None
+
+
+
+   .. py:attribute:: kind_ic
+      :value: 'E0pph0'
+
+
+
+   .. py:attribute:: use_nqc
+      :value: True
+
+
+
+   .. py:attribute:: r0_eob
+      :value: None
+
+
+
+   .. py:attribute:: model_opts
+
+
+   .. py:attribute:: opt_max_iter
+      :value: 1
+
+
+
+   .. py:attribute:: opt_good_mm
+      :value: 0.005
+
+
+
+   .. py:attribute:: opt_data
+      :value: None
+
+
+
+   .. py:attribute:: opt_bounds
+      :value: None
+
+
+
+   .. py:attribute:: use_matcher_cache
+      :value: False
+
+
+
+   .. py:attribute:: json_file
+      :value: None
+
+
+
+   .. py:attribute:: json_save_dyn
+      :value: False
+
+
+
+   .. py:attribute:: overwrite
+      :value: False
+
+
+
+   .. py:attribute:: verbose
+      :value: True
+
+
+
+   .. py:attribute:: debug
+      :value: False
+
+
+
+   .. py:attribute:: mm_settings
+
+
+   .. py:attribute:: bounds_iter
+
+
+   .. py:attribute:: minimizer
+
+
+   .. py:attribute:: annealing_counter
+      :value: 0
+
+
+
+   .. py:method:: __set_variables(vrs)
+
+      Set the variables to optimize over depending on the kind of ICs
+
+
+
+   .. py:method:: __update_bounds(eps=None)
+
+      Set the bounds for the optimization; if the bounds are not specified,
+      set them to the reference value (read from metadata) +/- eps
+
+
+
+   .. py:method:: load_or_create_mismatches()
+
+      Load mismatches data if the options of the
+      json file stored is consistent with current ones.
+      Otherwise, create a new dictionary (NOT a new json file)
+
+
+
+   .. py:method:: save_mismatches(data, verbose=None, json_file=None, overwrite=None)
+
+
+   .. py:method:: generate_EOB(ICs={'f0': None, 'e0': None})
+
+
+   .. py:method:: match_against_ref(eob_Waveform, verbose=None, iter_loop=False, return_matcher=False, cache={}, mm_settings=None)
+
+
+   .. py:method:: __func_to_minimize(x, kys, verbose=None, cache={})
+
+
+   .. py:method:: optimize_mismatch(use_ref_guess=True, verbose=None)
+
+      Optimize the mismatch between the reference waveform and the other model waveform.
+
+
+
+   .. py:method:: __bounds_iter_defaults__()
+
+
+   .. py:method:: __minimizer__defaults__()
+
+      Set the default minimizer options.
+
+
+
+   .. py:method:: __minimize_annealing_(f, x0, bounds_array, kys)
+
+      Minimize with dual annealing.
+
+
+
+   .. py:method:: __minimize_differential_evo_(f, x0, bounds_array, kys)
+
+      Minimize with differential evolution.
+
+
+
+   .. py:method:: __minimize__dynesty__(f, x0, bounds_array, kys)
+
+      Minimize with dynesty.
+      NOTE: largely untested!
+
+
+

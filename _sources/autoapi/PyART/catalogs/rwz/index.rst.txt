@@ -1,0 +1,73 @@
+PyART.catalogs.rwz
+==================
+
+.. py:module:: PyART.catalogs.rwz
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.rwz.Waveform_RWZ
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_RWZ(path, r_ext, cut_N=None, cut_U=None, ellmax=4, load_m0=False)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle RWZ test-mass waveforms.
+   https://arxiv.org/abs/1107.5402
+   https://bitbucket.org/BBHLab/rwzhyp/src/master/
+
+
+   .. py:attribute:: path
+
+
+   .. py:attribute:: r_ext
+
+
+   .. py:attribute:: ellmax
+      :value: 4
+
+
+
+   .. py:attribute:: cut_N
+      :value: None
+
+
+
+   .. py:attribute:: cut_U
+      :value: None
+
+
+
+   .. py:attribute:: _kind
+      :value: 'RWZ'
+
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:method:: load_metadata()
+
+      Load metadata from the RWZ parfile.
+
+
+
+   .. py:method:: load_dynamics()
+
+      Load the dynamics and energy from the RWZ output.
+
+
+
+   .. py:method:: load_hlm(ellmax=None, load_m0=False)
+
+

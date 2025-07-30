@@ -1,0 +1,95 @@
+PyART.catalogs.icc_public
+=========================
+
+.. py:module:: PyART.catalogs.icc_public
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.icc_public.Waveform_ICC
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.catalogs.icc_public.fetch_and_save_egrav_json
+
+
+Module Contents
+---------------
+
+.. py:function:: fetch_and_save_egrav_json(output_path='egrav_data.json')
+
+.. py:class:: Waveform_ICC(path='./', ID='0001', download=False, load=['hlm', 'metadata'], ellmax=8, nu_rescale=False, extraction='extrap')
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to download and handle public ICC waveforms.
+
+
+   .. py:attribute:: ID
+      :value: '0001'
+
+
+
+   .. py:attribute:: path
+      :value: './'
+
+
+
+   .. py:attribute:: sim_path
+
+
+   .. py:attribute:: ellmax
+      :value: 8
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:attribute:: download
+      :value: False
+
+
+
+   .. py:attribute:: extraction
+      :value: 'extrap'
+
+
+
+   .. py:method:: download_iccub_entry(json_path='egrav_data.json')
+
+
+   .. py:method:: load_hlm(load_m0=False)
+
+      Load hlm data from ICCUB simulation.
+
+
+
+   .. py:method:: load_psi4lm(load_m0=False)
+
+      Load psi4lm data from ICCUB simulation.
+
+
+
+   .. py:method:: compute_psi4lm_from_hlm()
+
+      Compute psi4lm from hlm data.
+
+
+
+   .. py:method:: load_metadata()
+
+      Load metadata from ICCUB simulation.
+
+
+

@@ -1,0 +1,107 @@
+PyART.utils.wf_utils
+====================
+
+.. py:module:: PyART.utils.wf_utils
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.utils.wf_utils.mnfactor
+   PyART.utils.wf_utils.mc_f
+   PyART.utils.wf_utils.mc_a
+   PyART.utils.wf_utils.mc_b
+   PyART.utils.wf_utils.mc_c
+   PyART.utils.wf_utils.mc_d
+   PyART.utils.wf_utils.mode_to_k
+   PyART.utils.wf_utils.modes_to_k
+   PyART.utils.wf_utils.k_to_ell
+   PyART.utils.wf_utils.k_to_emm
+   PyART.utils.wf_utils.compute_hphc
+   PyART.utils.wf_utils.taper
+   PyART.utils.wf_utils.get_multipole_dict
+   PyART.utils.wf_utils.align_phase
+   PyART.utils.wf_utils.Align
+   PyART.utils.wf_utils.remap
+   PyART.utils.wf_utils.shift_waveform
+
+
+Module Contents
+---------------
+
+.. py:function:: mnfactor(m)
+
+   Factor to account for negative m modes
+
+
+.. py:function:: mc_f(l, m)
+
+.. py:function:: mc_a(l, m)
+
+.. py:function:: mc_b(l, m)
+
+.. py:function:: mc_c(l, m)
+
+.. py:function:: mc_d(l, m)
+
+.. py:function:: mode_to_k(ell, emm)
+
+.. py:function:: modes_to_k(modes)
+
+.. py:function:: k_to_ell(k)
+
+.. py:function:: k_to_emm(k)
+
+.. py:function:: compute_hphc(hlm, phi=0, i=0, modes=[(2, 2)])
+
+   For aligned spins, assuming usual symmetry between hlm and hl-m
+
+
+.. py:function:: taper(t, h, M, alpha, tau, Msuns=1.0)
+
+   Taper a waveform using an hyperbolic tangent
+
+
+.. py:function:: get_multipole_dict(wave)
+
+.. py:function:: align_phase(t, Tf, phi_a_tau, phi_b)
+
+   Align two waveforms in phase by minimizing the chi^2
+
+   \chi^2 = \int_0^Tf [\phi_a(t +      au) - phi_b(t) - \Delta\phi]^2 dt
+
+   as a function of \Delta\phi.
+
+   * t         : time, must be equally spaced
+   * Tf        : final time
+   * phi_a_tau : time-shifted first phase evolution
+   * phi_b     : second phase evolution
+
+   This function returns \Delta\phi.
+
+
+.. py:function:: Align(t, Tf, tau_max, t_a, phi_a, t_b, phi_b)
+
+   Align two waveforms in phase by minimizing the chi^2
+
+   chi^2 = \sum_{t_i=0}^{t_i < Tf} [phi_a(t_i + tau) - phi_b(t_i) - dphi]^2 dt
+
+   as a function of dphi and tau.
+
+   * t          : time
+   * Tf         : final time
+   * tau_max    : maximum time shift
+   * t_a, phi_a : first phase evolution
+   * t_b, phi_b : second phase evolution
+
+   The two waveforms are re-sampled using the given time t
+
+   This function returns a tuple (tau_opt, dphi_opt, chi2_opt)
+
+
+.. py:function:: remap(h_re, h_im)
+
+.. py:function:: shift_waveform(h_re, h_im, t_shift_idx, phi_shift)
+
