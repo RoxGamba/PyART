@@ -1,6 +1,7 @@
 import os
 
-def runcmd(cmd,workdir,out=None):
+
+def runcmd(cmd, workdir, out=None):
     """
     Execute cmd in workdir
     """
@@ -11,9 +12,10 @@ def runcmd(cmd,workdir,out=None):
     os.chdir(base)
     return
 
+
 def find_dirs_with_subdirs(basedir, token):
     """
-    Find directories that contain subdires 
+    Find directories that contain subdires
     whose names contain the specified token
     Return list
     """
@@ -25,11 +27,13 @@ def find_dirs_with_subdirs(basedir, token):
                 break
     return matching_dirs
 
+
 def is_subdir(basedir, sdir):
     """
     Check if sdir is a subdir of basedir
     """
-    return os.path.commonpath([basedir,sdir])==basedir
+    return os.path.commonpath([basedir, sdir]) == basedir
+
 
 def find_fnames_with_token(basedir, token):
     """
@@ -42,7 +46,8 @@ def find_fnames_with_token(basedir, token):
             if token in file:
                 filepath = os.path.join(root, file)
                 matching_files.append(filepath)
-    return matching_files 
+    return matching_files
+
 
 def find_dirs_with_token(basedir, token):
     """
@@ -56,6 +61,3 @@ def find_dirs_with_token(basedir, token):
                 dirpath = os.path.join(root, mydir)
                 matching_dirs.append(dirpath)
     return matching_dirs
-
-
-
