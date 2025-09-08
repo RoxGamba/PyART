@@ -174,7 +174,7 @@ def get_multipole_dict(wave):
 
 
 def align_phase(t, Tf, phi_a_tau, phi_b):
-    """
+    r"""
     Align two waveforms in phase by minimizing the chi^2
 
     \chi^2 = \int_0^Tf [\phi_a(t + \tau) - phi_b(t) - \Delta\phi]^2 dt
@@ -194,7 +194,7 @@ def align_phase(t, Tf, phi_a_tau, phi_b):
 
 
 def Align(t, Tf, tau_max, t_a, phi_a, t_b, phi_b):
-    """
+    r"""
     Align two waveforms in phase by minimizing the chi^2
 
     chi^2 = \sum_{t_i=0}^{t_i < Tf} [phi_a(t_i + tau) - phi_b(t_i) - dphi]^2 dt
