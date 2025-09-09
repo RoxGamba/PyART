@@ -24,6 +24,9 @@ class Waveform(object):
     """
 
     def __init__(self):
+        """
+        Initialize empty waveform
+        """
         self._t = None  # I would like to kill this
         self._u = None
         self._t_psi4 = None
@@ -90,6 +93,32 @@ class Waveform(object):
         height=0.15,
         return_idx=False,
     ):
+        """
+        Find peak time, amplitude, frequency and frequency derivative
+        from the specified waveform multipole
+
+        Parameters
+        ----------
+        mode: tuple
+            (l,m) mode to consider
+        kind: str
+            'first-max-after-t': first maximum after umin
+            'last-peak': last peak in the waveform
+            'global': global maximum
+        wave: str
+            'hlm' or 'psi4lm'
+        umin: float
+            minimum time to consider (for 'first-max-after-t')
+        height: float
+            minimum height of the peak (for scipy find_peaks)
+        return_idx: bool
+            if True, return also the index of the peak
+        Returns
+        -------
+        out: (t_mrg, A_mrg, omg_mrg, domg_mrg[, idx])
+            time, amplitude, frequency and frequency derivative at the peak
+            if return_idx is True, also return the index of the peak
+        """
 
         if wave == "psi4lm":
             if self.t_psi4 is None:
@@ -142,6 +171,18 @@ class Waveform(object):
         """
         Compute dothlm from self.hlm using
         numerical differentiation
+
+        Parameters
+        ----------
+        factor: float
+            factor to multiply the derivative
+        only_warn: bool
+            if True, only warn if hlm is not loaded
+            if False, raise an error
+        Returns
+        -------
+        out: dict
+            dictionary with dothlm
         """
         if not self.hlm:
             msg = "dothlm cannot be compute if hlm is not loaded"
@@ -160,6 +201,15 @@ class Waveform(object):
         pass
 
     def multiply_by(self, var=["hlm"], factor=1.0):
+        """
+        Multiply specified variable by factor
+        Parameters
+        ----------
+        var: list
+            list of variables to multiply, e.g. ['hlm', 'dothlm']
+        factor: float
+            factor to multiply by
+        """
         for v in var:
             wave_dict = getattr(self, v)
             for lm in wave_dict:
@@ -180,6 +230,20 @@ class Waveform(object):
         first DeltaT M (or last if from_the_end=True)
         If cut_psi4lm is True, cut also psi4lm using
         self.t_psi4
+
+        Parameters
+        ----------
+        DeltaT: float
+            time to cut
+        cut_hpc: bool
+            if True, cut also hp and hc
+        from_the_end: bool
+            if True, cut from the end
+            if False, cut from the beginning
+        cut_dothlm: bool
+            if True, cut also dothlm
+        cut_psi4lm: bool
+            if True, cut also psi4lm
         """
 
         def get_slice(time_from_zero):
@@ -240,6 +304,19 @@ class Waveform(object):
     def compute_hphc(self, phi=0, i=0, modes=[(2, 2)]):
         """
         For aligned spins, compute hp and hc
+        assuming usual symmetry between hlm and hl-m
+        Parameters
+        ----------
+        phi: float
+            azimuthal angle of the observer
+        i: float
+            inclination angle of the observer
+        modes: list
+            list of (l,m) modes to consider
+        Returns
+        -------
+        out: (hp, hc)
+            plus and cross polarizations
         """
         self._hp, self._hc = wf_ut.compute_hphc(self.hlm, phi, i, modes)
         return self.hp, self.hc
@@ -247,6 +324,15 @@ class Waveform(object):
     def interpolate_hlm(self, dT):
         """
         Interpolate the hlm dictionary to a grid of uniform dT
+
+        Parameters
+        ----------
+        dT: float
+            time step of the new grid
+        Returns
+        -------
+        out: (new_u, hlm_i)
+            new time array and interpolated hlm dictionary
         """
         hlm_i = {}
         new_u = np.arange(self.u[0], self.u[-1], dT)
@@ -263,6 +349,17 @@ class Waveform(object):
     def dynamics_from_hlm(self, modes, warning=False):
         """
         Compute GW energy and angular momentum fluxes from multipolar waveform
+
+        Parameters
+        ----------
+        modes: list
+            list of (l,m) modes to consider
+        warning: bool
+            if True, warn if dothlm is not found and needs to be computed
+        Returns
+        -------
+        out: dict
+            dictionary with dynamics quantities
         """
 
         if not self.dothlm:
@@ -285,6 +382,19 @@ class Waveform(object):
     def ej_from_hlm(self, M_adm, J_adm, m1, m2, modes):
         """
         Compute GW energy and angular momentum from multipolar waveform
+
+        Parameters
+        ----------
+        M_adm: float
+            ADM mass of the system
+        J_adm: float
+            ADM angular momentum of the system
+        m1: float
+            mass of the first object
+        m2: float
+            mass of the second object
+        modes: list
+            list of (l,m) modes to consider
         """
 
         self.dynamics_from_hlm(modes)
@@ -303,6 +413,16 @@ class Waveform(object):
     def to_frequency(self, taper=True, pad=True):
         """
         Fourier transform the waveform from time to frequency domain
+
+        Parameters
+        ----------
+        taper: bool
+            if True, apply a tapering window to the time-domain waveform
+        pad: bool
+            if True, pad the time-domain waveform to the next power of 2
+        Returns
+        -------
+        out: (f, hp, hc)
         """
 
         dt = self.u[1] - self.u[0]
@@ -336,6 +456,27 @@ class Waveform(object):
     ):
         """
         Method to integrate psi4/news
+
+        Parameters
+        ----------
+        t_psi4: ndarray
+            time array for psi4lm
+        radius: float
+            extraction radius
+        integr_opts: dict
+            dictionary with integration options
+            method: 'FFI' or 'trapezoid'
+            f0: frequency cutoff for FFI
+            deg: degree of the polynomial for trapezoid
+            integrand: 'psi4' or 'news'
+        modes: list
+            list of (l,m) modes to integrate
+        M: float
+            total mass
+        Returns
+        -------
+        out: dict
+            dictionary with integration options used
         """
         if modes is None:
             modes = self.psi4lm.keys()
@@ -369,11 +510,23 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
     Compute GW energy and angular momentum from multipolar waveform
     See e.g. https://arxiv.org/abs/0912.1285
 
-    * h[(l,m)]     : multipolar strain
-    * doth[(l,m)]  : time-derivative of multipolar strain
-    * t            : time array
-    * modes        : (l,m) indexes
-    * mnegative    : if True, account for the factor 2 due to m<0 modes
+    Parameters
+    ----------
+    h: dict
+        dictionary with multipolar strain
+    doth: dict
+        dictionary with time-derivative of multipolar strain
+    t: ndarray
+        time array
+    modes: list
+        list of (l,m) modes
+    mnegative: bool
+        if True, account for the factor 2 due to m<0 modes
+
+    Returns
+    -------
+    out: dict
+        dictionary with dynamics quantities
     """
     oo16pi = 1.0 / (16 * np.pi)
 
@@ -534,6 +687,38 @@ class WaveIntegrated(Waveform):
         integrand="psi4",
         norm=None,
     ) -> None:
+        """
+        Initialize and load waveform from file
+
+        Parameters
+        ----------
+        path: str
+            path where files are stored
+        ellmax: int
+            maximum ell to consider
+        r_extr: float
+            extraction radius
+        M: float
+            total mass
+        modes: list
+            list of (l,m) modes to load
+        integr_opts: dict
+            dictionary with integration options
+            method: 'FFI' or 'trapezoid'
+            f0: frequency cutoff for FFI
+            deg: degree of the polynomial for trapezoid
+            poly_int: (l,m) list of modes to use polynomial integration
+            extrap_psi4: if True, extrapolate psi4 to infinity
+            window: if not None, apply a windowing function to the data
+        fmt: str
+            format of the files, e.g. 'etk', 'gra'
+        fname: str
+            filename pattern, with @L@ and @M@ for ell and m
+        integrand: str
+            'psi4' or 'news'
+        norm: str or None
+            if not None, normalize the waveform according to the specified flags
+        """
         super().__init__()
 
         self.path = path
@@ -568,6 +753,9 @@ class WaveIntegrated(Waveform):
         pass
 
     def load_wave(self):
+        """
+        Load waveform from file
+        """
         instance = nr_ut.LoadWave(
             path=self.path,
             modes=self.modes,
@@ -584,6 +772,11 @@ class WaveIntegrated(Waveform):
         """
         Normalize loaded waveform.
         For example, norm='factor2_minusodd_minusm0' activate three flags: factor2, minusodd, minusm0
+
+        Parameters
+        ----------
+        norm: str or None
+            if not None, normalize the waveform according to the specified flags
         """
         if norm is None:
             return
@@ -611,9 +804,16 @@ class WaveIntegrated(Waveform):
         pass
 
     def integrate_wave(self, integr_opts):
+        """
+        Integrate loaded waveform
+        Parameters
+        ----------
+        integr_opts: dict
+            dictionary with integration options
+        """
         for mm in self.modes:
             l, m = mm
-            psi4 = self.wavelm_file[(l, m)]
+            # psi4 = self.wavelm_file[(l, m)]
             mode = IntegrateMultipole(
                 l,
                 m,
@@ -628,6 +828,3 @@ class WaveIntegrated(Waveform):
             self._dothlm[(l, m)] = wf_ut.get_multipole_dict(mode.dh)
             self._hlm[(l, m)] = wf_ut.get_multipole_dict(mode.h)
         pass
-
-
-#

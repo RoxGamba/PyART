@@ -11,13 +11,19 @@ class LoadWave(object):
         """
         Load wave from file
 
-        Parameters:
-          path   : path where file(s) are stored
-          fmt    : format, like gra, etk etc.
-          modes  : modes to load
-          fname  : name of the file to load. If you have a file for each multipole,
-                   then use the wildcard @L@ and @M@, e.g. 'psi4_l@L@_@M@.asc'
-          resize : if True, handle files with different lenghts (not safe)
+        Parameters
+        ----------
+        path: str
+            path where file(s) are stored
+        fmt: str
+            format, like gra, etk etc.
+        modes: list of tuples
+            modes to load
+        fname: str
+            name of the file to load. If you have a file for each multipole,
+            then use the wildcard @L@ and @M@, e.g. 'psi4_l@L@_@M@.asc'
+        resize: bool
+            if True, handle files with different lenghts (not safe)
         """
         # TODO: - norm_kind: normalize waveform according to fmt
 
@@ -25,7 +31,7 @@ class LoadWave(object):
         self.fmt = fmt
         self.modes = modes
         self.fname = fname
-        self.resize = False
+        self.resize = resize
 
         # load data
         indices_dict = self.get_indices_dict()
@@ -63,10 +69,37 @@ class LoadWave(object):
         return
 
     def wave_lm_name(self, l, m):
+        """
+        Construct the filename for given l,m
+        Parameters
+        ----------
+        l: int
+            l of the multipole
+        m: int
+            m of the multipole
+
+        Returns
+        -------
+        out: str
+            filename with l,m replaced
+        """
         out = self.fname.replace("@L@", f"{l:d}")
         return out.replace("@M@", f"{m:d}")
 
     def load_file(self, fname, safe=False):
+        """
+        Load a file
+        Parameters
+        ----------
+        fname: str
+            filename to load
+        safe: bool
+            if True, skip lines that do not have the right number of columns
+        Returns
+        -------
+        out: ndarray
+            data loaded from file
+        """
         fullname = os.path.join(self.path, fname)
         if not safe:
             return np.loadtxt(fullname)
@@ -80,6 +113,13 @@ class LoadWave(object):
             return np.array([line.strip().split() for line in lines], dtype=float)
 
     def get_indices_dict(self):
+        """
+        Get the indices dict for the given format
+        Returns
+        -------
+        out: dict
+            dictionary with indices for t, re, im for each mode
+        """
         fmt = self.fmt
         indices_dict = {}
         if fmt == "etk":
@@ -107,6 +147,19 @@ class LoadWave(object):
         return indices_dict
 
     def resize(self, t, wave):
+        """
+        Resize t and wave to the minimum lenght found
+        Parameters
+        ----------
+        t: ndarray
+            time array
+        wave: dict
+            dictionary with multipoles
+        Returns
+        -------
+        out: (t, wave)
+            resized time array and multipoles dictionary
+        """
         # find min lenght
         minlen = len(t)
         for mm in self.modes:
