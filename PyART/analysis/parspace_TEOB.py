@@ -234,15 +234,6 @@ class Spanner(object):
         bracketed_intervals.append([a,end])
         return bracketed_intervals
 
-#    def search_apastron(self, pph, E, step_size=0.1):
-#        def fzero(r):
-#            V = SpinHamiltonian(r, pph, self.q, self.chi1, self.chi2)
-#            return E-V
-#        bracketed_intervals = self.bracketing(fzero, 2, self.r_infty, step_size=step_size)
-#        approx_r_apa = bracketed_intervals[-1][0]
-#        r_apa = brentq(fzero, approx_r_apa-step_size, approx_r_apa+step_size)
-#        return r_apa
-
     def determine_r0_from_pphE(self, pph, E, apa_tol=None, rVmin=None, debug_plot=False):
         if E>=1: # unbound case
             if self.r0_type=='auto':
