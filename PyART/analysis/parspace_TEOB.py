@@ -841,40 +841,118 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-n','--nproc',       default=1,    type=int,   help="number of processes")
-    parser.add_argument('--r0_type', choices=['auto', 'val'], 
-                                              default='auto',type=str,  help='Specify r0-type. If auto, r "infty" for E>=1, apastron otherwise.'
-                                                                             'If value, use value specified with --r0_val')
-    parser.add_argument('--r0_val',           default=None, type=float, help='Initial radius to use if --r0_type is val')
-    parser.add_argument('--dE_bound',         default=None, type=float, help='dE used in the bound-part of the parspace')
-    parser.add_argument('--Emin',             default=1.0,  type=float, help="minimum energy to consider")
-    parser.add_argument('--Emax',             default=2.0,  type=float, help='maximum energy to consider (if Emax>Vmax(pph_max),'
-                                                                             'then the max Energy used is Vmax(pph_max)')
-    parser.add_argument('--pph_min',          default=3.0,  type=float, help="min value of pph considered (eventually updated)")
-    parser.add_argument('--pph_max',          default=5.0,  type=float, help="max value of pph considered")
-    parser.add_argument('--Nmax_plot',        default=None, type=int,   help="N-max of peaks to show in plots")
-    parser.add_argument('-q', '--mass_ratio', default=1.0,  type=float, help="mass ratio")
-    parser.add_argument('--chi1',             default=0.0,  type=float, help="primary spin")
-    parser.add_argument('--chi2',             default=0.0,  type=float, help="secondary spin")
-    parser.add_argument('-nj',                default=20,   type=int,   help="number of angular momenta considered in the unbound region") 
-    parser.add_argument('--marker_size',      default=1,    type=int,   help="marker size in parspace-plot")
-    parser.add_argument('-v',  '--verbose',   action="store_true",      help="verbose option")
-    parser.add_argument('-vv', '--vverbose',  action="store_true",      help="very verbose option")
-    parser.add_argument('--savepng',          action="store_true",      help="save parspace-plot as png")
-    parser.add_argument('--figname',          default=None, type=str,   help="name of the saved figure (png)")
-    parser.add_argument('--show_fails',       action="store_true",      help='Show failed runs in parspace plot')    
-    parser.add_argument('--continuous_cmap',  action="store_true",      help="use continuous color-map in parspace plot")
-    parser.add_argument('--dump_npz',         action="store_true",      help="dump the points used in npz file")
-    parser.add_argument('--dump_txt',         action="store_true",      help="dump the points used in txt file")
-    parser.add_argument('--show_kankani',     action="store_true",      help="Show transition fit from 2404.03607")
-    parser.add_argument('--show_gra_fit',     action="store_true",      help="Show transition fit from GRA data")
-    parser.add_argument('-i', '--input_file', default=None, type=str,   help="file with data points")
-    parser.add_argument('-o', '--outdir',     default=None, type=str,   help="outdir for data and plots")
-    parser.add_argument('--parabolic_line',  action='store_true',      help="show line for the parabolic limi")
-    parser.add_argument('--qc_line',          action='store_true',      help="show QC line in parspace-plot if Emin<1")
-    parser.add_argument('--grey_fill',        action='store_true',      help="fill with grey the E>V region")
-    parser.add_argument('--show',   choices=['on', 'off'], 
-                                              default='on', type=str,   help="Show parspace-plot")    
+    parser.add_argument('-n','--nproc',
+                        default=1,    
+                        type=int,   
+                        help='number of processes')
+    parser.add_argument('--r0_type', 
+                        choices=['auto', 'val'], 
+                        default='auto',
+                        type=str,  
+                        help='Specify r0-type. If auto, r "infty" for E>=1, apastron otherwise.'
+                             'If value, use value specified with --r0_val')
+    parser.add_argument('--r0_val',
+                        default=None, 
+                        type=float, 
+                        help='Initial radius to use if --r0_type is val')
+    parser.add_argument('--dE_bound',
+                        default=None, 
+                        type=float, 
+                        help='dE used in the bound-part of the parspace')
+    parser.add_argument('--Emin',
+                        default=1.0, 
+                        type=float, 
+                        help='minimum energy to consider')
+    parser.add_argument('--Emax',
+                        default=2.0,
+                        type=float,
+                        help='maximum energy to consider (if Emax>Vmax(pph_max),'
+                             'then the max Energy used is Vmax(pph_max)')
+    parser.add_argument('--pph_min',
+                        default=3.0,
+                        type=float,
+                        help='min value of pph considered (eventually updated)')
+    parser.add_argument('--pph_max',
+                        default=5.0,
+                        type=float,
+                        help='max value of pph considered')
+    parser.add_argument('--Nmax_plot',
+                        default=None,
+                        type=int,
+                        help='N-max of peaks to show in plots')
+    parser.add_argument('-q', '--mass_ratio',
+                        default=1.0,
+                        type=float,
+                        help='mass ratio')
+    parser.add_argument('--chi1',
+                        default=0.0,
+                        type=float,
+                        help='primary spin')
+    parser.add_argument('--chi2',
+                        default=0.0,
+                        type=float,
+                        help='secondary spin')
+    parser.add_argument('-nj',
+                        default=20, 
+                        type=int,
+                        help='number of angular momenta considered in the unbound region') 
+    parser.add_argument('--marker_size', 
+                        default=1, 
+                        type=int,
+                        help='marker size in parspace-plot')
+    parser.add_argument('-v',  '--verbose', 
+                        action='store_true',
+                        help='verbose option')
+    parser.add_argument('-vv', '--vverbose', 
+                        action='store_true',
+                        help='very verbose option')
+    parser.add_argument('--savepng',
+                        action='store_true',
+                        help='save parspace-plot as png')
+    parser.add_argument('--figname',
+                        default=None,
+                        type=str,
+                        help='name of the saved figure (png)')
+    parser.add_argument('--show_fails',
+                        action='store_true',
+                        help='Show failed runs in parspace plot')    
+    parser.add_argument('--continuous_cmap',
+                        action='store_true',
+                        help='use continuous color-map in parspace plot')
+    parser.add_argument('--dump_npz',
+                        action='store_true',
+                        help='dump the points used in npz file')
+    parser.add_argument('--dump_txt',
+                        action='store_true',
+                        help='dump the points used in txt file')
+    parser.add_argument('--show_kankani',
+                        action='store_true',
+                        help='Show transition fit from 2404.03607')
+    parser.add_argument('--show_gra_fit',
+                        action='store_true',
+                        help='Show transition fit from GRA data')
+    parser.add_argument('-i', '--input_file',
+                        default=None,
+                        type=str,
+                        help='file with data points')
+    parser.add_argument('-o', '--outdir',
+                        default=None,
+                        type=str,
+                        help='outdir for data and plots')
+    parser.add_argument('--parabolic_line', 
+                        action='store_true', 
+                        help='show line for the parabolic limi')
+    parser.add_argument('--qc_line',
+                        action='store_true', 
+                        help='show QC line in parspace-plot if Emin<1')
+    parser.add_argument('--grey_fill',
+                        action='store_true',
+                        help='fill with grey the E>V region')
+    parser.add_argument('--show', 
+                        choices=['on', 'off'], 
+                        default='on', 
+                        type=str,
+                        help='Show parspace-plot')    
 
     args = parser.parse_args()
 
