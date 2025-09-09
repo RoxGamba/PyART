@@ -1,16 +1,11 @@
 import time, matplotlib, sys, os, argparse, subprocess, copy
 import matplotlib.pyplot as plt
-
 import numpy as np
-from scipy.signal import find_peaks
-from scipy.optimize import brentq
 import concurrent.futures
-
-#repo_path = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'],stdout=subprocess.PIPE).communicate()[0].rstrip().decode('utf-8')
-#sys.path.insert(1,os.path.join(repo_path,'py/teob'))
-#sys.path.insert(1,os.path.join(repo_path,'py/sims'))
-#import EOBRun_module, simulations
 import EOBRun_module 
+from   scipy.signal import find_peaks
+from   scipy.optimize import brentq
+from   PyART.models.teob import search_radial_turning_points, RadialPotential, SpinHamiltonian
 
 matplotlib.rc('text', usetex=True)
 
@@ -38,31 +33,12 @@ def build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False):
 #--------------------------
 # EOB 
 #-------------------------
-#def Hamiltonian(r, pph, nu):
-#    """
-#    Circularized EOB Hamiltonian: nonspinning
-#    """
-#    A, dA, d2A  = EOBRun_module.eob_metric_A5PNlog_py(r, nu)
-#    Heff0       = np.sqrt(A*(1.+(pph/r)**2))
-#    E0          = np.sqrt(1. + 2.*nu*(Heff0-1.))
-#
-#    return E0
-#
-def SpinHamiltonian(r, pph, q, chi1, chi2, prstar=0.):
-    hatH   = EOBRun_module.eob_ham_s_py(r, q, pph, prstar, chi1, chi2)
-    nu     = q/(1+q)**2
-    E0     = nu*hatH[0]
-    return E0
-
 def rmin_given_spins(chi1,chi2):
     if chi1!=0 or chi2!=0: # important: rmin should be smaller with spin
         rmin = 1.1
     else:
         rmin = 1.3
     return rmin 
-
-def RadialPotential(r,pph,q,chi1,chi2):
-    return np.array([SpinHamiltonian(ri, pph, q, chi1, chi2) for ri in r])
 
 def EnergyLimitsSpin(rmax, pph, q, chi1, chi2, N=1000):
     # Determine the max energy allowed. For large q, A will go below zero, so ignore those values by removing nans.
@@ -258,14 +234,14 @@ class Spanner(object):
         bracketed_intervals.append([a,end])
         return bracketed_intervals
 
-    def search_apastron(self, pph, E, step_size=0.1):
-        def fzero(r):
-            V = SpinHamiltonian(r, pph, self.q, self.chi1, self.chi2)
-            return E-V
-        bracketed_intervals = self.bracketing(fzero, 2, self.r_infty, step_size=step_size)
-        approx_r_apa = bracketed_intervals[-1][0]
-        r_apa = brentq(fzero, approx_r_apa-step_size, approx_r_apa+step_size)
-        return r_apa
+#    def search_apastron(self, pph, E, step_size=0.1):
+#        def fzero(r):
+#            V = SpinHamiltonian(r, pph, self.q, self.chi1, self.chi2)
+#            return E-V
+#        bracketed_intervals = self.bracketing(fzero, 2, self.r_infty, step_size=step_size)
+#        approx_r_apa = bracketed_intervals[-1][0]
+#        r_apa = brentq(fzero, approx_r_apa-step_size, approx_r_apa+step_size)
+#        return r_apa
 
     def determine_r0_from_pphE(self, pph, E, apa_tol=None, rVmin=None, debug_plot=False):
         if E>=1: # unbound case
@@ -274,7 +250,8 @@ class Spanner(object):
             elif self.r0_type=='val':
                 r0 = self.r0_val
         else: # bound case 
-            r_apa = self.search_apastron(pph, E)    
+            #r_apa = self.search_apastron(pph, E)    
+            _, r_apa = search_radial_turning_points(self.q, self.chi1, self.chi2, pph, E, step_size=0.1) 
             if self.r0_type=='auto':
                 r0 = r_apa
                 if debug_plot:
