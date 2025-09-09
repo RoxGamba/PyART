@@ -435,7 +435,7 @@ class Matcher(object):
             Second local waveform object with time series data.
         settings : dict
             Dictionary of settings for the mismatch calculation.
-        
+
         Returns
         -------
         float
@@ -680,7 +680,7 @@ class Matcher(object):
             Second local waveform object with time series data.
         settings : dict
             Dictionary of settings for the mismatch calculation.
-        
+
         Returns
         -------
         overlap : float
@@ -733,7 +733,7 @@ class Matcher(object):
             Second local waveform object with time series data.
         settings : dict
             Dictionary of settings for the mismatch calculation.
-        
+
         Returns
         -------
         match : float
@@ -802,7 +802,7 @@ class Matcher(object):
             Minimum frequency for the match calculation (default is 20.0).
         fmax : float, optional
             Maximum frequency for the match calculation (default is 2048.0).
-        
+
         Returns
         -------
         mismatch : float
@@ -934,7 +934,7 @@ def dual_annealing_wrap(func, bounds, maxfun=2000):
         Bounds for variables (min, max) pairs for each element in x.
     maxfun : int, optional
         Maximum number of function evaluations (default is 2000).
-    
+
     Returns
     -------
     opt_pars : ndarray
@@ -1074,7 +1074,7 @@ def time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, max_pol=True):
         Maximum frequency for the match calculation.
     max_pol : bool, optional
         If True, maximize over polarization (default is True).
-    
+
     Returns
     -------
     o : float
