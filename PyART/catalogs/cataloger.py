@@ -57,7 +57,7 @@ class Cataloger(object):
         if verbose is None:
             verbose = self.verbose
         if verbose:
-            print(f"Loading {self.catalog} waveform with ID:{ID:04}")
+            print(f"Loading {self.catalog} waveform with ID:{ID:04}")
 
         if self.catalog == "sxs":
             from .sxs import Waveform_SXS

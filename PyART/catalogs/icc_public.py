@@ -8,6 +8,17 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def fetch_and_save_egrav_json(output_path="egrav_data.json"):
+    """
+    Download the JSON catalog of public ICC waveforms and save it locally.
+    Parameters
+    ----------
+    output_path : str
+        Path to save the JSON file.
+    Returns
+    -------
+    data : list of dict
+        List of entries in the catalog.
+    """
     url = "https://egrav.icc.ub.edu/site/list-grid"
     response = requests.get(url, verify=False)
     response.raise_for_status()
@@ -16,7 +27,7 @@ def fetch_and_save_egrav_json(output_path="egrav_data.json"):
     with open(output_path, "w") as f:
         json.dump(data, f, indent=2)
 
-    print(f"✅ Saved {len(data)} entries to {output_path}")
+    print(f"Saved {len(data)} entries to {output_path}")
     return data
 
 
@@ -35,6 +46,26 @@ class Waveform_ICC(Waveform):
         nu_rescale=False,
         extraction="extrap",  # extrapolated to r = ∞
     ):
+        """
+        Initialize the ICC waveform class.
+
+        Parameters
+        ----------
+        path : str
+            Base path to store/load the waveform data.
+        ID : str or int
+            Simulation ID, e.g., '0001' or 1.
+        download : bool
+            If True, download the data if not present.
+        load : list of str
+            List of data to load: 'hlm', 'metadata'.
+        ellmax : int
+            Maximum ell mode to load.
+        nu_rescale : bool
+            If True, rescale the waveform by the symmetric mass ratio nu.
+        extraction : str or float
+            Extraction radius in M, or 'extrap' for extrapolated to infinity.
+        """
         super().__init__()
         if isinstance(ID, int):
             ID = str(ID).zfill(4)
@@ -56,7 +87,7 @@ class Waveform_ICC(Waveform):
         self.extraction = extraction
         if self.download:
             if os.path.exists(self.sim_path):
-                print(f"⚠️ Directory {self.sim_path} already exists. Skipping download.")
+                print(f"Directory {self.sim_path} already exists. Skipping download.")
             else:
                 self.download_iccub_entry(json_path=json_catalog)
 
@@ -66,9 +97,16 @@ class Waveform_ICC(Waveform):
             self.load_hlm()
 
     def download_iccub_entry(self, json_path="egrav_data.json"):
+        """
+        Download the ICCUB simulation files for the given ID.
+        Parameters
+        ----------
+        json_path : str
+            Path to the local JSON catalog file.
+        """
         uid = int(self.ID)
         if not os.path.exists(json_path):
-            print(f"❌ JSON catalog {json_path} not found. Fetching...")
+            print(f"JSON catalog {json_path} not found. Fetching...")
             fetch_and_save_egrav_json(json_path)
 
         with open(json_path, "r") as f:
@@ -77,7 +115,7 @@ class Waveform_ICC(Waveform):
         # Match by UID (robust)
         match = next((e for e in entries if str(e["uid"]) == str(uid)), None)
         if not match:
-            print(f"❌ UID {uid} not found.")
+            print(f"UID {uid} not found.")
             return
 
         outdir = Path(f"{self.sim_path}")
@@ -86,7 +124,7 @@ class Waveform_ICC(Waveform):
         for key in ["metadata", "partfile", "h5"]:
             url = match.get(key)
             if not url or "fileId=" not in url:
-                print(f"⚠️ Skipping invalid {key} link for UID {uid}")
+                print(f"Skipping invalid {key} link for UID {uid}")
                 continue
 
             file_id = url.split("fileId=")[-1]
@@ -95,7 +133,7 @@ class Waveform_ICC(Waveform):
             # HEAD request to extract filename (lighter)
             head = requests.head(download_url, allow_redirects=True, verify=False)
             if head.status_code != 200:
-                print(f"❌ Failed HEAD for {key} (HTTP {head.status_code})")
+                print(f"Failed HEAD for {key} (HTTP {head.status_code})")
                 continue
 
             content_disposition = head.headers.get("Content-Disposition", "")
@@ -107,13 +145,13 @@ class Waveform_ICC(Waveform):
 
             outpath = outdir / filename
             if outpath.exists():
-                print(f"✅ Already exists: {outpath}")
+                print(f"Already exists: {outpath}")
                 continue
 
-            print(f"⬇️  Downloading {key} for UID {uid} ...")
+            print(f"Downloading {key} for UID {uid} ...")
             r = requests.get(download_url, allow_redirects=True, verify=False)
             if r.status_code != 200:
-                print(f"❌ Failed to download {key} (HTTP {r.status_code})")
+                print(f"Failed to download {key} (HTTP {r.status_code})")
                 continue
 
             with open(outpath, "wb") as f:
@@ -122,6 +160,11 @@ class Waveform_ICC(Waveform):
     def load_hlm(self, load_m0=False):
         """
         Load hlm data from ICCUB simulation.
+
+        Parameters
+        ----------
+        load_m0 : bool
+            If True, load the m=0 modes as well.
         """
         modes = [
             (l, m)
@@ -154,6 +197,11 @@ class Waveform_ICC(Waveform):
     def load_psi4lm(self, load_m0=False):
         """
         Load psi4lm data from ICCUB simulation.
+
+        Parameters
+        ----------
+        load_m0 : bool
+            If True, load the m=0 modes as well.
         """
         modes = [
             (l, m)
@@ -186,6 +234,7 @@ class Waveform_ICC(Waveform):
     def compute_psi4lm_from_hlm(self):
         """
         Compute psi4lm from hlm data.
+        Requires that hlm data is already loaded.
         """
         psi4lm = {}
         t = self._u
@@ -205,6 +254,11 @@ class Waveform_ICC(Waveform):
     def load_metadata(self):
         """
         Load metadata from ICCUB simulation.
+
+        Returns
+        -------
+        meta : dict
+            Dictionary with metadata information.
         """
         metadata_file = os.path.join(self.sim_path, f"{self.ID}_metadata.json")
         if not os.path.exists(metadata_file):

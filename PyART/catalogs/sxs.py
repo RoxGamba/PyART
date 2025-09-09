@@ -34,6 +34,50 @@ class Waveform_SXS(Waveform):
         ignore_deprecation=False,
         basename=None,  # if None, use default according to src
     ):
+        """
+        Initialize the Waveform_SXS class.
+
+        Parameters
+        ----------
+        path : str, optional
+            Path where the SXS data is stored. Default is "../dat/SXS/".
+        ID : str or int, optional
+            ID of the SXS simulation to load. Default is "0001".
+        order : int, optional
+            Extrapolation order to use. Default is 2.
+        level : int or None, optional
+            Numerical resolution level to use. If None, the highest available
+            level will be used. Default is None.
+        cut_N : int or None, optional
+            Number of initial data points to cut from the waveform. If None,
+            no initial cut is applied. Default is None.
+        cut_U : float or None, optional
+            Initial retarded time to start the waveform. If None, no initial cut
+            is applied. Default is None.
+        ellmax : int, optional
+            Maximum ell value to load. Default is 8.
+        load : list of str, optional
+            Options to load. Can include "hlm", "metadata", "horizons", "psi4lm".
+            Default is ["hlm", "metadata"].
+        download : bool, optional
+            If True, download the simulation from the SXS catalog if not found
+            locally. Default is False.
+        downloads : list of str, optional
+            Options to download if `download` is True. Can include "hlm",
+            "metadata", "horizons", "psi4lm". Default is ["hlm", "metadata"].
+        load_m0 : bool, optional
+            If True, load the m=0 modes as well. Default is False.
+        nu_rescale : bool, optional
+            If True, rescale the waveform by the symmetric mass ratio nu.
+            Default is False.
+        src : str, optional
+            Source type. Can be "BBH" or "BHNS". Default is "BBH".
+        ignore_deprecation : bool, optional
+            If True, ignore deprecation warnings when downloading. Default is False.
+        basename : str or None, optional
+            Base name of the h5 file to load. If None, use default according to `src`.
+            Default is None.
+        """
         super().__init__()
         if isinstance(ID, int):
             ID = f"{ID:04}"
@@ -144,6 +188,13 @@ class Waveform_SXS(Waveform):
         pass
 
     def check_cut_consistency(self):
+        """
+        Check consistency between cut_N and cut_U.
+        If both are None, set cut_N=0.
+        If both are given, raise an error.
+        If one is given, set the other one accordingly.
+        """
+
         if self.cut_N is not None and self.cut_U is not None:
             raise RuntimeError(
                 "Conflict between cut_N and cut_U!\n"
@@ -159,6 +210,18 @@ class Waveform_SXS(Waveform):
         Return file-name in a SXS-path with specified level,
         e.g. /my/sxs/path/Lev4/my_basename
         If basename is None, then return only /my/sxs/path/Lev4
+
+        Parameters
+        ----------
+        level : int or None
+            Level to use. If None, use self.level.
+        basename : str or None
+            Base name of the h5 file to load. If None, use self.basename.
+
+        Returns
+        -------
+        fname : str
+            Full path to the requested file.
         """
 
         if not isinstance(basename, str):
@@ -180,6 +243,27 @@ class Waveform_SXS(Waveform):
     ):
         """
         Download the simulation from the SXS catalog; requires the sxs module
+        Note that for backwards compatibility we transform the new (2025 onwards)
+        format of the data to the old one, which is human-readable and easier to handle.
+
+        Parameters
+        ----------
+        ID : str or int, optional
+            ID of the SXS simulation to download. Default is "0001".
+        path : str, optional
+            Path where to store the downloaded data. Default is None, which
+            uses the current value of self.sxs_data_path. If the directory
+            does not exist, it will be created.
+        downloads : list of str, optional
+            Options to download. Can include "hlm", "metadata", "horizons", "psi4lm".
+            Default is ["hlm", "metadata"].
+        level : int or None, optional
+            Numerical resolution level to download. If None, the highest available
+            level will be downloaded. Default is None.
+        ignore_deprecation : bool, optional
+            If True, ignore deprecation warnings when downloading. Default is False.
+        extrapolation_order : int or None, optional
+            Extrapolation order to use. If None, use self.order. Default is None.
         """
         import h5py
         from itertools import product
@@ -314,6 +398,11 @@ class Waveform_SXS(Waveform):
         pass
 
     def load_metadata(self):
+        """
+        Load the sxs metadata from the metadata.json file.
+        Transform it to the PyART format, but also store the original
+        metadata as self.ometadata for completeness.
+        """
         with open(self.get_lev_fname(basename="metadata.json"), "r") as file:
             ometa = json.load(file)  # original_metadata
             file.close()
@@ -510,6 +599,10 @@ class Waveform_SXS(Waveform):
         pass
 
     def load_horizon(self):
+        """
+        Load the horizon data from Horizons.h5 file.
+        Store the data in self._dyn dictionary
+        """
         horizon = h5py.File(self.get_lev_fname(basename="Horizons.h5"))
 
         mA = horizon["AhA.dir"]["ChristodoulouMass.dat"]
@@ -532,7 +625,7 @@ class Waveform_SXS(Waveform):
     def compute_spins_at_tref(self, tref):
         """
         Compute the parallel and perpendicular components of the spins w.r.t L
-        at a reference time tref
+        at a reference time tref. This requires the horizon data to be loaded.
 
         Parameters
         ----------
@@ -569,6 +662,16 @@ class Waveform_SXS(Waveform):
         return chi1_L, chi1_perp, chi2_L, chi2_perp
 
     def load_hlm(self, ellmax=None, load_m0=False):
+        """
+        Load the hlm modes from the h5 file. Store the data in self._hlm dictionary.
+
+        Parameters
+        ----------
+        ellmax : int or None
+            Maximum ell value to load. If None, use self.ellmax.
+        load_m0 : bool, optional
+            If True, load the m=0 modes as well. Default is False.
+        """
         if ellmax == None:
             ellmax = self.ellmax
         order = f"Extrapolated_N{self.order}.dir"
@@ -616,11 +719,19 @@ class Waveform_SXS(Waveform):
                 "z": h[self.cut_N :],
             }
         self._hlm = dict_hlm
-        all_keys = self._hlm.keys()
         pass
 
     def load_psi4lm(self, ellmax=None, load_m0=False):
+        """
+        Load the psi4lm modes from the h5 file. Store the data in self._psi4lm dictionary.
 
+        Parameters
+        ----------
+        ellmax : int or None
+            Maximum ell value to load. If None, use self.ellmax.
+        load_m0 : bool, optional
+            If True, load the m=0 modes as well. Default is False.
+        """
         psi4_basename = self.basename.replace("rhOverM", "rMPsi4")
         fname = self.get_lev_fname(level=self.level, basename=psi4_basename)
         if os.path.exists(fname):
@@ -700,6 +811,13 @@ class Waveform_SXS(Waveform):
 
         Wrapper function to the `convert_sxs_to_lvc.py` from
         https://github.com/sxs-collaboration/catalog_tools/tree/master
+
+        Parameters
+        ----------
+        modes : str or list of tuple, optional
+            Modes to convert. If "all", convert all modes up to self.ellmax.
+            If a list of tuples, convert only the specified modes.
+            Default is "all".
         """
         from ..utils import convert_sxs_to_lvc as conv
 
@@ -731,6 +849,13 @@ class Waveform_SXS(Waveform):
 def save_dict_to_h5(h5group, dictionary):
     """
     Recursively save a nested dictionary to an HDF5 group or file.
+
+    Parameters
+    ----------
+    h5group : h5py.Group or h5py.File
+        The HDF5 group or file where the dictionary will be saved.
+    dictionary : dict
+        The nested dictionary to save.
     """
     for key, value in dictionary.items():
         if isinstance(value, dict):

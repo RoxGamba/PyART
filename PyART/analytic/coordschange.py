@@ -3,11 +3,34 @@ import numpy as np
 pi = np.pi
 
 
-###########################
-##  Polar <-> Cartesian  ##
-###########################
-# r, phi, etc. are all numpy arrays
 def Polar2Cartesian(r, phi, pr, pphi):
+    """
+    Transform polar coordinates (r, phi) and momenta (pr, pphi)
+    to Cartesian coordinates (x, y) and momenta (px, py).
+
+    Parameters
+    ----------
+    r : array_like
+        Radial coordinate.
+    phi : array_like
+        Angular coordinate.
+    pr : array_like
+        Radial momentum.
+    pphi : array_like
+        Angular momentum.
+
+    Returns
+    -------
+    x : array_like
+        Cartesian x coordinate.
+    y : array_like
+        Cartesian y coordinate.
+    px : array_like
+        Cartesian x momentum.
+    py : array_like
+        Cartesian y momentum.
+    """
+
     x = r * np.cos(phi)
     y = r * np.sin(phi)
     px = np.cos(phi) * pr - np.sin(phi) * pphi / r
@@ -17,6 +40,32 @@ def Polar2Cartesian(r, phi, pr, pphi):
 
 
 def Cartesian2Polar(x, y, px, py):
+    """
+    Transform Cartesian coordinates (x, y) and momenta (px, py)
+    to polar coordinates (r, phi) and momenta (pr, pphi).
+    
+    Parameters
+    ----------
+    x : array_like
+        Cartesian x coordinate.
+    y : array_like
+        Cartesian y coordinate.
+    px : array_like
+        Cartesian x momentum.
+    py : array_like
+        Cartesian y momentum.
+    
+    Returns
+    -------
+    r : array_like
+        Radial coordinate.
+    phi : array_like
+        Angular coordinate.
+    pr : array_like
+        Radial momentum.
+    pphi : array_like
+        Angular momentum.
+    """
     r = np.sqrt(x**2 + y**2)
     phi = np.arctan(y / x) + pi * np.logical_and(x < 0, 1)
     pr = (x * px + y * py) / r
@@ -28,15 +77,35 @@ def Cartesian2Polar(x, y, px, py):
 ###########################
 ##      EOB <-> ADM      ##
 ###########################
-# functions to convert EOB (cartesian) coordinates and momenta (qe,pe) to ADM (qa, pa).
-# See Buonanno,Damour:9811091 and Bini,Damour:1210.2834 (Appendix E)
-# memo: here momenta are mu-normalized
 def Eob2Adm(qe_vec, pe_vec, nu, PN_order):
+    """
+    Convert EOB coordinates and momenta to ADM coordinates and momenta
+    up to 2PN order. Use the transformation in
+    Buonanno, Damour:9811091 and Bini, Damour:1210.2834 (Appendix E)
+    Note: momenta are mu-normalized
+
+    Parameters
+    ----------
+    qe_vec : array_like
+        EOB coordinates (x, y).
+    pe_vec : array_like
+        EOB momenta (px, py), mu-normalized.
+    nu : float
+        Symmetric mass ratio.
+    PN_order : int
+        Post-Newtonian order (0, 1, or 2).
+    
+    Returns
+    -------
+    qa_vec : array_like
+        ADM coordinates (x, y).
+    pa_vec : array_like
+        ADM momenta (px, py), mu-normalized.
+    """
     # shorthands
     qe2 = np.dot(qe_vec, qe_vec)  # x, y
     qe = np.sqrt(qe2)
     qe3 = qe * qe2
-    qe4 = qe * qe3
     pe2 = np.dot(pe_vec, pe_vec)
     pe = np.sqrt(pe2)
     pe3 = pe * pe2
@@ -90,11 +159,35 @@ def Eob2Adm(qe_vec, pe_vec, nu, PN_order):
 
 
 def Adm2Eob(qa_vec, pa_vec, nu, PN_order):
+    """
+    Convert ADM coordinates and momenta to EOB coordinates and momenta
+    up to 2PN order. Use the transformation in
+    Buonanno, Damour:9811091 and Bini, Damour:1210.2834 (Appendix E)
+    Note: momenta are mu-normalized
+    
+    Parameters
+    ----------
+    qa_vec : array_like
+        ADM coordinates (x, y).
+    pa_vec : array_like
+        ADM momenta (px, py), mu-normalized.
+    nu : float
+        Symmetric mass ratio.
+    PN_order : int
+        Post-Newtonian order (0, 1, or 2).
+    
+    Returns
+    -------
+    qe_vec : array_like
+        EOB coordinates (x, y).
+    pe_vec : array_like
+        EOB momenta (px, py), mu-normalized.
+    """
+
     # shorthands
     qa2 = np.dot(qa_vec, qa_vec)  # x, y
     qa = np.sqrt(qa2)
     qa3 = qa * qa2
-    qa4 = qa * qa3
     pa2 = np.dot(pa_vec, pa_vec)
     pa = np.sqrt(pa2)
     pa3 = pa * pa2
@@ -150,9 +243,34 @@ def Adm2Eob(qa_vec, pa_vec, nu, PN_order):
 
 def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
     """
-    eob_Wave is instance of PyART.models.teob.Waveform_EOB
     Generate initial ID for NR simulations with initial
     data from TwoPuncturesC
+
+    Parameters
+    ----------
+    eob_Wave : object
+        EOB waveform, instance of PyART.models.teob.Waveform_EOB
+    verbose : bool, optional
+        If True, print out info for testing. Default is False.
+    PN_order : int, optional
+        Post-Newtonian order for EOB <-> ADM transformation.
+        Default is 2 (max available).
+    rotate_on_x_axis : bool, optional
+        If True, rotate system so that punctures are on x-axis at t=0.
+        Default is True.
+    
+    Returns
+    -------
+    out : dict
+        Dictionary with the following keys:
+        'q_cart' : ADM coordinates (x, y)
+        'p_cart' : ADM momenta (px, py), mu-normalized
+        'px' : ADM momentum px, M-normalized
+        'py' : ADM momentum py, M-normalized
+        'x1' : x coordinate of puncture 1
+        'x2' : x coordinate of puncture 2
+        'D' : coordinate separation between punctures
+        'x_offset' : offset to be added to x coordinates
     """
     # Get info from EOB dynamics
     q = eob_Wave.pars["q"]

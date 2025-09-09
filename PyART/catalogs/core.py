@@ -36,6 +36,11 @@ def vector_string_to_array(vstr):
 
 
 class Waveform_CoRe(Waveform):
+    """
+    Class for handling waveforms from the CoRe catalog.
+    See https://core-gitlab.tpi.uni-jena.de/core_database for more information.
+    The data is downloaded via git clone. Make sure you have git-lfs installed.
+    """
 
     def __init__(
         self,
@@ -52,6 +57,45 @@ class Waveform_CoRe(Waveform):
         nu_rescale=False,
         K=1,  # order of polynomial for extrapolation
     ) -> None:
+        """
+        Initialize CoRe waveform object.
+
+        Parameters
+        ----------
+        path : str, optional
+            Path to the directory where the CoRe data is stored or will be downloaded to.
+            Default is '../dat/CoRe/'.
+        ID : str or int, optional
+            Simulation ID. If int, it will be zero-padded to 4 digits. Default is '0001'.
+        run : str, optional
+            Specific run directory within the simulation. If None, the highest resolution run
+            (smallest grid spacing) will be selected. Default is None.
+        code : str, optional
+            Code used for the simulation (e.g., 'BAM', 'ET', 'THC'). Default is 'BAM'.
+        kind : str, optional
+            Format of the waveform data. Options are 'h5' for HDF5 files or 'txt' for text files.
+            Default is 'h5'.
+        mtdt_path : str, optional
+            Path to the metadata file. If None, it defaults to 'metadata_main.txt' in
+            the simulation directory. Default is None.
+        ell_emms : list of tuples or 'all', optional
+            List of (ell, emm) modes to load. If 'all', all available modes are loaded.
+            Default is 'all'.
+        download : bool, optional
+            If True and the specified path does not exist, the simulation will be downloaded
+            from the CoRe database. Default is False.
+        cut_at_mrg : bool, optional
+            If True, the waveform will be cut at the merger time plus 10M. Default is False.
+        cut_junk : float or None, optional
+            If a float is provided, the waveform will be cut to remove the initial junk
+            radiation up to the specified time. If None, no cutting is performed. Default is None.
+        nu_rescale : bool, optional
+            If True, the waveform amplitude will be rescaled by the symmetric mass ratio nu.
+            Default is False.
+        K : int, optional
+            Order of the polynomial used for extrapolating the waveform to infinite radius.
+            Default is 1.
+        """
 
         super().__init__()
         if isinstance(ID, int):
@@ -130,6 +174,26 @@ class Waveform_CoRe(Waveform):
     def download_simulation(
         self, ID="BAM_0001", path=".", protocol="https", verbose=False
     ):
+        """
+        Download simulation from the CoRe database via git clone.
+        Make sure you have git-lfs installed.
+
+        Parameters
+        ----------
+        ID : str, optional
+            Simulation ID, e.g., 'BAM_0001'. Default is 'BAM_0001'.
+        path : str, optional
+            Path to the directory where the simulation will be downloaded. Default is '.'.
+        protocol : str, optional
+            Protocol to use for downloading. Options are 'ssh' or 'https'. Default is 'https'.
+        verbose : bool, optional
+            If True, print out info for testing. Default is False.  Default is False.
+
+        Raises
+        ------
+        NameError
+            If the specified protocol is not supported.
+        """
         pre = {"ssh": "git@", "https": "https://"}
         sep = {"ssh": ":", "https": "/"}
         server = "core-gitlfs.tpi.uni-jena.de"
@@ -151,6 +215,11 @@ class Waveform_CoRe(Waveform):
         Find the global peak of the 22 and cut the waveform at this time + 10 M.
         Assuming that this is the merger time. For some wfs with postmerger this
         might not be true!
+
+        Raises
+        ------
+        NameError
+            If the 22 mode is not available.
         """
         # find the peak of the 22 mode
         t_mrg, _, _, _, idx_cut = self.find_max(kind="global", return_idx=True)
@@ -163,6 +232,18 @@ class Waveform_CoRe(Waveform):
         pass
 
     def load_metadata(self, mtdt_path):
+        """
+        Load metadata from the metadata_main.txt file.
+        Parameters
+        ----------
+        mtdt_path : str
+            Path to the metadata file.
+        Returns
+        -------
+        metadata : dict
+            Dictionary containing the metadata.
+        """
+
         metadata = {}
         with open(mtdt_path, "r") as f:
             lines = [l for l in f.readlines() if l.strip()]  # rm empty
@@ -213,6 +294,22 @@ class Waveform_CoRe(Waveform):
         return metadata
 
     def load_hlm(self, kind="h5", K=1):
+        """
+        Load waveform modes from the specified format.
+        If h5, extrapolate to infinity with a polynomial of order K.
+        Parameters
+        ----------
+        kind : str, optional
+            Format of the waveform data. Options are 'h5' for HDF5 files or
+            'txt' for text files. Default is 'h5'.
+        K : int, optional
+            Order of the polynomial used for extrapolating the waveform to
+            infinite radius. Default is 1.
+        Raises
+        ------
+        NameError
+            If the specified kind is not recognized.
+        """
         if kind == "txt":
             self.read_h_txt(self.runpath)
         elif kind == "h5":
@@ -225,6 +322,19 @@ class Waveform_CoRe(Waveform):
         Read modes from the h5 file.
         Extract both the modes at finite radius
         and extrapolate to infinity using a K=1 polynomial
+
+        Parameters
+        ----------
+        basepath : str
+            Path to the directory containing the data.h5 file.
+        K : int, optional
+            Order of the polynomial used for extrapolating the waveform to
+            infinite radius. Default is 1.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the data.h5 file is not found.
         """
         self.dfile = os.path.join(basepath, "data.h5")
         dset = {}
@@ -314,6 +424,18 @@ class Waveform_CoRe(Waveform):
         self._t = tnew
 
     def read_h_txt(self, basepath):
+        """
+        Read modes from the txt files.
+        Parameters
+        ----------
+        basepath : str
+            Path to the directory containing the txt files.
+        Raises
+        ------
+        FileNotFoundError
+            If no txt files are found in the specified directory.
+        """
+
         # TODO: modify in case one has the txt files already
         # find all modes under basepath
         modes = glob.glob(basepath + "/Rh_l*.txt")
@@ -352,7 +474,7 @@ class Waveform_CoRe(Waveform):
 
 # stolen from watpy
 def radius_extrap_polynomial(ys, rs, K):
-    """
+    r"""
     Given different datasets yi, i=1...N, collected as
              ys = [y0, y1, y2, ... , yN]
     and array containing extraction radii
@@ -365,10 +487,20 @@ def radius_extrap_polynomial(ys, rs, K):
     where y_infty and the K coefficients ci are determined through a least
     squares polynomial fit from the above data.
 
-    ys ... collection of data sets yi which all are of the same length,
-           e.g. all sampled on the same grid u.
-    rs ... extraction radii of the data samples yi
-    K  ... maximum polynomial order of 1/r polynomial
+    Parameters
+    ----------
+    ys : list of arrays
+        Collection of data sets yi which all are of the same length,
+        e.g. all sampled on the same grid u.
+    rs : list of floats
+        Extraction radii of the data samples yi
+    K : int
+        Maximum polynomial order of 1/r polynomial
+
+    Returns
+    -------
+    yinfty : array
+        Extrapolated data set at r -> infinity
     """
     import scipy as sp
 
