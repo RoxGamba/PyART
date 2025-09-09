@@ -44,6 +44,16 @@ KEYS = [
 
 
 def errwarn(msg, raise_err=True):
+    """
+    Raise error or warning with given message
+
+    Parameters
+    ----------
+    msg : str
+        Message to display
+    raise_err : bool, optional
+        If True, raise RuntimeError. If False, issue a warning. Default is True.
+    """
     if raise_err:
         raise RuntimeError(msg)
     else:
@@ -54,6 +64,13 @@ def errwarn(msg, raise_err=True):
 def check_metadata(meta, raise_err=True):
     """
     Check that given metadata satisfies PyART-requirements
+
+    Parameters
+    ----------
+    meta : dict
+        Metadata dictionary to check
+    raise_err : bool, optional
+        If True, raise error on problems. If False, issue warnings. Default is True.
     """
     # check that all required keys are in the dict
     for rkey in KEYS:
@@ -72,6 +89,20 @@ def check_metadata(meta, raise_err=True):
 
 
 def get_flags(meta, thres_spin=1e-5, thres_q=1e-3, thres_e0=1e-3):
+    """
+    Get flags for given metadata
+
+    Parameters
+    ----------
+    meta : dict
+        Metadata dictionary to analyze
+    thres_spin : float, optional
+        Threshold for spin to be considered zero (default is 1e-5)
+    thres_q : float, optional
+        Threshold for mass ratio to be considered equal mass (default is 1e-3)
+    thres_e0 : float, optional
+        Threshold for eccentricity to be considered quasi-circular (default is 1e-3)
+    """
     flags = []
     spins = [
         meta["chi1x"],
