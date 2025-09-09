@@ -1,125 +1,185 @@
 import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
-import h5py 
+import h5py
 import glob
 import os, json, requests, time
 from bs4 import BeautifulSoup
 
 from ..waveform import Waveform
-from ..utils    import os_utils  as os_ut
-from ..utils    import cat_utils as cat_ut
+from ..utils import os_utils as os_ut
+from ..utils import cat_utils as cat_ut
+
 
 # This class is used to load the RIT data and store it in a convenient way
 class Waveform_RIT(Waveform):
+    """
+    Class to load RIT waveforms and metadata.
+    """
 
-    def __init__(self,
-                 path        = '../dat/RIT/',
-                 ID          = '0001',
-                 download    = False,
-                 psi_load    = True,
-                 h_load      = True,
-                 mtdt_load   = True,
-                 ell_emms    = 'all',
-                 nu_rescale  = False, 
-                 shorten_rng = True, # keep at most 300 M after merger
-                 urls_json = None,
-                 ) -> None:
-        
+    def __init__(
+        self,
+        path="../dat/RIT/",
+        ID="0001",
+        download=False,
+        psi_load=True,
+        h_load=True,
+        mtdt_load=True,
+        ell_emms="all",
+        nu_rescale=False,
+        shorten_rng=True,  # keep at most 300 M after merger
+        urls_json=None,
+    ) -> None:
+        """
+        Initialize the Waveform_RIT class.
+
+        Parameters
+        ----------
+        path : str, optional
+            The path where the RIT data is stored. Default is "../dat/RIT/".
+        ID : str or int, optional
+            The ID of the RIT simulation to load. If an int is provided, it will
+            be converted to a zero-padded string of length 4. Default is "0001".
+        download : bool, optional
+            If True, the simulation will be downloaded if not found in the specified path.
+            Default is False.
+        psi_load : bool, optional
+            If True, the psi4 data will be loaded. Default is True.
+        h_load : bool, optional
+            If True, the strain data will be loaded. Default is True.
+        mtdt_load : bool, optional
+            If True, the metadata will be loaded. Default is True.
+        ell_emms : str or list of tuple, optional
+            Modes to load. If "all", all modes up to ell=5 will be loaded.
+            If a list of tuples, only the specified modes will be loaded.
+            Default is "all".
+        nu_rescale : bool, optional
+            If True, the waveform will be rescaled by the symmetric mass ratio nu.
+            Default is False.
+        shorten_rng : bool, optional
+            If True, the waveform will be shortened to keep at most 300 M after merger.
+            Default is True.
+        urls_json : str or None, optional
+            Path to a JSON file containing the URLs of the RIT simulations. If None, a default
+            file will be created in the catalogs directory. Default is None.
+        """
         super().__init__()
 
-        #self.t_psi4 = None # now property of parent class Waveform
-        self.t_h    = None
+        # self.t_psi4 = None # now property of parent class Waveform
+        self.t_h = None
         self.ell_emms = ell_emms
-        self.metadata      = None
+        self.metadata = None
         self.metadata_psi4 = None
-        self.domain        = 'Time'
-        self.nu_rescale    = nu_rescale        
-        self.shorten_rng   = shorten_rng
+        self.domain = "Time"
+        self.nu_rescale = nu_rescale
+        self.shorten_rng = shorten_rng
 
         if isinstance(ID, int):
-            ID = f'{ID:04}'
+            ID = f"{ID:04}"
         self.ID = ID
-        
-        sim_path = os.path.join(path, f'RIT_BBH_{ID}')
+
+        sim_path = os.path.join(path, f"RIT_BBH_{ID}")
         if not os.path.exists(sim_path):
             if download:
                 print(f"The path {sim_path} does not exist.")
                 print("Downloading the simulation from the RIT catalog.")
                 self.download_data(ID=ID, path=sim_path, urls_json=urls_json)
             else:
-                print("Use download=True to download the simulation from the SXS catalog.")
+                print(
+                    "Use download=True to download the simulation from the SXS catalog."
+                )
                 raise FileNotFoundError(f"The path {sim_path} does not exist.")
         self.sim_path = sim_path
 
         # metadata available
-        self.mtdt_path = os_ut.find_fnames_with_token(self.sim_path, 'Metadata.txt')[0]
+        self.mtdt_path = os_ut.find_fnames_with_token(self.sim_path, "Metadata.txt")[0]
         if mtdt_load:
             self.metadata, self.ometadata = self.load_metadata(self.mtdt_path)
 
         # psi4 available
-        self.psi_path  = os_ut.find_dirs_with_token(self.sim_path, 'ExtrapPsi4')[0]
-        #self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
-        self.mtdt_psi4 = os.path.join(self.psi_path, 'Metadata')
+        self.psi_path = os_ut.find_dirs_with_token(self.sim_path, "ExtrapPsi4")[0]
+        # self.mtdt_psi4 = os.path.join(path, self.psi_path, 'Metadata')
+        self.mtdt_psi4 = os.path.join(self.psi_path, "Metadata")
         if psi_load:
             _, self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
             self.load_psi4lm()
-        
+
         # strain available
-        h_path = os_ut.find_fnames_with_token(self.sim_path, 'ExtrapStrain')[0]
+        h_path = os_ut.find_fnames_with_token(self.sim_path, "ExtrapStrain")[0]
         if h_load:
-            self.h_file   = h5py.File(h_path, 'r')
+            self.h_file = h5py.File(h_path, "r")
             self.load_hlm()
             if self.shorten_rng:
-                tmrg,_,_,_ = self.find_max(kind='last-peak',height=0.05)
-                DeltaT = self.u[-1]-tmrg-300
-                if DeltaT>0:
+                tmrg, _, _, _ = self.find_max(kind="last-peak", height=0.05)
+                DeltaT = self.u[-1] - tmrg - 300
+                if DeltaT > 0:
                     self.cut(DeltaT, from_the_end=True)
         pass
-    
-    def download_data(self, ID, path='./', urls_json=None, dump_urls=True):
 
-        def get_id_from_url(url,sep='-'):
+    def download_data(self, ID, path="./", urls_json=None, dump_urls=True):
+        """
+        Download the RIT simulation with the given ID from the RIT catalog.
+        The data will be stored in the given path.
+
+        Parameters
+        ----------
+        ID : str
+            The ID of the RIT simulation to download. It should be a zero-padded
+            string of length 4, e.g. "0001".
+        path : str, optional
+            The path where the RIT data will be stored. Default is "./".
+        urls_json : str or None, optional
+            Path to a JSON file containing the URLs of the RIT simulations. If None, a default
+            file will be created in the catalogs directory. Default is None.
+        dump_urls : bool, optional
+            If True, the URLs will be dumped to the given urls_json file if it does not exist.
+            Default is True.
+        """
+
+        def get_id_from_url(url, sep="-"):
             parts = url.split(sep)
             for i, part in enumerate(parts):
-                if 'BBH' in part:
+                if "BBH" in part:
                     # 'cleaning' needed for Metadata*.txt fnames
-                    next_part = parts[i+1]
-                    next_part_cleaned = next_part.split('-')
+                    next_part = parts[i + 1]
+                    next_part_cleaned = next_part.split("-")
                     return int(next_part_cleaned[0])
             return None
-        
-        file_path = os.path.dirname(__file__) # this is in the build/lib
-        repo_path = file_path.split('PyART/')[0]
-        script_path = os.path.join(repo_path, 'PyART/catalogs/')
-        if urls_json is None: # use default name
-           urls_json = os.path.join(script_path,'rit_urls.json')
-        elif not isinstance(urls_json, str): 
-            raise RuntimeError('Invalid value for urls_json: {urls_json}')
+
+        file_path = os.path.dirname(__file__)  # this is in the build/lib
+        repo_path = file_path.split("PyART/")[0]
+        script_path = os.path.join(repo_path, "PyART/catalogs/")
+        if urls_json is None:  # use default name
+            urls_json = os.path.join(script_path, "rit_urls.json")
+        elif not isinstance(urls_json, str):
+            raise RuntimeError("Invalid value for urls_json: {urls_json}")
 
         if os.path.exists(urls_json):
-            print(f'Loading urls from {urls_json}')
-            with open(urls_json, 'r') as file:
+            print(f"Loading urls from {urls_json}")
+            with open(urls_json, "r") as file:
                 urls_dict = json.load(file)
         else:
-            catalog_url = 'https://ccrgpages.rit.edu/~RITCatalog/'
-            print('JSON file with RIT urls not found, fetching and parsing catalog webpage:', catalog_url)
+            catalog_url = "https://ccrgpages.rit.edu/~RITCatalog/"
+            print(
+                "JSON file with RIT urls not found, fetching and parsing catalog webpage:",
+                catalog_url,
+            )
             # fetch and parse catalog webpage
-            response     = requests.get(catalog_url)
+            response = requests.get(catalog_url)
             html_content = response.text
-            soup         = BeautifulSoup(html_content, 'html.parser')
+            soup = BeautifulSoup(html_content, "html.parser")
             urls_dict = {}
-            # loop on hyper references 
-            for link in soup.find_all('a', href=True):
-                href = link['href']
-                if 'Data/' in href or 'Metadata/' in href:
+            # loop on hyper references
+            for link in soup.find_all("a", href=True):
+                href = link["href"]
+                if "Data/" in href or "Metadata/" in href:
                     # get ID from filename
-                    if 'Metadata/' in href:
-                        sep = ':'
+                    if "Metadata/" in href:
+                        sep = ":"
                     else:
-                        sep = '-'
+                        sep = "-"
                     rit_id_int = get_id_from_url(href, sep=sep)
-                    key = f'{rit_id_int:04}'
+                    key = f"{rit_id_int:04}"
                     # full url
                     sim_url = os.path.join(catalog_url, href)
                     # add to dictionary
@@ -128,94 +188,117 @@ class Waveform_RIT(Waveform):
                     else:
                         urls_dict[key].append(sim_url)
             if dump_urls:
-                with open(urls_json, 'w') as json_file:
+                with open(urls_json, "w") as json_file:
                     json.dump(urls_dict, json_file, indent=4)
-                print('Created JSON file with RIT urls:', urls_json)
+                print("Created JSON file with RIT urls:", urls_json)
 
-        print('-'*50, f'\nDownloading RIT:BBH:{ID}\n', '-'*50, sep='')
+        print("-" * 50, f"\nDownloading RIT:BBH:{ID}\n", "-" * 50, sep="")
         tstart = time.perf_counter()
-        # ensure that the ID corresponds to an existing simulation
+        # ensure that the ID corresponds to an existing simulation
         if not ID in urls_dict:
-            raise ValueError(f'No data found for ID:{ID}')
+            raise ValueError(f"No data found for ID:{ID}")
         # if everything fine, creat simulation-dir and download data
         os.makedirs(path, exist_ok=True)
         for href in urls_dict[ID]:
-            os_ut.runcmd('wget '+href, workdir=path)
-            if 'tar.gz' in href: # if compressed, untar
-                elems = href.split('/')
+            os_ut.runcmd("wget " + href, workdir=path)
+            if "tar.gz" in href:  # if compressed, untar
+                elems = href.split("/")
                 fname = elems[-1]
-                os_ut.runcmd('tar -vxzf '+fname, workdir=path)
-                os_ut.runcmd('rm -rv '+fname,    workdir=path) # remove compressed archive
-                
+                os_ut.runcmd("tar -vxzf " + fname, workdir=path)
+                os_ut.runcmd(
+                    "rm -rv " + fname, workdir=path
+                )  # remove compressed archive
+
                 # check if the ExtrapPsi4* dir is in the correct level
-                subdirs_ExtrapPsi4 = os_ut.find_dirs_with_subdirs(path, 'ExtrapPsi4')
+                subdirs_ExtrapPsi4 = os_ut.find_dirs_with_subdirs(path, "ExtrapPsi4")
                 subdir = subdirs_ExtrapPsi4[0]
-                if os_ut.is_subdir(path, subdir): # if wron level, move to upper one
-                    tomove = os.path.join(subdir, 'ExtrapPsi4*')
-                    os_ut.runcmd(f'mv -v {tomove} .', workdir=path)
-                    os_ut.runcmd(f'rmdir {subdir}',   workdir=path)
-        print('>> Elapsed time: {:.3f} s\n'.format(time.perf_counter()-tstart))
-                     
+                if os_ut.is_subdir(path, subdir):  # if wron level, move to upper one
+                    tomove = os.path.join(subdir, "ExtrapPsi4*")
+                    os_ut.runcmd(f"mv -v {tomove} .", workdir=path)
+                    os_ut.runcmd(f"rmdir {subdir}", workdir=path)
+        print(">> Elapsed time: {:.3f} s\n".format(time.perf_counter() - tstart))
+
         pass
 
     def load_psi4lm(self):
-
-        files = glob.glob(os.path.join(self.psi_path, '*.asc'))
+        """
+        Load psi4lm modes from the RIT catalog.
+        The modes are stored in self._psi4lm dictionary.
+        """
+        files = glob.glob(os.path.join(self.psi_path, "*.asc"))
         d = {}
-        
-        if self.ell_emms == 'all': 
-            modes = [(ell, emm) for ell in range(2,6) for emm in range(-ell, ell+1)]
+
+        if self.ell_emms == "all":
+            modes = [(ell, emm) for ell in range(2, 6) for emm in range(-ell, ell + 1)]
         else:
             modes = self.ell_emms
-        
+
         for ff in files:
-            ell = int((ff.split('/')[-1]).split('_')[1][1:])
-            emm = int((ff.split('/')[-1]).split('_')[2][1:])
+            ell = int((ff.split("/")[-1]).split("_")[1][1:])
+            emm = int((ff.split("/")[-1]).split("_")[2][1:])
             if (ell, emm) not in modes:
                 continue
             try:
-                t,re,im,A,p = np.loadtxt(ff, unpack=True, skiprows=4, usecols=(0,1,2,3,4) )
+                t, re, im, A, p = np.loadtxt(
+                    ff, unpack=True, skiprows=4, usecols=(0, 1, 2, 3, 4)
+                )
             except Exception:
-                t,re,im,A,p,o = np.loadtxt(ff, unpack=True, skiprows=4, usecols=(0,1,2,3,4))
+                t, re, im, A, p, o = np.loadtxt(
+                    ff, unpack=True, skiprows=4, usecols=(0, 1, 2, 3, 4)
+                )
             if self.nu_rescale:
-                A /= self.metadata['nu']
-            d[(ell,emm)] = {'real':re, 'imag':im, 'A':A, 'p':p, 'z': A*np.exp(-1j*p)}
-        
+                A /= self.metadata["nu"]
+            d[(ell, emm)] = {
+                "real": re,
+                "imag": im,
+                "A": A,
+                "p": p,
+                "z": A * np.exp(-1j * p),
+            }
+
         self._psi4lm = d
         self._t_psi4 = t
         pass
 
     def load_hlm(self):
-
-        d  = {}
-        f  = self.h_file
-        th = f['NRTimes'][:]
-        if self.ell_emms == 'all': 
-            modes = [(ell, emm) for ell in range(2,6) for emm in range(-ell, ell+1)]
+        """
+        Load hlm from RIT data.
+        """
+        d = {}
+        f = self.h_file
+        th = f["NRTimes"][:]
+        if self.ell_emms == "all":
+            modes = [(ell, emm) for ell in range(2, 6) for emm in range(-ell, ell + 1)]
         else:
             modes = self.ell_emms
-        
+
         for mm in modes:
             ell, emm = mm
             try:
-                A   =  f[f'amp_l{ell}_m{emm}']['Y'][:]
-                A_u =  f[f'amp_l{ell}_m{emm}']['X'][:]
-                p   = -f[f'phase_l{ell}_m{emm}']['Y'][:]
-                p_u =  f[f'phase_l{ell}_m{emm}']['X'][:]
+                A = f[f"amp_l{ell}_m{emm}"]["Y"][:]
+                A_u = f[f"amp_l{ell}_m{emm}"]["X"][:]
+                p = -f[f"phase_l{ell}_m{emm}"]["Y"][:]
+                p_u = f[f"phase_l{ell}_m{emm}"]["X"][:]
                 # interp to common time array
-                A   = self.__interp_qnt__(A_u, A, th)
-                p   = self.__interp_qnt__(p_u, p, th) + np.pi
+                A = self.__interp_qnt__(A_u, A, th)
+                p = self.__interp_qnt__(p_u, p, th) + np.pi
                 if self.nu_rescale:
-                    A /= self.metadata['nu']
-                d[(ell, emm)] = {'real' : A*np.cos(p), 'imag': -A*np.sin(p), 'A':A, 'p':p, 'z': A*np.exp(-1j*p)}
+                    A /= self.metadata["nu"]
+                d[(ell, emm)] = {
+                    "real": A * np.cos(p),
+                    "imag": -A * np.sin(p),
+                    "A": A,
+                    "p": p,
+                    "z": A * np.exp(-1j * p),
+                }
 
             except KeyError:
                 pass
-        
+
         self._hlm = d
-        self.t_h  = th.astype(np.float64)
-        self._t   = self.t_h
-        self._u   = self.t_h
+        self.t_h = th.astype(np.float64)
+        self._t = self.t_h
+        self._u = self.t_h
         pass
 
     def load_metadata(self, path):
@@ -224,195 +307,254 @@ class Waveform_RIT(Waveform):
         Meta with original keys are stored in ometadata,
         metadata instead contain useful info with standard
         naming (see e.g. SXS metadata)
-        """
-        nm    = path
-        ometa = {}
-        with open(nm, 'r') as f:
 
-            lines = [l for l in f.readlines() if l.strip()] # rm empty
+        Parameters
+        ----------
+        path : str
+            Path to the metadata file.
+        Returns
+        -------
+        meta : dict
+            Dictionary containing the metadata with standard keys.
+        """
+        nm = path
+        ometa = {}
+        with open(nm, "r") as f:
+
+            lines = [l for l in f.readlines() if l.strip()]  # rm empty
 
             for line in lines[1:]:
-                if line[0]=="#": continue
-                line               = line.rstrip("\n")
-                #line = line.split("#", 1)[0]
-                key, val           = line.split("= ")
-                key                = key.strip()
+                if line[0] == "#":
+                    continue
+                line = line.rstrip("\n")
+                # line = line.split("#", 1)[0]
+                key, val = line.split("= ")
+                key = key.strip()
                 ometa[key] = val
-            
-            kind = 'relaxed' # initial or relaxed (but no relaxed-separation in meta)
-            if kind=='initial':
+
+            kind = "relaxed"  # initial or relaxed (but no relaxed-separation in meta)
+            if kind == "initial":
                 ref_time = 0
-            elif kind=='relaxed':
-                ref_time = float(ometa['relaxed-time']) 
-            M1   = float(ometa[f'{kind}-mass1'])
-            M2   = float(ometa[f'{kind}-mass2'])
-            M    = M1+M2
-            q    = M1/M2
-            nu   = q/(1+q)**2
-            
-            def return_val_or_default(key,mydict,default=0.0):
+            elif kind == "relaxed":
+                ref_time = float(ometa["relaxed-time"])
+            M1 = float(ometa[f"{kind}-mass1"])
+            M2 = float(ometa[f"{kind}-mass2"])
+            M = M1 + M2
+            q = M1 / M2
+            nu = q / (1 + q) ** 2
+
+            def return_val_or_default(key, mydict, default=0.0):
                 if key in mydict:
                     return float(mydict[key])
                 else:
                     return default
-            
-            if kind=='initial':
-                chi1x = return_val_or_default(f'{kind}-bh-chi1x',ometa)
-                chi1y = return_val_or_default(f'{kind}-bh-chi1y',ometa)
-                chi1z = return_val_or_default(f'{kind}-bh-chi1z',ometa)
-                chi2x = return_val_or_default(f'{kind}-bh-chi2x',ometa)
-                chi2y = return_val_or_default(f'{kind}-bh-chi2y',ometa)
-                chi2z = return_val_or_default(f'{kind}-bh-chi2z',ometa)
+
+            if kind == "initial":
+                chi1x = return_val_or_default(f"{kind}-bh-chi1x", ometa)
+                chi1y = return_val_or_default(f"{kind}-bh-chi1y", ometa)
+                chi1z = return_val_or_default(f"{kind}-bh-chi1z", ometa)
+                chi2x = return_val_or_default(f"{kind}-bh-chi2x", ometa)
+                chi2y = return_val_or_default(f"{kind}-bh-chi2y", ometa)
+                chi2z = return_val_or_default(f"{kind}-bh-chi2z", ometa)
             else:
-                chi1x = return_val_or_default(f'{kind}-chi1x',ometa)
-                chi1y = return_val_or_default(f'{kind}-chi1y',ometa)
-                chi1z = return_val_or_default(f'{kind}-chi1z',ometa)
-                chi2x = return_val_or_default(f'{kind}-chi2x',ometa)
-                chi2y = return_val_or_default(f'{kind}-chi2y',ometa)
-                chi2z = return_val_or_default(f'{kind}-chi2z',ometa)
-                
-            D  = float(ometa['initial-separation']) 
-            f0 = float(ometa['freq-start-22'])/2 # FIXME
+                chi1x = return_val_or_default(f"{kind}-chi1x", ometa)
+                chi1y = return_val_or_default(f"{kind}-chi1y", ometa)
+                chi1z = return_val_or_default(f"{kind}-chi1z", ometa)
+                chi2x = return_val_or_default(f"{kind}-chi2x", ometa)
+                chi2y = return_val_or_default(f"{kind}-chi2y", ometa)
+                chi2z = return_val_or_default(f"{kind}-chi2z", ometa)
 
-            J0 = np.array([float(ometa['initial-ADM-angular-momentum-x']),
-                           float(ometa['initial-ADM-angular-momentum-y']),
-                           float(ometa['initial-ADM-angular-momentum-z'])])
-            S1 = np.array([chi1x,chi1y,chi1z])*M1*M1
-            S2 = np.array([chi2x,chi2y,chi2z])*M2*M2
-            L0 = J0-S1-S2
-            pph0 = L0[2]/(M*M*nu)
+            D = float(ometa["initial-separation"])
+            try:
+                f0 = float(ometa["freq-start-22"]) / 2  # FIXME
+            except Exception:
+                f0 = 0.0
 
-            af = float(ometa['final-chi'])
-            meta = {'name'       : ometa['catalog-tag'], # i.e. store as name 'RIT:eBBH:1110'
-                    'ref_time'   : ref_time,
-                    # masses and spins 
-                    'm1'         : M1,
-                    'm2'         : M2,
-                    'M'          : M,
-                    'q'          : q,
-                    'nu'         : nu,
-                    'S1'         : S1,
-                    'S2'         : S2,
-                    'chi1x'      : chi1x,  # dimensionless
-                    'chi1y'      : chi1y,
-                    'chi1z'      : chi1z,
-                    'chi2x'      : chi2x,  # dimensionless
-                    'chi2y'      : chi2y,
-                    'chi2z'      : chi2z,
-                    'LambdaAl2'  : 0.,
-                    'LambdaBl2'  : 0.,
-                    # positions
-                    'pos1'       : np.array([0,0,+D/2]),
-                    'pos2'       : np.array([0,0,-D/2]),
-                    'r0'         : D, 
-                    'e0'         : float(ometa['eccentricity']),
-                     # frequencies
-                    'f0v'        : np.array([0,0,f0]), # FIXME: only for spin-aligned
-                    'f0'         : f0,
-                    # ADM quantities (INITIAL, not REF)
-                    'E0'         : float(ometa['initial-ADM-energy']),
-                    'P0'         : None,
-                    'J0'         : J0,
-                    'Jz0'        : J0[2],
-                    'pph0'       : pph0,
-                    'E0byM'      : float(ometa['initial-ADM-energy'])/M,
-                    # remnant
-                    'Mf'         : float(ometa['final-mass']),
-                    'afv'        : np.array([0,0,af]),
-                    'af'         : af,
-                    'scat_angle' : None, 
-                    }
+            J0 = np.array(
+                [
+                    float(ometa["initial-ADM-angular-momentum-x"]),
+                    float(ometa["initial-ADM-angular-momentum-y"]),
+                    float(ometa["initial-ADM-angular-momentum-z"]),
+                ]
+            )
+            S1 = np.array([chi1x, chi1y, chi1z]) * M1 * M1
+            S2 = np.array([chi2x, chi2y, chi2z]) * M2 * M2
+            L0 = J0 - S1 - S2
+            pph0 = L0[2] / (M * M * nu)
 
-        meta['flags'] = cat_ut.get_flags(meta)
-        # check that all the required quantities are given 
+            af = float(ometa["final-chi"])
+            meta = {
+                "name": ometa["catalog-tag"],  # i.e. store as name 'RIT:eBBH:1110'
+                "ref_time": ref_time,
+                # masses and spins
+                "m1": M1,
+                "m2": M2,
+                "M": M,
+                "q": q,
+                "nu": nu,
+                "S1": S1,
+                "S2": S2,
+                "chi1x": chi1x,  # dimensionless
+                "chi1y": chi1y,
+                "chi1z": chi1z,
+                "chi2x": chi2x,  # dimensionless
+                "chi2y": chi2y,
+                "chi2z": chi2z,
+                "LambdaAl2": 0.0,
+                "LambdaBl2": 0.0,
+                # positions
+                "pos1": np.array([0, 0, +D / 2]),
+                "pos2": np.array([0, 0, -D / 2]),
+                "r0": D,
+                "e0": float(ometa["eccentricity"]),
+                # frequencies
+                "f0v": np.array([0, 0, f0]),  # FIXME: only for spin-aligned
+                "f0": f0,
+                # ADM quantities (INITIAL, not REF)
+                "E0": float(ometa["initial-ADM-energy"]),
+                "P0": None,
+                "J0": J0,
+                "Jz0": J0[2],
+                "pph0": pph0,
+                "E0byM": float(ometa["initial-ADM-energy"]) / M,
+                # remnant
+                "Mf": float(ometa["final-mass"]),
+                "afv": np.array([0, 0, af]),
+                "af": af,
+                "scat_angle": None,
+            }
+
+        meta["flags"] = cat_ut.get_flags(meta)
+        # check that all the required quantities are given
         cat_ut.check_metadata(meta, raise_err=True)
-        
-        return meta, ometa
 
+        return meta, ometa
 
     def compute_initial_data(self):
         """
         Compute initial data (J0, S0, L0) from the metadata
+        and store them in self._dyn["id"] dictionary.
         """
 
         if self.metadata is not None:
             mtdt = self.metadata
         elif self.metadata_psi4 is not None:
             mtdt = self.metadata_psi4
-        elif (self.metadata is None and self.metadata_psi4 is None):
+        elif self.metadata is None and self.metadata_psi4 is None:
             print("No metadata loaded")
-            raise FileNotFoundError("No metadata read. Please load metadata first.")        
+            raise FileNotFoundError("No metadata read. Please load metadata first.")
 
         try:
-            chi1x = float(mtdt['initial-bh-chi1x']);  chi2x = float(mtdt['initial-bh-chi2x'])
-            chi1y = float(mtdt['initial-bh-chi1y']);  chi2y = float(mtdt['initial-bh-chi2y'])
+            chi1x = float(mtdt["initial-bh-chi1x"])
+            chi2x = float(mtdt["initial-bh-chi2x"])
+            chi1y = float(mtdt["initial-bh-chi1y"])
+            chi2y = float(mtdt["initial-bh-chi2y"])
         except KeyError:
-            chi1x = 0.;  chi2x = 0.
-            chi1y = 0.;  chi2y = 0.
-        chi1z = float(mtdt['initial-bh-chi1z']);  chi2z = float(mtdt['initial-bh-chi2z'])
-        chi1  = np.array([chi1x, chi1y, chi1z])
-        chi2  = np.array([chi2x, chi2y, chi2z])
+            chi1x = 0.0
+            chi2x = 0.0
+            chi1y = 0.0
+            chi2y = 0.0
+        chi1z = float(mtdt["initial-bh-chi1z"])
+        chi2z = float(mtdt["initial-bh-chi2z"])
+        chi1 = np.array([chi1x, chi1y, chi1z])
+        chi2 = np.array([chi2x, chi2y, chi2z])
 
         # masses
-        m1 = float(mtdt['initial-mass1']);  m2 = float(mtdt['initial-mass2'])
-        M  = m1 + m2
-        X1 = m1/M; X2 = m2/M
+        m1 = float(mtdt["initial-mass1"])
+        m2 = float(mtdt["initial-mass2"])
+        M = m1 + m2
+        X1 = m1 / M
+        X2 = m2 / M
 
         # Spin vectors
-        S1 = chi1*m1**2
-        S2 = chi2*m2**2
+        S1 = chi1 * m1**2
+        S2 = chi2 * m2**2
 
         # Ang momentum
-        Jx = float(mtdt['initial-ADM-angular-momentum-x'])
-        Jy = float(mtdt['initial-ADM-angular-momentum-y'])
-        Jz = float(mtdt['initial-ADM-angular-momentum-z'])
-        J  = np.array([Jx, Jy, Jz])
+        Jx = float(mtdt["initial-ADM-angular-momentum-x"])
+        Jy = float(mtdt["initial-ADM-angular-momentum-y"])
+        Jz = float(mtdt["initial-ADM-angular-momentum-z"])
+        J = np.array([Jx, Jy, Jz])
 
-        E  = float(mtdt['initial-ADM-energy'])
+        E = float(mtdt["initial-ADM-energy"])
 
         # Orb ang momentum
         L = J - S1 - S2
 
-        self._dyn['id'] = {
-                            'm1':m1, 'm2':m2, 'M':M, 'X1':X1, 'X2':X2, 
-                            'S1':S1, 'S2':S2, 'L0':L,
-                            'J0':J,
-                            'E0':E
-                        }
+        self._dyn["id"] = {
+            "m1": m1,
+            "m2": m2,
+            "M": M,
+            "X1": X1,
+            "X2": X2,
+            "S1": S1,
+            "S2": S2,
+            "L0": L,
+            "J0": J,
+            "E0": E,
+        }
         pass
 
-    def compute_dynamics(self):
-        # compute dynamics
-        pass
-    
     def __interp_qnt__(self, x, y, x_new):
 
-        f  = interpolate.interp1d(x, y, fill_value=0, bounds_error=False)
+        f = interpolate.interp1d(x, y, fill_value=0, bounds_error=False)
         yn = f(x_new)
-
         return yn
-    
+
 
 class Catalog(object):
-    def __init__(self, 
-                 path    = './',
-                 ell_emms    = 'all',
-                 ellmax      = 4,
-                 load_data   = False, # do not load wfs, just metadata
-                 nonspinning = False, # load only nonspinning
-                 integr_opts = None,
-                 load_puncts = False,
-                 verbose     = False
-                 ) -> None:
-        
-        self.nonspinning  = nonspinning
-        self.integr_opts  = integr_opts
-        self.ellmax       = ellmax
-        self.ell_emms     = ell_emms
-        if self.ell_emms == 'all': 
-            self.modes = [(ell, emm) for ell in range(2,self.ellmax+1) for emm in range(-ell, ell+1)]
+    """
+    Class to load multiple RIT simulations in a given path.
+    """
+
+    def __init__(
+        self,
+        path="./",
+        ell_emms="all",
+        ellmax=4,
+        load_data=False,  # do not load wfs, just metadata
+        nonspinning=False,  # load only nonspinning
+        integr_opts=None,
+        load_puncts=False,
+        verbose=False,
+    ) -> None:
+        """
+        Initialize the Catalog class.
+
+        Parameters
+        ----------
+        path : str, optional
+            The path where the RIT data is stored. Default is "./".
+        ell_emms : str or list of tuple, optional
+            Modes to load. If "all", all modes up to ell=ellmax will be loaded.
+            If a list of tuples, only the specified modes will be loaded.
+            Default is "all".
+        ellmax : int, optional
+            The maximum ell value to load if ell_emms is "all". Default is 4.
+        load_data : bool, optional
+            If True, the waveform data will be loaded. Default is False.
+        nonspinning : bool, optional
+            If True, only nonspinning simulations will be loaded. Default is False.
+        integr_opts : dict or None, optional
+            Integration options. If None, no integration will be performed.
+            Default is None.
+        load_puncts : bool, optional
+            If True, puncture data will be loaded. Default is False.
+        verbose : bool, optional
+            If True, verbose output will be printed. Default is False.
+        """
+        self.nonspinning = nonspinning
+        self.integr_opts = integr_opts
+        self.ellmax = ellmax
+        self.ell_emms = ell_emms
+        if self.ell_emms == "all":
+            self.modes = [
+                (ell, emm)
+                for ell in range(2, self.ellmax + 1)
+                for emm in range(-ell, ell + 1)
+            ]
         else:
-            self.modes = self.ell_emms # TODO: add check on input
+            self.modes = self.ell_emms  # TODO: add check on input
 
         self.data = []
         self.catalog_meta = []
@@ -421,114 +563,120 @@ class Catalog(object):
             raise NotImplementedError("Integration options not implemented yet")
         if load_puncts:
             raise NotImplementedError("Punctures not implemented yet")
-        
 
         # load all simulations in path
         self.load_simulations_in_path(path, ell_emms, nonspinning, verbose=verbose)
 
-    def load_simulations_in_path(self, path, ell_emms,
-                                 nonspinning = False,
-                                 eccentric   = True,
-                                 verbose     = False
-                                 ):
+    def load_simulations_in_path(
+        self, path, ell_emms, nonspinning=False, eccentric=True, verbose=False
+    ):
         """
         Load all simulations in path into self.data and all metadata into self.catalog_meta
+
+        Parameters
+        ----------
+        path : str
+            The path where the RIT data is stored.
+        ell_emms : str or list of tuple
+            Modes to load. If "all", all modes up to ell=ellmax will be
+            loaded. If a list of tuples, only the specified modes will be loaded.
+        nonspinning : bool, optional
+            If True, only nonspinning simulations will be loaded. Default is False.
+        eccentric : bool, optional
+            If True, only eccentric simulations will be loaded. Default is True.
+        verbose : bool, optional
+            If True, verbose output will be printed. Default is False.
         """
-        import glob;
-        h5s  = glob.glob(path + "Data/*h5")
+        import glob
+
+        h5s = glob.glob(path + "Data/*h5")
         data = []
 
         for f in h5s:
-            this_id   =  f.split('/')[-1].split('_')[1].split('-')[2]
-            this_n    =  f.split('/')[-1].split('_')[1].split('-')[3].split('.')[0]
+            this_id = f.split("/")[-1].split("_")[1].split("-")[2]
+            this_n = f.split("/")[-1].split("_")[1].split("-")[3].split(".")[0]
             if verbose:
-                print('Processing:', this_id, this_n)
+                print("Processing:", this_id, this_n)
             if eccentric:
-                h_path    = 'Data/ExtrapStrain_RIT-eBBH-'+this_id+'-'+this_n+'.h5'
-                mtdt_path = 'Metadata/RIT:eBBH:'+this_id+'-'+this_n+'-ecc_Metadata.txt'
+                h_path = "Data/ExtrapStrain_RIT-eBBH-" + this_id + "-" + this_n + ".h5"
+                mtdt_path = (
+                    "Metadata/RIT:eBBH:" + this_id + "-" + this_n + "-ecc_Metadata.txt"
+                )
             else:
                 raise NotImplementedError("Non eccentric not implemented yet")
-            wave  = Waveform_RIT(h_path=h_path, path=path, mtdt_path=mtdt_path, ell_emms=ell_emms)
-            mtdt  = wave.metadata
-            chi1z = float(mtdt['initial-bh-chi1z']);  chi2z = float(mtdt['initial-bh-chi2z'])
+            wave = Waveform_RIT(
+                h_path=h_path, path=path, mtdt_path=mtdt_path, ell_emms=ell_emms
+            )
+            mtdt = wave.metadata
+            chi1z = float(mtdt["initial-bh-chi1z"])
+            chi2z = float(mtdt["initial-bh-chi2z"])
 
             # checks: nonspinning
             try:
-                chi1x = float(mtdt['initial-bh-chi1x']);  chi2x = float(mtdt['initial-bh-chi2x'])
-                chi1y = float(mtdt['initial-bh-chi1y']);  chi2y = float(mtdt['initial-bh-chi2y'])
+                chi1x = float(mtdt["initial-bh-chi1x"])
+                chi2x = float(mtdt["initial-bh-chi2x"])
+                chi1y = float(mtdt["initial-bh-chi1y"])
+                chi2y = float(mtdt["initial-bh-chi2y"])
             except KeyError:
-                chi1x = 0.;  chi2x = 0.
-                chi1y = 0.;  chi2y = 0.
-            chi1z = float(mtdt['initial-bh-chi1z']);  chi2z = float(mtdt['initial-bh-chi2z'])
-            chi1  = np.array([chi1x, chi1y, chi1z]);
-            chi2  = np.array([chi2x, chi2y, chi2z])
+                chi1x = 0.0
+                chi2x = 0.0
+                chi1y = 0.0
+                chi2y = 0.0
+            chi1z = float(mtdt["initial-bh-chi1z"])
+            chi2z = float(mtdt["initial-bh-chi2z"])
+            chi1 = np.array([chi1x, chi1y, chi1z])
+            chi2 = np.array([chi2x, chi2y, chi2z])
             if nonspinning:
-                if np.linalg.norm(chi1)+np.linalg.norm(chi2)>1e-3:
+                if np.linalg.norm(chi1) + np.linalg.norm(chi2) > 1e-3:
                     continue
 
             # check: eccentric
-            if eccentric and float(wave.metadata['eccentricity']) < 1e-2:
+            if eccentric and float(wave.metadata["eccentricity"]) < 1e-2:
                 continue
 
-            sim_data            = lambda:0
-            sim_data.meta       = wave.metadata
-            sim_data.wave       = wave
-            sim_data.tracks     = None
-            sim_data.scat_info  = None
+            sim_data = lambda: 0
+            sim_data.meta = wave.metadata
+            sim_data.wave = wave
+            sim_data.tracks = None
+            sim_data.scat_info = None
             self.catalog_meta.append(wave.metadata)
             data.append(sim_data)
 
         self.data = data
 
-    def idx_from_value(self,value,key='name',single_idx=True):
-        """ 
+    def idx_from_value(self, value, key="name", single_idx=True):
+        """
         Return idx with metadata[idx][key]=value.
-        If single_idx is False, return list of indeces 
+        If single_idx is False, return list of indeces
         that satisfy the condition
+
+        Parameters
+        ----------
+        value : str or float
+            The value to search for.
+        key : str, optional
+            The key in the metadata to search. Default is "name".
+        single_idx : bool, optional
+            If True, return a single index. If False, return a list of indices. Default is True.
+
+        Returns
+        -------
+        idx or list of idx or None
+            The index or list of indices that satisfy the condition.
+            If no index is found, return None.
         """
         idx_list = []
         for idx, meta in enumerate(self.catalog_meta):
-            if meta[key]==value:
+            if meta[key] == value:
                 idx_list.append(idx)
-        if len(idx_list)==0: 
+        if len(idx_list) == 0:
             return None
         if single_idx:
-            if len (idx_list)>1:
-                raise RuntimeError(f'Found more than one index for value={value} and key={key}')
+            if len(idx_list) > 1:
+                raise RuntimeError(
+                    f"Found more than one index for value={value} and key={key}"
+                )
             else:
                 return idx_list[0]
-        else: 
+        else:
             return idx_list
-
-if __name__ == '__main__':
-
-    psi_path= 'Psi4/ExtrapPsi4_RIT-eBBH-1634-n100-ecc/'
-    h_path  = 'Strain/ExtrapStrain_RIT-eBBH-1634-n100.h5'
-
-    mtdt_path = None
-    r = Waveform_RIT(psi_path=psi_path, h_path=h_path, mtdt_path=mtdt_path)
-
-    r.compute_initial_data()
-    print(r.dyn['id'])
-
-    # plot h22
-    plt.plot(r.t_h, r.hlm[(2,2)]['real'])
-    plt.plot(r.t_h, r.hlm[(2,2)]['A'])
-    plt.show()
-
-    # plot psi4
-    for k in r.psi4lm.keys():
-        plt.plot(r.t_psi4, r.psi4lm[k]['A'], label=k)
-    plt.legend(ncol=3)
-    plt.show()
-
-    # symmetry between +m and -m
-    plt.plot(r.t_h, r.hlm[(2,2)]['A'])
-    plt.plot(r.t_h, r.hlm[(2,2)]['A']-r.hlm[(2,-2)]['A'])
-    plt.show()
-
-    # hierarchy of modes
-    for k in r.hlm.keys():
-        plt.plot(r.t_h, r.hlm[k]['A'], label=k)
-    plt.legend(ncol=3)
-    plt.show()

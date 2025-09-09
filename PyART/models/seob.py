@@ -1,5 +1,6 @@
 import os, subprocess
 import numpy as np
+
 try:
     import pyseobnr.generate_waveform as SEOB
 except ModuleNotFoundError:
@@ -12,83 +13,116 @@ except ModuleNotFoundError:
 from ..waveform import Waveform
 from ..utils import wf_utils as wfu
 
+
 class Waveform_SEOB(Waveform):
     """
     Class for SEOBNRv5HM waveforms
     Uses pySEOBNR package
     """
+
     def __init__(
-                    self,
-                    pars=None,
-                ):
+        self,
+        pars=None,
+    ):
+        """
+        Initialize the Waveform_SEOB class.
+
+        Parameters
+        ----------
+        pars : dict
+            Dictionary of parameters for the SEOBNR waveform generation.
+        """
         super().__init__()
         if pars is None:
             raise RuntimeError("No input parameters given for SEOB!")
-        self.pars  = pars
-        self._kind = 'SEOB'
+        self.pars = pars
+        self._kind = "SEOB"
         self.check_pars()
-        self.SEOB  = SEOB.GenerateWaveform(self.pars)
+        self.SEOB = SEOB.GenerateWaveform(self.pars)
         self._run()
         pass
 
     def _run(self):
+        """
+        Run the SEOB waveform generation and store the results in the class attributes.
+        This method generates the waveform modes, computes the plus and cross polarizations,
+        and extracts the dynamics.
+        """
         # This gives time, modes in physical units
         t, hlm_seob = self.SEOB.generate_td_modes()
-        nu          = self.pars["q"]/(1. + self.pars["q"])**2
+        nu = self.pars["q"] / (1.0 + self.pars["q"]) ** 2
         if self.pars["use_geometric_units"] == "yes":
-            M         = self.pars["mass1"] + self.pars["mass2"]
-            fac       = -1 * M * lal.MRSUN_SI / (self.pars["distance"] * lal.PC_SI * 1.e6)
-            t         = t/(M * lal.MTSUN_SI)
+            M = self.pars["mass1"] + self.pars["mass2"]
+            fac = -1 * M * lal.MRSUN_SI / (self.pars["distance"] * lal.PC_SI * 1.0e6)
+            t = t / (M * lal.MTSUN_SI)
             for mode in hlm_seob.keys():
                 # Also rescale by nu
-                hlm_seob[mode] = hlm_seob[mode]/fac/nu
+                hlm_seob[mode] = hlm_seob[mode] / fac / nu
 
-        self._u   = t
-        hlm       = convert_hlm(hlm_seob)
+        self._u = t
+        hlm = convert_hlm(hlm_seob)
         self._hlm = hlm
 
         self._hp, self._hc = wfu.compute_hphc(hlm, modes=list(hlm.keys()))
-        if self.pars["approximant"]=='SEOBNRv5EHM':
-            idx_H    = 8
+        if self.pars["approximant"] == "SEOBNRv5EHM":
+            idx_H = 8
             idx_MOmg = 9
         else:
-            idx_H    = 5
+            idx_H = 5
             idx_MOmg = 6
-        self._dyn = {'t'     : self.SEOB.model.dynamics[:,0],
-                     'r'     : self.SEOB.model.dynamics[:,1],
-                     'phi'   : self.SEOB.model.dynamics[:,2],
-                     'Pr'    : self.SEOB.model.dynamics[:,3],
-                     'Pphi'  : self.SEOB.model.dynamics[:,4],
-                     'E'     : self.SEOB.model.dynamics[:,idx_H]*nu,
-                     'MOmega': self.SEOB.model.dynamics[:,idx_MOmg],
-                    }
-        self.domain = 'Time'
+        self._dyn = {
+            "t": self.SEOB.model.dynamics[:, 0],
+            "r": self.SEOB.model.dynamics[:, 1],
+            "phi": self.SEOB.model.dynamics[:, 2],
+            "Pr": self.SEOB.model.dynamics[:, 3],
+            "Pphi": self.SEOB.model.dynamics[:, 4],
+            "E": self.SEOB.model.dynamics[:, idx_H] * nu,
+            "MOmega": self.SEOB.model.dynamics[:, idx_MOmg],
+        }
+        self.domain = "Time"
         return 0
-    
+
     def check_pars(self):
         """
         Check and adjust pars dictionary
         """
         if "q" not in self.pars:
             if "mass1" not in self.pars or "mass2" not in self.pars:
-                raise ValueError("SEOB: Neither mass ratio nor individual masses given in input.")
-            self.pars["q"] = self.pars["mass1"]/self.pars["mass2"]
-        
-        if ("mass1" not in self.pars or "mass2" not in self.pars) and self.pars["use_geometric_units"] == "no":
+                raise ValueError(
+                    "SEOB: Neither mass ratio nor individual masses given in input."
+                )
+            self.pars["q"] = self.pars["mass1"] / self.pars["mass2"]
+
+        if ("mass1" not in self.pars or "mass2" not in self.pars) and self.pars[
+            "use_geometric_units"
+        ] == "no":
             raise ValueError("SEOB: If not using geom. units, need individual masses.")
-        
+
         if self.pars["use_geometric_units"] == "yes":
             # If using geometric units, set total mass to 100
-            self.pars["mass1"] = 100.*self.pars["q"]/(1. + self.pars["q"])
-            self.pars["mass2"] = 100./(1. + self.pars["q"])
+            self.pars["mass1"] = 100.0 * self.pars["q"] / (1.0 + self.pars["q"])
+            self.pars["mass2"] = 100.0 / (1.0 + self.pars["q"])
 
             # Convert initial frequency to physical units, save geometric in dict
             self.pars["f22_start_geom"] = self.pars["f22_start"]
-            self.pars["f22_start"]      = self.pars["f22_start"]/(self.pars["mass1"] + self.pars["mass2"])/lal.MTSUN_SI
-        
+            self.pars["f22_start"] = (
+                self.pars["f22_start"]
+                / (self.pars["mass1"] + self.pars["mass2"])
+                / lal.MTSUN_SI
+            )
+
         # If x, y spin components given, check that approximant is SEOBNRv5->P<-HM
-        if max([np.abs(self.pars["spin1x"]), np.abs(self.pars["spin1y"]), 
-                np.abs(self.pars["spin2x"]), np.abs(self.pars["spin2y"])]) > 1.e-10:
+        if (
+            max(
+                [
+                    np.abs(self.pars["spin1x"]),
+                    np.abs(self.pars["spin1y"]),
+                    np.abs(self.pars["spin2x"]),
+                    np.abs(self.pars["spin2y"]),
+                ]
+            )
+            > 1.0e-10
+        ):
             if self.pars["approximant"] != "SEOBNRv5PHM":
                 print("Switching to SEOBNRv5PHM for non-aligned spins.")
                 self.pars["approximant"] = "SEOBNRv5PHM"
@@ -97,66 +131,139 @@ class Waveform_SEOB(Waveform):
         """
         Compute binding energy and angular momentum from dynamics.
         """
-        pars    = self.pars
-        q       = pars['q']
-        q       = float(q)
-        nu      = q/(1.+q)**2
-        dyn     = self.dyn
-        E, j    = dyn['E'], dyn['Pphi']
-        Eb      = (E-1)/nu
+        pars = self.pars
+        q = pars["q"]
+        q = float(q)
+        nu = q / (1.0 + q) ** 2
+        dyn = self.dyn
+        E, j = dyn["E"], dyn["Pphi"]
+        Eb = (E - 1) / nu
         self.Eb = Eb
-        self.j  = j
+        self.j = j
         return Eb, j
-    
+
+
 def convert_hlm(hlm):
     """
     Convert the hlm dictionary from SEOB to PyART notation
+
+    Parameters
+    ----------
+    hlm : dict
+        Dictionary of waveform modes from SEOBNR, with keys as (l, m) tuples
+        and values as complex numpy arrays.
+    Returns
+    -------
+    hlm_conv : dict
+        Dictionary of waveform modes in PyART notation, with each mode as a
+        dictionary containing 'real', 'imag', 'A', 'p', and 'z'.
     """
     hlm_conv = {}
     for key in hlm.keys():
-        A   = np.abs(hlm[key])
-        p   = -np.unwrap(np.angle(hlm[key]))
-        hlm_conv[key] = {'real': A*np.cos(p), 'imag': -1*A*np.sin(p),
-                                'A'   : A, 'p' : p,
-                                'z'   : A*np.exp(-1j*p)
-                                }
+        A = np.abs(hlm[key])
+        p = -np.unwrap(np.angle(hlm[key]))
+        hlm_conv[key] = {
+            "real": A * np.cos(p),
+            "imag": -1 * A * np.sin(p),
+            "A": A,
+            "p": p,
+            "z": A * np.exp(-1j * p),
+        }
     return hlm_conv
 
-def CreateDict(M=1., q=1, 
-               chi1z=0., chi2z=0, 
-               chi1x=0., chi2x=0,
-               chi1y=0., chi2y=0,
-               dist=100.,
-               iota=0, f0=0.0035, df=1./128., dt=1./2048,
-               phi_ref = 0.,
-               e0 = 0.0, 
-               rel_anomaly = np.pi,
-               use_geom="yes", 
-               approx="SEOBNRv5HM",
-               use_mode_lm=[(2,2)]):
+
+def CreateDict(
+    M=1.0,
+    q=1,
+    chi1z=0.0,
+    chi2z=0,
+    chi1x=0.0,
+    chi2x=0,
+    chi1y=0.0,
+    chi2y=0,
+    dist=100.0,
+    iota=0,
+    f0=0.0035,
+    df=1.0 / 128.0,
+    dt=1.0 / 2048,
+    phi_ref=0.0,
+    e0=0.0,
+    rel_anomaly=np.pi,
+    use_geom="yes",
+    approx="SEOBNRv5HM",
+    use_mode_lm=[(2, 2)],
+):
     """
     Create the dictionary of parameters for pyseobnr->GenerateWaveform
+
+    Parameters
+    ----------
+    M : float
+        Total mass in solar masses. Default is 1.0.
+    q : float
+        Mass ratio m1/m2 >= 1. Default is 1.
+    chi1z : float
+        Dimensionless spin of the primary along the orbital angular momentum.
+        Default is 0.0.
+    chi2z : float
+        Dimensionless spin of the secondary along the orbital angular momentum.
+        Default is 0.0.
+    chi1x : float
+        Dimensionless spin of the primary in the orbital plane (x-component).
+        Default is 0.0.
+    chi2x : float
+        Dimensionless spin of the secondary in the orbital plane (x-component).
+        Default is 0.0.
+    chi1y : float
+        Dimensionless spin of the primary in the orbital plane (y-component).
+        Default is 0.0.
+    chi2y : float
+        Dimensionless spin of the secondary in the orbital plane (y-component).
+        Default is 0.0.
+    dist : float
+        Distance to the source in Mpc. Default is 100.0.
+    iota : float
+        Inclination angle in radians. Default is 0 (face-on).
+    f0 : float
+        Starting frequency of the (2,2) mode in geometric units. Default is 0.0035.
+    df : float
+        Frequency resolution in Hz. Default is 1/128.
+    dt : float
+        Time step in seconds. Default is 1/2048.
+    phi_ref : float
+        Reference phase at f0 in radians. Default is 0.0.
+    e0 : float
+        Initial eccentricity at f0. Default is 0.0.
+    rel_anomaly : float
+        Relativistic anomaly at f0 in radians. Default is pi.
+    use_geom : str
+        Whether to use geometric units ('yes' or 'no'). Default is 'yes'.
+    approx : str
+        Approximant to use ('SEOBNRv5HM', 'SEOBNRv5PHM', 'SEOBNRv5EHM').
+        Default is 'SEOBNRv5HM'.
+    use_mode_lm : list of tuple
+        List of (l, m) tuples specifying which modes to use. Default is [(2, 2)].
     """
     pardic = {
-                "q"                   : q,
-                "mass1"               : M*q/(1. + q),
-                "mass2"               : M/(1. + q),
-                "spin1x"              : chi1x,
-                "spin1y"              : chi1y,
-                "spin1z"              : chi1z,
-                "spin2x"              : chi2x,
-                "spin2y"              : chi2y,
-                "spin2z"              : chi2z,
-                "distance"            : dist,
-                "inclination"         : iota,
-                "phi_ref"             : phi_ref,
-                "f22_start"           : f0,
-                "eccentricity"        : e0,
-                "rel_anomaly"         : rel_anomaly,
-                "deltaF"              : df,
-                "deltaT"              : dt,
-                "ModeArray"           : use_mode_lm,
-                "use_geometric_units" : use_geom,
-                "approximant"         : approx
+        "q": q,
+        "mass1": M * q / (1.0 + q),
+        "mass2": M / (1.0 + q),
+        "spin1x": chi1x,
+        "spin1y": chi1y,
+        "spin1z": chi1z,
+        "spin2x": chi2x,
+        "spin2y": chi2y,
+        "spin2z": chi2z,
+        "distance": dist,
+        "inclination": iota,
+        "phi_ref": phi_ref,
+        "f22_start": f0,
+        "eccentricity": e0,
+        "rel_anomaly": rel_anomaly,
+        "deltaF": df,
+        "deltaT": dt,
+        "ModeArray": use_mode_lm,
+        "use_geometric_units": use_geom,
+        "approximant": approx,
     }
     return pardic

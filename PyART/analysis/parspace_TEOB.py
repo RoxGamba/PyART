@@ -7,21 +7,42 @@ from   scipy.signal import find_peaks
 from   scipy.optimize import brentq
 from   PyART.models.teob import search_radial_turning_points, RadialPotential, SpinHamiltonian
 
-matplotlib.rc('text', usetex=True)
+matplotlib.rc("text", usetex=True)
+
 
 def build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False):
     """
     Outputs a colormap similar to old_cmp_name, but with a new specified RGBA color
     associated to val.
+
+    Parameters
+    ----------
+    old_cmp_name : str
+        Name of the colormap to be used as a base.
+    clr : list
+        RGBA color to be associated to val.
+    peaks_list : list
+        List of values to be represented in the colormap.
+    discrete_cmap : bool, optional
+        If True, the colormap will be discrete. Default is False.
+
+    Returns
+    -------
+    newcmp : ListedColormap
+        The modified colormap.
     """
     from matplotlib.colors import ListedColormap
-    old_cmp   = matplotlib.colormaps.get_cmap(old_cmp_name)
-    if continuous_cmap:
-        nmax      = int(max(peaks_list))
-        ncolors   = 256
-        newcolors = old_cmp(np.linspace(0,1,ncolors))
+    old_cmp = matplotlib.cm.get_cmap(old_cmp_name)
+    if discrete_cmap:
+        ncolors = int(max(peaks_list))
+        newcolors = old_cmp(np.linspace(0, 1, ncolors))  # default
+        newcolors[1] = clr
+    else:
+        nmax = int(max(peaks_list))
+        ncolors = 256
+        newcolors = old_cmp(np.linspace(0, 1, ncolors))
         for i in range(ncolors):
-            if 0.5*ncolors/nmax<i and i<ncolors/nmax*1.5:
+            if 0.5 * ncolors / nmax < i and i < ncolors / nmax * 1.5:
                 newcolors[i] = clr
     else: # discrete cmap
         ncolors   = int(max(peaks_list))-1
@@ -41,7 +62,30 @@ def rmin_given_spins(chi1,chi2):
     return rmin 
 
 def EnergyLimitsSpin(rmax, pph, q, chi1, chi2, N=1000):
-    # Determine the max energy allowed. For large q, A will go below zero, so ignore those values by removing nans.
+    """
+    Compute the maximum energy allowed for a given angular momentum pph_hyp,
+    mass ratio q, and spins chi1, chi2 for the orbit to be bound.
+
+    Parameters
+    ----------
+    rmax : float
+        Maximum radial separation.
+    q : float
+        Mass ratio.
+    pph_hyp : float
+        Angular momentum.
+    chi1 : float
+        Dimensionless spin of the primary.
+    chi2 : float
+        Dimensionless spin of the secondary.
+    N : int, optional
+        Number of points in the radial grid. Default is 100000.
+
+    Returns
+    -------
+    Emax : float
+        The maximum energy allowed for a bound orbit.
+    """
     rmin = rmin_given_spins(chi1,chi2)
     rvec = np.linspace(rmin,rmax,N)
     V    = RadialPotential(rvec,pph,q,chi1,chi2)
@@ -72,28 +116,77 @@ def RadialPotential_MaxMin(rmax, pph, q, chi1, chi2, N=1000):
         rmin = None
     return Vmax, Vmin, rmax, rmin
 
-#---------------------
+
+# ---------------------
 # Span parameterspace
-#---------------------
+# ---------------------
 class Spanner(object):
-    def __init__(self, q, chi1, chi2,  pph_min, pph_max, Emin=1.0, Emax=2.0, nj=100,
-                 dE_bound=None, r0_type='auto', r0_val=None,
-                 r_infty=5000, input_file=None, verbose=False, vverbose=False,
-                 nproc=1, dump_npz=False, dump_txt=False, ignore_input_file=False, outdir=None):
-        self.q        = q
-        self.nu       = q/(1+q)**2
-        self.chi1     = chi1
-        self.chi2     = chi2
-        self.nj       = nj
-        self.nproc    = nproc
-        self.r0_type  = r0_type
-        self.r0_val   = r0_val
-        self.dE_bound = dE_bound
-        self.Emin     = Emin
-        self.Emax     = Emax
-        self.pph_min  = pph_min
-        self.pph_max  = pph_max
-        self.r_infty  = r_infty
+    """
+    Class to span the (j,E) parameter space using TEOBResumS
+    """
+
+    def __init__(
+        self,
+        q,
+        chi1,
+        chi2,
+        pph_min,
+        pph_max,
+        nj=100,
+        update_pph_min=True,
+        r0=1000,
+        input_file=None,
+        verbose=False,
+        nproc=1,
+        dump_npz=False,
+        ignore_input_file=False,
+        outdir=None,
+    ):
+        """
+        Initialize the Spanner class.
+
+        Parameters
+        ----------
+        q : float
+            Mass ratio.
+        chi1 : float
+            Dimensionless spin of the primary.
+        chi2 : float
+            Dimensionless spin of the secondary.
+        pph_min : float
+            Minimum value of the angular momentum.
+        pph_max : float
+            Maximum value of the angular momentum.
+        nj : int, optional
+            Number of angular momenta considered. Default is 100.
+        update_pph_min : bool, optional
+            If True, update pph_min to the minimum value that allows for a bound orbit.
+            Default is True.
+        r0 : float, optional
+            Initial separation. Default is 1000.
+        input_file : str, optional
+            File with data points. If provided, the TEOB runs will be skipped and the
+            points will be loaded from the file. Default is None.
+        verbose : bool, optional
+            If True, print verbose output. Default is False.
+        nproc : int, optional
+            Number of processes to use for parallel TEOB runs. Default is 1.
+        dump_npz : bool, optional
+            If True, dump the points used in an npz file. Default is False.
+        ignore_input_file : bool, optional
+            If True, ignore the input_file and run TEOB for all points. Default is False.
+        outdir : str, optional
+            Output directory for data and plots. If None, use the current working directory. Default is None.
+        """
+        self.q = q
+        self.nu = q / (1 + q) ** 2
+        self.chi1 = chi1
+        self.chi2 = chi2
+        self.nj = nj
+        self.r0 = r0
+        self.pph_min = pph_min
+        self.pph_max = pph_max
+        self.update_pph_min = update_pph_min
         self.input_file = input_file
         self.verbose  = verbose
         self.vverbose = vverbose
@@ -113,15 +206,15 @@ class Spanner(object):
             raise RuntimeError(f"If r0_type is 'val', r0_val must be specified")
 
         if self.verbose:
-            print('\n','TEOB module:', EOBRun_module.__file__,'\n',sep='')
-            print('---------------------------------------')
-            print('Input')
-            print('---------------------------------------')
+            print("\n", "TEOB module:", EOBRun_module.__file__, "\n", sep="")
+            print("---------------------------------------")
+            print("Input")
+            print("---------------------------------------")
             object_namespace = vars(self)
             for attribute, value in object_namespace.items():
                 if isinstance(value, (str, float, int)) or value is None:
-                    print(f"{attribute:15s}: {value}") 
-            print(' ')
+                    print(f"{attribute:15s}: {value}")
+            print(" ")
 
         self.eobcommonpars = {
               'M'                  : 1,
@@ -178,11 +271,12 @@ class Spanner(object):
                 self.nj      = meta['nj']
                 self.r0_type = meta['r0_type']
                 self.r0_val  = meta['r0_val']
+
                 object_namespace = vars(self)
                 for attribute, value in object_namespace.items():
                     if isinstance(value, (str, float, int)) or value is None:
-                        print(f"{attribute:15s}: {value}") 
-                print(' ')
+                        print(f"{attribute:15s}: {value}")
+                print(" ")
 
             npoints = len(self.points)
             self.nj = int(0.5*(np.sqrt(1+8*npoints)-1))
@@ -197,18 +291,36 @@ class Spanner(object):
             print('max E            : {:.5f}'.format(max(self.points[:,1])))
             print('min E            : {:.5f}\n'.format(min(self.points[:,1])))
         return
-    
+
     def info_string(self, q_prec=2, chi1_prec=2, chi2_prec=2, r0_prec=0):
-        template = 'q{:.@q_prec@f}_chi1@SIGN1@{:.@chi1_prec@f}_chi2@SIGN2@{:.@chi2_prec@f}_nj{:d}'
-        info_str = template.replace('@q_prec@', str(q_prec))
-        info_str = info_str.replace('@chi1_prec@', str(chi1_prec))
-        info_str = info_str.replace('@chi2_prec@', str(chi2_prec))
-        info_str = info_str.replace('@r0_prec@', str(r0_prec))
+        """
+        Write an info string based on the parameters of the Spanner instance.
+        Parameters
+        ----------
+        q_prec : int, optional
+            Precision for the mass ratio in the info string. Default is 2.
+        chi1_prec : int, optional
+            Precision for the primary spin in the info string. Default is 2.
+        chi2_prec : int, optional
+            Precision for the secondary spin in the info string. Default is 2.
+        r0_prec : int, optional
+            Precision for the initial separation in the info string. Default is 0.
+        Returns
+        -------
+        str
+            The info string.
+        """
+        template = "q{:.@q_prec@f}_chi1@SIGN1@{:.@chi1_prec@f}_chi2@SIGN2@{:.@chi2_prec@f}_r0{:.@r0_prec@f}_nj{:d}"
+        info_str = template.replace("@q_prec@", str(q_prec))
+        info_str = info_str.replace("@chi1_prec@", str(chi1_prec))
+        info_str = info_str.replace("@chi2_prec@", str(chi2_prec))
+        info_str = info_str.replace("@r0_prec@", str(r0_prec))
+
         def return_sign_str(chi):
-            if chi>=0:
-                sign = 'p'
+            if chi >= 0:
+                sign = "p"
             else:
-                sign = 'm'
+                sign = "m"
             return sign
         info_str = info_str.replace('@SIGN1@', return_sign_str(self.chi1))
         info_str = info_str.replace('@SIGN2@', return_sign_str(self.chi2))
@@ -400,6 +512,17 @@ class Spanner(object):
         return
 
     def single_run_TEOB(self,point):
+        """
+        Run a single TEOB simulation for given initial conditions.
+        Parameters
+        ----------
+        point : list
+            List containing [j_hyp, H_hyp].
+        Returns
+        -------
+        list
+            List containing [j_hyp, H_hyp, npeaks, rend].
+        """
         eobpars = copy.deepcopy(self.eobcommonpars)
         eobpars['j_hyp'] = point[0]
         eobpars['H_hyp'] = point[1]
@@ -451,6 +574,21 @@ class Spanner(object):
         return [point[0], point[1], point[2], npeaks, rend]
 
     def run_TEOB_list(self, indeces, points, eobcommonpars):
+        """
+        Run TEOB simulations for a list of points
+        Parameters
+        ----------
+        indeces : list
+            List of indices of the points to be simulated.
+        points : ndarray
+            Array of points containing [j_hyp, H_hyp].
+        eobcommonpars : dict
+            Dictionary containing common EOB parameters.
+        Returns
+        -------
+        ndarray
+            Array of points containing [j_hyp, H_hyp, npeaks, rend].
+        """
         out = points
         for i in indeces:
             out[i,:] = self.single_run_TEOB(points[i])
@@ -468,7 +606,7 @@ class Spanner(object):
                 tasks.append(task)
             concurrent.futures.wait(tasks, return_when=concurrent.futures.ALL_COMPLETED)
             results = [future.result() for future in tasks]
-        for i,batch in enumerate(batches):
+        for i, batch in enumerate(batches):
             result = results[i]
             for j in batch:
                 Y[j,:] = result[j,:]
@@ -504,14 +642,22 @@ class Spanner(object):
         if self.verbose:
             print(f'>> created {fname} in {self.outdir}')
         return 
-    
+
     def qchi1chi2_list_str(self):
-        str0 = ''
+        """
+        Write a string representation of the (q, chi1, chi2) parameters.
+
+        Returns
+        -------
+        str
+            The string representation of (q, chi1, chi2).
+        """
+        str0 = ""
         vals = [self.q, self.chi1, self.chi2]
         for i,v in enumerate(vals):
             if abs(v-int(v))<1e-14 or i==0:
                 isint = True
-                v_str = '{:.0f}'.format(abs(v))
+                v_str = "{:.0f}".format(abs(v))
             else:
                 isint = False
                 v_str = '{:.1f}'.format(abs(v))
@@ -519,16 +665,37 @@ class Spanner(object):
                 if v>=0:
                     v_str = '+'+v_str
                 else:
-                    v_str = '-'+v_str
-            str0 += v_str 
-            if i<len(vals)-1:
-                str0 +=','
+                    v_str = "-" + v_str
+            str0 += v_str
+            if i < len(vals) - 1:
+                str0 += ","
         return str0
     
     def plot_parspace(self, marker_size=1, savepng=False, figname=None, continuous_cmap=False,show='on', 
                       show_fails=True, Nmax=None, qc_line=False, parabolic_line=False, 
                       show_kankani=False, show_gra_fit=False,
                       grey_fill=False):
+        """
+        Plot the parameter space
+
+        Parameters
+        ----------
+        marker_size : int, optional
+            Marker size in the plot. Default is 1.
+        savepng : bool, optional
+            If True, save the plot as a PNG file. Default is False.
+        discrete_cmap : bool, optional
+            If True, use a discrete color map. Default is False.
+        show : str, optional
+            If "on", show the plot. Default is "on".
+        pph_max_plot : float, optional
+            Maximum value of pph to be considered in the plot. Default is None.
+        show_NR : bool, optional
+            If True, show NR points in the plot. Default is False.
+        dset : str, optional
+            Dataset name for NR points. Default is "GAUSS_2023".
+
+        """
         points2plot = self.points
         
         mask = points2plot[:,1]>=self.Emin 
@@ -644,78 +811,103 @@ class Spanner(object):
             #figname = figname.replace('.','d')+'.png'
             plt.savefig(os.path.join(self.outdir,figname), dpi=300)
             if self.verbose:
-                print(f'>> {figname} saved in {self.outdir}')
-        if show=='on':
+                print(f">> {figname} saved in {self.outdir}")
+        if show == "on":
             plt.show()
         return
-    
 
-if __name__ == "__main__": 
+
+if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    
-    parser.add_argument('-n','--nproc',       default=1,    type=int,   help="number of processes")
-    parser.add_argument('--r0_type', choices=['auto', 'val'], 
-                                              default='auto',type=str,  help='Specify r0-type. If auto, r "infty" for E>=1, apastron otherwise.'
-                                                                             'If value, use value specified with --r0_val')
-    parser.add_argument('--r0_val',           default=None, type=float, help='Initial radius to use if --r0_type is val')
-    parser.add_argument('--dE_bound',         default=None, type=float, help='dE used in the bound-part of the parspace')
-    parser.add_argument('--Emin',             default=1.0,  type=float, help="minimum energy to consider")
-    parser.add_argument('--Emax',             default=2.0,  type=float, help='maximum energy to consider (if Emax>Vmax(pph_max),'
-                                                                             'then the max Energy used is Vmax(pph_max)')
-    parser.add_argument('--pph_min',          default=3.0,  type=float, help="min value of pph considered (eventually updated)")
-    parser.add_argument('--pph_max',          default=5.0,  type=float, help="max value of pph considered")
-    parser.add_argument('--Nmax_plot',        default=None, type=int,   help="N-max of peaks to show in plots")
-    parser.add_argument('-q', '--mass_ratio', default=1.0,  type=float, help="mass ratio")
-    parser.add_argument('--chi1',             default=0.0,  type=float, help="primary spin")
-    parser.add_argument('--chi2',             default=0.0,  type=float, help="secondary spin")
-    parser.add_argument('-nj',                default=20,   type=int,   help="number of angular momenta considered in the unbound region") 
-    parser.add_argument('--marker_size',      default=1,    type=int,   help="marker size in parspace-plot")
-    parser.add_argument('-v',  '--verbose',   action="store_true",      help="verbose option")
-    parser.add_argument('-vv', '--vverbose',  action="store_true",      help="very verbose option")
-    parser.add_argument('--savepng',          action="store_true",      help="save parspace-plot as png")
-    parser.add_argument('--figname',          default=None, type=str,   help="name of the saved figure (png)")
-    parser.add_argument('--show_fails',       action="store_true",      help='Show failed runs in parspace plot')    
-    parser.add_argument('--continuous_cmap',  action="store_true",      help="use continuous color-map in parspace plot")
-    parser.add_argument('--dump_npz',         action="store_true",      help="dump the points used in npz file")
-    parser.add_argument('--dump_txt',         action="store_true",      help="dump the points used in txt file")
-    parser.add_argument('--show_kankani',     action="store_true",      help="Show transition fit from 2404.03607")
-    parser.add_argument('--show_gra_fit',     action="store_true",      help="Show transition fit from GRA data")
-    parser.add_argument('-i', '--input_file', default=None, type=str,   help="file with data points")
-    parser.add_argument('-o', '--outdir',     default=None, type=str,   help="outdir for data and plots")
-    parser.add_argument('--parabolic_line',  action='store_true',      help="show line for the parabolic limi")
-    parser.add_argument('--qc_line',          action='store_true',      help="show QC line in parspace-plot if Emin<1")
-    parser.add_argument('--grey_fill',        action='store_true',      help="fill with grey the E>V region")
-    parser.add_argument('--show',   choices=['on', 'off'], 
-                                              default='on', type=str,   help="Show parspace-plot")    
-    
+
+    parser.add_argument(
+        "-n", "--nproc", default=1, type=int, help="number of processes"
+    )
+    parser.add_argument(
+        "--jmin",
+        default=3.5,
+        type=float,
+        help="min value of pph considered (eventually updated)",
+    )
+    parser.add_argument(
+        "--jmax", default=5.0, type=float, help="max value of pph considered"
+    )
+    parser.add_argument(
+        "--jmax_plot",
+        default=None,
+        type=float,
+        help="max value of pph considered in the plot (and only there)",
+    )
+    parser.add_argument(
+        "-q", "--mass_ratio", default=1.0, type=float, help="mass ratio"
+    )
+    parser.add_argument("--chi1", default=0.0, type=float, help="primary spin")
+    parser.add_argument("--chi2", default=0.0, type=float, help="secondary spin")
+    parser.add_argument(
+        "--nj", default=20, type=int, help="number of angular momenta considered"
+    )
+    parser.add_argument(
+        "--marker_size", default=1, type=int, help="marker size in parspace-plot"
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose option")
+    parser.add_argument(
+        "--savepng", action="store_true", help="save parspace-plot as png"
+    )
+    parser.add_argument(
+        "--discrete_cmap",
+        action="store_true",
+        help="use discrete color-map in parspace plot",
+    )
+    parser.add_argument(
+        "--dump_npz", action="store_true", help="dump the points used in npz file"
+    )
+    parser.add_argument(
+        "-i", "--input_file", default=None, type=str, help="file with data points"
+    )
+    parser.add_argument(
+        "-o", "--outdir", default=None, type=str, help="outdir for data and plots"
+    )
+    parser.add_argument(
+        "--show",
+        choices=["on", "off"],
+        default="on",
+        type=str,
+        help="Show parspace-plot",
+    )
+
     args = parser.parse_args()
-    
-    if args.mass_ratio<1:
-        args.mass_ratio = 1/args.mass_ratio
 
-    nproc   = args.nproc
-    pph_min = args.pph_min
-    pph_max = args.pph_max
-    q       = args.mass_ratio
-    chi1    = args.chi1
-    chi2    = args.chi2
-    nj      = args.nj
+    if args.mass_ratio < 1:
+        args.mass_ratio = 1 / args.mass_ratio
 
+    nproc = args.nproc
+    pph_min = args.jmin
+    pph_max = args.jmax
+    q = args.mass_ratio
+    chi1 = args.chi1
+    chi2 = args.chi2
+    nj = args.nj
 
-    spanner = Spanner(q=q, chi1=chi1, chi2=chi2, pph_min=pph_min, pph_max=pph_max, Emin=args.Emin, Emax=args.Emax, 
-                      nj=nj, dE_bound=args.dE_bound, 
-                      nproc=nproc, ignore_input_file=False, r0_type=args.r0_type, r0_val=args.r0_val,
-                      input_file=args.input_file, verbose=args.verbose, vverbose=args.vverbose, outdir=args.outdir)
-    
-    spanner.plot_parspace(marker_size=args.marker_size,savepng=args.savepng,figname=args.figname,
-                          continuous_cmap=args.continuous_cmap,show=args.show, 
-                          show_fails=args.show_fails, Nmax=args.Nmax_plot, qc_line=args.qc_line, 
-                          show_kankani=args.show_kankani, show_gra_fit=args.show_gra_fit,
-                          grey_fill=args.grey_fill, parabolic_line=args.parabolic_line)
-    
-    if args.dump_npz:
-        spanner.dump_npz()
-    if args.dump_txt:
-        spanner.dump_txt()
-
+    spanner = Spanner(
+        q=q,
+        chi1=chi1,
+        chi2=chi2,
+        pph_min=pph_min,
+        pph_max=pph_max,
+        nj=nj,
+        update_pph_min=True,
+        nproc=nproc,
+        dump_npz=args.dump_npz,
+        ignore_input_file=False,
+        input_file=args.input_file,
+        verbose=args.verbose,
+        outdir=args.outdir,
+    )
+    spanner.plot_parspace(
+        marker_size=args.marker_size,
+        savepng=args.savepng,
+        discrete_cmap=args.discrete_cmap,
+        show=args.show,
+        pph_max_plot=args.jmax_plot,
+    )
