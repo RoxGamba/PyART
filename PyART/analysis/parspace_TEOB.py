@@ -22,6 +22,22 @@ def build_colormap(old_cmp_name, clr, peaks_list, discrete_cmap=False):
     """
     Outputs a colormap similar to old_cmp_name, but with a new specified RGBA color
     associated to val.
+
+    Parameters
+    ----------
+    old_cmp_name : str
+        Name of the colormap to be used as a base.
+    clr : list
+        RGBA color to be associated to val.
+    peaks_list : list
+        List of values to be represented in the colormap.
+    discrete_cmap : bool, optional
+        If True, the colormap will be discrete. Default is False.
+
+    Returns
+    -------
+    newcmp : ListedColormap
+        The modified colormap.
     """
     from matplotlib.colors import ListedColormap
 
@@ -45,18 +61,33 @@ def build_colormap(old_cmp_name, clr, peaks_list, discrete_cmap=False):
 # EOB
 # -------------------------
 
+# TODO: Move these functions somewhere else!
+# eg in the dedicated teobresums module
 
-# def Hamiltonian(r, pph, nu):
-#    """
-#    Circularized EOB Hamiltonian: nonspinning
-#    """
-#    A, dA, d2A  = EOBRun_module.eob_metric_A5PNlog_py(r, nu)
-#    Heff0       = np.sqrt(A*(1.+(pph/r)**2))
-#    E0          = np.sqrt(1. + 2.*nu*(Heff0-1.))
-#
-#    return E0
-#
+
 def SpinHamiltonian(r, pph, q, chi1, chi2):
+    """
+    Compute the EOB Hamiltonian for given r, pph, q, chi1, chi2
+    and prstar=0
+
+    Parameters
+    ----------
+    r : float
+        Radial separation.
+    pph : float
+        Angular momentum.
+    q : float
+        Mass ratio.
+    chi1 : float
+        Dimensionless spin of the primary.
+    chi2 : float
+        Dimensionless spin of the secondary.
+
+    Returns
+    -------
+    E0 : float
+        The EOB Hamiltonian value.
+    """
     prstar = 0.0
     hatH = EOBRun_module.eob_ham_s_py(r, q, pph, prstar, chi1, chi2)
     nu = q / (1 + q) ** 2
@@ -65,13 +96,64 @@ def SpinHamiltonian(r, pph, q, chi1, chi2):
 
 
 def RadialPotential(rmin, rmax, pph, q, chi1, chi2, N=100):
+    """
+    Compute the radial potential V(r) = H(r, pph, prstar=0) for rmin<r<rmax
+
+    Parameters
+    ----------
+    rmin : float
+        Minimum radial separation.
+    rmax : float
+        Maximum radial separation.
+    pph : float
+        Angular momentum.
+    q : float
+        Mass ratio.
+    chi1 : float
+        Dimensionless spin of the primary.
+    chi2 : float
+        Dimensionless spin of the secondary.
+    N : int, optional
+        Number of points in the radial grid. Default is 100.
+
+    Returns
+    -------
+    V : ndarray
+        The radial potential values.
+    rvec : ndarray
+        The radial grid points.
+    """
     rvec = np.linspace(rmin, rmax, N)
-    dr = rvec[1] - rvec[0]
     V = np.array([SpinHamiltonian(ri, pph, q, chi1, chi2) for ri in rvec])
     return V, rvec
 
 
 def EnergyLimitsSpin(rmax, q, pph_hyp, chi1, chi2, N=100000):
+    """
+    Compute the maximum energy allowed for a given angular momentum pph_hyp,
+    mass ratio q, and spins chi1, chi2 for the orbit to be bound.
+
+    Parameters
+    ----------
+    rmax : float
+        Maximum radial separation.
+    q : float
+        Mass ratio.
+    pph_hyp : float
+        Angular momentum.
+    chi1 : float
+        Dimensionless spin of the primary.
+    chi2 : float
+        Dimensionless spin of the secondary.
+    N : int, optional
+        Number of points in the radial grid. Default is 100000.
+
+    Returns
+    -------
+    Emax : float
+        The maximum energy allowed for a bound orbit.
+    """
+
     if chi1 != 0 or chi2 != 0:
         # important: rmin should be smaller with spin
         rmin = 1.1
@@ -91,11 +173,23 @@ def EnergyLimitsSpin(rmax, q, pph_hyp, chi1, chi2, N=100000):
 
 
 def single_run_TEOB(point, eobcommonpars):
+    """
+    Run a single TEOB simulation for given initial conditions.
+    Parameters
+    ----------
+    point : list
+        List containing [j_hyp, H_hyp].
+    eobcommonpars : dict
+        Dictionary containing common EOB parameters.
+    Returns
+    -------
+    list
+        List containing [j_hyp, H_hyp, npeaks, rend].
+    """
     eobpars = eobcommonpars
     eobpars["j_hyp"] = point[0]
     eobpars["H_hyp"] = point[1]
     t, hp, hc, hlm, dyn = EOBRun_module.EOBRunPy(eobpars)
-    T = dyn["t"]
     r = dyn["r"]
     OmgOrb = dyn["MOmega_orb"]
     peaks, _ = find_peaks(OmgOrb)
@@ -105,6 +199,21 @@ def single_run_TEOB(point, eobcommonpars):
 
 
 def run_TEOB_list(indeces, points, eobcommonpars):
+    """
+    Run TEOB simulations for a list of points
+    Parameters
+    ----------
+    indeces : list
+        List of indices of the points to be simulated.
+    points : ndarray
+        Array of points containing [j_hyp, H_hyp].
+    eobcommonpars : dict
+        Dictionary containing common EOB parameters.
+    Returns
+    -------
+    ndarray
+        Array of points containing [j_hyp, H_hyp, npeaks, rend].
+    """
     out = points
     for i in indeces:
         out[i, :] = single_run_TEOB(points[i], eobcommonpars)
@@ -115,6 +224,10 @@ def run_TEOB_list(indeces, points, eobcommonpars):
 # Span parameterspace
 # ---------------------
 class Spanner(object):
+    """
+    Class to span the (j,E) parameter space using TEOBResumS
+    """
+
     def __init__(
         self,
         q,
@@ -132,6 +245,42 @@ class Spanner(object):
         ignore_input_file=False,
         outdir=None,
     ):
+        """
+        Initialize the Spanner class.
+
+        Parameters
+        ----------
+        q : float
+            Mass ratio.
+        chi1 : float
+            Dimensionless spin of the primary.
+        chi2 : float
+            Dimensionless spin of the secondary.
+        pph_min : float
+            Minimum value of the angular momentum.
+        pph_max : float
+            Maximum value of the angular momentum.
+        nj : int, optional
+            Number of angular momenta considered. Default is 100.
+        update_pph_min : bool, optional
+            If True, update pph_min to the minimum value that allows for a bound orbit.
+            Default is True.
+        r0 : float, optional
+            Initial separation. Default is 1000.
+        input_file : str, optional
+            File with data points. If provided, the TEOB runs will be skipped and the
+            points will be loaded from the file. Default is None.
+        verbose : bool, optional
+            If True, print verbose output. Default is False.
+        nproc : int, optional
+            Number of processes to use for parallel TEOB runs. Default is 1.
+        dump_npz : bool, optional
+            If True, dump the points used in an npz file. Default is False.
+        ignore_input_file : bool, optional
+            If True, ignore the input_file and run TEOB for all points. Default is False.
+        outdir : str, optional
+            Output directory for data and plots. If None, use the current working directory. Default is None.
+        """
         self.q = q
         self.nu = q / (1 + q) ** 2
         self.chi1 = chi1
@@ -231,6 +380,23 @@ class Spanner(object):
         return
 
     def info_string(self, q_prec=2, chi1_prec=2, chi2_prec=2, r0_prec=0):
+        """
+        Write an info string based on the parameters of the Spanner instance.
+        Parameters
+        ----------
+        q_prec : int, optional
+            Precision for the mass ratio in the info string. Default is 2.
+        chi1_prec : int, optional
+            Precision for the primary spin in the info string. Default is 2.
+        chi2_prec : int, optional
+            Precision for the secondary spin in the info string. Default is 2.
+        r0_prec : int, optional
+            Precision for the initial separation in the info string. Default is 0.
+        Returns
+        -------
+        str
+            The info string.
+        """
         template = "q{:.@q_prec@f}_chi1@SIGN1@{:.@chi1_prec@f}_chi2@SIGN2@{:.@chi2_prec@f}_r0{:.@r0_prec@f}_nj{:d}"
         info_str = template.replace("@q_prec@", str(q_prec))
         info_str = info_str.replace("@chi1_prec@", str(chi1_prec))
@@ -249,6 +415,11 @@ class Spanner(object):
         return info_str.format(self.q, abs(self.chi1), abs(self.chi2), self.r0, self.nj)
 
     def parspace_populate(self):
+        """
+        Set up the parameter space points to be explored.
+        The points are stored in self.points as a 2D array with columns:
+        0: pph, 1: E, 2: Omg_orb_peaks (to be filled later), 3: r(end) (to be filled later)
+        """
         nj = self.nj
         if self.update_pph_min:
             # search pph such that Vmax=1
@@ -277,6 +448,24 @@ class Spanner(object):
         return
 
     def run_TEOB_parallel(self, nproc, dump_npz=False, ignore_input_file=False):
+        """
+        Run TEOB simulations in parallel for all points in self.points.
+        The results are stored in self.points with additional columns:
+        2: Omg_orb_peaks, 3: r(end)
+
+        Parameters
+        ----------
+        nproc : int
+            Number of processes to use for parallel TEOB runs.
+        dump_npz : bool, optional
+            If True, dump the points used in an npz file. Default is False.
+        ignore_input_file : bool, optional
+            If True, ignore the input_file and run TEOB for all points. Default is False.
+
+        Returns
+        -------
+        None
+        """
         if self.input_file is not None and not ignore_input_file:
             if self.verbose:
                 print(
@@ -324,6 +513,14 @@ class Spanner(object):
         return
 
     def qchi1chi2_list_str(self):
+        """
+        Write a string representation of the (q, chi1, chi2) parameters.
+
+        Returns
+        -------
+        str
+            The string representation of (q, chi1, chi2).
+        """
         str0 = ""
         vals = [self.q, self.chi1, self.chi2]
         for i, v in enumerate(vals):
@@ -346,6 +543,10 @@ class Spanner(object):
     def get_NR_points(
         self, dset="GAUSS_2023", Emin=1.0, Emax=None, Jmin=None, Jmax=None
     ):
+        """
+        This function is way too specific to be here, I assume it is related
+        to some project. Remove it from here, or generalize it!
+        """
         q = self.q
         nu = self.nu
         if Emax is None:
@@ -430,6 +631,28 @@ class Spanner(object):
         show_NR=False,
         dset="GAUSS_2023",
     ):
+        """
+        Plot the parameter space
+
+        Parameters
+        ----------
+        marker_size : int, optional
+            Marker size in the plot. Default is 1.
+        savepng : bool, optional
+            If True, save the plot as a PNG file. Default is False.
+        discrete_cmap : bool, optional
+            If True, use a discrete color map. Default is False.
+        show : str, optional
+            If "on", show the plot. Default is "on".
+        pph_max_plot : float, optional
+            Maximum value of pph to be considered in the plot. Default is None.
+        show_NR : bool, optional
+            If True, show NR points in the plot. Default is False.
+        dset : str, optional
+            Dataset name for NR points. Default is "GAUSS_2023".
+
+        FIXME: remove the dset argument & related code, it is too project-specific!
+        """
         points2plot = self.points
         if pph_max_plot is not None:
             mask = points2plot[:, 0] <= pph_max_plot

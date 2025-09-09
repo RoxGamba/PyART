@@ -13,6 +13,9 @@ from ..utils import cat_utils as cat_ut
 
 # This class is used to load the RIT data and store it in a convenient way
 class Waveform_RIT(Waveform):
+    """
+    Class to load RIT waveforms and metadata.
+    """
 
     def __init__(
         self,
@@ -27,7 +30,39 @@ class Waveform_RIT(Waveform):
         shorten_rng=True,  # keep at most 300 M after merger
         urls_json=None,
     ) -> None:
+        """
+        Initialize the Waveform_RIT class.
 
+        Parameters
+        ----------
+        path : str, optional
+            The path where the RIT data is stored. Default is "../dat/RIT/".
+        ID : str or int, optional
+            The ID of the RIT simulation to load. If an int is provided, it will
+            be converted to a zero-padded string of length 4. Default is "0001".
+        download : bool, optional
+            If True, the simulation will be downloaded if not found in the specified path.
+            Default is False.
+        psi_load : bool, optional
+            If True, the psi4 data will be loaded. Default is True.
+        h_load : bool, optional
+            If True, the strain data will be loaded. Default is True.
+        mtdt_load : bool, optional
+            If True, the metadata will be loaded. Default is True.
+        ell_emms : str or list of tuple, optional
+            Modes to load. If "all", all modes up to ell=5 will be loaded.
+            If a list of tuples, only the specified modes will be loaded.
+            Default is "all".
+        nu_rescale : bool, optional
+            If True, the waveform will be rescaled by the symmetric mass ratio nu.
+            Default is False.
+        shorten_rng : bool, optional
+            If True, the waveform will be shortened to keep at most 300 M after merger.
+            Default is True.
+        urls_json : str or None, optional
+            Path to a JSON file containing the URLs of the RIT simulations. If None, a default
+            file will be created in the catalogs directory. Default is None.
+        """
         super().__init__()
 
         # self.t_psi4 = None # now property of parent class Waveform
@@ -82,6 +117,24 @@ class Waveform_RIT(Waveform):
         pass
 
     def download_data(self, ID, path="./", urls_json=None, dump_urls=True):
+        """
+        Download the RIT simulation with the given ID from the RIT catalog.
+        The data will be stored in the given path.
+
+        Parameters
+        ----------
+        ID : str
+            The ID of the RIT simulation to download. It should be a zero-padded
+            string of length 4, e.g. "0001".
+        path : str, optional
+            The path where the RIT data will be stored. Default is "./".
+        urls_json : str or None, optional
+            Path to a JSON file containing the URLs of the RIT simulations. If None, a default
+            file will be created in the catalogs directory. Default is None.
+        dump_urls : bool, optional
+            If True, the URLs will be dumped to the given urls_json file if it does not exist.
+            Default is True.
+        """
 
         def get_id_from_url(url, sep="-"):
             parts = url.split(sep)
@@ -168,7 +221,10 @@ class Waveform_RIT(Waveform):
         pass
 
     def load_psi4lm(self):
-
+        """
+        Load psi4lm modes from the RIT catalog.
+        The modes are stored in self._psi4lm dictionary.
+        """
         files = glob.glob(os.path.join(self.psi_path, "*.asc"))
         d = {}
 
@@ -205,7 +261,9 @@ class Waveform_RIT(Waveform):
         pass
 
     def load_hlm(self):
-
+        """
+        Load hlm from RIT data.
+        """
         d = {}
         f = self.h_file
         th = f["NRTimes"][:]
@@ -249,6 +307,15 @@ class Waveform_RIT(Waveform):
         Meta with original keys are stored in ometadata,
         metadata instead contain useful info with standard
         naming (see e.g. SXS metadata)
+
+        Parameters
+        ----------
+        path : str
+            Path to the metadata file.
+        Returns
+        -------
+        meta : dict
+            Dictionary containing the metadata with standard keys.
         """
         nm = path
         ometa = {}
@@ -366,6 +433,7 @@ class Waveform_RIT(Waveform):
     def compute_initial_data(self):
         """
         Compute initial data (J0, S0, L0) from the metadata
+        and store them in self._dyn["id"] dictionary.
         """
 
         if self.metadata is not None:
@@ -427,19 +495,18 @@ class Waveform_RIT(Waveform):
         }
         pass
 
-    def compute_dynamics(self):
-        # compute dynamics
-        pass
-
     def __interp_qnt__(self, x, y, x_new):
 
         f = interpolate.interp1d(x, y, fill_value=0, bounds_error=False)
         yn = f(x_new)
-
         return yn
 
 
 class Catalog(object):
+    """
+    Class to load multiple RIT simulations in a given path.
+    """
+
     def __init__(
         self,
         path="./",
@@ -451,7 +518,31 @@ class Catalog(object):
         load_puncts=False,
         verbose=False,
     ) -> None:
+        """
+        Initialize the Catalog class.
 
+        Parameters
+        ----------
+        path : str, optional
+            The path where the RIT data is stored. Default is "./".
+        ell_emms : str or list of tuple, optional
+            Modes to load. If "all", all modes up to ell=ellmax will be loaded.
+            If a list of tuples, only the specified modes will be loaded.
+            Default is "all".
+        ellmax : int, optional
+            The maximum ell value to load if ell_emms is "all". Default is 4.
+        load_data : bool, optional
+            If True, the waveform data will be loaded. Default is False.
+        nonspinning : bool, optional
+            If True, only nonspinning simulations will be loaded. Default is False.
+        integr_opts : dict or None, optional
+            Integration options. If None, no integration will be performed.
+            Default is None.
+        load_puncts : bool, optional
+            If True, puncture data will be loaded. Default is False.
+        verbose : bool, optional
+            If True, verbose output will be printed. Default is False.
+        """
         self.nonspinning = nonspinning
         self.integr_opts = integr_opts
         self.ellmax = ellmax
@@ -481,6 +572,20 @@ class Catalog(object):
     ):
         """
         Load all simulations in path into self.data and all metadata into self.catalog_meta
+
+        Parameters
+        ----------
+        path : str
+            The path where the RIT data is stored.
+        ell_emms : str or list of tuple
+            Modes to load. If "all", all modes up to ell=ellmax will be
+            loaded. If a list of tuples, only the specified modes will be loaded.
+        nonspinning : bool, optional
+            If True, only nonspinning simulations will be loaded. Default is False.
+        eccentric : bool, optional
+            If True, only eccentric simulations will be loaded. Default is True.
+        verbose : bool, optional
+            If True, verbose output will be printed. Default is False.
         """
         import glob
 
@@ -544,6 +649,21 @@ class Catalog(object):
         Return idx with metadata[idx][key]=value.
         If single_idx is False, return list of indeces
         that satisfy the condition
+
+        Parameters
+        ----------
+        value : str or float
+            The value to search for.
+        key : str, optional
+            The key in the metadata to search. Default is "name".
+        single_idx : bool, optional
+            If True, return a single index. If False, return a list of indices. Default is True.
+
+        Returns
+        -------
+        idx or list of idx or None
+            The index or list of indices that satisfy the condition.
+            If no index is found, return None.
         """
         idx_list = []
         for idx, meta in enumerate(self.catalog_meta):
@@ -560,37 +680,3 @@ class Catalog(object):
                 return idx_list[0]
         else:
             return idx_list
-
-
-if __name__ == "__main__":
-
-    psi_path = "Psi4/ExtrapPsi4_RIT-eBBH-1634-n100-ecc/"
-    h_path = "Strain/ExtrapStrain_RIT-eBBH-1634-n100.h5"
-
-    mtdt_path = None
-    r = Waveform_RIT(psi_path=psi_path, h_path=h_path, mtdt_path=mtdt_path)
-
-    r.compute_initial_data()
-    print(r.dyn["id"])
-
-    # plot h22
-    plt.plot(r.t_h, r.hlm[(2, 2)]["real"])
-    plt.plot(r.t_h, r.hlm[(2, 2)]["A"])
-    plt.show()
-
-    # plot psi4
-    for k in r.psi4lm.keys():
-        plt.plot(r.t_psi4, r.psi4lm[k]["A"], label=k)
-    plt.legend(ncol=3)
-    plt.show()
-
-    # symmetry between +m and -m
-    plt.plot(r.t_h, r.hlm[(2, 2)]["A"])
-    plt.plot(r.t_h, r.hlm[(2, 2)]["A"] - r.hlm[(2, -2)]["A"])
-    plt.show()
-
-    # hierarchy of modes
-    for k in r.hlm.keys():
-        plt.plot(r.t_h, r.hlm[k]["A"], label=k)
-    plt.legend(ncol=3)
-    plt.show()

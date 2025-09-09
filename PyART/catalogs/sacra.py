@@ -29,6 +29,27 @@ class Waveform_SACRA(Waveform):
         nu_rescale=False,
         cut_final=150,  # cut waveform after tmrg+150 (if None, do not cut)
     ) -> None:
+        """
+        Initialize the Waveform_SACRA class.
+
+        Parameters
+        ----------
+        ID : int, optional
+            The ID of the SACRA simulation to load. If provided, the waveform
+            will be searched according to this value. Default is None.
+        name : str, optional
+            The name of the SACRA simulation to load. If provided, the waveform
+            will be searched according to this value. Alternative to ID. Default is None.
+        path : str, optional
+            The path where the SACRA data is stored. It is assumed to have the same
+            structure as in /data/numrel/SACRA/BHNS. Default is "./".
+        nu_rescale : bool, optional
+            If True, the waveform will be rescaled by the symmetric mass ratio nu.
+            Default is False.
+        cut_final : int or None, optional
+            The time (in M) after merger to cut the waveform. If None, the waveform
+            will not be cut. Default is 150.
+        """
 
         super().__init__()
 
@@ -70,6 +91,11 @@ class Waveform_SACRA(Waveform):
         """
         Load info from TeX table stored in sacra.info,
         taken from Zappa+:1903.11622
+
+        Returns
+        -------
+        info : list of dict
+            List of dictionaries with the info for each simulation.
         """
         script_path = pathlib.Path(__file__).parent.resolve()
         fname = os.path.join(script_path, "sacra.info")
@@ -99,6 +125,9 @@ class Waveform_SACRA(Waveform):
         return info
 
     def load_metadata(self):
+        """
+        Load metadata from sacra.info file.
+        """
         q = self.info["q"]
         nu = q / (1 + q) ** 2
         M = self.info["M"]
@@ -152,6 +181,10 @@ class Waveform_SACRA(Waveform):
         pass
 
     def load_hlm(self):
+        """
+        Load hlm from SACRA data.
+        """
+
         subdirs = ["gwa-5", "gwa0", "gwa25", "gwa5", "gwa75"]
         tmp = self.name.replace("-", "") + ".d"
 
@@ -220,6 +253,10 @@ class Waveform_SACRA(Waveform):
         pass
 
     def get_MOmega0_from_FFT(self, h, u):
+        """
+        Estimate the initial frequency from the Fourier Transform of the
+        waveform. This gives a rough estimate of the initial frequency.
+        """
         condition_settings = {
             "tlen": len(h) * 4,
             "pad_end_frac": 0.5,

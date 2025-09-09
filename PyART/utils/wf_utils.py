@@ -127,7 +127,23 @@ def k_to_emm(k):
 
 def compute_hphc(hlm, phi=0, i=0, modes=[(2, 2)]):
     """
-    For aligned spins, assuming usual symmetry between hlm and hl-m
+    Compute hp and hc from hlm
+    for aligned spins, assuming usual symmetry between hlm and hl-m
+
+    Parameters
+    ----------
+    hlm: dict
+        dictionary with multipoles
+    phi: float
+        azimuthal angle
+    i: float
+        inclination angle
+    modes: list
+        list of (ell, emm) tuples
+    Returns
+    -------
+    out: (hp, hc)
+        plus and cross polarizations
     """
     h = 0 + 1j * 0
     for k in modes:
@@ -152,6 +168,25 @@ def compute_hphc(hlm, phi=0, i=0, modes=[(2, 2)]):
 def taper(t, h, M, alpha, tau, Msuns=1.0):
     """
     Taper a waveform using an hyperbolic tangent
+
+    Parameters
+    ----------
+    t: ndarray
+        time array
+    h: ndarray
+        waveform array
+    M: float
+        total mass in solar masses
+    alpha: float
+        parameter that controls how fast the tapering is
+    tau: float
+        parameter that controls when the tapering starts
+    Msuns: float
+        mass of the sun in seconds (default 1.0)
+    Returns
+    -------
+    out: ndarray
+        tapered waveform
     """
     tm = t / (M * Msuns)
     window = 0.5 * (1.0 + np.tanh(tm * alpha - tau))
@@ -159,6 +194,18 @@ def taper(t, h, M, alpha, tau, Msuns=1.0):
 
 
 def get_multipole_dict(wave):
+    """
+    Given a complex waveform, return a dictionary with
+    real, imag, z, A, p
+    Parameters
+    ----------
+    wave: ndarray
+        complex waveform
+    Returns
+    -------
+    out: dict
+        dictionary with real, imag, z, A, p
+    """
     return {
         "real": wave.real,
         "imag": wave.imag,
@@ -187,6 +234,21 @@ def align_phase(t, Tf, phi_a_tau, phi_b):
     * phi_b     : second phase evolution
 
     This function returns \Delta\phi.
+
+    Parameters
+    ----------
+    t: ndarray
+        time array
+    Tf: float
+        final time
+    phi_a_tau: ndarray
+        first phase evolution, time-shifted
+    phi_b: ndarray
+        second phase evolution
+    Returns
+    -------
+    out: float
+        optimal phase shift
     """
     dt = t[1] - t[0]
     weight = np.double((t >= 0) & (t < Tf))
@@ -210,6 +272,27 @@ def Align(t, Tf, tau_max, t_a, phi_a, t_b, phi_b):
     The two waveforms are re-sampled using the given time t
 
     This function returns a tuple (tau_opt, dphi_opt, chi2_opt)
+
+    Parameters
+    ----------
+    t: ndarray
+        time array
+    Tf: float
+        final time
+    tau_max: float
+        maximum time shift
+    t_a: ndarray
+        time array for first phase evolution
+    phi_a: ndarray
+        first phase evolution
+    t_b: ndarray
+        time array for second phase evolution
+    phi_b: ndarray
+        second phase evolution
+    Returns
+    -------
+    out: (tau_opt, dphi_opt, chi2_opt)
+        optimal time shift, optimal phase shift, minimum chi^2
     """
     dt = t[1] - t[0]
     N = int(tau_max / dt)
@@ -232,12 +315,42 @@ def Align(t, Tf, tau_max, t_a, phi_a, t_b, phi_b):
 
 
 def remap(h_re, h_im):
+    """
+    Map (h_re, h_im) to (A, phi)
+    Parameters
+    ----------
+    h_re: ndarray
+        real part of the waveform
+    h_im: ndarray
+        imaginary part of the waveform
+    Returns
+    -------
+    out: (A, phi)
+        amplitude and phase of the waveform
+    """
     amp = np.sqrt(h_re**2 + h_im**2)
     phase = np.unwrap(np.angle(h_re - 1j * h_im))
     return amp, phase
 
 
 def shift_waveform(h_re, h_im, t_shift_idx, phi_shift):
+    """
+    Shift waveform in time and phase
+    Parameters
+    ----------
+    h_re: ndarray
+        real part of the waveform
+    h_im: ndarray
+        imaginary part of the waveform
+    t_shift_idx: int
+        time shift in number of indices
+    phi_shift: float
+        phase shift in radians
+    Returns
+    -------
+    out: (h_re, h_im)
+        shifted real and imaginary parts of the waveform
+    """
     h_re = np.roll(h_re, -t_shift_idx)
     h_im = np.roll(h_im, -t_shift_idx)
     A, phi = remap(h_re, h_im)

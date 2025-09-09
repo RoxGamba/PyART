@@ -24,6 +24,14 @@ class Waveform_SEOB(Waveform):
         self,
         pars=None,
     ):
+        """
+        Initialize the Waveform_SEOB class.
+
+        Parameters
+        ----------
+        pars : dict
+            Dictionary of parameters for the SEOBNR waveform generation.
+        """
         super().__init__()
         if pars is None:
             raise RuntimeError("No input parameters given for SEOB!")
@@ -35,6 +43,11 @@ class Waveform_SEOB(Waveform):
         pass
 
     def _run(self):
+        """
+        Run the SEOB waveform generation and store the results in the class attributes.
+        This method generates the waveform modes, computes the plus and cross polarizations,
+        and extracts the dynamics.
+        """
         # This gives time, modes in physical units
         t, hlm_seob = self.SEOB.generate_td_modes()
         nu = self.pars["q"] / (1.0 + self.pars["q"]) ** 2
@@ -133,6 +146,17 @@ class Waveform_SEOB(Waveform):
 def convert_hlm(hlm):
     """
     Convert the hlm dictionary from SEOB to PyART notation
+
+    Parameters
+    ----------
+    hlm : dict
+        Dictionary of waveform modes from SEOBNR, with keys as (l, m) tuples
+        and values as complex numpy arrays.
+    Returns
+    -------
+    hlm_conv : dict
+        Dictionary of waveform modes in PyART notation, with each mode as a
+        dictionary containing 'real', 'imag', 'A', 'p', and 'z'.
     """
     hlm_conv = {}
     for key in hlm.keys():
@@ -171,6 +195,54 @@ def CreateDict(
 ):
     """
     Create the dictionary of parameters for pyseobnr->GenerateWaveform
+
+    Parameters
+    ----------
+    M : float
+        Total mass in solar masses. Default is 1.0.
+    q : float
+        Mass ratio m1/m2 >= 1. Default is 1.
+    chi1z : float
+        Dimensionless spin of the primary along the orbital angular momentum.
+        Default is 0.0.
+    chi2z : float
+        Dimensionless spin of the secondary along the orbital angular momentum.
+        Default is 0.0.
+    chi1x : float
+        Dimensionless spin of the primary in the orbital plane (x-component).
+        Default is 0.0.
+    chi2x : float
+        Dimensionless spin of the secondary in the orbital plane (x-component).
+        Default is 0.0.
+    chi1y : float
+        Dimensionless spin of the primary in the orbital plane (y-component).
+        Default is 0.0.
+    chi2y : float
+        Dimensionless spin of the secondary in the orbital plane (y-component).
+        Default is 0.0.
+    dist : float
+        Distance to the source in Mpc. Default is 100.0.
+    iota : float
+        Inclination angle in radians. Default is 0 (face-on).
+    f0 : float
+        Starting frequency of the (2,2) mode in geometric units. Default is 0.0035.
+    df : float
+        Frequency resolution in Hz. Default is 1/128.
+    dt : float
+        Time step in seconds. Default is 1/2048.
+    phi_ref : float
+        Reference phase at f0 in radians. Default is 0.0.
+    e0 : float
+        Initial eccentricity at f0. Default is 0.0.
+    rel_anomaly : float
+        Relativistic anomaly at f0 in radians. Default is pi.
+    use_geom : str
+        Whether to use geometric units ('yes' or 'no'). Default is 'yes'.
+    approx : str
+        Approximant to use ('SEOBNRv5HM', 'SEOBNRv5PHM', 'SEOBNRv5EHM').
+        Default is 'SEOBNRv5HM'.
+    use_mode_lm : list of tuple
+        List of (l, m) tuples specifying which modes to use. Default is [(2, 2)].
     """
     pardic = {
         "q": q,

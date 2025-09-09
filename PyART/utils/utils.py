@@ -1,4 +1,4 @@
-import sys, re, copy
+import re, copy
 import numpy as np
 from scipy import interpolate
 from scipy.signal import find_peaks
@@ -6,7 +6,7 @@ from scipy.signal.windows import tukey
 from math import factorial as fact
 from math import ceil
 import matplotlib.pyplot as plt
-from astropy.constants import G, c, M_sun, pc
+from astropy.constants import G, c, M_sun
 
 Msun = G.value * M_sun.value / (c.value**3)  # Solar mass
 ## Misc
@@ -15,6 +15,19 @@ Msun = G.value * M_sun.value / (c.value**3)  # Solar mass
 def rotate3_axis(vector, theta=0.0, axis=[0, 0, 1]):
     """
     Rotate a 3 vector around a provided axis of an angle theta
+
+    Parameters
+    ----------
+    vector: array-like
+        vector to rotate
+    theta: float
+        rotation angle (in radians)
+    axis: array-like
+        rotation axis
+    Returns
+    -------
+    out: array-like
+        rotated vector
     """
     from scipy.spatial.transform import Rotation
 
@@ -112,6 +125,17 @@ def reflect_unwrap(vec):
 def minmax_array(x, tol=1e-20):
     """
     Find the maximum and minimum of an array
+
+    Parameters
+    ----------
+    x: array-like
+        input array
+    tol: float
+        tolerance to add/subtract to min/max
+    Returns
+    -------
+    out: list
+        [min(x)-tol, max(x)+tol]
     """
     return [min(x) - tol, max(x) + tol]
 
@@ -119,6 +143,16 @@ def minmax_array(x, tol=1e-20):
 def nextpow2(x):
     """
     Return the next closest power of 2
+
+    Parameters
+    ----------
+    x: float
+        input number
+
+    Returns
+    -------
+    out: int
+        next closest power of 2
     """
     return pow(2, ceil(np.log(x) / np.log(2)))
 
@@ -126,6 +160,19 @@ def nextpow2(x):
 def safe_sigmoid(x, alpha, clip=None):
     """
     Sigmoid function with clips on the exponent
+
+    Parameters
+    ----------
+    x: array-like
+        input array
+    alpha: float
+        slope parameter
+    clip: float or None
+        if not None, clip the exponent to [-clip, clip]
+    Returns
+    -------
+    out: array-like
+        sigmoid values
     """
     if clip is None:
         exponent = -alpha * x
@@ -142,6 +189,29 @@ def taper_waveform(
     """
     Waveform tapering in Matcher-class.
     The meaning of t1, t2, and alpha depends on the kind used!
+
+    Parameters
+    ----------
+    t: array-like
+        time array
+    h: array-like
+        strain array
+    t1: float or None
+        start time of the tapering
+    t2: float or None
+        end time of the tapering (if None, tapering is only applied at t1)
+    alpha: float
+        slope parameter for the tapering
+    alpha_end: float or None
+        slope parameter for the tapering at t2 (if None, alpha_end=alpha)
+    kind: str
+        tapering method, can be 'sigmoid' or 'tukey' (default: 'sigmoid')
+    debug: bool
+        if True, plot the tapering window
+    Returns
+    -------
+    out: array-like
+        tapered strain
     """
     if kind is None:
         return h
@@ -192,6 +262,17 @@ def windowing(h, alpha=0.1):
     Windowing with Tukey window on a given strain (time-domain)
     h     : strain to be tapered
     alpha : Tukey filter slope parameter. Suggested value: alpha = 1/4/seglen
+
+    Parameters
+    ----------
+    h: array-like
+        strain array
+    alpha: float
+        slope parameter for the tapering
+    Returns
+    -------
+    out: (array-like, float)
+        tapered strain and wfact = <w^2>
     """
     window = tukey(len(h), alpha)
     wfact = np.mean(window**2)
@@ -199,6 +280,19 @@ def windowing(h, alpha=0.1):
 
 
 def fft(h, dt):
+    """
+    FFT of a time-domain signal h(t)
+    Parameters
+    ----------
+    h: ndarray
+        time-domain signal
+    dt: float
+        time spacing (assumed uniform)
+    Returns
+    -------
+    out: (f, hfft)
+        frequency array and FFT of h
+    """
     N = len(h)
     hfft = np.fft.rfft(h) * dt
     f = np.fft.rfftfreq(N, d=dt)
@@ -206,6 +300,24 @@ def fft(h, dt):
 
 
 def ifft(u, srate, seglen, t0=0.0):
+    """
+    IFFT of a frequency-domain signal u(f)
+    Parameters
+    ----------
+    u: ndarray
+        frequency-domain signal
+    srate: float
+        sampling rate
+    seglen: float
+        segment length
+    t0: float
+        time shift
+
+    Returns
+    -------
+    out: (t, s)
+        time array and IFFT of u
+    """
     N = int(srate * seglen)
     s = np.fft.irfft(u, N)
     dt = 1.0 / srate
@@ -215,6 +327,19 @@ def ifft(u, srate, seglen, t0=0.0):
 
 
 def find_nearest(array, value):
+    """
+    Find the index of the element in array closest to value
+    Parameters
+    ----------
+    array: array-like
+        input array
+    value: float
+        target value
+    Returns
+    -------
+    out: int
+        index of the element in array closest to value
+    """
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return idx
@@ -223,6 +348,19 @@ def find_nearest(array, value):
 def zero_pad_before(array, N, return_column=True):
     """
     Pad an array with N zeroes (at the beginning)
+
+    Parameters
+    ----------
+    array: array-like
+        input array
+    N: int
+        length of the output array
+    return_column: bool
+        if True, return a column vector, otherwise a row vector
+    Returns
+    -------
+    out: array-like
+        zero-padded array
     """
     n = len(array)
     v = np.zeros((N,))
@@ -236,6 +374,21 @@ def zero_pad_before(array, N, return_column=True):
 def powspace(start, stop, power, num):
     """
     Compute equally spaced grid in log-space
+
+    Parameters
+    ----------
+    start: float
+        start value
+    stop: float
+        stop value
+    power: float
+        power
+    num: int
+        number of points
+    Returns
+    -------
+    out: array-like
+        array of num points between start and stop in log-space
     """
     start = np.power(start, 1.0 / float(power))
     stop = np.power(stop, 1.0 / float(power))
@@ -247,6 +400,26 @@ def delta_a_b(a, xa, b, xb, N=500):
     Given two sets (xa, a=f(xa)) and (xb, b=g(xb)),
     interpolate them to a common grid x and compute their
     difference f(x)-g(x)
+
+    Parameters
+    ----------
+    a: array-like
+        first array
+    xa: array-like
+        x values for the first array
+    b: array-like
+        second array
+    xb: array-like
+        x values for the second array
+    N: int
+        number of points in the common grid
+    Returns
+    -------
+    out: (x, delta_ab, a_n, b_n)
+        x: common grid
+        delta_ab: a_n - b_n
+        a_n: interpolated a on the common grid
+        b_n: interpolated b on the common grid
     """
     x_max = min(max(xa), max(xb))
     x_min = max(min(xa), min(xb))
@@ -276,6 +449,37 @@ def vec_differences(
 ):
     """
     Compute differences between arrays with different lengths
+    Similar to delta_a_b, but with more options
+
+    Parameters
+    ----------
+    x1: array-like
+        x values for the first array
+    y1: array-like
+        first array
+    x2: array-like
+        x values for the second array
+    y2: array-like
+        second array
+    a: float
+        start value for the common grid
+    b: float
+        stop value for the common grid
+    dx: float
+        spacing for the common grid
+    diff_kind: str
+        kind of difference, can be 'abs' (absolute), 'rel' (relative), or 'phi' (phase)
+    fabs: bool
+        if True, return the absolute value of the difference
+    interp_kind: str
+        kind of interpolation, passed to spline function
+    ensure_unique: bool
+        if True, ensure that x1 and x2 are unique before interpolation
+    Returns
+    -------
+    out: (x, dy)
+        x: common grid
+        dy: differences on the common grid
     """
     xs = np.linspace(a, b, num=int((b - a) / dx))
 
@@ -298,6 +502,22 @@ def vec_differences(
 def spline(x, y, xs, kind="cubic", ensure_unique=False):
     """
     Compute the spline of y(x), return y(xs)
+    Parameters
+    ----------
+    x: array-like
+        x values
+    y: array-like
+        y values
+    xs: array-like
+        x values for the output
+    kind: str
+        kind of interpolation, passed to interp1d
+    ensure_unique: bool
+        if True, ensure that x is unique before interpolation
+    Returns
+    -------
+    out: array-like
+        interpolated values y(xs)
     """
     if ensure_unique:
         x, unique_indices = np.unique(x, return_index=True)
@@ -309,8 +529,22 @@ def spline(x, y, xs, kind="cubic", ensure_unique=False):
 def spline_diff(t, y, k=3, n=1):
     """
     Wrapper for InterpolatedUnivariateSpline derivative function
-    """
+    Parameters
+    ----------
+    t: array-like
+        x values
+    y: array-like
+        y values
+    k: int
+        spline order
+    n: int
+        number of derivatives
 
+    Returns
+    -------
+    out: array-like
+        n-th derivative of y at t
+    """
     #
     from numpy import sum
     from scipy.interpolate import InterpolatedUnivariateSpline as spline
@@ -327,6 +561,22 @@ def spline_diff(t, y, k=3, n=1):
 def spline_antidiff(t, y, k=3, n=1):
     """
     Wrapper for InterpolatedUnivariateSpline antiderivative function
+
+    Parameters
+    ----------
+    t: array-like
+        x values
+    y: array-like
+        y values
+    k: int
+        spline order
+    n: int
+        number of derivatives
+
+    Returns
+    -------
+    out: array-like
+        n-th anti-derivative of y at t
     """
 
     #
@@ -344,6 +594,22 @@ def spline_antidiff(t, y, k=3, n=1):
 
 
 def polyfit_svd(x, y, order):
+    """
+    Polynomial fit using SVD
+    Parameters
+    ----------
+    x: array-like
+        x values
+    y: array-like
+        y values
+    order: int
+        polynomial order
+    Returns
+    -------
+    out: array-like
+        polynomial coefficients
+    """
+
     X = np.vander(x, order + 1)
     U, S, Vt = np.linalg.svd(X, full_matrices=False)
     # threshold = np.finfo(float).eps * max(X.shape) * S[0]
@@ -366,6 +632,41 @@ def upoly_fits(
     direction="in",
     svd=True,
 ):
+    """
+    Perform polynomial fits in 1/r to the data (r0, y0)
+    Parameters
+    ----------
+    r0: array-like
+        radial coordinate
+    y0: array-like
+        function values at r0
+    nmin: int
+        minimum polynomial order
+    nmax: int
+        maximum polynomial order
+    n_extract: int or None
+        if not None, extract the extrapolated value from this fit order
+    r_cutoff_low: float or None
+        if not None, only use data with r0 >= r_cutoff_low
+    r_cutoff_high: float or None
+        if not None, only use data with r0 <= r_cutoff_high
+    direction: str
+        'in' or 'out', whether the data is from an inward or outward
+        moving observer
+    svd: bool
+        if True, use SVD for the polynomial fits
+    Returns
+    -------
+    out: dict
+        dictionary with the following keys
+        'extrap': extrapolated value (mean over fit orders or from n_extract)
+        'extrap_vec': extrapolated values for each fit order
+        'fit_orders': list of fit orders
+        'coeffs': polynomial coefficients for each fit order
+        'polynomials': polynomial values at the input r0 for each fit order
+        'mask': boolean mask used to select the data
+    """
+
     if n_extract is None:
         n_extract = nmax  # safe if SVD is used
     if r_cutoff_low is None:
@@ -419,29 +720,17 @@ def upoly_fits(
     return out
 
 
-## Waveform stuff, to be removed
-def interpolate_hlm(u, hlm, u_new, kind="cubic"):
-    raise RuntimeError("Deprecated!")
-    phi = -np.unwrap(np.arctan(hlm.imag / hlm.real) * 2) / 2
-    re_i = spline(u, hlm.real, u_new, kind=kind)
-    im_i = spline(u, hlm.imag, u_new, kind=kind)
-    A_i = spline(u, np.abs(hlm), u_new, kind=kind)
-    p_i = spline(u, phi, u_new, kind=kind)
-    return re_i, im_i, A_i, p_i
-
-
-def find_Amax(t, Alm, height=0.15, return_idx=False):
-    peaks, _ = find_peaks(Alm, height=height)
-    i_mrg = peaks[-1]
-    if return_idx:
-        return t[i_mrg], Alm[i_mrg], i_mrg
-    else:
-        return t[i_mrg], Alm[i_mrg]
+# Deprecated
+# def find_Amax(t, Alm, height=0.15, return_idx=False):
+#     peaks, _ = find_peaks(Alm, height=height)
+#     i_mrg = peaks[-1]
+#     if return_idx:
+#         return t[i_mrg], Alm[i_mrg], i_mrg
+#     else:
+#         return t[i_mrg], Alm[i_mrg]
 
 
 ## Derivatives and integration
-
-
 def D02(xp, yp, pad=True):
     """
     Computes the first derivative of y(x) using centered 2nd order
@@ -450,6 +739,21 @@ def D02(xp, yp, pad=True):
     This function returns an array of yp.shape[0]-2 elements
 
     NOTE: the data needs not to be equally spaced
+
+    Parameters
+    ----------
+    xp: array-like
+        x values
+    yp: array-like
+        y values
+    pad: bool
+        if True, pad the output with the first and last value to
+        return an array of the same length as the input
+
+    Returns
+    -------
+    out: array-like
+        first derivative of y with respect to x
     """
     dyp = [
         (yp[i + 1] - yp[i - 1]) / (xp[i + 1] - xp[i - 1])
@@ -463,7 +767,8 @@ def D02(xp, yp, pad=True):
 
 
 def D1(f, x, order):
-    """Computes the first derivative of function f(x)
+    """
+    Computes the first derivative of function f(x)
 
     Parameters
     ----------
@@ -544,6 +849,15 @@ def integrate(ff):
     """
     Computes the anti-derivative of a discrete function using a
     2nd order accurate formula
+
+    Parameters
+    ----------
+    ff: array-like
+        input function values
+    Returns
+    -------
+    out: array-like
+        anti-derivative of ff
     """
     out = np.empty_like(ff)
     out[0] = 0.0
@@ -557,6 +871,19 @@ def integrate(ff):
 def spinsphericalharm(s, l, m, phi, i):
     """
     Compute spin-weighted spherical harmonics
+
+    Parameters
+    ----------
+    s, l, m: int
+        spin, l and m indices
+    phi: float
+        azimuthal angle
+    i: float
+        inclination angle
+    Returns
+    -------
+    out: complex
+        value of the spin-weighted spherical harmonic
     """
     c = pow(-1.0, -s) * np.sqrt((2.0 * l + 1.0) / (4.0 * np.pi))
     dWigner = c * wigner_d_function(l, m, -s, i)
@@ -570,6 +897,17 @@ def wigner_d_function(l, m, s, i):
     """
     Compute wigner d functions, following Ref
     TODO: add reference
+
+    Parameters
+    ----------
+    l, m, s: int
+        l, m and s indices
+    i: float
+        inclination angle
+    Returns
+    -------
+    out: float
+        value of the wigner d function
     """
     costheta = np.cos(i * 0.5)
     sintheta = np.sin(i * 0.5)
@@ -654,6 +992,19 @@ def wdelement(
 
 ## Plot utils
 def save_plot(figname, show=True, save=False, verbose=False):
+    """
+    Save or show a plot
+    Parameters
+    ----------
+    figname: str
+        name of the figure file
+    show: bool
+        if True, show the plot
+    save: bool
+        if True, save the plot
+    verbose: bool
+        if True, print messages
+    """
     if save:
         plt.savefig(figname, dpi=200, bbox_inches="tight")
         if verbose:
@@ -668,6 +1019,21 @@ def save_plot(figname, show=True, save=False, verbose=False):
 
 
 def retarded_time(t, r, M=1):
+    """
+    Compute the retarded time in Schwarzschild spacetime
+    Parameters
+    ----------
+    t: float
+        coordinate time
+    r: float
+        areal radius
+    M: float
+        mass of the black hole
+    Returns
+    -------
+    out: float
+        retarded time
+    """
     # FIXME would remove from here!
     R = r * (1 + M / (2 * r)) ** 2
     rstar = R + 2 * M * np.log(R / (2 * M) - 1)
@@ -680,6 +1046,23 @@ def are_dictionaries_equal(
     """
     Check if two dictionaries are equal,
     modulo excluded keys
+
+    Parameters
+    ----------
+    dict1_in: dict
+        first dictionary
+    dict2_in: dict
+        second dictionary
+    excluded_keys: list
+        list of keys to exclude from the comparison
+    float_tol: float
+        tolerance for float comparison
+    verbose: bool
+        if True, print messages
+    Returns
+    -------
+    out: bool
+        True if the dictionaries are equal, False otherwise
     """
     dict1 = copy.deepcopy(dict1_in)
     dict2 = copy.deepcopy(dict2_in)
@@ -715,6 +1098,25 @@ def are_dictionaries_equal(
 def print_dict_comparison(
     dict1_in, dict2_in, excluded_keys=[], dict1_name="dict1", dict2_name="dict2"
 ):
+    """
+    Print a comparison between two dictionaries,
+    modulo excluded keys
+    Parameters
+    ----------
+    dict1_in: dict
+        first dictionary
+    dict2_in: dict
+        second dictionary
+    excluded_keys: list
+        list of keys to exclude from the comparison
+    dict1_name: str
+        name of the first dictionary
+    dict2_name: str
+        name of the second dictionary
+    Returns
+    -------
+    out: None
+    """
     dict1 = copy.deepcopy(dict1_in)
     dict2 = copy.deepcopy(dict2_in)
     # remove excluded keys
@@ -769,6 +1171,24 @@ def print_dict_comparison(
 
 
 def safe_loadtxt(fname, remove_nans=True, remove_overlaps=True, time_idx=0):
+    """
+    Load a text file and optionally remove rows with NaNs
+    and rows with overlapping time values
+    Parameters
+    ----------
+    fname: str
+        name of the file to load
+    remove_nans: bool
+        if True, remove rows with NaNs
+    remove_overlaps: bool
+        if True, remove rows with overlapping time values
+    time_idx: int
+        index of the time column
+    Returns
+    -------
+    out: array-like
+        loaded data
+    """
     X = np.loadtxt(fname)
     if remove_nans:
         ncols = len(X[0, :])
@@ -784,6 +1204,19 @@ def safe_loadtxt(fname, remove_nans=True, remove_overlaps=True, time_idx=0):
 
 
 def extract_value_from_str(string, key):
+    """
+    Extract a numerical value from a string given a key
+    Parameters
+    ----------
+    string: str
+        input string
+    key: str
+        key to search for
+    Returns
+    -------
+    out: float or int or None
+        extracted value, or None if not found
+    """
     pattern = rf"{key}(\d+(\.\d+|p\d+)?|\d+)"
     match = re.search(pattern, string)
     if match:

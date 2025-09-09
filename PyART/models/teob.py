@@ -14,7 +14,7 @@ from ..waveform import Waveform
 
 class Waveform_EOB(Waveform):
     """
-    Class to handle EOB waveforms
+    Class to handle TEOBResumS waveforms
     """
 
     def __init__(
@@ -28,6 +28,9 @@ class Waveform_EOB(Waveform):
         pass
 
     def compute_energetics(self):
+        """
+        Compute the binding energy and angular momentum from the dynamics.
+        """
         pars = self.pars
         q = pars["q"]
         q = float(q)
@@ -41,6 +44,11 @@ class Waveform_EOB(Waveform):
 
     # python wf func
     def _run_py(self):
+        """
+        Run the TEOBResumS waveform generation in Python.
+        Uses the EOBRun_module (compiled from TEOBResumS C code).
+        Stores the results in the class attributes.
+        """
         if self.pars["domain"]:
             f, rhp, ihp, rhc, ihc, hflm, dyn, _ = EOB.EOBRunPy(self.pars)
             self._f = f
@@ -61,6 +69,9 @@ class Waveform_EOB(Waveform):
         return 0
 
     def get_Pr(self):
+        """
+        Compute the radial momentum from the EOB dynamics.
+        """
         if not hasattr(self, "dyn"):
             raise RuntimeError("EOB dynamics not found!")
         Prstar = self.dyn["Prstar"]
@@ -139,6 +150,69 @@ def CreateDict(
 ):
     """
     Create the dictionary of parameters for EOBRunPy
+
+    Parameters
+    ----------
+    M : float, optional
+        Total mass (default is 1.0).
+    q : float, optional
+        Mass ratio m1/m2 >= 1 (default is 1).
+    chi1z : float, optional
+        Dimensionless spin of the primary along the orbital angular momentum (default is 0.0).
+    chi2z : float, optional
+        Dimensionless spin of the secondary along the orbital angular momentum (default is 0.0).
+    chi1x : float, optional
+        Dimensionless spin of the primary in the orbital plane (x-component) (default is 0.0).
+    chi2x : float, optional
+        Dimensionless spin of the secondary in the orbital plane (x-component) (default is 0.0).
+    chi1y : float, optional
+        Dimensionless spin of the primary in the orbital plane (y-component) (default is 0.0).
+    chi2y : float, optional
+        Dimensionless spin of the secondary in the orbital plane (y-component) (default is 0.0).
+    LambdaAl2 : float, optional
+        Dimensionless quadrupolar tidal parameter of the primary (default is 0).
+    LambdaBl2 : float, optional
+        Dimensionless quadrupolar tidal parameter of the secondary (default is 0).
+    iota : float, optional
+        Inclination angle in radians (default is 0).
+    f0 : float, optional
+        Initial frequency in geometric units (default is 0.0035).
+    srate : float, optional
+        Sampling rate in Hz (default is 4096.0).
+    df : float, optional
+        Frequency resolution in Hz (default is 1/128).
+    phi_ref : float, optional
+        Reference phase at f0 in radians (default is 0.0).
+    ecc : float, optional
+        Initial eccentricity at f0 (default is 1e-8).
+    r_hyp : float or None, optional
+        Initial separation (default is None).
+    H_hyp : any, optional
+        Initial energy parameter for hyperbolic orbits (default is None).
+    J_hyp : any, optional
+        Initial angular momentum parameter for hyperbolic orbits (default is None).
+    anomaly : float, optional
+        Initial relativistic anomaly (default is pi).
+    interp : str, optional
+        Interpolate to uniform time grid ("yes" or "no", default is "yes").
+    arg_out : str, optional
+        Output dynamics and hlm in addition to h+, hx ("yes" or "no", default is "yes").
+    use_geom : str, optional
+        Use geometric units ("yes" or "no", default is "yes").
+    use_tidal : str, optional
+        Version of tidal effects to use (default is None).
+    use_mode_lm : list of tuples, optional
+        List of (ell, m) modes to use (default is [(1)]).
+    ode_tmax : float, optional
+        Maximum time for ODE solver (default is 1e7).
+    cN3LO : float, optional
+        cN3LO parameter (default is None).
+    a6c : float, optional
+        a6c parameter (default is None).
+    use_flm_h : str, optional
+        Use higher multipoles in the waveform ("LO", "NLO", "NNLO", default is "LO").
+    use_nqc : bool, optional
+        Whether to use NQC corrections (default is True).
     """
     if H_hyp > 0 and J_hyp > 0 and r_hyp is None:
         if H_hyp > 1:
@@ -209,6 +283,19 @@ def CreateDict(
 
 
 def TEOB_info(input_module, verbose=False):
+    """
+    Print and return information about the TEOBResumS installation.
+    Parameters
+    ----------
+    input_module : module
+        The imported EOBRun_module.
+    verbose : bool, optional
+        If True, print the information (default is False).
+    Returns
+    -------
+    module : dict
+        Dictionary containing information about the TEOBResumS installation.
+    """
     module = {}
     module["softlink"] = input_module.__file__
     module["name"] = module["softlink"].split("/")[-1]
@@ -238,6 +325,29 @@ def TEOB_info(input_module, verbose=False):
 
 
 def SpinHamiltonian(r, pph, q, chi1, chi2, prstar=0.0):
+    """
+    Compute the EOB Hamiltonian for given parameters.
+
+    Parameters
+    ----------
+    r : float
+        Radial separation.
+    pph : float
+        Angular momentum.
+    q : float
+        Mass ratio m1/m2 >= 1.
+    chi1 : float
+        Dimensionless spin of the primary along the orbital angular momentum.
+    chi2 : float
+        Dimensionless spin of the secondary along the orbital angular momentum.
+    prstar : float, optional
+        Radial momentum in tortoise coordinates (default is 0.0).
+
+    Returns
+    -------
+    E0 : float
+        The EOB Hamiltonian value.
+    """
     hatH = EOB.eob_ham_s_py(r, q, pph, prstar, chi1, chi2)
     nu = q / (1 + q) ** 2
     E0 = nu * hatH[0]
@@ -245,10 +355,48 @@ def SpinHamiltonian(r, pph, q, chi1, chi2, prstar=0.0):
 
 
 def RadialPotential(r, pph, q, chi1, chi2):
+    """
+    Compute the EOB radial potential for given parameters.
+    Parameters
+    ----------
+    r : array-like
+        Radial separation.
+    pph : float
+        Angular momentum.
+    q : float
+        Mass ratio m1/m2 >= 1.
+    chi1 : float
+        Dimensionless spin of the primary along the orbital angular momentum.
+    chi2 : float
+        Dimensionless spin of the secondary along the orbital angular momentum.
+
+    Returns
+    -------
+    V : array-like
+        The EOB radial potential values.
+    """
     return np.array([SpinHamiltonian(ri, pph, q, chi1, chi2) for ri in r])
 
 
 def bracketing(f, start, end, step_size):
+    """
+    Bracket the roots of a function f in the interval [start, end] with given step size.
+    Parameters
+    ----------
+    f : callable
+        The function for which to bracket the roots.
+    start : float
+        The start of the interval.
+    end : float
+        The end of the interval.
+    step_size : float
+        The step size for bracketing.
+    Returns
+    -------
+    bracketed_intervals : list of [float, float]
+        List of intervals [a, b] where f(a) and f(b) have opposite
+        signs, indicating a root in between.
+    """
     bracketed_intervals = []
     a = start
     b = a + step_size
@@ -265,6 +413,25 @@ def bracketing(f, start, end, step_size):
 
 
 def PotentialMinimum(rvec, pph, q, chi1, chi2):
+    """
+    Compute the minimum of the EOB radial potential for given parameters.
+    Parameters
+    ----------
+    rvec : array-like
+        Radial separation values.
+    pph : float
+        Angular momentum.
+    q : float
+        Mass ratio m1/m2 >= 1.
+    chi1 : float
+        Dimensionless spin of the primary along the orbital angular momentum.
+    chi2 : float
+        Dimensionless spin of the secondary along the orbital angular momentum.
+    Returns
+    -------
+    Vmin : float
+        The minimum value of the EOB radial potential.
+    """
     V = RadialPotential(rvec, pph, q, chi1, chi2)
     peaks, _ = find_peaks(-V, height=-1)
     if len(peaks) > 0:
@@ -275,6 +442,30 @@ def PotentialMinimum(rvec, pph, q, chi1, chi2):
 
 
 def search_radial_turning_points(q, chi1, chi2, pph, E, step_size=0.1):
+    """
+    Compute the radial turning points (periastron and apastron) for given parameters.
+    Parameters
+    ----------
+    q : float
+        Mass ratio m1/m2 >= 1.
+    chi1 : float
+        Dimensionless spin of the primary along the orbital angular momentum.
+    chi2 : float
+        Dimensionless spin of the secondary along the orbital angular momentum.
+    pph : float
+        Angular momentum.
+    E : float
+        Energy.
+    step_size : float, optional
+        Step size for bracketing (default is 0.1).
+    Returns
+    -------
+    r_peri : float or None
+        The periastron radius, or None if not found.
+    r_apa : float or None
+        The apastron radius, or None if not found.
+    """
+
     def fzero(r):
         V = SpinHamiltonian(r, pph, q, chi1, chi2)
         return E - V
@@ -293,12 +484,46 @@ def search_radial_turning_points(q, chi1, chi2, pph, E, step_size=0.1):
 
 
 def search_apastron(q, chi1, chi2, pph, E, step_size=0.1):
+    """
+    Compute the apastron radius for given parameters.
+    Deprecated: use search_radial_turning_points instead.
+
+    Parameters
+    ----------
+    q : float
+        Mass ratio m1/m2 >= 1.
+    chi1 : float
+        Dimensionless spin of the primary along the orbital angular momentum.
+    chi2 : float
+        Dimensionless spin of the secondary along the orbital angular momentum.
+    pph : float
+        Angular momentum.
+    E : float
+        Energy.
+    step_size : float, optional
+        Step size for bracketing (default is 0.1).
+    """
     # kept only for retro-compatibility
     _, r_apa = search_radial_turning_points(q, chi1, chi2, pph, E, step_size=step_size)
     return r_apa
 
 
 def PotentialPlot(E0, pph0, q, chi1, chi2):
+    """
+    Plot the EOB radial potential for given parameters.
+    Parameters
+    ----------
+    E0 : float
+        Energy.
+    pph0 : float
+        Angular momentum.
+    q : float
+        Mass ratio m1/m2 >= 1.
+    chi1 : float
+        Dimensionless spin of the primary along the orbital angular momentum.
+    chi2 : float
+        Dimensionless spin of the secondary along the orbital angular momentum.
+    """
     rvec = np.linspace(2, 100, num=1000)
     V = RadialPotential(rvec, pph0, q, chi1, chi2)
     r_apa = search_apastron(q, chi1, chi2, pph0, E0)
@@ -314,13 +539,21 @@ def PotentialPlot(E0, pph0, q, chi1, chi2):
 
 
 def get_pph_lso(nu, a0):
+    """
+    Fit for the angular momentum at the LSO for given symmetric mass ratio and spin.
+    Parameters
+    ----------
+    nu : float
+        Symmetric mass ratio.
+    a0 : float
+        Effective spin.
+    Returns
+    -------
+    pph_lso : float
+        The angular momentum at the LSO.
+    """
     return EOB.pph_lso_spin_py(nu, a0)
 
 
-# ---------------------
-# Span parameterspace
-
 if __name__ == "__main__":
     module = TEOB_info(EOB, verbose=True)
-    # for key,value in module.items():
-    #    print(f'{key:10s} : {value}')

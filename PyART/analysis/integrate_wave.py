@@ -8,7 +8,78 @@ from ..utils.utils import D1, safe_sigmoid
 
 class IntegrateMultipole(object):
     """
-    Class for integrating multipole
+    Class for integrating gravitational wave multipole data using either
+    fixed-frequency (FFI) or time-domain (TDI) integration methods.
+    Parameters
+    ----------
+    l : int
+        Spherical harmonic index l.
+    m : int
+        Spherical harmonic index m.
+    t : array_like
+        Time array.
+    data : array_like
+        Input data array (psi4 or news).
+    mass : float
+        Mass parameter (typically ADM mass).
+    radius : float
+        Extraction radius.
+    integrand : str, optional
+        Type of integrand ("psi4" or "news"), default "psi4".
+    method : str, optional
+        Integration method ("FFI" or "TDI"), default "FFI".
+    f0 : float, optional
+        Low-frequency cutoff for FFI, default 0.001.
+    deg : int, optional
+        Degree of polynomial for drift removal in TDI, default 0.
+    poly_int : tuple or None, optional
+        Interval for polynomial drift removal, default None.
+    extrap_psi4 : bool, optional
+        If True, apply extrapolation to psi4, default False.
+    window : list or None, optional
+        Windowing parameters [t1, t2], default None.
+    patch_opts : dict, optional
+        Options for patching psi4, default {}.
+    walpha : float, optional
+        Window sharpness parameter, default 3.
+    Attributes
+    ----------
+    l, m, mass, radius, integrand, method, f0, deg, poly_int, extrap_psi4,
+    window, walpha, patch_opts : see Parameters
+    t : array_like
+        Time array.
+    psi4 : array_like
+        Psi4 data (after windowing/patching/extrapolation if applicable).
+    dh : array_like
+        First integral of psi4 (news).
+    h : array_like
+        Second integral of psi4 (strain).
+    u : array_like
+        Retarded time.
+    integr_opts : dict
+        Dictionary of integration options.
+    Methods
+    -------
+    areal_radius()
+        Compute areal radius from extraction radius and mass.
+    retarded_time()
+        Compute retarded time using areal radius and mass.
+    patch_psi4(psi4, t0, t1, t2, debug=False)
+        Patch psi4 before t1 and after t2 using power-laws of (t-t0).
+    extrapolate_psi4()
+        Apply extrapolation to psi4 using mass and radius.
+    apply_window(signal, window=[10, -10], walpha=3)
+        Apply window function to signal.
+    freq_interval(signal)
+        Compute frequency interval for FFI.
+    fixed_freq_int(signal, steps=1)
+        Perform fixed-frequency integration.
+    remove_time_drift(signal)
+        Remove polynomial drift from time-domain integration.
+    time_domain_int(signal, steps=1)
+        Perform time-domain integration with polynomial correction.
+    integrate(signal, steps=1)
+        Integrate signal using selected method (FFI or TDI).
     """
 
     def __init__(
@@ -29,6 +100,48 @@ class IntegrateMultipole(object):
         patch_opts={},
         walpha=3,
     ):
+        """
+        Initialize the wave integration analysis.
+        Parameters
+        ----------
+        l : int
+            Spherical harmonic index l.
+        m : int
+            Spherical harmonic index m.
+        t : array_like
+            Time array.
+        data : array_like
+            Input data array, typically psi4 or news.
+        mass : float
+            Mass parameter for the system.
+        radius : float
+            Extraction radius.
+        integrand : str, optional
+            Type of integrand to use ('psi4' or 'news'). Default is 'psi4'.
+        method : str, optional
+            Integration method to use. Default is 'FFI'.
+        f0 : float, optional
+            Low-frequency cutoff for integration. Default is 0.001.
+        deg : int, optional
+            Degree for polynomial integration. Default is 0.
+        poly_int : object, optional
+            Polynomial integration object. Default is None.
+        extrap_psi4 : bool, optional
+            If True, extrapolate psi4 data. Default is False.
+        window : str or None, optional
+            Window function to apply to data. Default is None.
+        patch_opts : dict, optional
+            Options for patching psi4 data. Default is empty dict.
+        walpha : float, optional
+            Alpha parameter for window function. Default is 3.
+        Raises
+        ------
+        RuntimeError
+            If an unknown integrand is specified.
+        Notes
+        -----
+        Stores integration options in `self.integr_opts`.
+        """
 
         self.l = l
         self.m = m
@@ -91,11 +204,31 @@ class IntegrateMultipole(object):
         pass
 
     def areal_radius(self):
+        """
+        Calculate the areal radius of the object.
+        The areal radius is defined as:
+            r_areal = r * (1 + M / (2 * r)) ** 2
+        where `r` is the radius and `M` is the mass.
+        Returns
+        -------
+        float
+            The areal radius.
+        """
         r = self.radius
         M = self.mass
         return r * (1 + M / (2 * r)) ** 2
 
     def retarded_time(self):
+        """
+        Computes the retarded time for the current object.
+        If the radius is non-positive,
+        returns the current time `t` directly.
+        Returns
+        -------
+        float
+            The retarded time value.
+        """
+
         if self.radius <= 0.0:
             return self.t
         M = self.mass
@@ -105,9 +238,25 @@ class IntegrateMultipole(object):
 
     def patch_psi4(self, psi4, t0, t1, t2, debug=False):
         """
-        Patch psi4 before t1 and after t2 using
-        power-laws of (t-t0).
-        To be tested on high energy simulations
+        Patch psi4 before t1 and after t2 using power-laws of (t-t0).
+        To be tested on high energy simulations.
+
+        Parameters
+        ----------
+        psi4 : array_like
+            Complex waveform data to be patched.
+        t0 : float
+            Reference time for the power-law extrapolation.
+        t1 : float
+            Time before which the waveform is patched using a (t-t0)^-3 and (t-t0)^-4 power-law.
+        t2 : float
+            Time after which the waveform is patched using a (t-t0)^-3 power-law.
+        debug : bool, optional
+            If True, plot the patched waveform and intermediate results for debugging.
+        Returns
+        -------
+        new_psi4 : ndarray
+            The patched complex waveform.
         """
 
         def return_patch34(t, patch):
@@ -179,6 +328,15 @@ class IntegrateMultipole(object):
         return new_psi4
 
     def extrapolate_psi4(self):
+        """
+        Extrapolates the psi4 waveform to infinity using the formula
+        from https://arxiv.org/pdf/1008.4360
+        The extrapolated psi4 is stored in self.psi4.
+        Returns
+        -------
+        None
+        """
+
         r = self.radius
         M = self.mass
         R = self.areal_radius()
@@ -192,6 +350,30 @@ class IntegrateMultipole(object):
         return
 
     def apply_window(self, signal, window=[10, -10], walpha=3):
+        """
+        Applies a smooth window to the input signal using sigmoid functions.
+        Parameters
+        ----------
+        signal : np.ndarray
+            The input signal array to be windowed.
+        window : list or tuple, optional
+            Window specification as [start, end]. The start and end values define the window region.
+            Default is [10, -10].
+        walpha : float, optional
+            The sharpness parameter for the sigmoid window edges. Default is 3.
+        Returns
+        -------
+        np.ndarray
+            The windowed signal.
+        Raises
+        ------
+        RuntimeError
+            If the window specification is invalid.
+        Notes
+        -----
+        The window is applied smoothly using sigmoid functions to avoid sharp edges.
+        """
+
         t = self.t
         # apply window
         clip_val = np.log(1e20)
@@ -214,6 +396,18 @@ class IntegrateMultipole(object):
         return signal
 
     def freq_interval(self, signal):
+        """
+        Computes the frequency array for the given signal, limiting frequencies to the cutoff value.
+        Parameters
+        ----------
+        signal : ndarray
+            Input signal array for which the frequency interval is computed.
+        Returns
+        -------
+        f : ndarray
+            Frequency array with values limited to +/- self.fcut.
+        """
+
         dt = np.diff(self.t)[0]
         f = fftfreq(signal.shape[0], dt)
         idx_p = np.logical_and(f >= 0, f < self.fcut)
@@ -226,6 +420,16 @@ class IntegrateMultipole(object):
         """
         Fixed frequency integration
         steps is the number of integrations performed
+        Parameters
+        ----------
+        signal : array_like
+            Input signal to be integrated.
+        steps : int, optional
+            Number of integration steps to perform (default is 1).
+        Returns
+        -------
+        integrals : list of ndarray
+            List containing the integrated signal(s) after each step.
         """
         f = self.freq_interval(signal)
         factor = -1j / (2 * np.pi * f)
@@ -240,9 +444,24 @@ class IntegrateMultipole(object):
 
     def remove_time_drift(self, signal):
         """
-        Remove drift in TD integration using a fit.
-        If poly_int is specified, then fit only that part of the signal.
+        Removes polynomial time drift from the input signal.
+        Fits a polynomial of degree `self.deg` to the signal over the specified interval
+        (`self.poly_int`) or the entire time array (`self.t`) if no interval is set.
+        Subtracts the fitted polynomial from the signal to remove drift.
+        Parameters
+        ----------
+        signal : np.ndarray
+            Input signal array to be corrected for time drift.
+        Returns
+        -------
+        out : np.ndarray
+            Signal with polynomial time drift removed.
+        Raises
+        ------
+        RuntimeError
+            If the polynomial interval ends after the simulation's end time.
         """
+
         out = signal
         if self.deg >= 0:
             if self.poly_int is None:
@@ -269,6 +488,17 @@ class IntegrateMultipole(object):
         Time domain integration with polynomial correction
         The polynomial is obtained fitting the whole signal if poly_int is none,
         otherwise consider only the interval specified; see remove_time_drift
+        Parameters
+        ----------
+        signal : array_like
+            The input signal to be integrated.
+        steps : int, optional
+            Number of integration steps to perform (default is 1).
+        Returns
+        -------
+        integrals : list of ndarray
+            List containing the integrated signal(s) after polynomial drift correction
+            for each step.
         """
         integrals = []
         f = signal
@@ -279,6 +509,23 @@ class IntegrateMultipole(object):
         return integrals
 
     def integrate(self, signal, steps=1):
+        """
+        Integrate the input signal using the specified method (FFI or TDI).
+        Parameters
+        ----------
+        signal : array_like
+            The input signal to be integrated.
+        steps : int, optional
+            Number of integration steps to perform (default is 1).
+        Returns
+        -------
+        ndarray or list of ndarray
+            The integrated signal if `steps` is 1, otherwise a list of integrated signals.
+        Raises
+        ------
+        RuntimeError
+            If an unknown integration method is specified.
+        """
         if self.method == "FFI":
             int_list = self.fixed_freq_int(signal, steps=steps)
         elif self.method == "TDI":

@@ -17,7 +17,6 @@ import json
 import numpy as np
 import os
 import romspline
-import sys
 import time
 
 if __name__ == "__main__":

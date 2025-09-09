@@ -13,19 +13,82 @@ DUMMY = os.path.join(file_dir, "twopuncts.dummy")
 # Class to normalize data
 ###########################
 class LinearScaler:
+    """
+    Class to perform linear transformation and its inverse
+    between two intervals [A,B] and [C,D]
+    """
+
     def __init__(self, A, B, C, D):
+        """
+        Initialize the LinearScaler class.
+
+        Parameters
+        ----------
+        A : float
+            Lower bound of the original interval.
+        B : float
+            Upper bound of the original interval.
+        C : float
+            Lower bound of the target interval.
+        D : float
+            Upper bound of the target interval.
+        """
         self.A = A
         self.B = B
         self.C = C
         self.D = D
 
     def transform(self, x):
+        """
+        Transform x from interval [A,B] to [C,D].
+
+        Parameters
+        ----------
+        x : float or array-like
+            Value(s) in the original interval [A,B] to be transformed.
+        Returns
+        -------
+        float or array-like
+            Transformed value(s) in the target interval [C,D].
+        """
         return self.__lin_transf(self.A, self.B, self.C, self.D, x)
 
     def inverse_transform(self, y):
+        """
+        Inverse transform y from interval [C,D] to [A,B].
+
+        Parameters
+        ----------
+        y : float or array-like
+            Value(s) in the target interval [C,D] to be inverse transformed.
+        Returns
+        -------
+        float or array-like
+            Inverse transformed value(s) in the original interval [A,B].
+        """
         return self.__lin_transf(self.C, self.D, self.A, self.B, y)
 
     def __lin_transf(self, A, B, C, D, x):
+        """
+        Apply linear transformation from [A,B] to [C,D].
+
+        Parameters
+        ----------
+        A : float
+            Lower bound of the original interval.
+        B : float
+            Upper bound of the original interval.
+        C : float
+            Lower bound of the target interval.
+        D : float
+            Upper bound of the target interval.
+        x : float or array-like
+            Value(s) to be transformed.
+        Returns
+        -------
+        float or array-like
+            Transformed value(s).
+        """
         return (D - C) * (x - A) / (B - A) + C
 
 
@@ -33,7 +96,54 @@ class LinearScaler:
 # Class to compute NR ICs
 ###########################
 class TwoPunctID(object):
+    """
+    Class to setup initial data computation
+    using the TwoPunctures code.
+    See: https://github.com/computationalrelativity/TwoPuncturesC
+    """
+
     def __init__(self, **kwargs):
+        """
+        Initialize the TwoPunctID class with given parameters.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Dictionary of parameters for the TwoPunctID class.
+            Available parameters:
+            - M : float
+                Total mass (default is 1.0).
+            - q : float
+                Mass ratio (default is 1.0).
+            - E : float
+                Initial energy (default is 1.1).
+            - E_min : float or None
+                Minimum energy for the search (default is None).
+            - L : float
+                Initial orbital angular momentum (default is 1.0).
+            - D : float
+                Initial separation (default is 100).
+            - chi1z : float
+                Dimensionless spin of the primary along the orbital angular momentum (default is 0.0).
+            - chi2z : float
+                Dimensionless spin of the secondary along the orbital angular momentum (default is 0.0).
+            - npoints_A : int
+                Number of points in the A direction for the TwoPunctures solver (default is 8).
+            - npoints_B : int
+                Number of points in the B direction for the TwoPunctures solver (default is 8).
+            - npoints_phi : int
+                Number of points in the phi direction for the TwoPunctures solver (default is 6).
+            - TP_dummy : str
+                Path to the dummy parameter file for TwoPunctures (default is "./twopuncts.dummy").
+            - TP_exe : str
+                Path to the TwoPunctures executable (default is "./TwoPunctures.x").
+            - outdir : str
+                Output directory for the TwoPunctures results (default is "./").
+            - verbose : bool
+                If True, print verbose output (default is False).
+            - iteration : int or None
+                Current iteration number (default is None).
+        """
 
         self.M = 1.0
         self.q = 1.0
@@ -124,6 +234,23 @@ class TwoPunctID(object):
         return
 
     def create_TP_parfile(self, P, parfile=None, outdir=None):
+        """
+        Create a parameter file for TwoPunctures with given momentum P.
+        Assumes L along z axis and initial separation along x axis.
+
+        Parameters
+        ----------
+        P : float
+            Magnitude of the linear momentum for each puncture.
+        parfile : str or None, optional
+            Name of the parameter file to create (default is None, which uses "parfile_P{P:.10f}.par").
+        outdir : str or None, optional
+            Output directory to save the parameter file (default is None, which uses self.outdir).
+        Returns
+        -------
+        str
+            Path to the created parameter file.
+        """
         if outdir is None:
             outdir = self.outdir
         if parfile is None:
@@ -162,12 +289,39 @@ class TwoPunctID(object):
         return parfile
 
     def run_TP_from_parfile(self, parfile):
+        """
+        Run TwoPunctures with the given parameter file.
+        Parameters
+        ----------
+        parfile : str
+            Path to the parameter file to use.
+        Returns
+        -------
+        str
+            Path to the output file generated by TwoPunctures.
+        """
         outfile = parfile.replace(".par", ".out")
         TP_cmd = self.TP_exe + " " + parfile + " > " + outfile + " 2>&1"
         runcmd(TP_cmd, workdir=self.outdir)
         return outfile
 
     def read_TP_output(self, outfile):
+        """
+        Read the output file from TwoPunctures and extract E_ADM, M1, and M2.
+
+        Parameters
+        ----------
+        outfile : str
+            Path to the output file generated by TwoPunctures.
+        Returns
+        -------
+        E_ADM : float
+            Total ADM energy.
+        M1 : float
+            ADM mass of puncture 1.
+        M2 : float
+            ADM mass of puncture 2.
+        """
         if os.path.exists(outfile):
             raise RuntimeError(f"file not found: {outfile}")
         with open(os.path.join(self.outdir, outfile), "r") as file:
@@ -182,6 +336,25 @@ class TwoPunctID(object):
         return E_ADM, M1, M2
 
     def run_TP_wrapper(self, P, parfile=None, verbose=None):
+        """
+        Run the full TwoPunctures workflow: create parfile, run TP, read output.
+        Parameters
+        ----------
+        P : float
+            Magnitude of the linear momentum for each puncture.
+        parfile : str or None, optional
+            Name of the parameter file to create (default is None, which uses "parfile_P{P:.10f}.par").
+        verbose : bool or None, optional
+            If True, print verbose output (default is None, which uses self.verbose).
+        Returns
+        -------
+        E_ADM : float
+            Total ADM energy.
+        M1 : float
+            ADM mass of puncture 1.
+        M2 : float
+            ADM mass of puncture 2.
+        """
         if verbose is None:
             verbose = self.verbose
         if parfile is None:
@@ -196,6 +369,19 @@ class TwoPunctID(object):
         return E_ADM, M1, M2
 
     def run_TP_parallel(self, momenta, batch):
+        """
+        Run TwoPunctures in parallel for a batch of momenta.
+        Parameters
+        ----------
+        momenta : array-like
+            Array of momenta to evaluate.
+        batch : list of int
+            List of indices in the momenta array to process in this batch.
+        Returns
+        -------
+        energies : array-like
+            Array of computed ADM energies for the given momenta.
+        """
         energies = np.zeros_like(momenta)
         for idx in batch:
             E_ADM, _, _ = self.run_TP_wrapper(momenta[idx])
@@ -217,6 +403,35 @@ class TwoPunctID(object):
         x0_position="centered",
         nproc=1,
     ):
+        """
+        Fit a polynomial to find the momentum P that gives the desired energy self.E.
+
+        Parameters
+        ----------
+        P0 : float
+            Initial guess for the momentum.
+        dP : float
+            Step size for the momentum.
+        npoints : int, optional
+            Number of points to evaluate in each iteration (default is 4).
+        poly_order : int or None, optional
+            Order of the polynomial fit (default is None, which uses min(max(npoints-1,1),5)).
+        verbose : bool or None, optional
+            If True, print verbose output (default is None, which uses self.verbose).
+        show_plot : bool, optional
+            If True, show the fit plot (default is False).
+        save_plot : bool, optional
+            If True, save the fit plot (default is False).
+        x0_position : str, optional
+            Positioning of the points relative to P0: "centered", "highest", or "lowest" (default is "centered").
+        nproc : int, optional
+            Number of processors to use for parallel execution (default is 1).
+
+        Returns
+        -------
+        Pf : float
+            Fitted momentum that gives the desired energy self.E.
+        """
         if verbose is None:
             verbose = self.verbose
         P = P0
@@ -357,6 +572,34 @@ class TwoPunctID(object):
         save_plot=False,
         show_plot=False,
     ):
+        """
+        Iteratively fit to find the momentum P that gives the desired energy self.E.
+        Parameters
+        ----------
+        P0 : float or None, optional
+            Initial guess for the momentum (default is None, which uses an estimate based on self.E
+            and self.q).
+        step_rel : float, optional
+            Initial relative step size for the momentum (default is 0.15).
+        tol : float, optional
+            Tolerance for the relative error in energy (default is 1e-10).
+        resize_factor : float, optional
+            Factor to resize the step size in each iteration (default is 100).
+        itermax : int, optional
+            Maximum number of iterations (default is 5).
+        npoints : int, optional
+            Number of points to evaluate in each iteration (default is 4).
+        poly_order : int or None, optional
+            Order of the polynomial fit (default is None, which uses min(max(npoints-1,1),5)).
+        verbose : bool or None, optional
+            If True, print verbose output (default is None, which uses self.verbose).
+        nproc : int, optional
+            Number of processors to use for parallel execution (default is 1).
+        save_plot : bool, optional
+            If True, save the fit plots for each iteration (default is False).
+        show_plot : bool, optional
+            If True, show the fit plots for each iteration (default is False).
+        """
         if verbose is None:
             verbose = self.verbose
         if P0 is None and self.E > 1 - tol:
