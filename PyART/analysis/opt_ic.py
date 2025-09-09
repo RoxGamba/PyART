@@ -18,36 +18,77 @@ class Optimizer(object):
     def __init__(
         self,
         ref_Waveform,
-        # option for dual annealing
-        kind_ic="E0pph0",  # kind of ICs to optimize over
+        kind_ic="E0pph0",
         vrs=[
             "H_hyp",
             "j_hyp",
-        ],  # variables to optimize over, default is ['H_hyp', 'j_hyp']
-        map_function=None,  # function to map variables to EOB parameters
+        ],
+        map_function=None,
         use_nqc=True,
-        r0_eob=None,  # use a fixed value for r_hyp in EOB model, if None it will be computed by TEOB
-        # model-specific options
+        r0_eob=None,
         model_opts={},
-        # loop on different initial guesses (nested in bound-iters)
-        opt_max_iter=1,  # max opt iters (i.e. using different initial guesses) if mm_thres is not reached
-        opt_good_mm=5e-3,  # interrupt opt-iters if mm is below this threshold
-        # Option for bounds and iterations on bounds
-        opt_bounds=None,  # specify bounds (None or {'key1': [x1,x2], 'key2': [y1,None], ...} )
-        bounds_iter={},  # options to use when iterating over bounds
-        # minimizer options
+        opt_max_iter=1,
+        opt_good_mm=5e-3,
+        opt_bounds=None,
+        bounds_iter={},
         minimizer={"kind": "dual_annealing"},
-        # cache
         use_matcher_cache=False,
-        # json-output options
-        json_file=None,  # JSON file with mm (must be consistent with current options). If None, do not print data
-        overwrite=False,  # overwrite JSON with new mm-computation
-        json_save_dyn=False,  # save dynamics in JSON
-        # other options
-        mm_settings=None,  # options for Matcher (dictionary)
+        json_file=None,
+        overwrite=False,
+        json_save_dyn=False,
+        mm_settings=None,
         verbose=True,
-        debug=False,  # debug plot
+        debug=False,
     ):
+        """
+        Initialize the optimizer for initial conditions (ICs) of EOB waveform models.
+        Parameters
+        ----------
+        ref_Waveform : Waveform
+            Reference waveform object containing metadata and data to optimize against.
+        kind_ic : str, optional
+            Kind of initial conditions to optimize over (default: "E0pph0").
+        vrs : list of str, optional
+            Variables to optimize over (default: ["H_hyp", "j_hyp"]).
+        map_function : callable, optional
+            Function to map variables to EOB parameters. If None, uses default mapping.
+        use_nqc : bool, optional
+            Whether to use NQC corrections in the EOB model (default: True).
+        r0_eob : float or None, optional
+            Fixed value for r_hyp in EOB model. If None, computed by TEOB (default: None).
+        model_opts : dict, optional
+            Model-specific options for the EOB waveform generator (default: {}).
+        opt_max_iter : int, optional
+            Maximum optimization iterations (using different initial guesses) if mismatch threshold is not reached (default: 1).
+        opt_good_mm : float, optional
+            Interrupt optimization iterations if mismatch is below this threshold (default: 5e-3).
+        opt_bounds : dict or None, optional
+            Bounds for optimization variables. If None, uses default bounds (default: None).
+        bounds_iter : dict, optional
+            Options for iterating over bounds during optimization (default: {}).
+        minimizer : dict, optional
+            Minimizer options, including kind (e.g., "dual_annealing", "dynesty", "differential_evolution") (default: {"kind": "dual_annealing"}).
+        use_matcher_cache : bool, optional
+            Whether to use cached mismatch computations (default: False).
+        json_file : str or None, optional
+            Path to JSON file for saving mismatch results. If None, no output is saved (default: None).
+        overwrite : bool, optional
+            Whether to overwrite existing JSON mismatch data (default: False).
+        json_save_dyn : bool, optional
+            Whether to save dynamics in the JSON output (default: False).
+        mm_settings : dict or None, optional
+            Options for the Matcher class (default: None).
+        verbose : bool, optional
+            Whether to print verbose output during optimization (default: True).
+        debug : bool, optional
+            Whether to enable debug plotting (default: False).
+        Notes
+        -----
+        - Initializes optimizer state, sets up bounds, minimizer, and loads or computes mismatches.
+        - Supports multiple optimization strategies and iterative bound expansion.
+        - Handles caching and JSON output for mismatch results.
+        - Prints warnings for recommended Matcher settings.
+        """
 
         self.ref_Waveform = ref_Waveform
         self.opt_Waveform = None
@@ -241,6 +282,26 @@ class Optimizer(object):
     def __set_variables(self, vrs):
         """
         Set the variables to optimize over depending on the kind of ICs
+        selected.
+
+        Parameters
+        ----------
+        vrs : list of str
+            List of variables to optimize over if kind_ic is "choose".
+            Otherwise, set automatically based on kind_ic.
+
+        Raises
+        ------
+        ValueError
+            If kind_ic is unknown.
+
+        Notes
+        -----
+        - Supported kinds of ICs:
+            - "choose": user-defined variables in `vrs`.
+            - "e0f0": optimizes over eccentricity `e0` and frequency `f0`.
+            - "E0pph0": optimizes over energy `E0byM` and angular momentum `pph0`.
+            - "phi0theta0": optimizes over in-plane spin rotation angle `theta` and reference phase `phi_ref`.
         """
         if self.kind_ic == "choose":
             self.opt_vars = vrs
@@ -297,6 +358,18 @@ class Optimizer(object):
         """
         Set the bounds for the optimization; if the bounds are not specified,
         set them to the reference value (read from metadata) +/- eps
+
+        Parameters
+        ----------
+        eps : dict, optional
+            Dictionary with the epsilon values for each variable.
+            If None, use self.bounds_iter["eps_initial"].
+
+        Notes
+        -----
+        - If a bound is already specified (not None), it is not updated.
+        - Epsilon values define the relative range around the reference value.
+        - If a variable is not found in the reference metadata, a warning is printed and its value is set to 1.
         """
         if eps is None:
             eps = self.bounds_iter["eps_initial"]
@@ -326,6 +399,19 @@ class Optimizer(object):
         Load mismatches data if the options of the
         json file stored is consistent with current ones.
         Otherwise, create a new dictionary (NOT a new json file)
+
+        Returns
+        -------
+        data : dict
+            Dictionary containing the options and mismatches data.
+        Raises
+        ------
+        RuntimeError
+            If the options in the JSON file differ from the current ones.
+        Notes
+        -----
+        - Compares current options with those in the JSON file to ensure consistency.
+        - If the JSON file does not exist, initializes a new data structure.
         """
         # convert numpy array to lists to avoid issues with JSON writing/loading
         loc_mm_settings = copy.deepcopy(self.mm_settings)
@@ -395,6 +481,27 @@ class Optimizer(object):
         return data
 
     def save_mismatches(self, data, verbose=None, json_file=None, overwrite=None):
+        """
+        Save the mismatches data to a JSON file.
+
+        Parameters
+        ----------
+        data : dict
+            Dictionary containing the options and mismatches data.
+        verbose : bool, optional
+            Whether to print verbose output (default: self.verbose).
+        json_file : str or None, optional
+            Path to JSON file for saving mismatch results (default: self.json_file).
+        overwrite : bool, optional
+            Whether to overwrite existing JSON mismatch data (default: self.overwrite).
+
+        Notes
+        -----
+        - If the JSON file already exists and contains data for the current simulation,
+            it will not be overwritten unless `overwrite` is set to True.
+        - If the JSON file does not exist, it will be created.
+        """
+
         if verbose is None:
             verbose = self.verbose
         if overwrite is None:
@@ -428,6 +535,29 @@ class Optimizer(object):
         pass
 
     def generate_EOB(self, ICs={"f0": None, "e0": None}):
+        """
+        Generate an EOB waveform with given initial conditions (ICs).
+        TODO: generalise this to any model
+
+        Parameters
+        ----------
+        ICs : dict, optional
+            Dictionary containing the initial conditions to set in the EOB model.
+            The keys depend on the kind of ICs selected (default: {"f0": None, "e0": None}).
+
+        Returns
+        -------
+        eob_wave : Waveform_EOB or None
+            Generated EOB waveform object, or None if generation failed.
+
+        Notes
+        -----
+        - Maps the provided ICs to EOB parameters using the specified mapping function.
+        - Sets additional intrinsic parameters from the reference waveform metadata.
+        - Handles special cases for certain ICs (e.g., "H_hyp", "J_hyp") and r0_eob.
+        - Catches exceptions during EOB waveform generation and returns None if an error occurs.
+        """
+
         ref_meta = self.ref_Waveform.metadata
         # Set all the intrinsic parameters that are not in ICs
         default_intrinsic = [
@@ -499,6 +629,30 @@ class Optimizer(object):
         cache={},
         mm_settings=None,
     ):
+        """
+        Compute the mismatch between the reference waveform and the
+        provided EOB waveform.
+        Parameters
+        ----------
+        eob_Waveform : Waveform_EOB
+            EOB waveform object to compare against the reference.
+        verbose : bool, optional
+            Whether to print verbose output (default: self.verbose).
+        iter_loop : bool, optional
+            Whether this is called inside an optimization loop (default: False).
+        return_matcher : bool, optional
+            Whether to return the Matcher object along with the mismatch (default: False).
+        cache : dict, optional
+            Cache dictionary for storing intermediate results (default: {}).
+        mm_settings : dict or None, optional
+            Options for the Matcher class (default: self.mm_settings).
+        Returns
+        -------
+        mm : float
+            Computed mismatch value.
+        matcher : Matcher or None
+            Matcher object if return_matcher is True, otherwise None.
+        """
         if verbose is None:
             verbose = self.verbose
         if mm_settings is None:
@@ -557,6 +711,17 @@ class Optimizer(object):
     def optimize_mismatch(self, use_ref_guess=True, verbose=None):
         """
         Optimize the mismatch between the reference waveform and the other model waveform.
+
+        Parameters
+        ----------
+        use_ref_guess : bool, optional
+            Whether to use the reference values as the initial guess for the optimization (default: True).
+        verbose : bool, optional
+            Whether to print verbose output during optimization (default: self.verbose).
+        Returns
+        -------
+        opt_data : dict
+            Dictionary containing the optimization results and metadata.
         """
         if verbose is None:
             verbose = self.verbose
@@ -684,6 +849,10 @@ class Optimizer(object):
         return opt_data
 
     def __bounds_iter_defaults__(self):
+        """
+        Set the default options for the bounds iteration.
+        """
+
         self.bounds_iter = {
             "eps_initial": {},  # initial epsilon values
             "eps_factors": {},  # increase-factor for eps at each eps-iter
@@ -716,7 +885,25 @@ class Optimizer(object):
     def __minimize_annealing_(self, f, x0, bounds_array, kys):
         """
         Minimize with dual annealing.
+
+        Parameters
+        ----------
+        f : callable
+            The objective function to minimize.
+        x0 : array-like
+            Initial guess for the parameters.
+        bounds_array : array-like
+            Bounds for each parameter as an array of shape (n, 2).
+        kys : list of str
+            List of parameter names corresponding to the elements in x0.
+        Returns
+        -------
+        opts : dict
+            Dictionary of optimized parameters.
+        mm_opt : float
+            The minimum value of the objective function found.
         """
+
         maxiter = self.minimizer.get("opt_maxfun", 1000)
         seed = self.minimizer.get("opt_seed", 190521)
         x0 = x0
@@ -737,6 +924,23 @@ class Optimizer(object):
     def __minimize_differential_evo_(self, f, x0, bounds_array, kys):
         """
         Minimize with differential evolution.
+
+        Parameters
+        ----------
+        f : callable
+            The objective function to minimize.
+        x0 : array-like
+            Initial guess for the parameters.
+        bounds_array : array-like
+            Bounds for each parameter as an array of shape (n, 2).
+        kys : list of str
+            List of parameter names corresponding to the elements in x0.
+        Returns
+        -------
+        opts : dict
+            Dictionary of optimized parameters.
+        mm_opt : float
+            The minimum value of the objective function found.
         """
         maxiter = self.minimizer.get("opt_maxfun", 1000)
         seed = self.minimizer.get("opt_seed", 190521)
@@ -761,6 +965,24 @@ class Optimizer(object):
         """
         Minimize with dynesty.
         NOTE: largely untested!
+
+        Parameters
+        ----------
+        f : callable
+            The objective function to minimize.
+        x0 : array-like
+            Initial guess for the parameters. UNUSED.
+        bounds_array : array-like
+            Bounds for each parameter as an array of shape (n, 2).
+        kys : list of str
+            List of parameter names corresponding to the elements in x0.
+        Returns
+        -------
+        opts : dict
+            Dictionary of optimized parameters.
+        mm_opt : float
+            The minimum value of the objective function found.
+
         """
         from dynesty import NestedSampler
 
