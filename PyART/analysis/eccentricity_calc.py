@@ -24,6 +24,7 @@ Example
 >>> ecc_calc = EccentricityCalculator(h, pars, kind="3PN")
 >>> eccentricity = ecc_calc.e
 """
+
 import numpy as np
 
 
@@ -65,6 +66,7 @@ class EccentricityCalculator:
     _compute_eccentricity_gwecc(kind, tref_in=None, method="AmplitudeFits")
         Computes the eccentricity using the gw_eccentricity package.
     """
+
     def __init__(
         self,
         h,
@@ -214,7 +216,7 @@ class EccentricityCalculator:
                 "To compute the eccentricity from the waveform you need to install `gw_eccentricity`"
             )
 
-        h22 = self.h.hlm[(2, 2)]['z']
+        h22 = self.h.hlm[(2, 2)]["z"]
 
         modeDict = {(2, 2): h22}
         dataDict = {"t": self.h.u, "hlm": modeDict}

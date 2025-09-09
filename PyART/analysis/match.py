@@ -31,7 +31,39 @@ from pycbc.psd.read import from_txt
 
 class Matcher(object):
     """
-    Class to compute the match between two waveforms.
+    Matcher class for computing the mismatch (or match) between two gravitational waveforms.
+    This class provides a flexible interface for comparing two waveforms, supporting various
+    matching strategies including single-mode, higher-mode, and polarization-based overlaps.
+    It handles waveform conditioning, alignment, mass rescaling, PSD selection, and supports
+    caching for efficiency.
+
+    Parameters
+    ----------
+    WaveForm1 : WaveForm
+        The first waveform object (target).
+    WaveForm2 : WaveForm
+        The second waveform object (model).
+    settings : dict, optional
+        Dictionary of settings to override default parameters. See __default_parameters__ for options.
+    cache : dict, optional
+        Optional cache for precomputed frequency-domain waveforms and mass.
+
+    Attributes
+    ----------
+    cache : dict
+        Stores cached frequency-domain waveforms and mass.
+    settings : dict
+        Parameters used for the mismatch calculation.
+    modes : list
+        List of modes used in the match calculation.
+    mismatch : float
+        The computed mismatch value (1 - match).
+    match_out : dict
+        Additional output from the match calculation (e.g., frequency-domain waveforms, shifts).
+    h1f : FrequencySeries or None
+        Frequency-domain representation of the first waveform (if available).
+    h2f : FrequencySeries or None
+        Frequency-domain representation of the second waveform (if available).
     """
 
     def __init__(
@@ -41,6 +73,25 @@ class Matcher(object):
         settings=None,
         cache={},  # {} or {'h1f':h1f, 'h2f':h2f, 'M':M} (can specify also only h1f or h2f)
     ) -> None:
+        """
+        Initialize the matcher for comparing two waveforms.
+        Parameters
+        ----------
+        WaveForm1 : WaveForm
+            The first waveform object to be matched.
+        WaveForm2 : WaveForm
+            The second waveform object to be matched.
+        settings : dict, optional
+            Dictionary of settings to configure the matching process. If not provided, defaults are used.
+        cache : dict, optional
+            Optional cache for precomputed quantities (e.g., {'h1f': ..., 'h2f': ..., 'M': ...}).
+        Raises
+        ------
+        ValueError
+            If an invalid 'kind' or 'modes-or-pol' setting is provided.
+        RuntimeError
+            If incompatible waveform cutting options are set.
+        """
 
         self.cache = cache
         self.settings = self.__default_parameters__()
@@ -133,9 +184,24 @@ class Matcher(object):
 
     def _wave2locobj(self, WaveForm, isgeom=True):
         """
-        Extract useful information from WaveForm class
-        (see PyART/waveform.py) and store in a lambda-obj
-        that will be used in this Matcher class
+        Converts a WaveForm object into a local waveform object with time series and mode data,
+        optionally applying geometric rescaling. Updates polarization and mode information as needed.
+        TODO: get rid of lambda object
+
+        Parameters
+        ----------
+        WaveForm : object
+            Input waveform object containing time series and mode data.
+        isgeom : bool, optional
+            If True, applies geometric rescaling to the time series (default: True).
+        Returns
+        -------
+        wf : object
+            Local waveform object with updated time series, polarization, and mode data.
+        Raises
+        ------
+        RuntimeError
+            If the input WaveForm does not have the required 'hp' attribute.
         """
         if not hasattr(WaveForm, "hp"):
             raise RuntimeError("hp not found! Compute it before calling Matcher")
@@ -183,11 +249,29 @@ class Matcher(object):
 
     def _mass_rescaled_TimeSeries(self, u, hp, hc, isgeom=True, kind="cubic"):
         """
-        Rescale waveforms with the mass used in settings
-        and return TimeSeries.
-        If the waveform is not in geom-units, the simply
-        return the TimeSeries
+        Rescales the time series data according to mass and returns interpolated hp and hc TimeSeries.
+        Parameters
+        ----------
+        u : array-like
+            Array of time or parameter values.
+        hp : array-like
+            Plus polarization data.
+        hc : array-like
+            Cross polarization data.
+        isgeom : bool, optional
+            If True, perform geometric mass rescaling. Default is True.
+        kind : str, optional
+            Spline interpolation type. Default is "cubic".
+        Returns
+        -------
+        TimeSeries
+            Interpolated hp time series.
+        TimeSeries
+            Interpolated hc time series.
+        ndarray
+            Rescaled time array.
         """
+
         # TODO : test isgeom==False
         dT = self.settings["dt"]
         if isgeom:
@@ -203,6 +287,20 @@ class Matcher(object):
         Given two local-waveform objects (see wave2locobj()),
         return the time-length to use in TD-waveform
         conditioning (before match computation)
+
+        Parameters
+        ----------
+        wf1 : object
+            First local waveform object with time series data.
+        wf2 : object
+            Second local waveform object with time series data.
+        resize_factor : int, optional
+            Factor to determine the length of the time series (default is 2).
+
+        Returns
+        -------
+        int
+            Length of the time series to be used for conditioning.
         """
         dT = self.settings["dt"]
         if self.settings["modes-or-pol"] == "pol":
@@ -223,6 +321,11 @@ class Matcher(object):
     def __default_parameters__(self):
         """
         Default parameters for the mismatch calculation
+
+        Returns
+        -------
+        dict
+            Dictionary of default parameters.
         """
         return {
             "kind": "single-mode",
@@ -256,6 +359,20 @@ class Matcher(object):
     def _get_psd(self, flen, df, fmin):
         """
         Get the PSD for the mismatch calculation
+
+        Parameters
+        ----------
+        flen : int
+            Length of the frequency series.
+        df : float
+            Frequency resolution.
+        fmin : float
+            Minimum frequency for the PSD.
+
+        Returns
+        -------
+        FrequencySeries
+            The computed power spectral density.
         """
         if self.settings["psd"] == "aLIGOZeroDetHighPower":
             psd = aLIGOZeroDetHighPower(flen, df, fmin)
@@ -276,6 +393,26 @@ class Matcher(object):
         return psd
 
     def _get_single_mode_nc(self, wf, settings):
+        """
+        Get the non-conditioned waveform for single-mode mismatch calculation.
+
+        Parameters
+        ----------
+        wf : object
+            Local waveform object with time series data.
+        settings : dict
+            Dictionary of settings for the mismatch calculation.
+
+        Returns
+        -------
+        TimeSeries
+            Non-conditioned waveform time series.
+
+        Raises
+        ------
+        ValueError
+            If multiple modes are specified when 'modes-or-pol' is set to 'modes'.
+        """
         if settings["modes-or-pol"] == "pol":
             h_nc = wf.hp
         elif settings["modes-or-pol"] == "modes":
@@ -289,6 +426,20 @@ class Matcher(object):
         Compute the mismatch between two waveforms with only a single mode.
         Use either h+ (modes-or-pol = 'pol') or the mode itself (modes-or-pol = 'modes')
         This is true for non-precessing systems with a single (ell, |m|)
+
+        Parameters
+        ----------
+        wf1 : object
+            First local waveform object with time series data.
+        wf2 : object
+            Second local waveform object with time series data.
+        settings : dict
+            Dictionary of settings for the mismatch calculation.
+        
+        Returns
+        -------
+        float
+            The computed match value.
         """
 
         h1_nc = self._get_single_mode_nc(wf1, settings)
@@ -388,6 +539,29 @@ class Matcher(object):
     ):
         """
         Plot waveforms and PSD for debugging.
+
+        Parameters
+        ----------
+        h1_nc : TimeSeries
+            Non-conditioned first waveform.
+        h2_nc : TimeSeries
+            Non-conditioned second waveform.
+        h1 : TimeSeries
+            Conditioned first waveform.
+        h2 : TimeSeries
+            Conditioned second waveform.
+        psd : FrequencySeries
+            Power spectral density used for the match calculation.
+        settings : dict
+            Dictionary of settings for the mismatch calculation.
+        tap_times_w1 : dict, optional
+            Taper times for the first waveform (default is None).
+        tap_times_w2 : dict, optional
+            Taper times for the second waveform (default is None).
+        six_panels : bool, optional
+            If True, create a six-panel plot (default is False).
+        mm : float, optional
+            Mismatch value to display in the plot title (default is None).
         """
 
         hf1 = h1.to_frequencyseries()
@@ -497,6 +671,19 @@ class Matcher(object):
         the polarizations of the waveforms, instead of the modes.
         This has to be specified for a **single** value of
         effective polarization.
+
+        Parameters
+        ----------
+        wf1 : object
+            First local waveform object with time series data.
+        wf2 : object
+            Second local waveform object with time series data.
+        settings : dict
+            Dictionary of settings for the mismatch calculation.
+        
+        Returns
+        -------
+        overlap : float
         """
 
         k = settings["eff_pols"]
@@ -535,6 +722,24 @@ class Matcher(object):
         Compute the match between two waveforms with higher modes.
         Use wf1 as a fixed target, and decompose wf2 in modes to find the
         best orbital phase.
+        This can only be applied to non-precessing systems, as it involves
+        no optimization over the in-plane spin components.
+
+        Parameters
+        ----------
+        wf1 : object
+            First local waveform object with time series data.
+        wf2 : object
+            Second local waveform object with time series data.
+        settings : dict
+            Dictionary of settings for the mismatch calculation.
+        
+        Returns
+        -------
+        match : float
+            Average match value over the coalescence phases and effective polarizations.
+        out : dict
+            Additional output from the match calculation.
         """
 
         iota = settings["iota"]
@@ -571,6 +776,38 @@ class Matcher(object):
     def skymax_match(
         self, s, wf, inc, psd, modes, dT=1.0 / 4096, fmin_mm=20.0, fmax=2048.0
     ):
+        """
+        Compute the sky- and time-maximized match between a signal s
+        and a waveform object wf, by optimizing over the orbital phase.
+        This can only be applied to non-precessing systems, as it involves
+        no optimization over the in-plane spin components.
+
+        TODO: remove unused parameters
+
+        Parameters
+        ----------
+        s : FrequencySeries
+            The signal waveform in the frequency domain.
+        wf : object
+            Local waveform object with time series data.
+        inc : float
+            Inclination angle for the waveform.
+        psd : FrequencySeries
+            Power spectral density used for the match calculation.
+        modes : list
+            List of modes to be used in the waveform computation.
+        dT : float, optional
+            Time step for the waveform (default is 1/4096).
+        fmin_mm : float, optional
+            Minimum frequency for the match calculation (default is 20.0).
+        fmax : float, optional
+            Maximum frequency for the match calculation (default is 2048.0).
+        
+        Returns
+        -------
+        mismatch : float
+            The computed mismatch value (1 - match).
+        """
 
         def to_minimize_dphi(x):
             hp, hc = wf.compute_hphc(x, inc, modes=modes)
@@ -616,6 +853,24 @@ def condition_td_waveform(h_in, settings, return_tap_times=False, mrg_idx=None):
     """
     Condition the waveforms before computing the mismatch.
     h is already a TimeSeries
+
+    Parameters
+    ----------
+    h_in : TimeSeries
+        Input waveform time series.
+    settings : dict
+        Dictionary of settings for the conditioning.
+    return_tap_times : bool, optional
+        If True, return the taper times (default is False).
+    mrg_idx : int, optional
+        Index of the merger time in the time series (default is None).
+
+    Returns
+    -------
+    h : TimeSeries
+        Conditioned waveform time series.
+    tap_times : dict, optional
+        Dictionary containing taper times 't1' and 't2' (only if return_tap_times is True).
     """
     h = copy.copy(h_in)  # shallow-copy
     hlen = len(h)
@@ -668,6 +923,26 @@ def condition_td_waveform(h_in, settings, return_tap_times=False, mrg_idx=None):
 
 
 def dual_annealing_wrap(func, bounds, maxfun=2000):
+    """
+    Wrapper for scipy.optimize.dual_annealing to minimize a function func
+    within given bounds.
+    Parameters
+    ----------
+    func : callable
+        The objective function to be minimized.
+    bounds : list of tuple
+        Bounds for variables (min, max) pairs for each element in x.
+    maxfun : int, optional
+        Maximum number of function evaluations (default is 2000).
+    
+    Returns
+    -------
+    opt_pars : ndarray
+        Optimal parameters that minimize the function.
+    opt_val : float
+        Minimum value of the function.
+    """
+
     result = dual_annealing(
         func, bounds, maxfun=maxfun
     )  # , local_search_options={"method": "Nelder-Mead"})
@@ -679,6 +954,28 @@ def sky_and_time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, kind="hm"):
     """
     Compute the sky and time maximized overlap between a signal and a template.
     See https://arxiv.org/pdf/1709.09181 and Eq. 10 of https://arxiv.org/pdf/2207.01654
+
+    Parameters
+    ----------
+    s : FrequencySeries
+        The signal waveform in the frequency domain.
+    hp : FrequencySeries
+        Plus polarization of the template waveform in the frequency domain.
+    hc : FrequencySeries
+        Cross polarization of the template waveform in the frequency domain.
+    psd : FrequencySeries
+        Power spectral density used for the match calculation.
+    low_freq : float
+        Minimum frequency for the match calculation.
+    high_freq : float
+        Maximum frequency for the match calculation.
+    kind : str, optional
+        Type of waveform ('hm' for higher modes, 'precessing' for precessing 22-only) (default is 'hm').
+
+    Returns
+    -------
+    o : float
+        The computed overlap value.
     """
     signal_norm = s / np.sqrt(
         sigmasq(
@@ -760,6 +1057,28 @@ def time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, max_pol=True):
     Assume s is + only.
     We allow for a polarization shift, i.e. a **global** change of sign in the waveform.
     TODO: check if this is implemented correctly, see Sec. VD of https://arxiv.org/abs/1812.07865
+
+    Parameters
+    ----------
+    s : FrequencySeries
+        The signal waveform in the frequency domain.
+    hp : FrequencySeries
+        Plus polarization of the template waveform in the frequency domain.
+    hc : FrequencySeries
+        Cross polarization of the template waveform in the frequency domain. (Unused)
+    psd : FrequencySeries
+        Power spectral density used for the match calculation.
+    low_freq : float
+        Minimum frequency for the match calculation.
+    high_freq : float
+        Maximum frequency for the match calculation.
+    max_pol : bool, optional
+        If True, maximize over polarization (default is True).
+    
+    Returns
+    -------
+    o : float
+        The computed overlap value.
     """
 
     ss = sigmasq(

@@ -45,6 +45,7 @@ def build_colormap(old_cmp_name, clr, peaks_list, discrete_cmap=False):
 # EOB
 # -------------------------
 
+
 def SpinHamiltonian(r, pph, q, chi1, chi2):
     prstar = 0.0
     hatH = EOBRun_module.eob_ham_s_py(r, q, pph, prstar, chi1, chi2)

@@ -79,6 +79,7 @@ class ScatteringAngle:
     Instantiate with simulation data and optional parameters, then use provided methods
     to compute and visualize the scattering angle and its uncertainty.
     """
+
     def __init__(self, **kwargs):
         """
         Initialize the scattering angle analysis object with configurable options.
@@ -272,7 +273,7 @@ class ScatteringAngle:
             - chi_hypfit : float or None
             Scattering angle from hyperbolic fit (if enabled).
         """
-        
+
         if verbose is None:
             verbose = self.verbose
 
@@ -441,7 +442,7 @@ class ScatteringAngle:
         The function fits quadratic curves to the input and output trajectory points, converts them to canonical
         form, and computes the asymptotic angles. The difference between these angles yields the scattering angle.
         """
-        
+
         if verbose is None:
             verbose = self.verbose
         angles = np.zeros((2, 2))
@@ -504,7 +505,7 @@ class ScatteringAngle:
         fit parameters and swap flag. The radial limit (`rlim`) is set to the maximum
         value of the fit's 'r' array.
         """
-        
+
         _, fits = self.compute_chi_hypfit()
         for i, key in enumerate(fits):
             fit = fits[key]
@@ -543,7 +544,7 @@ class ScatteringAngle:
 
     def plot_summary(self, show=True, save=False, figname=None):
         """
-        Plots a summary of the scattering analysis, including trajectory, 
+        Plots a summary of the scattering analysis, including trajectory,
         radial distance, and angle evolution.
         Parameters
         ----------
@@ -557,7 +558,7 @@ class ScatteringAngle:
         -------
         None
         """
-        
+
         t = self.t
         r = self.r
         x = self.x

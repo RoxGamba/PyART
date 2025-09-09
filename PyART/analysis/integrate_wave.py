@@ -141,7 +141,7 @@ class IntegrateMultipole(object):
         Notes
         -----
         Stores integration options in `self.integr_opts`.
-        """    
+        """
 
         self.l = l
         self.m = m
@@ -295,7 +295,7 @@ class IntegrateMultipole(object):
         x2 = np.linspace(t2, t[-1], num=len(t) - idx2)
         y2 = return_patch3(x2, patch2)
 
-        new_psi4_amp = np.concatenate((y1, A[idx1 + 1: idx2], y2))
+        new_psi4_amp = np.concatenate((y1, A[idx1 + 1 : idx2], y2))
         phase = -np.unwrap(np.angle(psi4))
         new_psi4 = new_psi4_amp * np.exp(-1j * phase)
 
@@ -487,7 +487,7 @@ class IntegrateMultipole(object):
         """
         Time domain integration with polynomial correction
         The polynomial is obtained fitting the whole signal if poly_int is none,
-        otherwise consider only the interval specified; see remove_time_drift   
+        otherwise consider only the interval specified; see remove_time_drift
         Parameters
         ----------
         signal : array_like
