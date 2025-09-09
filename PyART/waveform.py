@@ -147,6 +147,39 @@ class Waveform(object):
         self._dothlm = dothlm 
         pass
     
+    def compute_psi4lm(self, factor=1.0, only_warn=False):
+        """
+        Compute pis4hlm from self.dothlm using
+        numerical differentiation
+
+        Parameters
+        ----------
+        factor: float
+            factor to multiply the derivative
+        only_warn: bool
+            if True, only warn if dothlm is not stored
+            if False, raise an error
+        Returns
+        -------
+        out: dict
+            dictionary with psi4lm
+        """
+        if not self.dothlm:
+            msg = 'psi4lm cannot be compute if dothlm is not computed'
+            if only_warn:
+                print(f'Warning! {msg}')
+            else:
+                raise RuntimeError(msg)
+
+        psi4lm = {}
+        for k in self.dothlm:
+            dothlm   = self.dothlm[k]['z']
+            ddothlm  = ut.D1(dothlm, self.u, 4)
+            ddothlm *= factor
+            psi4lm[k] = wf_ut.get_multipole_dict(ddothlm)
+        self._psi4lm = psi4lm
+        pass
+
     def multiply_by(self, var=['hlm'], factor=1.):
         for v in var:
             wave_dict = getattr(self, v)
