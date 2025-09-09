@@ -4,11 +4,9 @@ import numpy as np
 import concurrent.futures
 import EOBRun_module 
 from   scipy.signal import find_peaks
-from   scipy.optimize import brentq
 from   PyART.models.teob import search_radial_turning_points, RadialPotential, SpinHamiltonian
 
 matplotlib.rc("text", usetex=True)
-
 
 def build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False):
     """
@@ -23,8 +21,8 @@ def build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False):
         RGBA color to be associated to val.
     peaks_list : list
         List of values to be represented in the colormap.
-    discrete_cmap : bool, optional
-        If True, the colormap will be discrete. Default is False.
+    continuous_cmap : bool, optional
+        If True, the colormap will be continuous. Default is False.
 
     Returns
     -------
@@ -32,17 +30,13 @@ def build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False):
         The modified colormap.
     """
     from matplotlib.colors import ListedColormap
-    old_cmp = matplotlib.cm.get_cmap(old_cmp_name)
-    if discrete_cmap:
-        ncolors = int(max(peaks_list))
-        newcolors = old_cmp(np.linspace(0, 1, ncolors))  # default
-        newcolors[1] = clr
-    else:
-        nmax = int(max(peaks_list))
-        ncolors = 256
-        newcolors = old_cmp(np.linspace(0, 1, ncolors))
+    old_cmp   = matplotlib.colormaps.get_cmap(old_cmp_name)
+    if continuous_cmap:
+        nmax      = int(max(peaks_list))
+        ncolors   = 256
+        newcolors = old_cmp(np.linspace(0,1,ncolors))
         for i in range(ncolors):
-            if 0.5 * ncolors / nmax < i and i < ncolors / nmax * 1.5:
+            if 0.5*ncolors/nmax<i and i<ncolors/nmax*1.5:
                 newcolors[i] = clr
     else: # discrete cmap
         ncolors   = int(max(peaks_list))-1
@@ -132,11 +126,18 @@ class Spanner(object):
         chi2,
         pph_min,
         pph_max,
+        Emin=1.0, 
+        Emax=2.0,
+        dE_bound=None,
         nj=100,
         update_pph_min=True,
         r0=1000,
+        r0_type='auto',
+        r0_val=None,
+        r_infty=5000,
         input_file=None,
         verbose=False,
+        vverbose=False,
         nproc=1,
         dump_npz=False,
         ignore_input_file=False,
@@ -157,6 +158,12 @@ class Spanner(object):
             Minimum value of the angular momentum.
         pph_max : float
             Maximum value of the angular momentum.
+        E_min : float, optional
+            Minimum value of the energy.
+        E_max : float, optional
+            Maximum value of the energy.
+        dE_bound : float, optional
+            energy step to use for bound configurations
         nj : int, optional
             Number of angular momenta considered. Default is 100.
         update_pph_min : bool, optional
@@ -164,11 +171,19 @@ class Spanner(object):
             Default is True.
         r0 : float, optional
             Initial separation. Default is 1000.
+        r0_type: string, optional
+            'auto' or 'val'
+        r0_val: float, optional
+            r0 to use is r0_type is 'val'
+        r_infty : float, optional
+            large value to use for r-->infty
         input_file : str, optional
             File with data points. If provided, the TEOB runs will be skipped and the
             points will be loaded from the file. Default is None.
         verbose : bool, optional
             If True, print verbose output. Default is False.
+        vverbose : bool, optional
+            If True, print very-verbose output. Default is False.
         nproc : int, optional
             Number of processes to use for parallel TEOB runs. Default is 1.
         dump_npz : bool, optional
@@ -178,15 +193,20 @@ class Spanner(object):
         outdir : str, optional
             Output directory for data and plots. If None, use the current working directory. Default is None.
         """
-        self.q = q
-        self.nu = q / (1 + q) ** 2
-        self.chi1 = chi1
-        self.chi2 = chi2
-        self.nj = nj
-        self.r0 = r0
-        self.pph_min = pph_min
-        self.pph_max = pph_max
-        self.update_pph_min = update_pph_min
+        self.q        = q
+        self.nu       = q/(1+q)**2
+        self.chi1     = chi1
+        self.chi2     = chi2
+        self.nj       = nj
+        self.nproc    = nproc
+        self.r0_type  = r0_type
+        self.r0_val   = r0_val
+        self.dE_bound = dE_bound
+        self.Emin     = Emin
+        self.Emax     = Emax
+        self.pph_min  = pph_min
+        self.pph_max  = pph_max
+        self.r_infty  = r_infty
         self.input_file = input_file
         self.verbose  = verbose
         self.vverbose = vverbose
@@ -821,93 +841,83 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument(
-        "-n", "--nproc", default=1, type=int, help="number of processes"
-    )
-    parser.add_argument(
-        "--jmin",
-        default=3.5,
-        type=float,
-        help="min value of pph considered (eventually updated)",
-    )
-    parser.add_argument(
-        "--jmax", default=5.0, type=float, help="max value of pph considered"
-    )
-    parser.add_argument(
-        "--jmax_plot",
-        default=None,
-        type=float,
-        help="max value of pph considered in the plot (and only there)",
-    )
-    parser.add_argument(
-        "-q", "--mass_ratio", default=1.0, type=float, help="mass ratio"
-    )
-    parser.add_argument("--chi1", default=0.0, type=float, help="primary spin")
-    parser.add_argument("--chi2", default=0.0, type=float, help="secondary spin")
-    parser.add_argument(
-        "--nj", default=20, type=int, help="number of angular momenta considered"
-    )
-    parser.add_argument(
-        "--marker_size", default=1, type=int, help="marker size in parspace-plot"
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="verbose option")
-    parser.add_argument(
-        "--savepng", action="store_true", help="save parspace-plot as png"
-    )
-    parser.add_argument(
-        "--discrete_cmap",
-        action="store_true",
-        help="use discrete color-map in parspace plot",
-    )
-    parser.add_argument(
-        "--dump_npz", action="store_true", help="dump the points used in npz file"
-    )
-    parser.add_argument(
-        "-i", "--input_file", default=None, type=str, help="file with data points"
-    )
-    parser.add_argument(
-        "-o", "--outdir", default=None, type=str, help="outdir for data and plots"
-    )
-    parser.add_argument(
-        "--show",
-        choices=["on", "off"],
-        default="on",
-        type=str,
-        help="Show parspace-plot",
-    )
+    parser.add_argument('-n','--nproc',       default=1,    type=int,   help="number of processes")
+    parser.add_argument('--r0_type', choices=['auto', 'val'], 
+                                              default='auto',type=str,  help='Specify r0-type. If auto, r "infty" for E>=1, apastron otherwise.'
+                                                                             'If value, use value specified with --r0_val')
+    parser.add_argument('--r0_val',           default=None, type=float, help='Initial radius to use if --r0_type is val')
+    parser.add_argument('--dE_bound',         default=None, type=float, help='dE used in the bound-part of the parspace')
+    parser.add_argument('--Emin',             default=1.0,  type=float, help="minimum energy to consider")
+    parser.add_argument('--Emax',             default=2.0,  type=float, help='maximum energy to consider (if Emax>Vmax(pph_max),'
+                                                                             'then the max Energy used is Vmax(pph_max)')
+    parser.add_argument('--pph_min',          default=3.0,  type=float, help="min value of pph considered (eventually updated)")
+    parser.add_argument('--pph_max',          default=5.0,  type=float, help="max value of pph considered")
+    parser.add_argument('--Nmax_plot',        default=None, type=int,   help="N-max of peaks to show in plots")
+    parser.add_argument('-q', '--mass_ratio', default=1.0,  type=float, help="mass ratio")
+    parser.add_argument('--chi1',             default=0.0,  type=float, help="primary spin")
+    parser.add_argument('--chi2',             default=0.0,  type=float, help="secondary spin")
+    parser.add_argument('-nj',                default=20,   type=int,   help="number of angular momenta considered in the unbound region") 
+    parser.add_argument('--marker_size',      default=1,    type=int,   help="marker size in parspace-plot")
+    parser.add_argument('-v',  '--verbose',   action="store_true",      help="verbose option")
+    parser.add_argument('-vv', '--vverbose',  action="store_true",      help="very verbose option")
+    parser.add_argument('--savepng',          action="store_true",      help="save parspace-plot as png")
+    parser.add_argument('--figname',          default=None, type=str,   help="name of the saved figure (png)")
+    parser.add_argument('--show_fails',       action="store_true",      help='Show failed runs in parspace plot')    
+    parser.add_argument('--continuous_cmap',  action="store_true",      help="use continuous color-map in parspace plot")
+    parser.add_argument('--dump_npz',         action="store_true",      help="dump the points used in npz file")
+    parser.add_argument('--dump_txt',         action="store_true",      help="dump the points used in txt file")
+    parser.add_argument('--show_kankani',     action="store_true",      help="Show transition fit from 2404.03607")
+    parser.add_argument('--show_gra_fit',     action="store_true",      help="Show transition fit from GRA data")
+    parser.add_argument('-i', '--input_file', default=None, type=str,   help="file with data points")
+    parser.add_argument('-o', '--outdir',     default=None, type=str,   help="outdir for data and plots")
+    parser.add_argument('--parabolic_line',  action='store_true',      help="show line for the parabolic limi")
+    parser.add_argument('--qc_line',          action='store_true',      help="show QC line in parspace-plot if Emin<1")
+    parser.add_argument('--grey_fill',        action='store_true',      help="fill with grey the E>V region")
+    parser.add_argument('--show',   choices=['on', 'off'], 
+                                              default='on', type=str,   help="Show parspace-plot")    
 
     args = parser.parse_args()
 
     if args.mass_ratio < 1:
         args.mass_ratio = 1 / args.mass_ratio
 
-    nproc = args.nproc
-    pph_min = args.jmin
-    pph_max = args.jmax
+    pph_min = args.pph_min
+    pph_max = args.pph_max
     q = args.mass_ratio
     chi1 = args.chi1
     chi2 = args.chi2
     nj = args.nj
 
     spanner = Spanner(
-        q=q,
-        chi1=chi1,
-        chi2=chi2,
-        pph_min=pph_min,
-        pph_max=pph_max,
-        nj=nj,
-        update_pph_min=True,
-        nproc=nproc,
-        dump_npz=args.dump_npz,
-        ignore_input_file=False,
+        q=q, 
+        chi1=chi1, 
+        chi2=chi2, 
+        pph_min=pph_min, 
+        pph_max=pph_max, 
+        Emin=args.Emin, 
+        Emax=args.Emax, 
+        nj=nj, 
+        dE_bound=args.dE_bound, 
+        nproc=args.nproc, 
+        ignore_input_file=False, 
+        r0_type=args.r0_type, 
+        r0_val=args.r0_val,
         input_file=args.input_file,
         verbose=args.verbose,
-        outdir=args.outdir,
+        vverbose=args.vverbose,
+        outdir=args.outdir
     )
     spanner.plot_parspace(
         marker_size=args.marker_size,
         savepng=args.savepng,
-        discrete_cmap=args.discrete_cmap,
-        show=args.show,
-        pph_max_plot=args.jmax_plot,
-    )
+        figname=args.figname,
+        continuous_cmap=args.continuous_cmap,
+        show=args.show, 
+        show_fails=args.show_fails, 
+        Nmax=args.Nmax_plot, 
+        qc_line=args.qc_line, 
+        show_kankani=args.show_kankani, 
+        show_gra_fit=args.show_gra_fit,
+        grey_fill=args.grey_fill,
+        parabolic_line=args.parabolic_line 
+     )
