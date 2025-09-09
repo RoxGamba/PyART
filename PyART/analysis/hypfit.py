@@ -1,6 +1,43 @@
 """
-Module to fit rotated/traslated hyperbola
-and extract the angle between asymptotes
+Module to fit rotated/translated hyperbola and extract the angle between asymptotes.
+
+This module provides functions to fit a generic quadratic form to a set of points,
+convert the quadratic coefficients to canonical hyperbola parameters, and visualize
+the fitted hyperbola. It also includes utilities for hyperbola parametrization and
+branch extraction.
+
+Functions
+---------
+fit_quadratic(x, y)
+    Fit a generic quadratic form to the given x, y data points.
+
+quadratic_to_canonical(ABCDF)
+    Convert quadratic coefficients to canonical hyperbola parameters.
+
+hyp_parametrization(th, canonical)
+    Parametrize the hyperbola using canonical parameters and angle array.
+
+hyp_branches(canonical)
+    Generate the two branches of the hyperbola from canonical parameters.
+
+plot_hypfit(x, y, canonical_fit, rlim=10, swap_ab=False)
+    Plot the input data points and the fitted hyperbola branches.
+
+Example
+-------
+Run this module as a script to generate synthetic hyperbola data, fit the hyperbola,
+and compare the fitted parameters to the original ones. Usage:
+
+    python3 hypfit.py seed th_min th_max npoints scale_noise
+
+If no arguments are provided, default values are used.
+
+Notes
+-----
+- The fitting assumes a generic quadratic form and extracts canonical parameters
+  (semi-axes, rotation, center).
+- Visualization includes both branches of the hyperbola and optionally swapped axes.
+- The module prints a comparison between input and fitted parameters for validation.
 """
 
 import numpy as np
@@ -9,6 +46,22 @@ import sys
 
 
 def fit_quadratic(x, y):
+    """
+    Fits a generic quadratic form to the given x and y data points.
+    The quadratic form is defined as:
+        Q(x, y) = a*x^2 + b*2*x*y + c*y^2 + d*2*x + e*2*y
+    Parameters
+    ----------
+    x : array_like
+        1D array of x-coordinates of the data points.
+    y : array_like
+        1D array of y-coordinates of the data points.
+    Returns
+    -------
+    coeffs : ndarray
+        Solution vector [a, b, c, d, e] representing the coefficients of the quadratic form.
+    """
+
     # Fit generic quadratic form
     x = np.array(x)
     y = np.array(y)
@@ -19,6 +72,30 @@ def fit_quadratic(x, y):
 
 
 def quadratic_to_canonical(ABCDF):
+    """
+    Converts quadratic curve coefficients to canonical hyperbola parameters.
+    Parameters
+    ----------
+    ABCDF : array-like, shape (5,)
+        Coefficients [A, B, C, D, F] of the quadratic equation:
+        A*x^2 + 2*B*x*y + C*y^2 + 2*D*x + 2*F*y = 1
+    Returns
+    -------
+    params : list
+        List containing canonical ellipse parameters:
+        [a, b, ph, x0, y0], where
+        a : float
+            Semi-major axis length.
+        b : float
+            Semi-minor axis length.
+        ph : float
+            Rotation angle of the hyperbola (radians).
+        x0 : float
+            x-coordinate of the hyperbola center.
+        y0 : float
+            y-coordinate of the hyperbola center.
+    """
+
     # Compute canonical coefficients from quadratic ones
     A = ABCDF[0]
     B = ABCDF[1]
@@ -38,6 +115,32 @@ def quadratic_to_canonical(ABCDF):
 
 
 def hyp_parametrization(th, canonical):
+    """
+    Parametrize a hyperbola given angle and canonical parameters.
+    Parameters
+    ----------
+    th : float or array-like
+        Angle(s) at which to evaluate the hyperbola.
+    canonical : array-like
+        Canonical parameters of the hyperbola [a, b, ph, x0, y0]:
+            a : float
+                Semi-major axis length.
+            b : float
+                Semi-minor axis length.
+            ph : float
+                Rotation angle (radians).
+            x0 : float
+                X-coordinate of the center.
+            y0 : float
+                Y-coordinate of the center.
+    Returns
+    -------
+    x : float or ndarray
+        X-coordinate(s) of the hyperbola at angle(s) th.
+    y : float or ndarray
+        Y-coordinate(s) of the hyperbola at angle(s) th.
+    """
+
     a = canonical[0]
     b = canonical[1]
     ph = canonical[2]
@@ -49,6 +152,20 @@ def hyp_parametrization(th, canonical):
 
 
 def hyp_branches(canonical):
+    """
+    Computes the two branches of a hyperbola given its canonical parameters.
+    Parameters
+    ----------
+    canonical : array-like
+        Canonical parameters of the hyperbola.
+    Returns
+    -------
+    x1, y1 : ndarray
+        Coordinates of the first branch of the hyperbola.
+    x2, y2 : ndarray
+        Coordinates of the second branch of the hyperbola.
+    """
+
     eps = 1e-4
     th1 = np.linspace(-np.pi / 2 + eps, np.pi / 2 - eps, num=1000)
     th2 = np.linspace(+np.pi / 2 + eps, 3 * np.pi / 2 - eps, num=1000)
@@ -58,6 +175,25 @@ def hyp_branches(canonical):
 
 
 def plot_hypfit(x, y, canonical_fit, rlim=10, swap_ab=False):
+    """
+    Plot the canonical hyperbola fit and its rotated version along with data points.
+    Parameters
+    ----------
+    x : array_like
+        X-coordinates of the data points.
+    y : array_like
+        Y-coordinates of the data points.
+    canonical_fit : array_like
+        Parameters of the canonical hyperbola fit.
+    rlim : float, optional
+        Range limit for the plot axes (default is 10).
+    swap_ab : bool, optional
+        If True, swap the first two parameters of canonical_fit before plotting.
+    Returns
+    -------
+    None
+    """
+
     if swap_ab:
         tmp = canonical_fit[0]
         canonical_fit[0] = canonical_fit[1]

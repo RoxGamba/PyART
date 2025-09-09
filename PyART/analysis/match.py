@@ -3,7 +3,7 @@ Stuff for mismatches, still need to port the parallelization,
 the precessing case and debug/test the code
 """
 
-import copy, time
+import copy
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize_scalar, dual_annealing
@@ -104,7 +104,7 @@ class Matcher(object):
                     "The option 'f0_from_merger' can be used only with a single mode"
                 )
             mode = self.modes[0]
-            u_mrg, _, _, _, i_mrg = WaveForm1.find_max(return_idx=True)
+            _, _, _, _, i_mrg = WaveForm1.find_max(return_idx=True)
             p1 = WaveForm1.hlm[mode]["p"]
             Omg1 = np.abs(np.gradient(p1, WaveForm1.u))
             Omg10_postmrg = Omg1[i_mrg]

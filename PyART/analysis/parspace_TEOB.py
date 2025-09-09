@@ -45,17 +45,6 @@ def build_colormap(old_cmp_name, clr, peaks_list, discrete_cmap=False):
 # EOB
 # -------------------------
 
-
-# def Hamiltonian(r, pph, nu):
-#    """
-#    Circularized EOB Hamiltonian: nonspinning
-#    """
-#    A, dA, d2A  = EOBRun_module.eob_metric_A5PNlog_py(r, nu)
-#    Heff0       = np.sqrt(A*(1.+(pph/r)**2))
-#    E0          = np.sqrt(1. + 2.*nu*(Heff0-1.))
-#
-#    return E0
-#
 def SpinHamiltonian(r, pph, q, chi1, chi2):
     prstar = 0.0
     hatH = EOBRun_module.eob_ham_s_py(r, q, pph, prstar, chi1, chi2)
