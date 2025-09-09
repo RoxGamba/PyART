@@ -33,7 +33,7 @@ quit;
 
 class Waveform_EOBMatlab(Waveform):
     """
-    Class to handle EOB waveforms generated with the Matlab code
+    Class to handle EOB waveforms generated with the Matlab code.
     """
 
     def __init__(
@@ -46,6 +46,34 @@ class Waveform_EOBMatlab(Waveform):
         verbose=False,
         load_insp=False,
     ):
+        """
+        Initialize the Waveform_EOBMatlab class.
+        TODO: remove defaults for the code and data dir,
+        they should be always set by the user (not be preferentially
+        set for ONE user...) or automatically detected, if possible.
+
+        Parameters
+        ----------
+        pars : dict, optional
+            Dictionary of waveform parameters. Must contain keys such as 'H_hyp', 'j_hyp', 'leob', 'q', 'chi1z', 'chi2z',
+            'ecc', 'initial_frequency', 'r0', 'nr'.
+        code_dir : str, optional
+            Path to the directory containing the MATLAB code. Default is "/home/danilo.chiaramello/teobresumsmatlab/".
+        data_dir : str, optional
+            Path to the directory containing MATLAB data files. Default is "/data/prometeo/danilo.chiaramello/teob_seob/data/matlab_data/".
+        source : str, optional
+            Path to the MATLAB executable. Default is "/usr/local/src/R2020b/bin/matlab".
+        run : bool, optional
+            If True, runs the MATLAB code to generate waveform data. Default is False.
+        verbose : bool, optional
+            If True, enables verbose output. Default is False.
+        load_insp : bool, optional
+            If True, loads inspiral-only waveform data. Default is False.
+        Raises
+        ------
+        ValueError
+            If hyperbolic orbit parameters are incomplete (i.e., 'H_hyp' is provided but 'j_hyp' is None).
+        """
         super().__init__()
         self.pars = pars
         self._kind = "EOB"
@@ -92,6 +120,16 @@ class Waveform_EOBMatlab(Waveform):
         pass
 
     def compute_energetics(self):
+        """
+        Compute the binding energy and angular momentum from the dynamics.
+
+        Returns
+        -------
+        Eb : np.ndarray
+            The binding energy.
+        j : np.ndarray
+            The dimensionless angular momentum.
+        """
         pars = self.pars
         q = pars["q"]
         q = float(q)
@@ -104,6 +142,9 @@ class Waveform_EOBMatlab(Waveform):
         return Eb, j
 
     def _check_dir(self):
+        """
+        Check if the waveform and dynamics files exist in the specified directory.
+        """
         if (
             os.path.exists(os.path.join(self.dir, self.wavefile)) == True
             and os.path.exists(os.path.join(self.dir, self.dynfile)) == True
@@ -221,6 +262,9 @@ class Waveform_EOBMatlab(Waveform):
         return temp_dict
 
     def _run_matlab(self):
+        """
+        Run the matlab
+        """
         temp_dict = self._convert_pars()
 
         setup_code = Template(matlab_setup_base).safe_substitute(**temp_dict)
@@ -248,6 +292,9 @@ class Waveform_EOBMatlab(Waveform):
         return 0
 
     def _load_hlm(self):
+        """
+        Load the waveform modes from the matlab .mat file.
+        """
         mat = h5py.File(os.path.join(self.dir, self.wavefile))
         s = mat["s/inspl_mrg_rng/ell/emm"]
 
@@ -314,6 +361,9 @@ class Waveform_EOBMatlab(Waveform):
         pass
 
     def _load_dyn(self):
+        """
+        Load the dynamics from the matlab .mat file.
+        """
         mat = loadmat(os.path.join(self.dir + self.dynfile))
 
         N_pt = len(mat["EOB"]["T"][0, 0])
@@ -351,6 +401,9 @@ class Waveform_EOBMatlab(Waveform):
         pass
 
     def clean_data(self):
+        """
+        Remove the generated .mat files to clean up the data directory.
+        """
         os.remove(os.path.join(self.dir, self.wavefile))
         os.remove(os.path.join(self.dir, self.dynfile))
         pass
@@ -369,7 +422,33 @@ def matnames(
     leob=False,
 ):
     """
-    Name of dynamics, wave mat files
+    Name of dynamics, wave mat files given parameters.
+    If nr is given, use it as identifier. Otherwise, build name from parameters.
+    If leob is True, build names for leob runs.
+
+    Parameters
+    ----------
+    q : float
+        Mass ratio.
+    chi1 : float, optional
+        Dimensionless spin of the primary black hole. Default is 0.
+    chi2 : float, optional
+        Dimensionless spin of the secondary black hole. Default is 0.
+    ecc : float, optional
+        Eccentricity. Default is 0.
+    f0 : float, optional
+        Initial gravitational wave frequency in units of 1/M. Default is 0.01/pi
+    E0 : float, optional
+        Initial energy for hyperbolic orbits. Default is None.
+    L0 : float, optional
+        Initial angular momentum for hyperbolic orbits. Default is None.
+    r0 : float, optional
+        Initial separation. Default is None.
+    nr : str, optional
+        Identifier for numerical relativity data. If provided, it will be used
+        to build the filenames. Default is None.
+    leob : bool, optional
+        If True, build names for leob runs. Default is False.
     """
     if nr is not None:
         return "Waves_{}.mat".format(nr), "Dynam_{}.mat".format(nr)
@@ -437,7 +516,73 @@ def CreateDict(
     SSPM=4,
 ):
     """
-    Create the dictionary of parameters for teobresumsmatlab
+    Create the dictionary of parameters for teobresumsmatlab.
+
+    Parameters
+    ----------
+    M : float, optional
+        Total mass of the system (default is 1.0).
+    q : float, optional
+        Mass ratio (default is 1).
+    chi1z : float, optional
+        z-component of spin for object 1 (default is 0.0).
+    chi2z : float, optional
+        z-component of spin for object 2 (default is 0.0).
+    chi1x : float, optional
+        x-component of spin for object 1 (default is 0.0).
+    chi2x : float, optional
+        x-component of spin for object 2 (default is 0.0).
+    chi1y : float, optional
+        y-component of spin for object 1 (default is 0.0).
+    chi2y : float, optional
+        y-component of spin for object 2 (default is 0.0).
+    f0 : float, optional
+        Initial frequency (default is 0.0035).
+    ecc : float, optional
+        Initial eccentricity (default is 1e-8).
+    l_max : int, optional
+        Maximum multipole order (default is 2).
+    ode_tmax : float, optional
+        Maximum time for ODE integration (default is 1e6).
+    ode_rend : float or None, optional
+        End radius for ODE integration (default is None).
+    r0 : float or None, optional
+        Initial separation (default is None).
+    H_hyp : any, optional
+        Initial energy parameter for hyperbolic orbits (default is None).
+    J_hyp : any, optional
+        Initial angular momentum parameter for hyperbolic orbits (default is None).
+    cN3LO : any, optional
+        cN3LO parameter (default is None).
+    a6c : any, optional
+        a6c parameter (default is None).
+    nr : any, optional
+        nr parameter (default is None).
+    Hmod : str, optional
+        Hamiltonian model (default is "std").
+    rho22_SO_resum : int, optional
+        Spin-orbit resummation flag (default is 0).
+    newlogs : int, optional
+        New logarithms flag (default is 1).
+    rholm : str, optional
+        rholm parameter (default is "newlogs").
+    nqc_amp : int, optional
+        NQC amplitude parameters (default is 2).
+    nqc_omg : int, optional
+        NQC omega parameters (default is 2).
+    leob : bool, optional
+        LEOB mode flag (default is False).
+    iresum : int, optional
+        iresum parameter (default is 0).
+    ASS_fact : str, optional
+        ASS factor (default is "none").
+    SSPM : int, optional
+        SSPM parameter (default is 4).
+
+    Returns
+    -------
+    dict
+        Dictionary containing all parameters for teobresumsmatlab.
     """
 
     pardic = {
@@ -481,7 +626,3 @@ def CreateDict(
             pardic["initial_frequency"] = None
 
     return pardic
-
-
-if __name__ == "__main__":
-    print("This is a PyART class for running the TEOBResumS matlab code.")

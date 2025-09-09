@@ -43,7 +43,7 @@ def Cartesian2Polar(x, y, px, py):
     """
     Transform Cartesian coordinates (x, y) and momenta (px, py)
     to polar coordinates (r, phi) and momenta (pr, pphi).
-    
+
     Parameters
     ----------
     x : array_like
@@ -54,7 +54,7 @@ def Cartesian2Polar(x, y, px, py):
         Cartesian x momentum.
     py : array_like
         Cartesian y momentum.
-    
+
     Returns
     -------
     r : array_like
@@ -94,7 +94,7 @@ def Eob2Adm(qe_vec, pe_vec, nu, PN_order):
         Symmetric mass ratio.
     PN_order : int
         Post-Newtonian order (0, 1, or 2).
-    
+
     Returns
     -------
     qa_vec : array_like
@@ -164,7 +164,7 @@ def Adm2Eob(qa_vec, pa_vec, nu, PN_order):
     up to 2PN order. Use the transformation in
     Buonanno, Damour:9811091 and Bini, Damour:1210.2834 (Appendix E)
     Note: momenta are mu-normalized
-    
+
     Parameters
     ----------
     qa_vec : array_like
@@ -175,7 +175,7 @@ def Adm2Eob(qa_vec, pa_vec, nu, PN_order):
         Symmetric mass ratio.
     PN_order : int
         Post-Newtonian order (0, 1, or 2).
-    
+
     Returns
     -------
     qe_vec : array_like
@@ -258,7 +258,7 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
     rotate_on_x_axis : bool, optional
         If True, rotate system so that punctures are on x-axis at t=0.
         Default is True.
-    
+
     Returns
     -------
     out : dict
