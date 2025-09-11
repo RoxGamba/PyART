@@ -39,7 +39,7 @@ def build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False):
             if 0.5*ncolors/nmax<i and i<ncolors/nmax*1.5:
                 newcolors[i] = clr
     else: # discrete cmap
-        ncolors   = min(int(max(peaks_list))-1,1)
+        ncolors   = max(int(max(peaks_list))-1,1)
         newcolors = old_cmp(np.linspace(0, 1, num=ncolors)) # default
         newcolors[1] = clr
     newcmp = ListedColormap(newcolors)
@@ -377,12 +377,10 @@ class Spanner(object):
         str
             The info string.
         """
-        #template = "q{:.@q_prec@f}_chi1@SIGN1@{:.@chi1_prec@f}_chi2@SIGN2@{:.@chi2_prec@f}_r0{:.@r0_prec@f}_nj{:d}"
         template = "q{:.@q_prec@f}_chi1@SIGN1@{:.@chi1_prec@f}_chi2@SIGN2@{:.@chi2_prec@f}_nj{:d}"
         info_str = template.replace("@q_prec@", str(q_prec))
         info_str = info_str.replace("@chi1_prec@", str(chi1_prec))
         info_str = info_str.replace("@chi2_prec@", str(chi2_prec))
-        #info_str = info_str.replace("@r0_prec@", str(r0_prec))
         def return_sign_str(chi):
             if chi >= 0:
                 sign = "p"
@@ -396,7 +394,6 @@ class Spanner(object):
             info_str += '_r0auto'
         else:
             info_str += f'_r0{self.r0_val:.{r0_prec}f}'
-            info_str = info_str.format(self.q, abs(self.chi1), abs(self.chi2), self.nj)
         return info_str
     
     def bracketing(self,f,start,end,step_size):
