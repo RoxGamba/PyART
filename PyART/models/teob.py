@@ -116,6 +116,7 @@ def convert_hlm(hlm):
 
 
 # external function for dict creation
+
 def CreateDict(
     M=1.0,
     q=1,
@@ -136,6 +137,7 @@ def CreateDict(
     r_hyp=None,
     H_hyp=0,
     J_hyp=0,
+    prs_sign_hyp = -1,
     anomaly=np.pi,
     interp="yes",
     arg_out="yes",
@@ -191,6 +193,8 @@ def CreateDict(
         Initial energy parameter for hyperbolic orbits (default is None).
     J_hyp : any, optional
         Initial angular momentum parameter for hyperbolic orbits (default is None).
+    prs_sign_hyp : {-1,1} optional
+        Sign of the intial radial momentum
     anomaly : float, optional
         Initial relativistic anomaly (default is pi).
     interp : str, optional

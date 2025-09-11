@@ -170,22 +170,23 @@ class Waveform(object):
     def compute_dothlm(self, factor=1.0, only_warn=False):
         """
         Compute dothlm from self.hlm using
-        numerical differentiation
+        numerical differentiation.
 
         Parameters
         ----------
-        factor: float
-            factor to multiply the derivative
-        only_warn: bool
-            if True, only warn if hlm is not loaded
-            if False, raise an error
+        factor: float, optional
+            factor to multiply the derivative.
+        only_warn: bool, optional
+            if True, only warn if hlm is not loaded.
+            if False, raise an error.
+
         Returns
         -------
         out: dict
-            dictionary with dothlm
+            dictionary with dothlm.
         """
         if not self.hlm:
-            msg = "dothlm cannot be compute if hlm is not loaded"
+            msg = "dothlm cannot be computed if hlm is not loaded"
             if only_warn:
                 print(f"Warning! {msg}")
             else:
@@ -199,6 +200,40 @@ class Waveform(object):
             dothlm[k] = wf_ut.get_multipole_dict(dhlm)
         self._dothlm = dothlm
         pass
+    
+    def compute_psi4lm(self, factor=1.0, only_warn=False):
+        """
+        Compute psi4lm from self.dothlm using
+        numerical differentiation
+
+        Parameters
+        ----------
+        factor : float, optional
+            factor to multiply the derivative.
+        only_warn : bool, optional
+            if True, only warn if dothlm is not stored.
+            if False, raise an error.
+
+        Returns
+        -------
+        out: dict
+            dictionary with psi4 multipoles
+        """
+        if not self.dothlm:
+            msg = 'psi4lm cannot be computed if dothlm is not computed'
+            if only_warn:
+                print(f'Warning! {msg}')
+            else:
+                raise RuntimeError(msg)
+
+        psi4lm = {}
+        for k in self.dothlm:
+            dothlm   = self.dothlm[k]['z']
+            ddothlm  = ut.D1(dothlm, self.u, 4)
+            ddothlm *= factor
+            psi4lm[k] = wf_ut.get_multipole_dict(ddothlm)
+        self._psi4lm = psi4lm
+        pass
 
     def multiply_by(self, var=["hlm"], factor=1.0):
         """
@@ -210,6 +245,7 @@ class Waveform(object):
         factor: float
             factor to multiply by
         """
+
         for v in var:
             wave_dict = getattr(self, v)
             for lm in wave_dict:
