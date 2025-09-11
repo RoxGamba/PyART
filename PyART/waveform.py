@@ -170,22 +170,23 @@ class Waveform(object):
     def compute_dothlm(self, factor=1.0, only_warn=False):
         """
         Compute dothlm from self.hlm using
-        numerical differentiation
+        numerical differentiation.
 
         Parameters
         ----------
-        factor: float
-            factor to multiply the derivative
-        only_warn: bool
-            if True, only warn if hlm is not loaded
-            if False, raise an error
+        factor: float, optional
+            factor to multiply the derivative.
+        only_warn: bool, optional
+            if True, only warn if hlm is not loaded.
+            if False, raise an error.
+
         Returns
         -------
         out: dict
-            dictionary with dothlm
+            dictionary with dothlm.
         """
         if not self.hlm:
-            msg = "dothlm cannot be compute if hlm is not loaded"
+            msg = "dothlm cannot be computed if hlm is not loaded"
             if only_warn:
                 print(f"Warning! {msg}")
             else:
@@ -202,23 +203,24 @@ class Waveform(object):
     
     def compute_psi4lm(self, factor=1.0, only_warn=False):
         """
-        Compute pis4hlm from self.dothlm using
+        Compute psi4lm from self.dothlm using
         numerical differentiation
 
         Parameters
         ----------
-        factor: float
-            factor to multiply the derivative
-        only_warn: bool
-            if True, only warn if dothlm is not stored
-            if False, raise an error
+        factor : float, optional
+            factor to multiply the derivative.
+        only_warn : bool, optional
+            if True, only warn if dothlm is not stored.
+            if False, raise an error.
+
         Returns
         -------
         out: dict
-            dictionary with psi4lm
+            dictionary with psi4 multipoles
         """
         if not self.dothlm:
-            msg = 'psi4lm cannot be compute if dothlm is not computed'
+            msg = 'psi4lm cannot be computed if dothlm is not computed'
             if only_warn:
                 print(f'Warning! {msg}')
             else:

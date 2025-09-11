@@ -39,7 +39,7 @@ def build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False):
             if 0.5*ncolors/nmax<i and i<ncolors/nmax*1.5:
                 newcolors[i] = clr
     else: # discrete cmap
-        ncolors   = int(max(peaks_list))-1
+        ncolors   = min(int(max(peaks_list))-1,1)
         newcolors = old_cmp(np.linspace(0, 1, num=ncolors)) # default
         newcolors[1] = clr
     newcmp = ListedColormap(newcolors)
@@ -49,6 +49,21 @@ def build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False):
 # EOB 
 #-------------------------
 def rmin_given_spins(chi1,chi2):
+    """
+    Estimate minimum radius to use for V(r) given spins.
+
+    Parameters
+    ----------
+    chi1 : float 
+        spin of the first BH.
+    chi2 : float
+        spin of the second BH.
+
+    Returns
+    -------
+    rmin : float 
+        minimum radius.
+    """
     if chi1!=0 or chi2!=0: # important: rmin should be smaller with spin
         rmin = 1.1
     else:
@@ -73,7 +88,7 @@ def EnergyLimitsSpin(rmax, pph, q, chi1, chi2, N=1000):
     chi2 : float
         Dimensionless spin of the secondary.
     N : int, optional
-        Number of points in the radial grid. Default is 100000.
+        Number of points in the radial grid. Default is 1000.
 
     Returns
     -------
@@ -87,6 +102,38 @@ def EnergyLimitsSpin(rmax, pph, q, chi1, chi2, N=1000):
     return Emax
 
 def RadialPotential_MaxMin(rmax, pph, q, chi1, chi2, N=1000):
+    """
+    Compute radial effective potential and then extract
+    the local minimum and maximum; also compute radii 
+    at which these occur.
+    
+    Parameters
+    ----------
+    rmax : float
+        Maximum radial separation.
+    q : float
+        Mass ratio.
+    pph_hyp : float
+        Angular momentum.
+    chi1 : float
+        Dimensionless spin of the primary.
+    chi2 : float
+        Dimensionless spin of the secondary.
+    N : int, optional
+        Number of points in the radial grid. Default is 1000.
+
+    Returns
+    -------
+    Vmax : float
+        Maximum of the potential.
+    Vmin : float
+        Minimum of the potential.
+    rmax : float
+        Radius corresponding to Vmax.
+    rmin : float
+        Radius corresponding to Vmin.
+    """
+
     rmin = rmin_given_spins(chi1,chi2)
     rvec = np.linspace(rmin,rmax,N)
     V    = RadialPotential(rvec,pph,q,chi1,chi2) 
@@ -330,12 +377,12 @@ class Spanner(object):
         str
             The info string.
         """
-        template = "q{:.@q_prec@f}_chi1@SIGN1@{:.@chi1_prec@f}_chi2@SIGN2@{:.@chi2_prec@f}_r0{:.@r0_prec@f}_nj{:d}"
+        #template = "q{:.@q_prec@f}_chi1@SIGN1@{:.@chi1_prec@f}_chi2@SIGN2@{:.@chi2_prec@f}_r0{:.@r0_prec@f}_nj{:d}"
+        template = "q{:.@q_prec@f}_chi1@SIGN1@{:.@chi1_prec@f}_chi2@SIGN2@{:.@chi2_prec@f}_nj{:d}"
         info_str = template.replace("@q_prec@", str(q_prec))
         info_str = info_str.replace("@chi1_prec@", str(chi1_prec))
         info_str = info_str.replace("@chi2_prec@", str(chi2_prec))
-        info_str = info_str.replace("@r0_prec@", str(r0_prec))
-
+        #info_str = info_str.replace("@r0_prec@", str(r0_prec))
         def return_sign_str(chi):
             if chi >= 0:
                 sign = "p"
@@ -348,7 +395,8 @@ class Spanner(object):
         if self.r0_type=='auto':
             info_str += '_r0auto'
         else:
-            info_str += '_r0{:.2f}'.format(self.r0_val)
+            info_str += f'_r0{self.r0_val:.{r0_prec}f}'
+            info_str = info_str.format(self.q, abs(self.chi1), abs(self.chi2), self.nj)
         return info_str
     
     def bracketing(self,f,start,end,step_size):
@@ -999,3 +1047,8 @@ if __name__ == "__main__":
         grey_fill=args.grey_fill,
         parabolic_line=args.parabolic_line 
      )
+
+    if args.dump_npz:
+        spanner.dump_npz()
+    if args.dump_txt:
+        spanner.dump_txt()
