@@ -1,0 +1,407 @@
+PyART.analysis.match
+====================
+
+.. py:module:: PyART.analysis.match
+
+.. autoapi-nested-parse::
+
+   Stuff for mismatches, still need to port the parallelization,
+   the precessing case and debug/test the code
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.match.Matcher
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analysis.match.condition_td_waveform
+   PyART.analysis.match.dual_annealing_wrap
+   PyART.analysis.match.sky_and_time_maxed_overlap
+   PyART.analysis.match.time_maxed_overlap
+
+
+Module Contents
+---------------
+
+.. py:class:: Matcher(WaveForm1, WaveForm2, settings=None, cache={})
+
+   Bases: :py:obj:`object`
+
+
+   Matcher class for computing the mismatch (or match) between two gravitational waveforms.
+   This class provides a flexible interface for comparing two waveforms, supporting various
+   matching strategies including single-mode, higher-mode, and polarization-based overlaps.
+   It handles waveform conditioning, alignment, mass rescaling, PSD selection, and supports
+   caching for efficiency.
+
+   :param WaveForm1: The first waveform object (target).
+   :type WaveForm1: WaveForm
+   :param WaveForm2: The second waveform object (model).
+   :type WaveForm2: WaveForm
+   :param settings: Dictionary of settings to override default parameters. See __default_parameters__ for options.
+   :type settings: dict, optional
+   :param cache: Optional cache for precomputed frequency-domain waveforms and mass.
+   :type cache: dict, optional
+
+   .. attribute:: cache
+
+      Stores cached frequency-domain waveforms and mass.
+
+      :type: dict
+
+   .. attribute:: settings
+
+      Parameters used for the mismatch calculation.
+
+      :type: dict
+
+   .. attribute:: modes
+
+      List of modes used in the match calculation.
+
+      :type: list
+
+   .. attribute:: mismatch
+
+      The computed mismatch value (1 - match).
+
+      :type: float
+
+   .. attribute:: match_out
+
+      Additional output from the match calculation (e.g., frequency-domain waveforms, shifts).
+
+      :type: dict
+
+   .. attribute:: h1f
+
+      Frequency-domain representation of the first waveform (if available).
+
+      :type: FrequencySeries or None
+
+   .. attribute:: h2f
+
+      Frequency-domain representation of the second waveform (if available).
+
+      :type: FrequencySeries or None
+
+
+   .. py:attribute:: cache
+
+
+   .. py:attribute:: settings
+
+
+   .. py:attribute:: modes
+
+
+   .. py:attribute:: mismatch
+
+
+   .. py:attribute:: match_out
+
+
+   .. py:method:: _wave2locobj(WaveForm, isgeom=True)
+
+      Converts a WaveForm object into a local waveform object with time series and mode data,
+      optionally applying geometric rescaling. Updates polarization and mode information as needed.
+      TODO: get rid of lambda object
+
+      :param WaveForm: Input waveform object containing time series and mode data.
+      :type WaveForm: object
+      :param isgeom: If True, applies geometric rescaling to the time series (default: True).
+      :type isgeom: bool, optional
+
+      :returns: **wf** -- Local waveform object with updated time series, polarization, and mode data.
+      :rtype: object
+
+      :raises RuntimeError: If the input WaveForm does not have the required 'hp' attribute.
+
+
+
+   .. py:method:: _mass_rescaled_TimeSeries(u, hp, hc, isgeom=True, kind='cubic')
+
+      Rescales the time series data according to mass and returns interpolated hp and hc TimeSeries.
+      :param u: Array of time or parameter values.
+      :type u: array-like
+      :param hp: Plus polarization data.
+      :type hp: array-like
+      :param hc: Cross polarization data.
+      :type hc: array-like
+      :param isgeom: If True, perform geometric mass rescaling. Default is True.
+      :type isgeom: bool, optional
+      :param kind: Spline interpolation type. Default is "cubic".
+      :type kind: str, optional
+
+      :returns: * *TimeSeries* -- Interpolated hp time series.
+                * *TimeSeries* -- Interpolated hc time series.
+                * *ndarray* -- Rescaled time array.
+
+
+
+   .. py:method:: _find_tlen(wf1, wf2, resize_factor=2)
+
+      Given two local-waveform objects (see wave2locobj()),
+      return the time-length to use in TD-waveform
+      conditioning (before match computation)
+
+      :param wf1: First local waveform object with time series data.
+      :type wf1: object
+      :param wf2: Second local waveform object with time series data.
+      :type wf2: object
+      :param resize_factor: Factor to determine the length of the time series (default is 2).
+      :type resize_factor: int, optional
+
+      :returns: Length of the time series to be used for conditioning.
+      :rtype: int
+
+
+
+   .. py:method:: __default_parameters__()
+
+      Default parameters for the mismatch calculation
+
+      :returns: Dictionary of default parameters.
+      :rtype: dict
+
+
+
+   .. py:method:: _get_psd(flen, df, fmin)
+
+      Get the PSD for the mismatch calculation
+
+      :param flen: Length of the frequency series.
+      :type flen: int
+      :param df: Frequency resolution.
+      :type df: float
+      :param fmin: Minimum frequency for the PSD.
+      :type fmin: float
+
+      :returns: The computed power spectral density.
+      :rtype: FrequencySeries
+
+
+
+   .. py:method:: _get_single_mode_nc(wf, settings)
+
+      Get the non-conditioned waveform for single-mode mismatch calculation.
+
+      :param wf: Local waveform object with time series data.
+      :type wf: object
+      :param settings: Dictionary of settings for the mismatch calculation.
+      :type settings: dict
+
+      :returns: Non-conditioned waveform time series.
+      :rtype: TimeSeries
+
+      :raises ValueError: If multiple modes are specified when 'modes-or-pol' is set to 'modes'.
+
+
+
+   .. py:method:: _compute_mm_single_mode(wf1, wf2, settings)
+
+      Compute the mismatch between two waveforms with only a single mode.
+      Use either h+ (modes-or-pol = 'pol') or the mode itself (modes-or-pol = 'modes')
+      This is true for non-precessing systems with a single (ell, |m|)
+
+      :param wf1: First local waveform object with time series data.
+      :type wf1: object
+      :param wf2: Second local waveform object with time series data.
+      :type wf2: object
+      :param settings: Dictionary of settings for the mismatch calculation.
+      :type settings: dict
+
+      :returns: The computed match value.
+      :rtype: float
+
+
+
+   .. py:method:: _debug_plot_waveforms(h1_nc, h2_nc, h1, h2, psd, settings, tap_times_w1=None, tap_times_w2=None, six_panels=False, mm=None)
+
+      Plot waveforms and PSD for debugging.
+
+      :param h1_nc: Non-conditioned first waveform.
+      :type h1_nc: TimeSeries
+      :param h2_nc: Non-conditioned second waveform.
+      :type h2_nc: TimeSeries
+      :param h1: Conditioned first waveform.
+      :type h1: TimeSeries
+      :param h2: Conditioned second waveform.
+      :type h2: TimeSeries
+      :param psd: Power spectral density used for the match calculation.
+      :type psd: FrequencySeries
+      :param settings: Dictionary of settings for the mismatch calculation.
+      :type settings: dict
+      :param tap_times_w1: Taper times for the first waveform (default is None).
+      :type tap_times_w1: dict, optional
+      :param tap_times_w2: Taper times for the second waveform (default is None).
+      :type tap_times_w2: dict, optional
+      :param six_panels: If True, create a six-panel plot (default is False).
+      :type six_panels: bool, optional
+      :param mm: Mismatch value to display in the plot title (default is None).
+      :type mm: float, optional
+
+
+
+   .. py:method:: _compute_overlap_skymax(wf1, wf2, settings)
+
+      Same as compute_mm_skymax, but without numerical
+      optimization of the orbital phase. Uses directly
+      the polarizations of the waveforms, instead of the modes.
+      This has to be specified for a **single** value of
+      effective polarization.
+
+      :param wf1: First local waveform object with time series data.
+      :type wf1: object
+      :param wf2: Second local waveform object with time series data.
+      :type wf2: object
+      :param settings: Dictionary of settings for the mismatch calculation.
+      :type settings: dict
+
+      :returns: **overlap**
+      :rtype: float
+
+
+
+   .. py:method:: _compute_mm_skymax(wf1, wf2, settings)
+
+      Compute the match between two waveforms with higher modes.
+      Use wf1 as a fixed target, and decompose wf2 in modes to find the
+      best orbital phase.
+      This can only be applied to non-precessing systems, as it involves
+      no optimization over the in-plane spin components.
+
+      :param wf1: First local waveform object with time series data.
+      :type wf1: object
+      :param wf2: Second local waveform object with time series data.
+      :type wf2: object
+      :param settings: Dictionary of settings for the mismatch calculation.
+      :type settings: dict
+
+      :returns: * **match** (*float*) -- Average match value over the coalescence phases and effective polarizations.
+                * **out** (*dict*) -- Additional output from the match calculation.
+
+
+
+   .. py:method:: skymax_match(s, wf, inc, psd, modes, dT=1.0 / 4096, fmin_mm=20.0, fmax=2048.0)
+
+      Compute the sky- and time-maximized match between a signal s
+      and a waveform object wf, by optimizing over the orbital phase.
+      This can only be applied to non-precessing systems, as it involves
+      no optimization over the in-plane spin components.
+
+      TODO: remove unused parameters
+
+      :param s: The signal waveform in the frequency domain.
+      :type s: FrequencySeries
+      :param wf: Local waveform object with time series data.
+      :type wf: object
+      :param inc: Inclination angle for the waveform.
+      :type inc: float
+      :param psd: Power spectral density used for the match calculation.
+      :type psd: FrequencySeries
+      :param modes: List of modes to be used in the waveform computation.
+      :type modes: list
+      :param dT: Time step for the waveform (default is 1/4096).
+      :type dT: float, optional
+      :param fmin_mm: Minimum frequency for the match calculation (default is 20.0).
+      :type fmin_mm: float, optional
+      :param fmax: Maximum frequency for the match calculation (default is 2048.0).
+      :type fmax: float, optional
+
+      :returns: **mismatch** -- The computed mismatch value (1 - match).
+      :rtype: float
+
+
+
+.. py:function:: condition_td_waveform(h_in, settings, return_tap_times=False, mrg_idx=None)
+
+   Condition the waveforms before computing the mismatch.
+   h is already a TimeSeries
+
+   :param h_in: Input waveform time series.
+   :type h_in: TimeSeries
+   :param settings: Dictionary of settings for the conditioning.
+   :type settings: dict
+   :param return_tap_times: If True, return the taper times (default is False).
+   :type return_tap_times: bool, optional
+   :param mrg_idx: Index of the merger time in the time series (default is None).
+   :type mrg_idx: int, optional
+
+   :returns: * **h** (*TimeSeries*) -- Conditioned waveform time series.
+             * **tap_times** (*dict, optional*) -- Dictionary containing taper times 't1' and 't2' (only if return_tap_times is True).
+
+
+.. py:function:: dual_annealing_wrap(func, bounds, maxfun=2000)
+
+   Wrapper for scipy.optimize.dual_annealing to minimize a function func
+   within given bounds.
+   :param func: The objective function to be minimized.
+   :type func: callable
+   :param bounds: Bounds for variables (min, max) pairs for each element in x.
+   :type bounds: list of tuple
+   :param maxfun: Maximum number of function evaluations (default is 2000).
+   :type maxfun: int, optional
+
+   :returns: * **opt_pars** (*ndarray*) -- Optimal parameters that minimize the function.
+             * **opt_val** (*float*) -- Minimum value of the function.
+
+
+.. py:function:: sky_and_time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, kind='hm')
+
+   Compute the sky and time maximized overlap between a signal and a template.
+   See https://arxiv.org/pdf/1709.09181 and Eq. 10 of https://arxiv.org/pdf/2207.01654
+
+   :param s: The signal waveform in the frequency domain.
+   :type s: FrequencySeries
+   :param hp: Plus polarization of the template waveform in the frequency domain.
+   :type hp: FrequencySeries
+   :param hc: Cross polarization of the template waveform in the frequency domain.
+   :type hc: FrequencySeries
+   :param psd: Power spectral density used for the match calculation.
+   :type psd: FrequencySeries
+   :param low_freq: Minimum frequency for the match calculation.
+   :type low_freq: float
+   :param high_freq: Maximum frequency for the match calculation.
+   :type high_freq: float
+   :param kind: Type of waveform ('hm' for higher modes, 'precessing' for precessing 22-only) (default is 'hm').
+   :type kind: str, optional
+
+   :returns: **o** -- The computed overlap value.
+   :rtype: float
+
+
+.. py:function:: time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, max_pol=True)
+
+   Assume s is + only.
+   We allow for a polarization shift, i.e. a **global** change of sign in the waveform.
+   TODO: check if this is implemented correctly, see Sec. VD of https://arxiv.org/abs/1812.07865
+
+   :param s: The signal waveform in the frequency domain.
+   :type s: FrequencySeries
+   :param hp: Plus polarization of the template waveform in the frequency domain.
+   :type hp: FrequencySeries
+   :param hc: Cross polarization of the template waveform in the frequency domain. (Unused)
+   :type hc: FrequencySeries
+   :param psd: Power spectral density used for the match calculation.
+   :type psd: FrequencySeries
+   :param low_freq: Minimum frequency for the match calculation.
+   :type low_freq: float
+   :param high_freq: Maximum frequency for the match calculation.
+   :type high_freq: float
+   :param max_pol: If True, maximize over polarization (default is True).
+   :type max_pol: bool, optional
+
+   :returns: **o** -- The computed overlap value.
+   :rtype: float
+
+

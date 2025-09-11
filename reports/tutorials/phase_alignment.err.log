@@ -1,0 +1,74 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 154, in wrapped
+    asyncio.get_running_loop()
+RuntimeError: no running event loop
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/nbclient/client.py", line 1319, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 158, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+
+import numpy, pylab
+import seaborn as sns
+
+# Set up Seaborn aesthetics
+sns.set_context('talk') 
+sns.set_theme(font_scale=1.2)
+sns.set_style('ticks')
+
+# Update matplotlib rcParams
+pylab.rcParams.update(
+    {
+        'text.usetex': False,
+        'font.family': 'stixgeneral',
+        'mathtext.fontset': 'stix',
+        'axes.grid': True,
+        'grid.linestyle': ':',
+        'grid.color': '#bbbbbb',
+        'axes.linewidth': 1,
+    }
+)
+from PyART.catalogs import sxs, rit
+------------------
+
+
+[31m---------------------------------------------------------------------------[39m
+[31mModuleNotFoundError[39m                       Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[1][39m[32m, line 24[39m
+[32m     12[39m [38;5;66;03m# Update matplotlib rcParams[39;00m
+[32m     13[39m pylab.rcParams.update(
+[32m     14[39m     {
+[32m     15[39m         [33m'[39m[33mtext.usetex[39m[33m'[39m: [38;5;28;01mFalse[39;00m,
+[32m   (...)[39m[32m     22[39m     }
+[32m     23[39m )
+[32m---> [39m[32m24[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mPyART[39;00m[34;01m.[39;00m[34;01mcatalogs[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m sxs, rit
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/PyART/catalogs/sxs.py:3[39m
+[32m      1[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mnumpy[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mnp[39;00m
+[32m      2[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mos[39;00m
+[32m----> [39m[32m3[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mh5py[39;00m
+[32m      4[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mjson[39;00m
+[32m      5[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01m.[39;00m[34;01m.[39;00m[34;01mwaveform[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m Waveform
+
+[31mModuleNotFoundError[39m: No module named 'h5py'
+

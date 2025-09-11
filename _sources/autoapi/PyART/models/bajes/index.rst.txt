@@ -1,0 +1,86 @@
+PyART.models.bajes
+==================
+
+.. py:module:: PyART.models.bajes
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.models.bajes.msun_m
+   PyART.models.bajes.mpc_m
+   PyART.models.bajes.msun_s
+   PyART.models.bajes.conversion_dict_from_bajes
+   PyART.models.bajes.conversion_dict_to_bajes
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.models.bajes.Waveform_NRPM
+
+
+Module Contents
+---------------
+
+.. py:data:: msun_m
+   :value: 1476.6250614046494
+
+
+.. py:data:: mpc_m
+   :value: 3.085677581491367e+22
+
+
+.. py:data:: msun_s
+   :value: 4.925490947000518e-06
+
+
+.. py:data:: conversion_dict_from_bajes
+
+.. py:data:: conversion_dict_to_bajes
+
+.. py:class:: Waveform_NRPM(pars=None, waveform=None, geom_units=False)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to attach NRPM to waveforms
+
+
+   .. py:attribute:: pars
+
+
+   .. py:attribute:: pars_bajes
+
+
+   .. py:attribute:: wf
+      :value: None
+
+
+
+   .. py:attribute:: _kind
+      :value: 'BaJes'
+
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:method:: __set__default_pars__()
+
+
+   .. py:method:: __convert_pars__()
+
+
+   .. py:method:: __NRPM__(phi_last)
+
+
+   .. py:method:: __attach__()
+
+

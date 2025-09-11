@@ -1,0 +1,75 @@
+PyART.catalogs.gra_hyp
+======================
+
+.. py:module:: PyART.catalogs.gra_hyp
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.gra_hyp.Waveform_GRAHyp
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_GRAHyp(path='./', ID='0001', load_puncts=False, nu_rescale=False)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle GRAthena++ wafeforms
+   from the hyperbolic dataset. Assume data
+   store in grathena_bbhhyper/runs/data/DSET/.
+   Temporary, should be merged in Waveform_GRA
+   once that the format is fixed
+
+
+   .. py:attribute:: path
+      :value: './'
+
+
+
+   .. py:attribute:: ID
+      :value: '0001'
+
+
+
+   .. py:attribute:: sim_path
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:attribute:: _kind
+      :value: 'GRAHYP'
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:method:: load_metadata()
+
+      Load metadata (store in JSON)
+
+
+
+   .. py:method:: load_puncts(fnames=['puncture_0.txt', 'puncture_1.txt'])
+
+
+   .. py:method:: load_psi4lm()
+
+      Load only (2,2) mode at the moment
+
+
+
+   .. py:method:: load_hlm()
+
+

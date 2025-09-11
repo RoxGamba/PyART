@@ -1,0 +1,97 @@
+PyART.catalogs.gra
+==================
+
+.. py:module:: PyART.catalogs.gra
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.gra.Waveform_GRA
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_GRA(path, ellmax=8, ext='ext', r_ext=None, cut_N=None, cut_U=None, mtdt_path=None, rescale=False, modes=[(2, 2)])
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle GRAthena++ waveforms.
+   This is still under development, depending on the
+   final format of the data, and as such still quite rough.
+   For now, it assumes that the data is in the format
+   of Alireza's simulations.
+
+
+   .. py:attribute:: path
+
+
+   .. py:attribute:: cut_N
+      :value: None
+
+
+
+   .. py:attribute:: cut_U
+      :value: None
+
+
+
+   .. py:attribute:: modes
+      :value: [(2, 2)]
+
+
+
+   .. py:attribute:: ellmax
+      :value: 8
+
+
+
+   .. py:attribute:: extrap
+      :value: 'ext'
+
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:attribute:: r_ext
+      :value: None
+
+
+
+   .. py:attribute:: rescale
+      :value: False
+
+
+
+   .. py:method:: load_metadata(path)
+
+      Load the metadata, if path is None assume
+      that they are in the same dir as the .h5 files
+
+
+
+   .. py:method:: load_hlm(extrap='ext', ellmax=None, load_m0=False, r_ext=None)
+
+      Load the data from the h5 file
+
+
+
+   .. py:method:: check_cut_consistency()
+
+
+   .. py:method:: get_indices_dict()
+
+      Get the indices of the various cols in the data
+
+
+
+   .. py:method:: load_psi4lm(path=None, fname=None, ellmax=None, r_ext=None, extrap='ext', load_m0=False)
+
+
