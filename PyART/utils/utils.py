@@ -1227,3 +1227,64 @@ def extract_value_from_str(string, key):
         else:
             return int(value)
     return None
+
+def get_radial_turning_points(t, r, window=5):
+    """
+    Find apastra/periastra passages given time and radius.
+    Local spline interpolation is used near each extremum.
+
+    Parameters
+    ----------
+    t : float (list/numpy array of)
+        Time array
+    r : float (list/numpy array of)
+        Orbital radius
+    window : int, optional
+        Number of points on each side of the extremum to 
+        use for local spline (default: 5)
+
+    Returns
+    -------
+    tap : np.ndarray
+        Times of apastra (maxima)
+    tpe : np.ndarray
+        Times of periastra (minima)
+    """
+    t = np.asarray(t)
+    r = np.asarray(r)
+
+    idxap, _ = find_peaks(r)    # maxima
+    idxpe, _ = find_peaks(-r)   # minima
+    tap = t[idxap].astype(float)
+    tpe = t[idxpe].astype(float)
+
+    def refine_local(idx, find_max=True):
+        refined = []
+        for i in idx:
+            # local window around i
+            i1 = max(i - window, 0)
+            i2 = min(i + window + 1, len(t))
+            tloc = t[i1:i2]
+            rloc = r[i1:i2]
+
+            if len(tloc) < 4:  # need at least 4 points for cubic
+                refined.append(t[i])
+                continue
+            cs  = interpolate.CubicSpline(tloc, rloc)
+            csd = cs.derivative()
+            roots = csd.roots(extrapolate=False)
+            roots = roots[(roots >= tloc[0]) & (roots <= tloc[-1])]
+            if len(roots) == 0:
+                refined.append(t[i])
+                continue
+            vals = cs(roots)
+            if find_max:
+                refined.append(roots[np.argmax(vals)])
+            else:
+                refined.append(roots[np.argmin(vals)])
+        return np.array(refined)
+    
+    tap = refine_local(idxap, find_max=True)
+    tpe = refine_local(idxpe, find_max=False)
+    return tap, tpe
+
