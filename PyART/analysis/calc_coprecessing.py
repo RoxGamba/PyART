@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 from ..utils import utils as ut
 
@@ -244,7 +245,7 @@ def calc_coprecessing_angles(
         domain_vals <= max(safe_domain_range)
     )
     if 1 * (test_quantity[mask][0]) < 0:
-        print("flipping manually for negative domain")
+        logging.info("flipping manually for negative domain")
         X = -X
         Y = -Y
         Z = -Z
@@ -325,7 +326,7 @@ def calc_Lab_tensor(multipole_dict):
     elif isinstance(y[2, 2], np.ndarray):
         L = np.zeros((3, 3, len(y[2, 2])), dtype=complex)
     else:
-        print("Dictionary values of handled type; must be float or array")
+        logging.error("Dictionary values of handled type; must be float or array")
 
     # define lambda function for useful coeffs
     c = lambda l, m: np.sqrt(l * (l + 1) - m * (m + 1)) if abs(m) <= l else 0

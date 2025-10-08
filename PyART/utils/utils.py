@@ -1,4 +1,5 @@
 import re, copy
+import logging
 import numpy as np
 from scipy import interpolate
 from scipy.signal import find_peaks
@@ -1008,7 +1009,7 @@ def save_plot(figname, show=True, save=False, verbose=False):
     if save:
         plt.savefig(figname, dpi=200, bbox_inches="tight")
         if verbose:
-            print(f"figure saved: {figname}")
+            logging.info(f"figure saved: {figname}")
     if show:
         # plt.show()
         plt.draw()
@@ -1079,7 +1080,7 @@ def are_dictionaries_equal(
     # if setk1-setke != setk2-setke:
     if setk1 != setk2:
         if verbose:
-            print("+++ Different number of keys +++")
+            logging.info("+++ Different number of keys +++")
         return False
     for key in setk1:
         val1 = dict1[key]
@@ -1090,7 +1091,7 @@ def are_dictionaries_equal(
             kbool = val1 == val2
         if not kbool:
             if verbose:
-                print(f"+++ Issues with key: {key} +++")
+                logging.info(f"+++ Issues with key: {key} +++")
             return False
     return True
 
@@ -1140,9 +1141,9 @@ def print_dict_comparison(
         if isinstance(value1, dict):
             dbool = are_dictionaries_equal(value1, value2, verbose=True)
             if dbool:
-                print(f">> issues with {key:16s} (dictionary)")
+                logging.info(f">> issues with {key:16s} (dictionary)")
             else:
-                print(f">> {key:16s} is dict:")
+                logging.info(f">> {key:16s} is dict:")
         else:
             if value1 is None:
                 value1 = "None"
@@ -1151,7 +1152,7 @@ def print_dict_comparison(
             if isinstance(value1, list) or isinstance(value2, list):
                 n1 = len(value1)
                 n2 = len(value2)
-                print(f">> {key:22s} is list:")
+                logging.info(f">> {key:22s} is list:")
                 for i in range(max(n1, n2)):
                     elem1 = value1[i] if i < n1 else " "
                     elem2 = value2[i] if i < n2 else " "
@@ -1159,12 +1160,12 @@ def print_dict_comparison(
                         elem1 = list_to_str(elem1)
                     if isinstance(elem2, (list, tuple)):
                         elem2 = list_to_str(elem2)
-                    print(
+                    logging.info(
                         " " * 26
                         + f"elem n.{i:d} ---> {dict1_name:10s}: {elem1:<10}   {dict2_name:10s}: {elem2:<10}"
                     )
             else:
-                print(
+                logging.info(
                     f">> {key:22s} - {dict1_name:10s}: {value1:<22}   {dict2_name:10s}: {value2:<22}"
                 )
     pass

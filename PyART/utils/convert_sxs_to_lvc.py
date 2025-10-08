@@ -14,6 +14,7 @@
 import argparse
 import h5py
 import json
+import logging
 import numpy as np
 import os
 import romspline
@@ -71,7 +72,7 @@ history = ""
 def log(string):
     global history
     history += string + "\n"
-    print(string)
+    logging.info(string)
 
 
 ########################################################

@@ -1,4 +1,4 @@
-import os, json, re, requests, h5py, numpy
+import os, json, re, requests, h5py, logging, numpy
 from pathlib import Path
 import urllib3
 from ..waveform import Waveform
@@ -27,7 +27,7 @@ def fetch_and_save_egrav_json(output_path="egrav_data.json"):
     with open(output_path, "w") as f:
         json.dump(data, f, indent=2)
 
-    print(f"Saved {len(data)} entries to {output_path}")
+    logging.info(f"Saved {len(data)} entries to {output_path}")
     return data
 
 
@@ -87,7 +87,7 @@ class Waveform_ICC(Waveform):
         self.extraction = extraction
         if self.download:
             if os.path.exists(self.sim_path):
-                print(f"Directory {self.sim_path} already exists. Skipping download.")
+                logging.info(f"Directory {self.sim_path} already exists. Skipping download.")
             else:
                 self.download_iccub_entry(json_path=json_catalog)
 
@@ -106,7 +106,7 @@ class Waveform_ICC(Waveform):
         """
         uid = int(self.ID)
         if not os.path.exists(json_path):
-            print(f"JSON catalog {json_path} not found. Fetching...")
+            logging.info(f"JSON catalog {json_path} not found. Fetching...")
             fetch_and_save_egrav_json(json_path)
 
         with open(json_path, "r") as f:
@@ -115,7 +115,7 @@ class Waveform_ICC(Waveform):
         # Match by UID (robust)
         match = next((e for e in entries if str(e["uid"]) == str(uid)), None)
         if not match:
-            print(f"UID {uid} not found.")
+            logging.warning(f"UID {uid} not found.")
             return
 
         outdir = Path(f"{self.sim_path}")
@@ -124,7 +124,7 @@ class Waveform_ICC(Waveform):
         for key in ["metadata", "partfile", "h5"]:
             url = match.get(key)
             if not url or "fileId=" not in url:
-                print(f"Skipping invalid {key} link for UID {uid}")
+                logging.warning(f"Skipping invalid {key} link for UID {uid}")
                 continue
 
             file_id = url.split("fileId=")[-1]
@@ -133,7 +133,7 @@ class Waveform_ICC(Waveform):
             # HEAD request to extract filename (lighter)
             head = requests.head(download_url, allow_redirects=True, verify=False)
             if head.status_code != 200:
-                print(f"Failed HEAD for {key} (HTTP {head.status_code})")
+                logging.error(f"Failed HEAD for {key} (HTTP {head.status_code})")
                 continue
 
             content_disposition = head.headers.get("Content-Disposition", "")
@@ -145,13 +145,13 @@ class Waveform_ICC(Waveform):
 
             outpath = outdir / filename
             if outpath.exists():
-                print(f"Already exists: {outpath}")
+                logging.info(f"Already exists: {outpath}")
                 continue
 
-            print(f"Downloading {key} for UID {uid} ...")
+            logging.info(f"Downloading {key} for UID {uid} ...")
             r = requests.get(download_url, allow_redirects=True, verify=False)
             if r.status_code != 200:
-                print(f"Failed to download {key} (HTTP {r.status_code})")
+                logging.error(f"Failed to download {key} (HTTP {r.status_code})")
                 continue
 
             with open(outpath, "wb") as f:

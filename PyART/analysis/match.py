@@ -4,6 +4,7 @@ the precessing case and debug/test the code
 """
 
 import copy
+import logging
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize_scalar, dual_annealing
@@ -13,7 +14,7 @@ from ..utils import wf_utils as wf_ut
 try:
     import lal
 except ModuleNotFoundError:
-    print("WARNING: lal not installed.")
+    logging.warning("lal not installed.")
 
 # PyCBC imports
 from pycbc.filter import (
@@ -315,7 +316,7 @@ class Matcher(object):
         tN = ut.nextpow2(resize_factor * tl)
         tlen = int(tN / dT)
         if tlen < LM:
-            print(tlen, LM)
+            logging.debug(f"tlen={tlen}, LM={LM}")
         return tlen if tlen > LM else LM
 
     def __default_parameters__(self):
@@ -661,7 +662,7 @@ class Matcher(object):
         if "save" not in settings.keys():
             plt.show()
         else:
-            print("Saving to ", settings["save"])
+            logging.info(f"Saving to {settings['save']}")
             plt.savefig(f"{settings['save']}", dpi=100, bbox_inches="tight")
 
     def _compute_overlap_skymax(self, wf1, wf2, settings):

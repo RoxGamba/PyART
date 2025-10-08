@@ -7,6 +7,7 @@ except ImportError:
     raise ImportError("WARNING: LALSimulation and/or LAL not installed.")
 
 import os
+import logging
 import numpy as np
 import h5py
 
@@ -54,11 +55,11 @@ class Waveform_LVKNR(Waveform):
 
         if self._is_git_lfs_pointer(self.data_path):
             if download == True:
-                print("The path ", self.lvcnr_path, " does not exist.")
-                print("Downloading the simulation from the LVCNR catalog.")
+                logging.info(f"The path {self.lvcnr_path} does not exist.")
+                logging.info("Downloading the simulation from the LVCNR catalog.")
                 self.download_simulation(ID=ID)
             else:
-                print(
+                logging.warning(
                     "Use download=True to download the simulation from the LVCNR catalog."
                 )
                 raise FileNotFoundError(f"The path {self.data_path} does not exist.")

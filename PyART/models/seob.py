@@ -1,14 +1,15 @@
 import os, subprocess
+import logging
 import numpy as np
 
 try:
     import pyseobnr.generate_waveform as SEOB
 except ModuleNotFoundError:
-    print("WARNING: pyseobnr not installed.")
+    logging.warning("pyseobnr not installed.")
 try:
     import lal
 except ModuleNotFoundError:
-    print("WARNING: lal not installed.")
+    logging.warning("lal not installed.")
 
 from ..waveform import Waveform
 from ..utils import wf_utils as wfu
@@ -124,7 +125,7 @@ class Waveform_SEOB(Waveform):
             > 1.0e-10
         ):
             if self.pars["approximant"] != "SEOBNRv5PHM":
-                print("Switching to SEOBNRv5PHM for non-aligned spins.")
+                logging.info("Switching to SEOBNRv5PHM for non-aligned spins.")
                 self.pars["approximant"] = "SEOBNRv5PHM"
 
     def compute_energetics(self):

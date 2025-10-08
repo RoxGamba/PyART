@@ -1,9 +1,10 @@
+import logging
 import numpy as np
 
 try:
     import bajes.obs.gw as gwb
 except ModuleNotFoundError:
-    print("WARNING: bajes not installed.")
+    logging.warning("bajes not installed.")
 
 from ..waveform import Waveform
 from bajes.obs.gw.approx.nrpm import NRPM

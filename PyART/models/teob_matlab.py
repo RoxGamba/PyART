@@ -1,4 +1,5 @@
 import os, subprocess
+import logging
 import numpy as np
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
@@ -89,7 +90,7 @@ class Waveform_EOBMatlab(Waveform):
         if self.hyp and self.pars["j_hyp"] is None:
             raise ValueError("For hyperbolic orbits, H_hyp and j_hyp must be provided.")
         if self.hyp and not self.load_insp:
-            print("WARNING: Inspiral-only waveform is needed for hyperbolic orbits.")
+            logging.warning("Inspiral-only waveform is needed for hyperbolic orbits.")
 
         if self.hyp:
             self.template = Template(matlab_base_hyp)
@@ -287,8 +288,8 @@ class Waveform_EOBMatlab(Waveform):
             capture_output=True,
         )
         if self.verbose:
-            print(out.stdout.decode("UTF-8"))
-            print(out.stderr.decode("UTF-8"))
+            logging.info(out.stdout.decode("UTF-8"))
+            logging.info(out.stderr.decode("UTF-8"))
         return 0
 
     def _load_hlm(self):
@@ -622,7 +623,7 @@ def CreateDict(
 
     if leob:
         if r0 is not None and f0 is not None:
-            print("WARNING: both r0 and f0 provided for LEOB; using r0.")
+            logging.warning("both r0 and f0 provided for LEOB; using r0.")
             pardic["initial_frequency"] = None
 
     return pardic
