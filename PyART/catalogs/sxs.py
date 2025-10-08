@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import os
 import h5py
@@ -126,12 +127,10 @@ class Waveform_SXS(Waveform):
         self.check_cut_consistency()
         if levpath is None or not os.path.exists(levpath):
             if download:
-                print(
-                    "The path ",
-                    self.sxs_data_path,
-                    " does not exist or contains no 'Lev*' directory.",
+                logging.info(
+                    f"The path {self.sxs_data_path} does not exist or contains no 'Lev*' directory."
                 )
-                print("Downloading the simulation from the SXS catalog.")
+                logging.info("Downloading the simulation from the SXS catalog.")
                 self.download_simulation(
                     ID=self.ID,
                     path=path,
@@ -141,7 +140,7 @@ class Waveform_SXS(Waveform):
                     extrapolation_order=order,
                 )
             else:
-                print(
+                logging.warning(
                     "Use download=True to download the simulation from the SXS catalog."
                 )
                 raise FileNotFoundError(
@@ -271,7 +270,7 @@ class Waveform_SXS(Waveform):
         import shutil
 
         if path is not None:
-            print("Setting the download (cache) directory to ", path)
+            logging.info(f"Setting the download (cache) directory to {path}")
             os.environ["SXSCACHEDIR"] = path
 
         # Define the simulation ID and load it
@@ -324,8 +323,8 @@ class Waveform_SXS(Waveform):
                     )
                     to_h5file[extp][mode_string] = data
                 except ValueError:
-                    print(
-                        f"Warning: Mode Y_l{ell}_m{m} not found in the waveform data! Skipping."
+                    logging.warning(
+                        f"Mode Y_l{ell}_m{m} not found in the waveform data! Skipping."
                     )
                     continue
             # create the h5 file
@@ -373,8 +372,8 @@ class Waveform_SXS(Waveform):
                     try:
                         to_h5file[object][key] = hrz[f"{object}/{key}"]
                     except KeyError:
-                        print(
-                            f"Warning: {object}/{key} not found in horizons data! Skipping."
+                        logging.warning(
+                            f"{object}/{key} not found in horizons data! Skipping."
                         )
                         continue
             # create the h5 file
@@ -425,8 +424,8 @@ class Waveform_SXS(Waveform):
         if is_valid("reference_mass2", vtype=float):
             M2 = ometa["reference_mass2"]
         else:
-            print(
-                "+++ Warning +++ reference_mass2 not found or invalid! Usinig initial masses"
+            logging.warning(
+                "reference_mass2 not found or invalid! Using initial masses"
             )
             M1 = ometa["initial_mass1"]
             M2 = ometa["initial_mass2"]
@@ -459,7 +458,7 @@ class Waveform_SXS(Waveform):
         hS2, skey2 = read_spin_variable(2)
 
         if not skey1 == skey2:
-            print(f"Warning: using different spin-entries! {skey1} and {skey2}")
+            logging.warning(f"using different spin-entries! {skey1} and {skey2}")
 
         pos1 = np.array(ometa["reference_position1"])
         pos2 = np.array(ometa["reference_position2"])
@@ -475,7 +474,7 @@ class Waveform_SXS(Waveform):
                 raise ValueError("Unknown key for remnant's spin or invalid value")
             afz = afv[2]
         except Exception as e:
-            print(f"Failed in reading remnant properties: {e}")
+            logging.warning(f"Failed in reading remnant properties: {e}")
             Mf = None
             afv = None
             afz = None
@@ -506,7 +505,7 @@ class Waveform_SXS(Waveform):
             Lz = J0 - hS1 * M1 * M1 - hS2 * M2 * M2
             pph0 = Lz[2] / (M * M * nu)
         else:
-            print("Warning! No angular momentum found")
+            logging.warning("No angular momentum found")
             J0 = None
             J0z = None
             Lz = None
@@ -821,14 +820,14 @@ class Waveform_SXS(Waveform):
         """
         from ..utils import convert_sxs_to_lvc as conv
 
-        print("Converting SXS data to LVK format...")
+        logging.info("Converting SXS data to LVK format...")
         # Path to Horizons file
         horizons_file = os.path.join(
             self.sxs_data_path, f"Lev{self.level}", "Horizons.h5"
         )
 
         if not os.path.isfile(horizons_file):
-            print(f"Horizons file not found: {horizons_file}. Downloading it...")
+            logging.info(f"Horizons file not found: {horizons_file}. Downloading it...")
             self.download_simulation(
                 ID=self.ID,
                 path=self.sxs_data_path,

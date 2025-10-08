@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
@@ -81,11 +82,11 @@ class Waveform_RIT(Waveform):
         sim_path = os.path.join(path, f"RIT_BBH_{ID}")
         if not os.path.exists(sim_path):
             if download:
-                print(f"The path {sim_path} does not exist.")
-                print("Downloading the simulation from the RIT catalog.")
+                logging.info(f"The path {sim_path} does not exist.")
+                logging.info("Downloading the simulation from the RIT catalog.")
                 self.download_data(ID=ID, path=sim_path, urls_json=urls_json)
             else:
-                print(
+                logging.warning(
                     "Use download=True to download the simulation from the SXS catalog."
                 )
                 raise FileNotFoundError(f"The path {sim_path} does not exist.")
@@ -155,14 +156,13 @@ class Waveform_RIT(Waveform):
             raise RuntimeError("Invalid value for urls_json: {urls_json}")
 
         if os.path.exists(urls_json):
-            print(f"Loading urls from {urls_json}")
+            logging.info(f"Loading urls from {urls_json}")
             with open(urls_json, "r") as file:
                 urls_dict = json.load(file)
         else:
             catalog_url = "https://ccrgpages.rit.edu/~RITCatalog/"
-            print(
-                "JSON file with RIT urls not found, fetching and parsing catalog webpage:",
-                catalog_url,
+            logging.info(
+                f"JSON file with RIT urls not found, fetching and parsing catalog webpage: {catalog_url}"
             )
             # fetch and parse catalog webpage
             response = requests.get(catalog_url)
@@ -190,9 +190,9 @@ class Waveform_RIT(Waveform):
             if dump_urls:
                 with open(urls_json, "w") as json_file:
                     json.dump(urls_dict, json_file, indent=4)
-                print("Created JSON file with RIT urls:", urls_json)
+                logging.info(f"Created JSON file with RIT urls: {urls_json}")
 
-        print("-" * 50, f"\nDownloading RIT:BBH:{ID}\n", "-" * 50, sep="")
+        logging.info("-" * 50 + f"\nDownloading RIT:BBH:{ID}\n" + "-" * 50)
         tstart = time.perf_counter()
         # ensure that the ID corresponds to an existing simulation
         if not ID in urls_dict:
@@ -216,7 +216,7 @@ class Waveform_RIT(Waveform):
                     tomove = os.path.join(subdir, "ExtrapPsi4*")
                     os_ut.runcmd(f"mv -v {tomove} .", workdir=path)
                     os_ut.runcmd(f"rmdir {subdir}", workdir=path)
-        print(">> Elapsed time: {:.3f} s\n".format(time.perf_counter() - tstart))
+        logging.info(">> Elapsed time: {:.3f} s\n".format(time.perf_counter() - tstart))
 
         pass
 
@@ -441,7 +441,7 @@ class Waveform_RIT(Waveform):
         elif self.metadata_psi4 is not None:
             mtdt = self.metadata_psi4
         elif self.metadata is None and self.metadata_psi4 is None:
-            print("No metadata loaded")
+            logging.warning("No metadata loaded")
             raise FileNotFoundError("No metadata read. Please load metadata first.")
 
         try:
@@ -596,7 +596,7 @@ class Catalog(object):
             this_id = f.split("/")[-1].split("_")[1].split("-")[2]
             this_n = f.split("/")[-1].split("_")[1].split("-")[3].split(".")[0]
             if verbose:
-                print("Processing:", this_id, this_n)
+                logging.info(f"Processing: {this_id} {this_n}")
             if eccentric:
                 h_path = "Data/ExtrapStrain_RIT-eBBH-" + this_id + "-" + this_n + ".h5"
                 mtdt_path = (

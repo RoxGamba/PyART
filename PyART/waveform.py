@@ -3,6 +3,7 @@ Classes to handle waveforms
 """
 
 # standard imports
+import logging
 import numpy as np
 from scipy.signal import find_peaks
 from scipy import integrate
@@ -188,7 +189,7 @@ class Waveform(object):
         if not self.hlm:
             msg = "dothlm cannot be computed if hlm is not loaded"
             if only_warn:
-                print(f"Warning! {msg}")
+                logging.warning(msg)
             else:
                 raise RuntimeError(msg)
 
@@ -222,7 +223,7 @@ class Waveform(object):
         if not self.dothlm:
             msg = 'psi4lm cannot be computed if dothlm is not computed'
             if only_warn:
-                print(f'Warning! {msg}')
+                logging.warning(msg)
             else:
                 raise RuntimeError(msg)
 
@@ -317,8 +318,8 @@ class Waveform(object):
                 if cut_dothlm:
                     self._dothlm = cut_all_modes(self.dothlm, tslice)
                 else:
-                    print(
-                        "Warning! dothlm is stored, but cut_dothlm==False when claling self.cut"
+                    logging.warning(
+                        "dothlm is stored, but cut_dothlm==False when calling self.cut"
                     )
 
             # if specified, resize also polarizations
@@ -329,7 +330,7 @@ class Waveform(object):
 
         if cut_psi4lm:
             if self.t_psi4 is None:
-                print("Warning! No psi4-time found! Avoind psi4-cutting")
+                logging.warning("No psi4-time found! Avoiding psi4-cutting")
             else:
                 tslice_psi4 = get_slice(self.t_psi4 - self.t_psi4[0])
                 self._psi4lm = cut_all_modes(self.psi4lm, tslice_psi4)
@@ -573,14 +574,14 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
     if lmin < 2:
         raise ValueError("l>2")
     if lmin != 2:
-        print("Warning: lmin > 2")
+        logging.warning("lmin > 2")
 
     mnfactor = np.ones_like(mmodes)
     if mnegative:
         mnfactor = [1 if m == 0 else 2 for m in mmodes]
     else:
         if all(m >= 0 for m in mmodes):
-            print("Warning: m>=0 but not accouting for it!")
+            logging.warning("m>=0 but not accounting for it!")
 
     # set up dictionaries
     kys = [
