@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import ringdown_fits as rdf
 import ringdown_fits_noncirc as ncf
@@ -271,7 +272,7 @@ if __name__ == "__main__":
     t = np.linspace(-100, 400, 10000)
 
     RD = TEOBRingdown(t, parameters=params, use_fits=True, modes=[(2, 1), (2, 2)])
-    print(RD.rd_params)
+    logging.info(RD.rd_params)
 
     import matplotlib.pyplot as plt
 

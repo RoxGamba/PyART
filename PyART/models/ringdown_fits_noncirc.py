@@ -8,6 +8,7 @@ https://github.com/GCArullo/noncircular_BBH_fits
 """
 
 import pandas as pd
+import logging
 import numpy as np
 import os
 
@@ -193,15 +194,15 @@ def eval_fit(
 
     # Find the independent vars allowed
     if verbose:
-        print("Fitting quantity:\t\t", quantity_to_fit)
+        logging.info(f"Fitting quantity:\t\t {quantity_to_fit}")
         fitting_qs = select_fitting_quantities(dataset, quantity_to_fit)
-        print("Possible independent vars:\t", fitting_qs)
-        print("Chosen independent vars:\t", list(fitting_qs_d.keys()))
+        logging.info(f"Possible independent vars:\t {fitting_qs}")
+        logging.info(f"Chosen independent vars:\t {list(fitting_qs_d.keys())}")
 
     # select template
     template_model = select_template_model(dataset)
     if verbose:
-        print("Template model:\t\t\t", template_model)
+        logging.info(f"Template model:\t\t\t {template_model}")
 
     try:
         coeffs = read_fit_coefficients(
