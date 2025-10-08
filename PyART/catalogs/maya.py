@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
@@ -21,7 +22,7 @@ class MAYA(Waveform):
         path = os.path.join(basepath, h5file)
         # Download file in Maya Format from repository
         if not glob.glob(path):
-            print(f"Downloading NR file {h5file}...")
+            logging.info(f"Downloading NR file {h5file}...")
             wget.download(
                 "https://cgpstorage.ph.utexas.edu/maya_format/" + h5file, out=path
             )
@@ -86,7 +87,7 @@ class MAYA(Waveform):
         if self.metadata is not None:
             mtdt = self.metadata
         else:
-            print("No metadata loaded")
+            logging.warning("No metadata loaded")
             raise FileNotFoundError("No metadata read. Please load metadata first.")
 
         try:
@@ -159,7 +160,7 @@ class MAYA(Waveform):
 if __name__ == "__main__":
     r = MAYA(id="MAYA1056")
     r.compute_initial_data()
-    print(r.dyn["id"])
+    logging.info(r.dyn["id"])
 
     # plot h22
     plt.plot(r.t, r.hlm[(2, 2)]["real"])

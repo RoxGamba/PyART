@@ -1,4 +1,4 @@
-import sys, os, json, matplotlib, time, copy
+import sys, os, json, logging, matplotlib, time, copy
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -48,7 +48,7 @@ class Cataloger(object):
                 name = wave.metadata["name"]
                 self.data[name] = {"Waveform": wave, "Optimizer": None}
             except Exception as e:
-                print(f"Issues with {ID:04}: {e}")
+                logging.error(f"Issues with {ID:04}: {e}")
         self.nsims = len(self.data)
 
         pass
@@ -57,7 +57,7 @@ class Cataloger(object):
         if verbose is None:
             verbose = self.verbose
         if verbose:
-            print(f"Loading {self.catalog} waveform with ID:{ID:04}")
+            logging.info(f"Loading {self.catalog} waveform with ID:{ID:04}")
 
         if self.catalog == "sxs":
             from .sxs import Waveform_SXS
@@ -155,7 +155,7 @@ class Cataloger(object):
         if nproc > 1:
             now_str = datetime.now().strftime("%Y%m%d_%H-%M-%S")
             log_file = f"{now_str:s}_cataloger_process_{process_id}.log"
-            print(f"Logfile #{process_id:d}: {log_file}")
+            logging.info(f"Logfile #{process_id:d}: {log_file}")
             with open(log_file, "w") as file:
                 sys.stdout = file
                 sys.stderr = file
@@ -177,8 +177,8 @@ class Cataloger(object):
         subset = self.find_subset(ranges)
         nsubset = len(subset)
         if nsubset < nproc:
-            print(
-                f"Warning! More processes than configurations, reducing nproc to {nsubset}"
+            logging.warning(
+                f"More processes than configurations, reducing nproc to {nsubset}"
             )
             nproc = nsubset
 
@@ -196,11 +196,11 @@ class Cataloger(object):
                 start += current_size
 
             for i in range(len(batches)):
-                print(batches[i][0], batches[i][-1])
+                logging.info(f"{batches[i][0]} {batches[i][-1]}")
 
             processes = []
             json_tmp_list = []
-            print("Redirecting output in logfiles")
+            logging.info("Redirecting output in logfiles")
             for i in range(nproc):
                 # get name for temporary JSON file
                 json_file_tmp = optimizer_opts["json_file"]
@@ -465,13 +465,13 @@ class Cataloger(object):
             if mm_settings is None:
                 if self.data[name]["Optimizer"] is not None:
                     if self.verbose:
-                        print(f"Using settings from {name} optimizer")
+                        logging.info(f"Using settings from {name} optimizer")
                     mm_settings = self.data[name]["Optimizer"].mm_settings
                 else:
                     raise ValueError(
                         "No mm_settings provided and no Optimizer available"
                     )
-            print(f"mm for: {name}")
+            logging.info(f"mm for: {name}")
             mm = masses * 0
             eob = self.get_model_waveform(name)
             nr = self.data[name]["Waveform"]
@@ -522,12 +522,12 @@ class Cataloger(object):
         if figname is None:
             figname = f"mismatches_{self.catalog}_{cmap_var}.png"
             plt.savefig(figname, dpi=200, bbox_inches="tight")
-            print(f"Figure saved: {figname}")
+            logging.info(f"Figure saved: {figname}")
         plt.show()
 
         if isinstance(json_save, str):
             with open(json_save, "w") as file:
                 file.write(json.dumps(mm_data, indent=2))
-                print(f"JSON file saved: {json_save}")
+                logging.info(f"JSON file saved: {json_save}")
 
         return
