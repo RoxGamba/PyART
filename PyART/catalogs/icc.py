@@ -1,4 +1,4 @@
-import os, json, re
+import os, json, re, logging
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -159,7 +159,7 @@ class Waveform_ICC(Waveform):
                 "z1": zeros,
             }
         else:
-            print("Warning: no punctures' tracks found!")
+            logging.warning("no punctures' tracks found!")
             pdict = None
         self.puncts = pdict
         return
@@ -173,7 +173,7 @@ class Waveform_ICC(Waveform):
             if raise_error:
                 raise RuntimeError(msg)
             else:
-                print(f"Warning! {msg}. Returning empty vars")
+                logging.warning(f"{msg}. Returning empty vars")
                 return {}, None, []
         tmp = ut.safe_loadtxt(files[0])
         t = tmp[:, 0]
@@ -211,7 +211,7 @@ class Waveform_ICC(Waveform):
                 tmax_psi4, _, _, _ = self.find_max(wave="psi4lm", height=1e-04)
                 DeltaT_end = self.t_psi4[-1] - (tmax_psi4 + tmax_after_peak)
             except Exception as e:
-                print(f"Error while searching max of psi4 time: {e}")
+                logging.error(f"Error while searching max of psi4 time: {e}")
                 DeltaT_end = 0
             if DeltaT_end > 0:
                 self.cut(DeltaT_end, from_the_end=True, cut_psi4lm=True)

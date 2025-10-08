@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import os, json
 
@@ -147,7 +148,7 @@ class Waveform_GRAHyp(Waveform):
                 "z1": z1,
             }
         else:
-            print("Warning: no punctures' tracks found!")
+            logging.warning("no punctures' tracks found!")
             pdict = None
         self.puncts = pdict
         return

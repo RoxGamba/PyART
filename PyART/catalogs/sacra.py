@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
@@ -247,7 +248,7 @@ class Waveform_SACRA(Waveform):
 
         if self.metadata["f0"] is None:
             f0 = self.get_MOmega0_from_FFT(h, u)
-            print(f"Updating f0 using estimate from FT: {f0:.5f}")
+            logging.info(f"Updating f0 using estimate from FT: {f0:.5f}")
             self.metadata["f0"] = f0
             self.metadata["f0v"] = np.array([0.0, 0.0, f0])
         pass
