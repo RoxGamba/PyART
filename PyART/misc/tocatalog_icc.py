@@ -6,6 +6,7 @@ SA: 07/31/2024
 """
 
 import os, json
+import logging
 import numpy as np
 from PyART.analysis.scattering_angle import ScatteringAngle
 
@@ -199,10 +200,10 @@ for i, sim in enumerate(all_sims):
     fname = os.path.join(datasim, "metadata.json")
     with open(fname, "w") as file:
         file.write(json.dumps(meta, indent=2))
-    print(f"#{ID:04} created file: {fname}")
+    logging.info(f"#{ID:04} created file: {fname}")
 
     new_sim_dir = os.path.join(new_dir, meta["name"])
     os.makedirs(new_sim_dir, exist_ok=True)
     cmd = f"cp -v {datasim}/* {new_sim_dir}"
     runcmd(cmd, workdir=os.getcwd())
-    print(" ")
+    logging.info(" ")

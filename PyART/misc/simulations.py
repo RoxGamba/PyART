@@ -6,6 +6,7 @@
 import sys, os, re, datetime
 import glob, itertools
 import json, csv
+import logging
 import numpy as np
 import math
 import subprocess
@@ -273,8 +274,8 @@ class Simulations:
             elif ext == ".json":
                 d = self.read_json(f)
             else:
-                print(
-                    "Skip file {}, do not know how to read data from {}".format(f, ext)
+                logging.warning(
+                    f"Skip file {f}, do not know how to read data from {ext}"
                 )
                 continue
             if not d:
@@ -292,15 +293,15 @@ class Simulations:
             if rit_ids_unpack and catalog == "RIT":
                 self.rit_extract_punctures_id(d, d_ics)
 
-            print("Read file {} from catalog {}".format(f, catalog))
+            logging.info(f"Read file {f} from catalog {catalog}")
 
         self.parse_metadata(keymap=keymap)
 
     def info(self):
         catalog = [d["CATALOG"] for d in self.data]
-        print("CATALOG : DATASETS")
+        logging.info("CATALOG : DATASETS")
         for c in set(catalog):
-            print("{} : {}".format(c, catalog.count(c)))
+            logging.info(f"{c} : {catalog.count(c)}")
 
     def read_txt(self, fname):
         """
@@ -379,7 +380,7 @@ class Simulations:
                     ics = self.cast_to_float(ids[1:], ReturnLast=False)
                     d[tag] = ics
 
-        print("Read RIT punctures ID from {}".format(fname))
+        logging.info(f"Read RIT punctures ID from {fname}")
         return d
 
     def rit_extract_punctures_id(self, db, id_db):
@@ -397,7 +398,7 @@ class Simulations:
             db["P_p"] = [ics[2] / nu, ics[3] / nu]
             db["P_m"] = [-ics[2] / nu, -ics[3] / nu]
         else:
-            print("\t No puncture ID avalilable for {}".format(tag))
+            logging.warning(f"\t No puncture ID avalilable for {tag}")
 
     def parse_metadata(self, keymap=KEYMAP):
         """
@@ -543,11 +544,11 @@ class Simulations:
             data = self.data
         for s in data:
             if s["CATALOG"] not in cmd.keys():
-                print("Skip {} : do not know how to get the data".format())
+                logging.warning("Skip {} : do not know how to get the data".format())
                 continue
             for c in cmd[s["CATALOG"]](s):
                 if dryrun:
-                    print(c)
+                    logging.info(c)
                 else:
                     path_outdir = "{}/{}/{}/".format(self.path, s["CATALOG"], outdir)
                     runcmd(c, path_outdir)
@@ -574,7 +575,7 @@ if __name__ == "__main__":
     xp = s.data[0]["x_p"]
     pp = s.data[0]["P_p"]  # already nu-normalized
     q_eob, p_eob = s.ADM_to_EOB(nu, -2 * np.array(xp), np.array(pp), polar=False)
-    print(q_eob, p_eob)
+    logging.info(f"{q_eob}, {p_eob}")
 
     # for k,v in s.data[0].items():
     #     print(k,v)
