@@ -1,0 +1,293 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting sphinx
+  Downloading sphinx-8.2.3-py3-none-any.whl.metadata
+     - 7.0 kB ? 0:00:00
+Collecting myst-parser
+  Downloading myst_parser-4.0.1-py3-none-any.whl.metadata
+     - 5.5 kB ? 0:00:00
+Collecting myst-nb
+  Downloading myst_nb-1.3.0-py3-none-any.whl.metadata
+     - 4.7 kB ? 0:00:00
+Collecting furo
+  Downloading furo-2025.9.25-py3-none-any.whl.metadata
+     - 6.1 kB ? 0:00:00
+Collecting sphinx-math-dollar
+  Downloading sphinx_math_dollar-1.2.1-py3-none-any.whl.metadata
+     - 3.2 kB ? 0:00:00
+Collecting sphinx-autoapi
+  Downloading sphinx_autoapi-3.6.1-py3-none-any.whl.metadata
+     - 4.6 kB ? 0:00:00
+Collecting sphinxcontrib-applehelp>=1.0.7 (from sphinx)
+  Downloading sphinxcontrib_applehelp-2.0.0-py3-none-any.whl.metadata
+     - 2.3 kB ? 0:00:00
+Collecting sphinxcontrib-devhelp>=1.0.6 (from sphinx)
+  Downloading sphinxcontrib_devhelp-2.0.0-py3-none-any.whl.metadata
+     - 2.3 kB ? 0:00:00
+Collecting sphinxcontrib-htmlhelp>=2.0.6 (from sphinx)
+  Downloading sphinxcontrib_htmlhelp-2.1.0-py3-none-any.whl.metadata
+     - 2.3 kB ? 0:00:00
+Collecting sphinxcontrib-jsmath>=1.0.1 (from sphinx)
+  Downloading sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl.metadata
+     - 1.4 kB ? 0:00:00
+Collecting sphinxcontrib-qthelp>=1.0.6 (from sphinx)
+  Downloading sphinxcontrib_qthelp-2.0.0-py3-none-any.whl.metadata
+     - 2.3 kB ? 0:00:00
+Collecting sphinxcontrib-serializinghtml>=1.1.9 (from sphinx)
+  Downloading sphinxcontrib_serializinghtml-2.0.0-py3-none-any.whl.metadata
+     - 2.4 kB ? 0:00:00
+Requirement already satisfied: Jinja2>=3.1 in /usr/lib/python3/dist-packages (from sphinx) (3.1.2)
+Requirement already satisfied: Pygments>=2.17 in /usr/lib/python3/dist-packages (from sphinx) (2.17.2)
+Collecting docutils<0.22,>=0.20 (from sphinx)
+  Downloading docutils-0.21.2-py3-none-any.whl.metadata
+     - 2.8 kB ? 0:00:00
+Collecting snowballstemmer>=2.2 (from sphinx)
+  Downloading snowballstemmer-3.0.1-py3-none-any.whl.metadata
+     - 7.9 kB ? 0:00:00
+Collecting babel>=2.13 (from sphinx)
+  Downloading babel-2.17.0-py3-none-any.whl.metadata
+     - 2.0 kB ? 0:00:00
+Collecting alabaster>=0.7.14 (from sphinx)
+  Downloading alabaster-1.0.0-py3-none-any.whl.metadata
+     - 2.8 kB ? 0:00:00
+Collecting imagesize>=1.3 (from sphinx)
+  Downloading imagesize-1.4.1-py2.py3-none-any.whl.metadata
+     - 1.5 kB ? 0:00:00
+Requirement already satisfied: requests>=2.30.0 in /usr/lib/python3/dist-packages (from sphinx) (2.31.0)
+Collecting roman-numerals-py>=1.0.0 (from sphinx)
+  Downloading roman_numerals_py-3.1.0-py3-none-any.whl.metadata
+     - 3.6 kB ? 0:00:00
+Requirement already satisfied: packaging>=23.0 in /usr/lib/python3/dist-packages (from sphinx) (24.0)
+Requirement already satisfied: markdown-it-py~=3.0 in /usr/lib/python3/dist-packages (from myst-parser) (3.0.0)
+Collecting mdit-py-plugins>=0.4.1,~=0.4 (from myst-parser)
+  Downloading mdit_py_plugins-0.5.0-py3-none-any.whl.metadata
+     - 2.8 kB ? 0:00:00
+Requirement already satisfied: pyyaml in /usr/lib/python3/dist-packages (from myst-parser) (6.0.1)
+Collecting importlib_metadata (from myst-nb)
+  Downloading importlib_metadata-8.7.0-py3-none-any.whl.metadata
+     - 4.8 kB ? 0:00:00
+Collecting ipython (from myst-nb)
+  Downloading ipython-9.6.0-py3-none-any.whl.metadata
+     - 4.4 kB ? 0:00:00
+Collecting jupyter-cache>=0.5 (from myst-nb)
+  Downloading jupyter_cache-1.0.1-py3-none-any.whl.metadata
+     - 5.8 kB ? 0:00:00
+Collecting nbclient (from myst-nb)
+  Downloading nbclient-0.10.2-py3-none-any.whl.metadata
+     - 8.3 kB ? 0:00:00
+Collecting nbformat>=5.0 (from myst-nb)
+  Downloading nbformat-5.10.4-py3-none-any.whl.metadata
+     - 3.6 kB ? 0:00:00
+Requirement already satisfied: typing-extensions in /usr/lib/python3/dist-packages (from myst-nb) (4.10.0)
+Collecting ipykernel (from myst-nb)
+  Downloading ipykernel-7.1.0-py3-none-any.whl.metadata
+     - 4.5 kB ? 0:00:00
+Collecting beautifulsoup4 (from furo)
+  Downloading beautifulsoup4-4.14.2-py3-none-any.whl.metadata
+     - 3.8 kB ? 0:00:00
+Collecting sphinx-basic-ng>=1.0.0.beta2 (from furo)
+  Downloading sphinx_basic_ng-1.0.0b2-py3-none-any.whl.metadata
+     - 1.5 kB ? 0:00:00
+Collecting accessible-pygments>=0.0.5 (from furo)
+  Downloading accessible_pygments-0.0.5-py3-none-any.whl.metadata
+     - 10.3 kB 1.7 MB/s 0:00:00
+Collecting astroid~=4.0 (from sphinx-autoapi)
+  Downloading astroid-4.0.1-py3-none-any.whl.metadata
+     - 4.4 kB ? 0:00:00
+Requirement already satisfied: attrs in /usr/lib/python3/dist-packages (from jupyter-cache>=0.5->myst-nb) (23.2.0)
+Requirement already satisfied: click in /usr/lib/python3/dist-packages (from jupyter-cache>=0.5->myst-nb) (8.1.6)
+Collecting sqlalchemy<3,>=1.3.12 (from jupyter-cache>=0.5->myst-nb)
+  Downloading sqlalchemy-2.0.44-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+     - 9.5 kB ? 0:00:00
+Collecting tabulate (from jupyter-cache>=0.5->myst-nb)
+  Downloading tabulate-0.9.0-py3-none-any.whl.metadata
+     - 34.1 kB 216.1 MB/s 0:00:00
+Requirement already satisfied: mdurl~=0.1 in /usr/lib/python3/dist-packages (from markdown-it-py~=3.0->myst-parser) (0.1.2)
+Collecting jupyter-client>=6.1.12 (from nbclient->myst-nb)
+  Downloading jupyter_client-8.6.3-py3-none-any.whl.metadata
+     - 8.3 kB ? 0:00:00
+Collecting jupyter-core!=5.0.*,>=4.12 (from nbclient->myst-nb)
+  Downloading jupyter_core-5.9.1-py3-none-any.whl.metadata
+     - 1.5 kB ? 0:00:00
+Collecting traitlets>=5.4 (from nbclient->myst-nb)
+  Downloading traitlets-5.14.3-py3-none-any.whl.metadata
+     - 10.7 kB 21.4 MB/s 0:00:00
+Collecting fastjsonschema>=2.15 (from nbformat>=5.0->myst-nb)
+  Downloading fastjsonschema-2.21.2-py3-none-any.whl.metadata
+     - 2.3 kB ? 0:00:00
+Requirement already satisfied: jsonschema>=2.6 in /usr/lib/python3/dist-packages (from nbformat>=5.0->myst-nb) (4.10.3)
+Collecting soupsieve>1.2 (from beautifulsoup4->furo)
+  Downloading soupsieve-2.8-py3-none-any.whl.metadata
+     - 4.6 kB ? 0:00:00
+Collecting zipp>=3.20 (from importlib_metadata->myst-nb)
+  Downloading zipp-3.23.0-py3-none-any.whl.metadata
+     - 3.6 kB ? 0:00:00
+Collecting comm>=0.1.1 (from ipykernel->myst-nb)
+  Downloading comm-0.2.3-py3-none-any.whl.metadata
+     - 3.7 kB ? 0:00:00
+Collecting debugpy>=1.6.5 (from ipykernel->myst-nb)
+  Downloading debugpy-1.8.17-cp312-cp312-manylinux_2_34_x86_64.whl.metadata
+     - 1.4 kB ? 0:00:00
+Collecting matplotlib-inline>=0.1 (from ipykernel->myst-nb)
+  Downloading matplotlib_inline-0.2.1-py3-none-any.whl.metadata
+     - 2.3 kB ? 0:00:00
+Collecting nest-asyncio>=1.4 (from ipykernel->myst-nb)
+  Downloading nest_asyncio-1.6.0-py3-none-any.whl.metadata
+     - 2.8 kB ? 0:00:00
+Collecting psutil>=5.7 (from ipykernel->myst-nb)
+  Downloading psutil-7.1.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl.metadata
+     - 23.0 kB 169.1 MB/s 0:00:00
+Collecting pyzmq>=25 (from ipykernel->myst-nb)
+  Downloading pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata
+     - 6.0 kB ? 0:00:00
+Collecting tornado>=6.2 (from ipykernel->myst-nb)
+  Downloading tornado-6.5.2-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+     - 2.8 kB ? 0:00:00
+Collecting decorator (from ipython->myst-nb)
+  Downloading decorator-5.2.1-py3-none-any.whl.metadata
+     - 3.9 kB ? 0:00:00
+Collecting ipython-pygments-lexers (from ipython->myst-nb)
+  Downloading ipython_pygments_lexers-1.1.1-py3-none-any.whl.metadata
+     - 1.1 kB ? 0:00:00
+Collecting jedi>=0.16 (from ipython->myst-nb)
+  Downloading jedi-0.19.2-py2.py3-none-any.whl.metadata
+     - 22.9 kB 220.3 MB/s 0:00:00
+Requirement already satisfied: pexpect>4.3 in /usr/lib/python3/dist-packages (from ipython->myst-nb) (4.9.0)
+Collecting prompt_toolkit<3.1.0,>=3.0.41 (from ipython->myst-nb)
+  Downloading prompt_toolkit-3.0.52-py3-none-any.whl.metadata
+     - 6.4 kB ? 0:00:00
+Collecting stack_data (from ipython->myst-nb)
+  Downloading stack_data-0.6.3-py3-none-any.whl.metadata
+     - 18.4 kB 135.6 MB/s 0:00:00
+Collecting parso<0.9.0,>=0.8.4 (from jedi>=0.16->ipython->myst-nb)
+  Downloading parso-0.8.5-py2.py3-none-any.whl.metadata
+     - 8.3 kB ? 0:00:00
+Requirement already satisfied: pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0 in /usr/lib/python3/dist-packages (from jsonschema>=2.6->nbformat>=5.0->myst-nb) (0.20.0)
+Requirement already satisfied: python-dateutil>=2.8.2 in /usr/lib/python3/dist-packages (from jupyter-client>=6.1.12->nbclient->myst-nb) (2.8.2)
+Requirement already satisfied: platformdirs>=2.5 in /usr/local/lib/python3.12/dist-packages (from jupyter-core!=5.0.*,>=4.12->nbclient->myst-nb) (4.4.0)
+Collecting wcwidth (from prompt_toolkit<3.1.0,>=3.0.41->ipython->myst-nb)
+  Downloading wcwidth-0.2.14-py2.py3-none-any.whl.metadata
+     - 15.6 kB 161.7 MB/s 0:00:00
+Collecting greenlet>=1 (from sqlalchemy<3,>=1.3.12->jupyter-cache>=0.5->myst-nb)
+  Downloading greenlet-3.2.4-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata
+     - 4.1 kB ? 0:00:00
+Collecting executing>=1.2.0 (from stack_data->ipython->myst-nb)
+  Downloading executing-2.2.1-py2.py3-none-any.whl.metadata
+     - 8.9 kB ? 0:00:00
+Collecting asttokens>=2.1.0 (from stack_data->ipython->myst-nb)
+  Downloading asttokens-3.0.0-py3-none-any.whl.metadata
+     - 4.7 kB ? 0:00:00
+Collecting pure-eval (from stack_data->ipython->myst-nb)
+  Downloading pure_eval-0.2.3-py3-none-any.whl.metadata
+     - 6.3 kB ? 0:00:00
+Downloading sphinx-8.2.3-py3-none-any.whl
+   \ 3.6 MB 32.4 MB/s 0:00:00
+Downloading myst_parser-4.0.1-py3-none-any.whl
+   - 84.6 kB 228.4 MB/s 0:00:00
+Downloading myst_nb-1.3.0-py3-none-any.whl
+   - 82.4 kB 136.5 MB/s 0:00:00
+Downloading furo-2025.9.25-py3-none-any.whl
+   - 340.4 kB 178.2 MB/s 0:00:00
+Downloading sphinx_math_dollar-1.2.1-py3-none-any.whl
+   - 8.1 kB ? 0:00:00
+Downloading sphinx_autoapi-3.6.1-py3-none-any.whl
+   - 35.3 kB 198.7 MB/s 0:00:00
+Downloading accessible_pygments-0.0.5-py3-none-any.whl
+   - 1.4 MB 212.1 MB/s 0:00:00
+Downloading alabaster-1.0.0-py3-none-any.whl
+   - 13.9 kB 164.2 MB/s 0:00:00
+Downloading astroid-4.0.1-py3-none-any.whl
+   - 276.3 kB 156.5 MB/s 0:00:00
+Downloading babel-2.17.0-py3-none-any.whl
+   - 10.2 MB 177.2 MB/s 0:00:00
+Downloading docutils-0.21.2-py3-none-any.whl
+   - 587.4 kB 199.5 MB/s 0:00:00
+Downloading imagesize-1.4.1-py2.py3-none-any.whl
+   - 8.8 kB ? 0:00:00
+Downloading jupyter_cache-1.0.1-py3-none-any.whl
+   - 33.9 kB 179.0 MB/s 0:00:00
+Downloading mdit_py_plugins-0.5.0-py3-none-any.whl
+   - 57.2 kB 229.4 MB/s 0:00:00
+Downloading nbclient-0.10.2-py3-none-any.whl
+   - 25.4 kB 175.3 MB/s 0:00:00
+Downloading nbformat-5.10.4-py3-none-any.whl
+   - 78.5 kB 237.3 MB/s 0:00:00
+Downloading roman_numerals_py-3.1.0-py3-none-any.whl
+   - 7.7 kB ? 0:00:00
+Downloading snowballstemmer-3.0.1-py3-none-any.whl
+   - 103.3 kB 186.6 MB/s 0:00:00
+Downloading sphinx_basic_ng-1.0.0b2-py3-none-any.whl
+   - 22.5 kB 121.1 MB/s 0:00:00
+Downloading sphinxcontrib_applehelp-2.0.0-py3-none-any.whl
+   - 119.3 kB 150.2 MB/s 0:00:00
+Downloading sphinxcontrib_devhelp-2.0.0-py3-none-any.whl
+   - 82.5 kB 165.4 MB/s 0:00:00
+Downloading sphinxcontrib_htmlhelp-2.1.0-py3-none-any.whl
+   - 98.7 kB 131.2 MB/s 0:00:00
+Downloading sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl
+   - 5.1 kB ? 0:00:00
+Downloading sphinxcontrib_qthelp-2.0.0-py3-none-any.whl
+   - 88.7 kB 147.9 MB/s 0:00:00
+Downloading sphinxcontrib_serializinghtml-2.0.0-py3-none-any.whl
+   - 92.1 kB 165.2 MB/s 0:00:00
+Downloading beautifulsoup4-4.14.2-py3-none-any.whl
+   - 106.4 kB 173.6 MB/s 0:00:00
+Downloading importlib_metadata-8.7.0-py3-none-any.whl
+   - 27.7 kB 181.7 MB/s 0:00:00
+Downloading ipykernel-7.1.0-py3-none-any.whl
+   - 118.0 kB 149.0 MB/s 0:00:00
+Downloading ipython-9.6.0-py3-none-any.whl
+   - 616.2 kB 182.1 MB/s 0:00:00
+Downloading comm-0.2.3-py3-none-any.whl
+   - 7.3 kB ? 0:00:00
+Downloading debugpy-1.8.17-cp312-cp312-manylinux_2_34_x86_64.whl
+   - 4.3 MB 213.3 MB/s 0:00:00
+Downloading fastjsonschema-2.21.2-py3-none-any.whl
+   - 24.0 kB 114.6 MB/s 0:00:00
+Downloading jedi-0.19.2-py2.py3-none-any.whl
+   - 1.6 MB 218.3 MB/s 0:00:00
+Downloading jupyter_client-8.6.3-py3-none-any.whl
+   - 106.1 kB 148.0 MB/s 0:00:00
+Downloading jupyter_core-5.9.1-py3-none-any.whl
+   - 29.0 kB 185.2 MB/s 0:00:00
+Downloading matplotlib_inline-0.2.1-py3-none-any.whl
+   - 9.5 kB ? 0:00:00
+Downloading nest_asyncio-1.6.0-py3-none-any.whl
+   - 5.2 kB ? 0:00:00
+Downloading prompt_toolkit-3.0.52-py3-none-any.whl
+   - 391.4 kB 194.8 MB/s 0:00:00
+Downloading psutil-7.1.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl
+   - 258.7 kB 156.6 MB/s 0:00:00
+Downloading pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl
+   - 841.0 kB 208.5 MB/s 0:00:00
+Downloading soupsieve-2.8-py3-none-any.whl
+   - 36.7 kB 207.3 MB/s 0:00:00
+Downloading sqlalchemy-2.0.44-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+   - 3.3 MB 189.7 MB/s 0:00:00
+Downloading tornado-6.5.2-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+   - 443.9 kB 206.5 MB/s 0:00:00
+Downloading traitlets-5.14.3-py3-none-any.whl
+   - 85.4 kB 231.8 MB/s 0:00:00
+Downloading zipp-3.23.0-py3-none-any.whl
+   - 10.3 kB 1.4 MB/s 0:00:00
+Downloading decorator-5.2.1-py3-none-any.whl
+   - 9.2 kB ? 0:00:00
+Downloading ipython_pygments_lexers-1.1.1-py3-none-any.whl
+   - 8.1 kB ? 0:00:00
+Downloading stack_data-0.6.3-py3-none-any.whl
+   - 24.5 kB 146.7 MB/s 0:00:00
+Downloading tabulate-0.9.0-py3-none-any.whl
+   - 35.3 kB 150.9 MB/s 0:00:00
+Downloading asttokens-3.0.0-py3-none-any.whl
+   - 26.9 kB 143.1 MB/s 0:00:00
+Downloading executing-2.2.1-py2.py3-none-any.whl
+   - 28.3 kB 195.3 MB/s 0:00:00
+Downloading greenlet-3.2.4-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+   - 607.6 kB 214.0 MB/s 0:00:00
+Downloading parso-0.8.5-py2.py3-none-any.whl
+   - 106.7 kB 180.7 MB/s 0:00:00
+Downloading pure_eval-0.2.3-py3-none-any.whl
+   - 11.8 kB 63.4 MB/s 0:00:00
+Downloading wcwidth-0.2.14-py2.py3-none-any.whl
+   - 37.3 kB 136.1 MB/s 0:00:00
+Installing collected packages: pure-eval, fastjsonschema, zipp, wcwidth, traitlets, tornado, tabulate, sphinxcontrib-serializinghtml, sphinxcontrib-qthelp, sphinxcontrib-jsmath, sphinxcontrib-htmlhelp, sphinxcontrib-devhelp, sphinxcontrib-applehelp, soupsieve, snowballstemmer, roman-numerals-py, pyzmq, psutil, parso, nest-asyncio, ipython-pygments-lexers, imagesize, greenlet, executing, docutils, decorator, debugpy, comm, babel, asttokens, astroid, alabaster, accessible-pygments, stack_data, sqlalchemy, sphinx, prompt_toolkit, mdit-py-plugins, matplotlib-inline, jupyter-core, jedi, importlib_metadata, beautifulsoup4, sphinx-math-dollar, sphinx-basic-ng, sphinx-autoapi, nbformat, myst-parser, jupyter-client, ipython, nbclient, ipykernel, furo, jupyter-cache, myst-nb
+Successfully installed accessible-pygments-0.0.5 alabaster-1.0.0 astroid-4.0.1 asttokens-3.0.0 babel-2.17.0 beautifulsoup4-4.14.2 comm-0.2.3 debugpy-1.8.17 decorator-5.2.1 docutils-0.21.2 executing-2.2.1 fastjsonschema-2.21.2 furo-2025.9.25 greenlet-3.2.4 imagesize-1.4.1 importlib_metadata-8.7.0 ipykernel-7.1.0 ipython-9.6.0 ipython-pygments-lexers-1.1.1 jedi-0.19.2 jupyter-cache-1.0.1 jupyter-client-8.6.3 jupyter-core-5.9.1 matplotlib-inline-0.2.1 mdit-py-plugins-0.5.0 myst-nb-1.3.0 myst-parser-4.0.1 nbclient-0.10.2 nbformat-5.10.4 nest-asyncio-1.6.0 parso-0.8.5 prompt_toolkit-3.0.52 psutil-7.1.2 pure-eval-0.2.3 pyzmq-27.1.0 roman-numerals-py-3.1.0 snowballstemmer-3.0.1 soupsieve-2.8 sphinx-8.2.3 sphinx-autoapi-3.6.1 sphinx-basic-ng-1.0.0b2 sphinx-math-dollar-1.2.1 sphinxcontrib-applehelp-2.0.0 sphinxcontrib-devhelp-2.0.0 sphinxcontrib-htmlhelp-2.1.0 sphinxcontrib-jsmath-1.0.1 sphinxcontrib-qthelp-2.0.0 sphinxcontrib-serializinghtml-2.0.0 sqlalchemy-2.0.44 stack_data-0.6.3 tabulate-0.9.0 tornado-6.5.2 traitlets-5.14.3 wcwidth-0.2.14 zipp-3.23.0

@@ -28,7 +28,7 @@ extensions.append('autoapi.extension')
 autoapi_dirs = ['../../PyART']
 templates_path = ['_templates']
 exclude_patterns = []
-jupyter_execute_notebooks = "force"  # or "auto" / "off"
+nb_execution_mode = "force"  # or "auto" / "off"
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
