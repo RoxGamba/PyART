@@ -31,8 +31,13 @@ We promise to make available on PyPI in near future.
 ```{toctree}
 :caption: 'Contents:'
 :maxdepth: 2
-:tutorials:
+
 tutorials/intro_to_waveforms.ipynb
+tutorials/catalog_downloads.ipynb
 tutorials/phase_alignment.ipynb
 tutorials/mismatch.ipynb
+tutorials/nr_eob_mismatch.ipynb
+tutorials/optimizing_initial_conditions.ipynb
+tutorials/iccub_waveform_integration.ipynb
+tutorials/scattering_angles.ipynb
 ```
