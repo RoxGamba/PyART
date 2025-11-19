@@ -16,24 +16,22 @@ class Waveform_RWZ(Waveform):
     def __init__(self, 
                  path, 
                  r_ext          = None, 
-                 cut_N          = None, 
-                 cut_U          = None, 
                  ellmax         = 4, 
+                 cut_u          = None,
                  load_m0        = False, 
                  par_rel_path   = None, 
                  parfile_tokens = []):
 
         super().__init__()
-        self.path   = path
-        self.ellmax = ellmax
-        self.cut_N  = cut_N
-        self.cut_U  = cut_U
-        self._kind  = "RWZ"
-        self.domain = "Time"
+        self.path         = path
+        self.ellmax       = ellmax
+        self.cut_u        = cut_u,
+        self._kind        = "RWZ"
+        self.domain       = "Time"
         self.par_rel_path = par_rel_path
         
         self.load_metadata(tokens=parfile_tokens)
-
+        self.load_dynamics()
         self.load_hlm(load_m0=load_m0, r_ext=r_ext)
         
         pass
@@ -129,8 +127,8 @@ class Waveform_RWZ(Waveform):
 
     def load_hlm(self, r_ext=None, ellmax=None, load_m0=False):
         
-        if not hasattr(self, "metadata"):
-            raise RuntimeError("Load metadata before loading the hlm!")
+        if not hasattr(self, 'metadata'):
+            raise RuntimeError('Load metadata before loading the hlm!')
         
         if r_ext is None:
             r_ext = f'r0{self.metadata["jmax"]:d}'
@@ -155,17 +153,13 @@ class Waveform_RWZ(Waveform):
         with open(f22, "r") as f:
             data = np.loadtxt(f)
         tmp_t = np.array(data[:, 1])
+        
+        if self.cut_u is not None:
+            n0 = np.argwhere(tmp_t>=self.cut_u)[0][0]
+        else:
+            n0 = 0
 
-        #self.check_cut_consistency()
-        if self.cut_N is None and self.cut_U is not None:
-            self.cut_N = np.argwhere(tmp_t >= self.cut_U)[0][0]
-        if self.cut_U is None and self.cut_N is not None:
-            self.cut_U = tmp_t[self.cut_N]
-         
-        if self.cut_N is None:
-            self.cut_N = 0
-
-        self._u = tmp_t[self.cut_N:]
+        self._u = tmp_t[n0:]
         self._t = self._u  # FIXME: should we use another time?
 
         dict_hlm = {}
@@ -176,8 +170,8 @@ class Waveform_RWZ(Waveform):
                 data = np.loadtxt(f)
 
             sqrtL = np.sqrt((l + 2) * (l + 1) * l * (l - 1))  
-            t = np.array(data[:, 1])
-            h = np.array((data[:,2] + 1j*data[:,3])) * sqrtL
+            #t = np.array(data[cut_N:,1])
+            h = np.array((data[n0:,2] + 1j*data[n0:,3])) * sqrtL
             
             dict_hlm[(l, m)] = get_multipole_dict(h)
 
