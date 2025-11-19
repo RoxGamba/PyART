@@ -25,7 +25,7 @@ class Waveform_RWZ(Waveform):
         super().__init__()
         self.path         = path
         self.ellmax       = ellmax
-        self.cut_u        = cut_u,
+        self.cut_u        = cut_u
         self._kind        = "RWZ"
         self.domain       = "Time"
         self.par_rel_path = par_rel_path
