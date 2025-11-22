@@ -201,7 +201,7 @@ class Waveform(object):
             dothlm[k] = wf_ut.get_multipole_dict(dhlm)
         self._dothlm = dothlm
         pass
-    
+
     def compute_psi4lm(self, factor=1.0, only_warn=False):
         """
         Compute psi4lm from self.dothlm using
@@ -221,7 +221,7 @@ class Waveform(object):
             dictionary with psi4 multipoles
         """
         if not self.dothlm:
-            msg = 'psi4lm cannot be computed if dothlm is not computed'
+            msg = "psi4lm cannot be computed if dothlm is not computed"
             if only_warn:
                 logging.warning(msg)
             else:
@@ -229,8 +229,8 @@ class Waveform(object):
 
         psi4lm = {}
         for k in self.dothlm:
-            dothlm   = self.dothlm[k]['z']
-            ddothlm  = ut.D1(dothlm, self.u, 4)
+            dothlm = self.dothlm[k]["z"]
+            ddothlm = ut.D1(dothlm, self.u, 4)
             ddothlm *= factor
             psi4lm[k] = wf_ut.get_multipole_dict(ddothlm)
         self._psi4lm = psi4lm
@@ -379,7 +379,7 @@ class Waveform(object):
             iA = np.interp(new_u, self.u, np.abs(h))
             ip = np.interp(new_u, self.u, -np.unwrap(np.angle(h)))
             ih = iA * np.exp(-1j * ip)
-            hlm_i[k] = {"A": iA, "p": ip, "h": ih, "real": ih.real, "imag": ih.imag}
+            hlm_i[k] = {"A": iA, "p": ip, "z": ih, "real": ih.real, "imag": ih.imag}
 
         return new_u, hlm_i
 
