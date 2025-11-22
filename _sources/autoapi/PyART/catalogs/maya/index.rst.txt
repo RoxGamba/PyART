@@ -1,0 +1,68 @@
+PyART.catalogs.maya
+===================
+
+.. py:module:: PyART.catalogs.maya
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.catalogs.maya.r
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.maya.MAYA
+
+
+Module Contents
+---------------
+
+.. py:class:: MAYA(basepath='/data/numrel/MAYA/', id=None, ell_emms='all')
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Parent class to handle waveforms
+   Children classes will inherit methods & propreties
+
+
+   .. py:attribute:: ell_emms
+      :value: 'all'
+
+
+
+   .. py:attribute:: h_file
+
+
+   .. py:attribute:: coalescence
+
+
+   .. py:attribute:: metadata
+
+
+   .. py:method:: load_hlm()
+
+
+   .. py:method:: load_metadata()
+
+
+   .. py:method:: compute_initial_data()
+
+      Compute initial data (J0, S0, L0) from the metadata
+
+
+
+   .. py:method:: compute_dynamics()
+
+
+   .. py:method:: __interp_qnt__(x, y, x_new)
+
+
+.. py:data:: r
+
