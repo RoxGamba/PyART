@@ -15,24 +15,29 @@ class Waveform_RWZ(Waveform):
 
     def __init__(self, 
                  path, 
-                 r_ext          = None, 
+                 r_ext          = None,
                  ellmax         = 4, 
+                 mmin           = 1,
                  cut_u          = None,
-                 load_m0        = False, 
                  par_rel_path   = None, 
                  parfile_tokens = []):
 
         super().__init__()
+        
+        if not os.path.exists(path):
+            raise RuntimeError(f'Path not found: {path}')
+
         self.path         = path
         self.ellmax       = ellmax
+        self.mmin         = mmin
         self.cut_u        = cut_u
         self._kind        = "RWZ"
         self.domain       = "Time"
         self.par_rel_path = par_rel_path
-        
+             
         self.load_metadata(tokens=parfile_tokens)
         self.load_dynamics()
-        self.load_hlm(load_m0=load_m0, r_ext=r_ext)
+        self.load_hlm(r_ext=r_ext)
         
         pass
 
@@ -48,7 +53,7 @@ class Waveform_RWZ(Waveform):
             parfile = glob(os.path.join(self.path, self.par_rel_path, pattern))
         
         if len(parfile) == 0:
-            raise RuntimeError("No parfile found!")
+            raise FileNotFoundError("No parfile found!")
         if len(parfile) > 1:
             raise RuntimeError("Multiple parfiles found!")
 
@@ -125,7 +130,7 @@ class Waveform_RWZ(Waveform):
 
         pass
 
-    def load_hlm(self, r_ext=None, ellmax=None, load_m0=False):
+    def load_hlm(self, r_ext=None, ellmax=None):
         
         if not hasattr(self, 'metadata'):
             raise RuntimeError('Load metadata before loading the hlm!')
@@ -143,9 +148,8 @@ class Waveform_RWZ(Waveform):
             ellmax = self.ellmax
 
         modes = []
-        mmin  = 0 if load_m0 else 1
         for l in range(2,ellmax+1):
-            for m in range(mmin,l+1):
+            for m in range(self.mmin,l+1):
                 modes.append( (l,m) ) 
 
         # cut the waveform to the desired time interval
