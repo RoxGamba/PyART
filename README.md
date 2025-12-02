@@ -13,6 +13,9 @@
   <a href="https://github.com/RoxGamba/PyART/actions/workflows/documentation.yml">
     <img src="https://github.com/RoxGamba/PyART/actions/workflows/documentation.yml/badge.svg" alt="Documentation Status">
   </a>
+  <a href="https://results.pre-commit.ci/latest/github/RoxGamba/PyART/main">
+    <img src="https://results.pre-commit.ci/badge/github/RoxGamba/PyART/main.svg" alt="pre-commit.ci status">
+  </a>
 </p>
 
 ## Getting started
@@ -26,11 +29,10 @@ $ pip install .
 
 If you are a developer:
 
-* please add the pre-commit hook to your config file upon cloning:
+* Install pre-commit hooks (this will automatically format code with black):
     ```
-    git config --local core.hooksPath hooks
+    $ pip install pre-commit
+    $ pre-commit install
     ```
-* install black:
-    ```
-    $ pip install black
-    ```
+    
+Note: pre-commit.ci is enabled for this repository, which will automatically format code with black on all pull requests.

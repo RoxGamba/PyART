@@ -87,7 +87,9 @@ class Waveform_ICC(Waveform):
         self.extraction = extraction
         if self.download:
             if os.path.exists(self.sim_path):
-                logging.info(f"Directory {self.sim_path} already exists. Skipping download.")
+                logging.info(
+                    f"Directory {self.sim_path} already exists. Skipping download."
+                )
             else:
                 self.download_iccub_entry(json_path=json_catalog)
 

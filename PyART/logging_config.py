@@ -18,10 +18,10 @@ Example usage:
 import logging
 
 
-def setup_logging(level='INFO', format_string=None, datefmt=None):
+def setup_logging(level="INFO", format_string=None, datefmt=None):
     """
     Setup logging configuration for PyART
-    
+
     Parameters
     ----------
     level : str, optional
@@ -33,7 +33,7 @@ def setup_logging(level='INFO', format_string=None, datefmt=None):
     datefmt : str, optional
         Date format for timestamps in log messages.
         Default is '%Y-%m-%d %H:%M:%S'
-    
+
     Example
     -------
     >>> from PyART.logging_config import setup_logging
@@ -43,12 +43,10 @@ def setup_logging(level='INFO', format_string=None, datefmt=None):
     2024-01-01 12:00:00 This is an info message
     """
     if format_string is None:
-        format_string = '%(asctime)s %(message)s'
+        format_string = "%(asctime)s %(message)s"
     if datefmt is None:
-        datefmt = '%Y-%m-%d %H:%M:%S'
-    
+        datefmt = "%Y-%m-%d %H:%M:%S"
+
     logging.basicConfig(
-        level=getattr(logging, level.upper()),
-        format=format_string,
-        datefmt=datefmt
+        level=getattr(logging, level.upper()), format=format_string, datefmt=datefmt
     )
