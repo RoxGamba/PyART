@@ -117,6 +117,7 @@ def convert_hlm(hlm):
 
 # external function for dict creation
 
+
 def CreateDict(
     M=1.0,
     q=1,
@@ -137,7 +138,7 @@ def CreateDict(
     r_hyp=None,
     H_hyp=0,
     J_hyp=0,
-    prs_sign_hyp = -1,
+    prs_sign_hyp=-1,
     anomaly=np.pi,
     interp="yes",
     arg_out="yes",
