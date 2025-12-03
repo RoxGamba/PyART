@@ -192,7 +192,9 @@ class Waveform_RIT(Waveform):
                     json.dump(urls_dict, json_file, indent=4)
                 logging.info(f"Created JSON file with RIT urls: {urls_json}")
 
-        logging.info("-" * 50 + f"\nDownloading RIT:BBH:{ID}\n" + "-" * 50)
+        logging.info("-" * 50)
+        logging.info(f"\tDownloading RIT:BBH:{ID}")
+        logging.info("-" * 50)
         tstart = time.perf_counter()
         # ensure that the ID corresponds to an existing simulation
         if not ID in urls_dict:
@@ -200,21 +202,23 @@ class Waveform_RIT(Waveform):
         # if everything fine, creat simulation-dir and download data
         os.makedirs(path, exist_ok=True)
         for href in urls_dict[ID]:
-            os_ut.runcmd("wget " + href, workdir=path)
+            logging.info(f"wget-ing {href} ...")
+            os_ut.runcmd("wget -q " + href, workdir=path)
             if "tar.gz" in href:  # if compressed, untar
                 elems = href.split("/")
                 fname = elems[-1]
-                os_ut.runcmd("tar -vxzf " + fname, workdir=path)
+                logging.info(f"Extracting {fname} ...")
+                os_ut.runcmd("tar -xzf " + fname, workdir=path)
                 os_ut.runcmd(
-                    "rm -rv " + fname, workdir=path
+                    "rm -r " + fname, workdir=path
                 )  # remove compressed archive
 
                 # check if the ExtrapPsi4* dir is in the correct level
                 subdirs_ExtrapPsi4 = os_ut.find_dirs_with_subdirs(path, "ExtrapPsi4")
                 subdir = subdirs_ExtrapPsi4[0]
-                if os_ut.is_subdir(path, subdir):  # if wron level, move to upper one
+                if os_ut.is_subdir(path, subdir):  # if wrong level, move to upper one
                     tomove = os.path.join(subdir, "ExtrapPsi4*")
-                    os_ut.runcmd(f"mv -v {tomove} .", workdir=path)
+                    os_ut.runcmd(f"mv {tomove} .", workdir=path)
                     os_ut.runcmd(f"rmdir {subdir}", workdir=path)
         logging.info(">> Elapsed time: {:.3f} s\n".format(time.perf_counter() - tstart))
 

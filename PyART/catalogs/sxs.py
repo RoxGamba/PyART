@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 import os
+import sys
 import h5py
 import json
 from ..waveform import Waveform
@@ -280,12 +281,20 @@ class Waveform_SXS(Waveform):
         else:
             name_level = name
 
+        # based on the logging level, redirect stdout to null
+        # This is because the sxs module prints a lot of information to stdout
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        sys.stdout = open(os.devnull, "w")
+        sys.stderr = open(os.devnull, "w")
         sxs_sim = sxsmod.load(
             name_level,
             extrapolation_order=extrapolation_order,
             ignore_deprecation=ignore_deprecation,
             progress=True,
         )
+        logging.info(f"Loaded SXS simulation {name_level}.")
+
         # Set Level if not already set
         self.level = self.level or int(
             sxs_sim.Lev.replace("Lev", "")
@@ -333,6 +342,7 @@ class Waveform_SXS(Waveform):
             )
             save_dict_to_h5(h5file, to_h5file)
             h5file.close()
+            logging.info("Saved hlm data.")
 
         # Save psi4lm data if requested
         if "psi4lm" in downloads:
@@ -356,6 +366,7 @@ class Waveform_SXS(Waveform):
             )
             save_dict_to_h5(h5file, to_h5file)
             h5file.close()
+            logging.info("Saved psi4lm data.")
 
         # Save horizons if requested
         if "horizons" in downloads:
@@ -380,6 +391,7 @@ class Waveform_SXS(Waveform):
             h5file = h5py.File(os.path.join(out_dir, f"Horizons.h5"), "w")
             save_dict_to_h5(h5file, to_h5file)
             h5file.close()
+            logging.info("Saved horizons data.")
 
         # Save metadata if requested
         if "metadata" in downloads:
@@ -387,12 +399,17 @@ class Waveform_SXS(Waveform):
 
             with open(os.path.join(out_dir, "metadata.json"), "w") as file:
                 json.dump(sxs_sim.metadata, file, indent=2)
+            logging.info("Saved metadata.")
 
         # find old SXS download foders and remove them
         flds = [f for f in os.listdir(os.environ["SXSCACHEDIR"]) if ID in f]
         for fld in flds:
             if ":" in fld:
                 shutil.rmtree(os.path.join(os.environ["SXSCACHEDIR"], fld))
+
+        # Restore stdout/stderr
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
 
         pass
 
