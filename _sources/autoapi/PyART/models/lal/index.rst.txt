@@ -1,0 +1,80 @@
+PyART.models.lal
+================
+
+.. py:module:: PyART.models.lal
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.models.lal.Waveform_LAL
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_LAL(pars=None, approx='IMRPhenomXPHM', kind='FD')
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle LAL waveforms (TD, FD or from the lvcnr catalog)
+   TODO: extract modes from waveforms
+
+
+   .. py:attribute:: pars
+      :value: None
+
+
+
+   .. py:attribute:: approx
+      :value: 'IMRPhenomXPHM'
+
+
+
+   .. py:attribute:: _kind
+      :value: 'FD'
+
+
+
+   .. py:method:: _eob_to_lal_dict()
+
+      Assume that pars contains:
+          - q                   : mass ratio
+          - M                   : total mass
+          - chi1x, chi1y, chi1z : spin components of body 1
+          - chi2x, chi2y, chi2z : spin components of body 2
+          - distance            : distance to source
+          - inclination         : inclination
+          - coalescence_angle   : reference phase
+          - initial frequency   : initial frequency
+          - srate_interp        : sampling rate
+          - use_mode_lm         : list of modes to use for hpc
+      Can be generated via the usual CreateDict function
+
+
+
+   .. py:method:: _run_lal()
+
+
+   .. py:method:: _run_lal_TD()
+
+
+   .. py:method:: _run_lal_FD()
+
+
+   .. py:method:: _load_lal_lvcnr()
+
+      Assume that pars contains:
+          - sim_name          : path to simulation h5 file
+          - M                 : target total mass
+          - distance          : target distance
+          - inclination       : inclination
+          - coalescence_angle : coalescence angle
+          - srate_interp      : target sampling rate
+          - use_mode_lm       : list of modes to use for hpc
+
+
+
