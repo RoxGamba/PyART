@@ -7,10 +7,10 @@ Users can call setup_logging() to configure logging for the entire package.
 Example usage:
     import PyART
     from PyART.logging_config import setup_logging
-    
+
     # Setup logging with default INFO level
     setup_logging()
-    
+
     # Or setup with custom level
     setup_logging(level='DEBUG')
 """
