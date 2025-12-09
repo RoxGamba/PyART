@@ -22,7 +22,7 @@
 
 Install with
 ```
-$ pip install .
+pip install .
 ```
 
 ## For developers
@@ -31,8 +31,8 @@ If you are a developer:
 
 * Install pre-commit hooks (this will automatically format code with black):
     ```
-    $ pip install pre-commit
-    $ pre-commit install
+    pip install pre-commit
+    pre-commit install
     ```
     
 Note: pre-commit.ci is enabled for this repository, which will automatically format code with black on all pull requests.
