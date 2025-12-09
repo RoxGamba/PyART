@@ -342,3 +342,354 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
         print("p ADM->EOB : {:.5e}, {:.5e}\n".format(pe_check[0], pe_check[1]))
 
     return out
+
+
+def H_ADM(r, pr, L, chi1, chi2, nu=0.25, pn=2):
+    """
+    ADM Hamiltonian
+    Eq C1 from https://arxiv.org/pdf/2209.00611
+    """
+
+    u = 1 / r
+    u2 = u * u
+    u3 = u2 * u
+    u4 = u3 * u
+
+    dm = np.sqrt(1 - 4 * nu)
+    m1 = (1 + dm) / 2
+    m2 = 1 - m1
+
+    H_0 = 0.5 * pr**2 - u + 0.5 * L**2 * u2
+    H_1 = (
+        0.5 * u2
+        - pr**2 * (nu + 3 / 2) * u
+        + +(pr**4) * (3 * nu / 8 - 1.0 / 8)
+        + +(L**2) * (-nu / 2 * u3 - 3.0 / 2 * u3 + pr**2 * (3 * nu / 4 - 1.0 / 4) * u2)
+        + L**4 * (3.0 * nu / 8 * u4 - 1.0 / 8 * u4)
+    )
+
+    H_2 = (
+        -nu / 4 * u3
+        - 0.5 * u3
+        + pr**2 * (9 * nu / 2 * u2 + 9 / 4 * u2)
+        + +(pr**4) * (-nu * nu - 5 * nu / 2 + 5 / 8) * u
+        + pr**6 * (5 * nu * nu / 16 - 5 * nu / 16 + 1.0 / 16)
+        + +(L**2)
+        * (
+            (3 * nu + 11 / 4) * u4
+            + pr**2 * (-nu * nu - 9 * nu / 2 + 5 / 4) * u3
+            + pr**4 * (15 * nu * nu / 16 - 15 * nu / 16 + 3.0 / 16) * u2
+        )
+        + +(L**4)
+        * (
+            (-3 * nu * nu / 8 - 2 * nu + 5 / 8) * u4 * u
+            + pr**2 * (15 * nu * nu / 16 - 15 * nu / 16 + 3.0 / 16) * u4
+        )
+        + L**6 * (5 * nu * nu / 16 - 5 * nu / 16 + 1.0 / 16) * u3 * u3
+    )
+
+    # Add spin part of Hamiltonian
+
+    H_S_LO = L * (u3) * (1.5 * nu * (chi1 + chi2) + 2 * (m1**2 * chi1 + m2**2 * chi2))
+
+    if pn == 0:
+        return H_0
+    elif pn == 1:
+        return H_0 + H_1
+    elif pn == 2:
+        return H_0 + H_1 + H_2 + H_S_LO
+    else:
+        raise ValueError("PN order not available, max is 2")
+
+
+## EJ from dynamical variables (harmonic coordinates)
+def EJ_from_rv(r, v, S, Sig, nu):
+    """
+    Calculates PN energy and ang momentum from the dynamical variables.
+    """
+
+    nu2 = nu**2
+
+    q = (1 - 2 * nu + np.sqrt(1 - 4 * nu)) / (2 * nu)
+    M1 = q / (1 + q)
+    M2 = 1 / (1 + q)
+    deltam = M1 - M2
+    mu = nu / (M1 + M2)
+
+    rx = r[0][:]
+    ry = r[1][:]
+    rz = r[2][:]
+
+    vx = v[0][:]
+    vy = v[1][:]
+    vz = v[2][:]
+
+    rq = rx**2 + ry**2 + rz**2
+    vq = vx**2 + vy**2 + vz**2
+
+    rad = np.sqrt(rq)
+    vel = np.sqrt(vq)
+
+    rdot = (rx * vx + ry * vy + rz * vz) / rad
+
+    Sx = S[0][:]
+    Sy = S[1][:]
+    Sz = S[2][:]
+
+    Sigx = Sig[0][:]
+    Sigy = Sig[1][:]
+    Sigz = Sig[2][:]
+
+    nSv = (
+        rx * Sy * vz
+        - rx * Sz * vy
+        + ry * Sz * vx
+        - ry * Sx * vz
+        + rz * Sx * vy
+        - rz * Sy * vx
+    ) / rad
+    nSigv = (
+        -(
+            rx * Sigy * vz
+            - rx * Sigz * vy
+            + ry * Sigz * vx
+            - ry * Sigx * vz
+            + rz * Sigx * vy
+            - rz * Sigy * vx
+        )
+        / rad
+    )
+
+    Sigv = Sigx * vx + Sigy * vy + Sigz * vz
+    Sv = Sx * vx + Sy * vy + Sz * vz
+    nSig = (rx * Sigx + ry * Sigy + rz * Sigz) / rad
+    nS = (rx * Sx + ry * Sy + rz * Sz) / rad
+
+    # Energy
+    # N + 1PN
+
+    Energy = (
+        vq / 2
+        - 1 / rad
+        + 3 / 8 * (1 - 3 * nu) * vq**2
+        + 1 / 2 * (3 + nu) * vq / rad
+        + 1 / 2 * nu * rdot**2 / rad
+        + 1 / 2 / rq
+    )
+
+    # 1.5PN
+
+    Energy += (-deltam * nSigv - nSv) / rq
+
+    # 2PN
+
+    Energy += (
+        vq**3 * 5 / 16 * (1 - 7 * nu + 13 * nu2)
+        + 1 / 8 * (21 - 23 * nu - 27 * nu2) * vq**2 / rad
+        + 1 / 4 * nu * (1 - 15 * nu) * vq * rdot**2 / rad
+        - 3 / 8 * nu * (1 - 3 * nu) * rdot**4 / rad
+        + 1 / 8 * (14 - 55 * nu + 4 * nu2) * vq / rq
+        + 1 / 8 * (4 + 69 * nu + 12 * nu2) * rdot**2 / rq
+        - 1 / 4 * (2 + 15 * nu) / (rq * rad)
+    )
+
+    # 2PN SS
+
+    Energy += 0
+
+    # 2.5PN
+
+    Energy += (
+        nSigv * deltam * (-1 + 5 * nu) / 2 * vq
+        + nSv * (3 / 2 * nu * rdot**2 + 3 / 2 * (1 + nu) * vq)
+    ) / rq + (-3 / 2 * deltam * nSigv - 2 * nSv) * nu / (rq * rad)
+
+    # 3PN
+
+    Energy += (
+        (315 + 18469 * nu) / (840 * rad**4)
+        - ((rdot**2) * vq**2 * nu * (21 + 75 * nu - 375 * nu**2)) / (16 * rad)
+        - (rdot**4 * nu * (731 - 429 * nu - 288 * nu**2)) / (48 * rad**2)
+        + (rdot**6 * nu * (5 - 25 * nu + 25 * nu**2)) / (16 * rad)
+        - (rdot**4 * vq * nu * (9 - 84 * nu + 165 * nu**2)) / (16 * rad)
+        + 1 / 128 * vq**4 * (35 - 413 * nu + 1666 * nu**2 - 2261 * nu**3)
+        + (rdot**2 * vq * (12 + 248 * nu - 815 * nu**2 - 324 * nu**3)) / (16 * rad**2)
+        + (vq**2 * (135 - 194 * nu + 406 * nu**2 - 108 * nu**3)) / (16 * rad**2)
+        + (vq**3 * (55 - 215 * nu + 116 * nu**2 + 325 * nu**3)) / (16 * rad)
+        + (vq * (2800 - (53976 - 1435 * np.pi**2) * nu - 11760 * nu**2 + 1120 * nu**3))
+        / (2240 * rad**3)
+        + (
+            rdot**2
+            * (3360 + (18568 - 4305 * np.pi**2) * nu + 28560 * nu**2 + 7840 * nu**3)
+        )
+        / (2240 * rad**3)
+    )
+
+    # Angular momentum
+    # N + 1PN
+
+    Jang = 1 + 1 / 2 * (1 - 3 * nu) * vq + (3 - nu) / rad
+
+    # 2PN
+
+    Jang += (
+        -((rdot**2 * nu * (2 + 5 * nu)) / (2 * rad))
+        + (vq * (7 - 10 * nu - 9 * nu**2)) / (2 * rad)
+        + (14 - 41 * nu + 4 * nu**2) / (4 * rad**2)
+        + 3 / 8 * vq**2 * (1 - 7 * nu + 13 * nu**2)
+    )
+
+    # 3PN
+
+    Jang += (
+        -((rdot**2 * vq * nu * (12 - 7 * nu - 75 * nu**2)) / (4 * rad))
+        + (3 * rdot**4 * nu * (2 - 2 * nu - 11 * nu**2)) / (8 * rad)
+        + (rdot**2 * (12 - 287 * nu - 951 * nu**2 - 324 * nu**3)) / (24 * rad**2)
+        + 1 / 16 * vq**3 * (5 - 59 * nu + 238 * nu**2 - 323 * nu**3)
+        + (vq * (135 - 322 * nu + 315 * nu**2 - 108 * nu**3)) / (12 * rad**2)
+        + (5 / 2 - ((20796 - 1435 * np.pi**2) * nu) / 1120 - 7 * nu**2 + nu**3) / rad**3
+        + (vq**2 * (33 - 142 * nu + 106 * nu**2 + 195 * nu**3)) / (8 * rad)
+    )
+
+    # Jang_norm = Jang*rad*np.sqrt(vq - rdot**2)
+
+    # Components, only non-spin
+
+    Jangx = Jang * (ry * vz - rz * vy)
+    Jangy = Jang * (rz * vx - rx * vz)
+    Jangz = Jang * (rx * vy - ry * vx)
+
+    # 1.5PN, SO
+
+    Jangx += (
+        -1 / 2 * deltam * Sigv * vx
+        - 1 / 2 * Sv * vx
+        + 1 / 2 * vq * Sx
+        + 1 / 2 * deltam * vq * Sigx
+    ) + ((deltam * nSig + 3 * nS) * rx / rad - 3 * Sx - deltam * Sigx) / rad
+    Jangy += (
+        -1 / 2 * deltam * Sigv * vy
+        - 1 / 2 * Sv * vy
+        + 1 / 2 * vq * Sy
+        + 1 / 2 * deltam * vq * Sigy
+    ) + ((deltam * nSig + 3 * nS) * ry / rad - 3 * Sy - deltam * Sigy) / rad
+    Jangz += (
+        -1 / 2 * deltam * Sigv * vz
+        - 1 / 2 * Sv * vz
+        + 1 / 2 * vq * Sz
+        + 1 / 2 * deltam * vq * Sigz
+    ) + ((deltam * nSig + 3 * nS) * rz / rad - 3 * Sz - deltam * Sigz) / rad
+
+    # 2.5PN, SO
+
+    Jangx += (
+        (
+            (Sigv * deltam * (-3 / 8 + 5 / 4 * nu) + Sv * (-3 / 8 + 9 / 8 * nu))
+            * vx
+            * vq
+            + vq**2 * (3 / 8 - 9 / 8 * nu) * Sx
+            + deltam * Sigx * (3 / 8 - 5 / 4 * nu) * vq**2
+        )
+        + (
+            (
+                nSig * deltam * (-3 * nu * rdot**2 + (1 + 3 * nu) / 2 * vq)
+                + Sigv * deltam * rdot * (-1 / 2 - 13 / 4 * nu)
+                + nS * (-9 / 2 * nu * rdot**2 + (7 - nu) / 2 * vq)
+                + Sv * rdot * (-3 - 7 * nu) / 2
+            )
+            * rx
+            / rad
+            + (
+                7 / 4 * nu * deltam * rdot * nSig
+                + Sigv * deltam * (-3 + nu) / 2
+                + nS * (-3 + 6 * nu) * rdot
+                + Sv * (1 - nu) / 2
+            )
+            * vx
+            + ((2 + 5 / 2 * nu) * rdot**2 + (-3 + nu) / 2 * vq) * Sx
+            + Sigx * deltam * (7 / 2 * nu * rdot**2 + (3 / 2 - nu) * vq)
+        )
+        / rad
+        + (
+            rx / rad * (nSig * deltam * (-1 - 3 * nu) / 2 + nS * (-1 / 2 - 2 * nu))
+            + Sx * (1 / 2 + 2 * nu)
+            + Sigx * deltam * (1 / 2 + 3 / 2 * nu)
+        )
+        / rq
+    )
+    Jangy += (
+        (
+            (Sigv * deltam * (-3 / 8 + 5 / 4 * nu) + Sv * (-3 / 8 + 9 / 8 * nu))
+            * vy
+            * vq
+            + vq**2 * (3 / 8 - 9 / 8 * nu) * Sy
+            + deltam * Sigy * (3 / 8 - 5 / 4 * nu) * vq**2
+        )
+        + (
+            (
+                nSig * deltam * (-3 * nu * rdot**2 + (1 + 3 * nu) / 2 * vq)
+                + Sigv * deltam * rdot * (-1 / 2 - 13 / 4 * nu)
+                + nS * (-9 / 2 * nu * rdot**2 + (7 - nu) / 2 * vq)
+                + Sv * rdot * (-3 - 7 * nu) / 2
+            )
+            * ry
+            / rad
+            + (
+                7 / 4 * nu * deltam * rdot * nSig
+                + Sigv * deltam * (-3 + nu) / 2
+                + nS * (-3 + 6 * nu) * rdot
+                + Sv * (1 - nu) / 2
+            )
+            * vy
+            + ((2 + 5 / 2 * nu) * rdot**2 + (-3 + nu) / 2 * vq) * Sy
+            + Sigy * deltam * (7 / 2 * nu * rdot**2 + (3 / 2 - nu) * vq)
+        )
+        / rad
+        + (
+            ry / rad * (nSig * deltam * (-1 - 3 * nu) / 2 + nS * (-1 / 2 - 2 * nu))
+            + Sy * (1 / 2 + 2 * nu)
+            + Sigy * deltam * (1 / 2 + 3 / 2 * nu)
+        )
+        / rq
+    )
+    Jangz += (
+        (
+            (Sigv * deltam * (-3 / 8 + 5 / 4 * nu) + Sv * (-3 / 8 + 9 / 8 * nu))
+            * vz
+            * vq
+            + vq**2 * (3 / 8 - 9 / 8 * nu) * Sz
+            + deltam * Sigz * (3 / 8 - 5 / 4 * nu) * vq**2
+        )
+        + (
+            (
+                nSig * deltam * (-3 * nu * rdot**2 + (1 + 3 * nu) / 2 * vq)
+                + Sigv * deltam * rdot * (-1 / 2 - 13 / 4 * nu)
+                + nS * (-9 / 2 * nu * rdot**2 + (7 - nu) / 2 * vq)
+                + Sv * rdot * (-3 - 7 * nu) / 2
+            )
+            * rz
+            / rad
+            + (
+                7 / 4 * nu * deltam * rdot * nSig
+                + Sigv * deltam * (-3 + nu) / 2
+                + nS * (-3 + 6 * nu) * rdot
+                + Sv * (1 - nu) / 2
+            )
+            * vz
+            + ((2 + 5 / 2 * nu) * rdot**2 + (-3 + nu) / 2 * vq) * Sz
+            + Sigz * deltam * (7 / 2 * nu * rdot**2 + (3 / 2 - nu) * vq)
+        )
+        / rad
+        + (
+            rz / rad * (nSig * deltam * (-1 - 3 * nu) / 2 + nS * (-1 / 2 - 2 * nu))
+            + Sz * (1 / 2 + 2 * nu)
+            + Sigz * deltam * (1 / 2 + 3 / 2 * nu)
+        )
+        / rq
+    )
+
+    # Norm
+
+    Jang_norm = np.sqrt(Jangx**2 + Jangy**2 + Jangz**2)
+
+    return Energy, mu * Jang_norm, [mu * Jangx, mu * Jangy, mu * Jangz]

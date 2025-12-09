@@ -1,12 +1,11 @@
 import numpy as np
 import scipy as sp
 import os
-import h5py
 import json
 from glob import glob
 from ..waveform import Waveform
 from ..utils.wf_utils import get_multipole_dict
-from ..analytic import pn_hflx as pn
+from ..analytic import pn_horizon_fluxes as pn
 
 
 class Waveform_Teuk(Waveform):
