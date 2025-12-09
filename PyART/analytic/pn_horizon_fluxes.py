@@ -1,6 +1,11 @@
 """
 Horizon fluxes in EOB coordinates on generic orbits, order by order.
 Also including circular-non-circular factorization.
+
+DC, 2025
+Largely bsed on:
+- Saketh+ 2212.13095
+- Chiaramello+ 2408.15322
 """
 
 import numpy as np
@@ -19,7 +24,6 @@ def mj1_dot_QC_NNLO(m1, m2, x, r, chi1, chi2, lo="x"):
     M = m1 + m2
     nu = m1 * m2 / M**2
     X1 = m1 / M
-    X2 = m2 / M
     sigma1 = np.sqrt(1 - chi1**2)
     B2chi1 = B2(chi1)
     Omg = x**3  # orbital frequency

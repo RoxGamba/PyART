@@ -1,3 +1,10 @@
+"""
+Various utility functions for coordinate transformations
+and calculation of PN energy and angular momentum.
+
+SA, DC, RG, 2020-2025
+"""
+
 import numpy as np
 
 pi = np.pi
@@ -344,10 +351,32 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
     return out
 
 
-def H_ADM(r, pr, L, chi1, chi2, nu=0.25, pn=2):
+def H_ADM(r, pr, L, chi1, chi2, nu, pn=2):
     """
     ADM Hamiltonian
     Eq C1 from https://arxiv.org/pdf/2209.00611
+
+    Parameters
+    ----------
+    r : float
+        Radial coordinate.
+    pr : float
+        Radial momentum.
+    L : float
+        Angular momentum.
+    chi1 : float
+        Dimensionless spin of body 1.
+    chi2 : float
+        Dimensionless spin of body 2.
+    nu : float
+        Symmetric mass ratio. Default is 0.25.
+    pn : int, optional
+        Post-Newtonian order (0, 1, or 2). Default is 2.
+
+    Returns
+    -------
+    H : float
+        ADM Hamiltonian at given PN order.
     """
 
     u = 1 / r
@@ -405,7 +434,10 @@ def H_ADM(r, pr, L, chi1, chi2, nu=0.25, pn=2):
 ## EJ from dynamical variables (harmonic coordinates)
 def EJ_from_rv(r, v, S, Sig, nu):
     """
-    Calculates PN energy and ang momentum from the dynamical variables.
+    Calculates PN energy and ang momentum from the dynamical variables,
+    harmonic coordinates up to 3PN order, including spin-orbit and
+    spin-spin couplings.
+    TODO: add reference (Blanchet etc)
     """
 
     nu2 = nu**2
