@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import scipy as sp
 import os
@@ -33,7 +34,7 @@ class Waveform_Teuk(Waveform):
         try:
             self.__read_sims__()
         except ValueError:
-            print("Either no simulations or old format")
+            logging.warning("Either no simulations or old format")
 
         if "dynamics" in load:
             self.load_dynamics()
@@ -174,7 +175,7 @@ class Waveform_Teuk(Waveform):
             try:
                 t, dyn[var] = np.loadtxt(dynf, unpack=True)
             except ValueError:
-                print(f"Error loading {var}.txt")
+                logging.warning(f"Error loading {var}.txt")
             if "t" not in dyn.keys():
                 dyn["t"] = t
         return dyn
@@ -265,8 +266,8 @@ class Waveform_Teuk(Waveform):
         """
         if nx is None:
             nx, ny = self.max_res
-            print(
-                f"\x1b[1mPlotterTKO.integrate_hflx(): \x1b[0massuming highest resolution, (nx, ny) = ({nx}, {ny})"
+            logging.warning(
+                f"load_horizon: assuming highest resolution, (nx, ny) = ({nx}, {ny})"
             )
         if m is None:
             emm = self.sims[(nx, ny, cfl)]
@@ -289,8 +290,8 @@ class Waveform_Teuk(Waveform):
             for kind in ["E", "J"]:
                 fname = f"d{kind}dt_hrz_td_lsum_m{mv}_Poisson.dat"
                 if not os.path.exists(os.path.join(data_dir, fname)):
-                    print(
-                        f"\x1b[31;1mPlotterTKO.integrate_hflx(): \x1b[22mNo {kind} flux file found for m = {mv}, (nx, ny, cfl) = ({nx}, {ny}, {cfl}).\x1b[0m"
+                    logging.warning(
+                        f"load_horizon: no {kind} flux file found for m = {mv}, (nx, ny, cfl) = ({nx}, {ny}, {cfl})"
                     )
                     continue
                 t, dy = np.loadtxt(os.path.join(data_dir, fname), unpack=True)
@@ -298,8 +299,8 @@ class Waveform_Teuk(Waveform):
                     res["t"] = t
                 else:
                     if len(t) != len(res["t"]):
-                        print(
-                            f"\x1b[31;1mPlotterTKO.integrate_hflx(): WARNING: \x1b[22mtime arrays do not match for m = {mv}, (nx, ny, cfl) = ({nx}, {ny}, {cfl}). Interpolating, but check consistency!\x1b[0m"
+                        logging.warning(
+                            f"load_horizon: time arrays do not match for m = {mv}, (nx, ny, cfl) = ({nx}, {ny}, {cfl}). Interpolating, but check consistency!"
                         )
                     dy = np.interp(res["t"], t, dy)
                     t = res["t"]
