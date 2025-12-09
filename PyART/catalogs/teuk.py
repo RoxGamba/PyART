@@ -29,7 +29,7 @@ class Waveform_Teuk(Waveform):
         self.input_meta = input_meta
 
         if "metadata" in load:
-            self.load_metatada()
+            self.load_metadata()
 
         try:
             self.__read_sims__()
@@ -53,7 +53,7 @@ class Waveform_Teuk(Waveform):
         """
         self.sims = {}
         globstr = os.path.join(self.path, f"teuk_a{self.a:.4f}_r0*_*x*_m*/")
-        sims = glob.glob(globstr)
+        sims = glob(globstr)
         if len(sims) == 0:
             raise FileNotFoundError(
                 "Waveform_Teuk.__read_sims__(): no simulations found."
@@ -75,12 +75,13 @@ class Waveform_Teuk(Waveform):
 
     def load_metadata(self):
         if self.input_meta is not None:
-            mtdt, a = self.__load_metadata_from_parfile(self.input_meta)
+            mtdt, a, mu = self.__load_metadata_from_parfile(self.input_meta)
         else:
-            mtdt, a = self.__load_metadata_from_jsons()
+            mtdt, a, mu = self.__load_metadata_from_jsons()
 
         self.metadata = mtdt
         self.a = a
+        self.mu = mu
         pass
 
     def __load_metadata_from_parfile(self, metadata_file):
@@ -111,7 +112,8 @@ class Waveform_Teuk(Waveform):
 
         # get also the spin of the BH
         a = mtdt["kerr_abh"]
-        return mtdt, a
+        mu = 1e-3  # hardcoded for now, FIXME!!
+        return mtdt, a, mu
 
     def __load_metadata_from_jsons(self):
         """
@@ -128,8 +130,9 @@ class Waveform_Teuk(Waveform):
             f.close()
 
         a = mtdt["a"]
+        mu = mtdt["mu"]
 
-        return mtdt, a
+        return mtdt, a, mu
 
     def __load_dynamics_npz(self):
         """
