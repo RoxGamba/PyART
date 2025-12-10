@@ -116,7 +116,9 @@ class Waveform_Teuk(Waveform):
             mu = mtdt["mu"]
         else:
             mu = 1e-3  # fallback to default if not present
-            logging.warning("Parameter 'mu' not found in parfile; using default value mu=1e-3. Please check your metadata file.")
+            logging.warning(
+                "Parameter 'mu' not found in parfile; using default value mu=1e-3. Please check your metadata file."
+            )
         return mtdt, a, mu
 
     def __load_metadata_from_jsons(self):
