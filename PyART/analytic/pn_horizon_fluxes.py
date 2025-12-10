@@ -220,7 +220,7 @@ def m1_dot_spin_eob(m1, m2, r, pr, pph, chi1, chi2, order="NNLO", omg=None, rdot
                 omgT_ang = omg
             else:
                 raise ValueError(
-                    "j1_dot_spin_eob(): give orbital frequency to use omg in H prefactor."
+                    "m1_dot_spin_eob(): give orbital frequency to use omg in H prefactor."
                 )
         else:
             omgT_ang = pph * u2
