@@ -33,7 +33,7 @@ class Waveform_Teuk(Waveform):
 
         try:
             self.__read_sims__()
-        except ValueError:
+        except FileNotFoundError:
             logging.warning("Either no simulations or old format")
 
         if "dynamics" in load:
@@ -240,7 +240,7 @@ class Waveform_Teuk(Waveform):
         Load modes for path.
         Use the highest resolution by default
         """
-        return 0, 0
+        raise NotImplementedError("Loading hlm from path not implemented yet.")
 
     def load_hlm(self):
         # load data
