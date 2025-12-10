@@ -1,0 +1,118 @@
+PyART.catalogs.icc_public
+=========================
+
+.. py:module:: PyART.catalogs.icc_public
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.icc_public.Waveform_ICC
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.catalogs.icc_public.fetch_and_save_egrav_json
+
+
+Module Contents
+---------------
+
+.. py:function:: fetch_and_save_egrav_json(output_path='egrav_data.json')
+
+   Download the JSON catalog of public ICC waveforms and save it locally.
+   :param output_path: Path to save the JSON file.
+   :type output_path: str
+
+   :returns: **data** -- List of entries in the catalog.
+   :rtype: list of dict
+
+
+.. py:class:: Waveform_ICC(path='./', ID='0001', download=False, load=['hlm', 'metadata'], ellmax=8, nu_rescale=False, extraction='extrap')
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to download and handle public ICC waveforms.
+
+
+   .. py:attribute:: ID
+      :value: '0001'
+
+
+
+   .. py:attribute:: path
+      :value: './'
+
+
+
+   .. py:attribute:: sim_path
+
+
+   .. py:attribute:: ellmax
+      :value: 8
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:attribute:: download
+      :value: False
+
+
+
+   .. py:attribute:: extraction
+      :value: 'extrap'
+
+
+
+   .. py:method:: download_iccub_entry(json_path='egrav_data.json')
+
+      Download the ICCUB simulation files for the given ID.
+      :param json_path: Path to the local JSON catalog file.
+      :type json_path: str
+
+
+
+   .. py:method:: load_hlm(load_m0=False)
+
+      Load hlm data from ICCUB simulation.
+
+      :param load_m0: If True, load the m=0 modes as well.
+      :type load_m0: bool
+
+
+
+   .. py:method:: load_psi4lm(load_m0=False)
+
+      Load psi4lm data from ICCUB simulation.
+
+      :param load_m0: If True, load the m=0 modes as well.
+      :type load_m0: bool
+
+
+
+   .. py:method:: compute_psi4lm_from_hlm()
+
+      Compute psi4lm from hlm data.
+      Requires that hlm data is already loaded.
+
+
+
+   .. py:method:: load_metadata()
+
+      Load metadata from ICCUB simulation.
+
+      :returns: **meta** -- Dictionary with metadata information.
+      :rtype: dict
+
+
+
