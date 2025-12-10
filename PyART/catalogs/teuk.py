@@ -17,7 +17,7 @@ class Waveform_Teuk(Waveform):
     """
 
     def __init__(
-        self, path, ellmax=5, datafmt="npz", input_meta=None, load=["metadata"]
+        self, path, ellmax=5, datafmt="npz", input_meta=None, load=["dynamics"]
     ):
 
         super().__init__()
@@ -28,8 +28,8 @@ class Waveform_Teuk(Waveform):
         self.datafmt = datafmt
         self.input_meta = input_meta
 
-        if "metadata" in load:
-            self.load_metadata()
+        # always load the metadata first
+        self.load_metadata()
 
         try:
             self.__read_sims__()
