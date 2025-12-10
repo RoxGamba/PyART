@@ -264,7 +264,6 @@ class Waveform_Teuk(Waveform):
         self._hlm = hlm
         shift = self._compute_waveform_shift()
         self._u = self.u + shift
-        pass
 
     def load_horizon(self, m=None, nx=None, ny=None, cfl=2.0):
         """
