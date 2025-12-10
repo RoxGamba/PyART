@@ -88,7 +88,7 @@ class Waveform_Teuk(Waveform):
         """
         # find the parfile
         parfile = os.path.join(self.path, metadata_file)
-        with open(parfile[0], "r") as f:
+        with open(parfile, "r") as f:
             lines = [
                 line.strip()
                 for line in f
