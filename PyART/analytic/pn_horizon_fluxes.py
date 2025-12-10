@@ -3,7 +3,7 @@ Horizon fluxes in EOB coordinates on generic orbits, order by order.
 Also including circular-non-circular factorization.
 
 DC, 2025
-Largely bsed on:
+Largely based on:
 - Saketh+ 2212.13095
 - Chiaramello+ 2408.15322
 """
