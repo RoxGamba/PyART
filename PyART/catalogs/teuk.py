@@ -42,7 +42,6 @@ class Waveform_Teuk(Waveform):
             self.load_hlm()
         if "horizon" in load:
             self.load_horizon()
-        pass
 
     def __read_sims__(self):
         """
@@ -61,9 +60,9 @@ class Waveform_Teuk(Waveform):
         nx_max = 0
         for sim in sims:
             sub = sim[len(self.path) :]
-            nx, ny = (eval(sub.split("x")[kk].split("_")[kk - 1]) for kk in range(2))
-            cfl = 2.0 if "cfl" not in sub else eval(sub.split("cfl")[1].split("/")[0])
-            m = eval(sub.split("_m")[1].split("_")[0].split("/")[0])
+            nx, ny = (int(sub.split("x")[kk].split("_")[kk - 1]) for kk in range(2))
+            cfl = 2.0 if "cfl" not in sub else float(sub.split("cfl")[1].split("/")[0])
+            m = int(sub.split("_m")[1].split("_")[0].split("/")[0])
             if (nx, ny, cfl) not in self.sims.keys():
                 self.sims[(nx, ny, cfl)] = []
             self.sims[(nx, ny, cfl)].append(m)
@@ -82,7 +81,6 @@ class Waveform_Teuk(Waveform):
         self.metadata = mtdt
         self.a = a
         self.mu = mu
-        pass
 
     def __load_metadata_from_parfile(self, metadata_file):
         """
