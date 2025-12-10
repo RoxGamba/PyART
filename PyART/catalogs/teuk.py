@@ -112,7 +112,11 @@ class Waveform_Teuk(Waveform):
 
         # get also the spin of the BH
         a = mtdt["kerr_abh"]
-        mu = 1e-3  # hardcoded for now, FIXME!!
+        if "mu" in mtdt:
+            mu = mtdt["mu"]
+        else:
+            mu = 1e-3  # fallback to default if not present
+            logging.warning("Parameter 'mu' not found in parfile; using default value mu=1e-3. Please check your metadata file.")
         return mtdt, a, mu
 
     def __load_metadata_from_jsons(self):
