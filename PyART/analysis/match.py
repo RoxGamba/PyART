@@ -1027,6 +1027,7 @@ def sky_and_time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, kind="hm"):
             hphccorr=hphc_corr,
             hpnorm=1.0,
             hcnorm=1.0,
+            thresh = 0.1,
             analyse_slice=slice(0, len(Iplus.data)),
         )
     elif kind.lower() == "precessing":
@@ -1038,6 +1039,7 @@ def sky_and_time_maxed_overlap(s, hp, hc, psd, low_freq, high_freq, kind="hm"):
             hphccorr=hphc_corr,
             hpnorm=1.0,
             hcnorm=1.0,
+            thresh = 0.1,
             analyse_slice=slice(0, len(Iplus.data)),
         )
     else:
