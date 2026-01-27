@@ -2,7 +2,6 @@ import logging
 import numpy as np
 from ..utils import utils as ut
 
-
 # Import useful routines
 from scipy.linalg import eig, norm
 from scipy.interpolate import InterpolatedUnivariateSpline as IUS
