@@ -1,0 +1,75 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/nbclient/client.py", line 1323, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+cutoff_min = 25
+for i in range(n_conf):
+    conf = configurations[i]
+    J0 = conf['p']*conf['b']/nu
+    
+    eobpars = teob.CreateDict(r_hyp=r0, H_hyp=conf['E0'], J_hyp=J0, q=1, 
+                             chi1z=conf['chi1'], chi2z=conf['chi2'])
+    eob = teob.Waveform_EOB(pars=eobpars)
+    conf['eob']  = eob
+    E_final = eob.dyn['E'][-1]
+    
+    print(f"Configuration {i+1}:")
+    print(f"  Impact parameter b = {conf['b']:.3f}")
+    print(f"  E0, J0 = {conf['E0']:.5f}, {J0:.5f}")
+    print(f"  Final energy = {E_final:.5f}")
+    
+    if E_final > 1:
+        # Scattering event (not a capture)
+        scat = ScatteringAngle(puncts=eob.dyn, nmin=2, nmax=10, n_extract=None,
+                               hypfit=True,
+                               r_cutoff_in_low=cutoff_min,  r_cutoff_in_high=eob.dyn['r'][0],
+                               r_cutoff_out_low=cutoff_min, r_cutoff_out_high=None, verbose=False)
+        conf['scat'] = scat
+        print(f"  Scattering angle χ = {scat.chi:.2f}°")
+    else:
+        print('  Result: Capture!')
+    print()
+------------------
+
+
+[31m---------------------------------------------------------------------------[39m
+[31mNameError[39m                                 Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[3][39m[32m, line 8[39m
+[32m      4[39m J0 = conf[[33m'[39m[33mp[39m[33m'[39m]*conf[[33m'[39m[33mb[39m[33m'[39m]/nu
+[32m      6[39m eobpars = teob.CreateDict(r_hyp=r0, H_hyp=conf[[33m'[39m[33mE0[39m[33m'[39m], J_hyp=J0, q=[32m1[39m, 
+[32m      7[39m                          chi1z=conf[[33m'[39m[33mchi1[39m[33m'[39m], chi2z=conf[[33m'[39m[33mchi2[39m[33m'[39m])
+[32m----> [39m[32m8[39m eob = [43mteob[49m[43m.[49m[43mWaveform_EOB[49m[43m([49m[43mpars[49m[43m=[49m[43meobpars[49m[43m)[49m
+[32m      9[39m conf[[33m'[39m[33meob[39m[33m'[39m]  = eob
+[32m     10[39m E_final = eob.dyn[[33m'[39m[33mE[39m[33m'[39m][-[32m1[39m]
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:27[39m, in [36mWaveform_EOB.__init__[39m[34m(self, pars)[39m
+[32m     25[39m [38;5;28mself[39m.pars = pars
+[32m     26[39m [38;5;28mself[39m._kind = [33m"[39m[33mEOB[39m[33m"[39m
+[32m---> [39m[32m27[39m [38;5;28;43mself[39;49m[43m.[49m[43m_run_py[49m[43m([49m[43m)[49m
+[32m     28[39m [38;5;28;01mpass[39;00m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:61[39m, in [36mWaveform_EOB._run_py[39m[34m(self)[39m
+[32m     59[39m     [38;5;28mself[39m.domain = [33m"[39m[33mFreq[39m[33m"[39m
+[32m     60[39m [38;5;28;01melse[39;00m:
+[32m---> [39m[32m61[39m     t, hp, hc, hlm, dyn = [43mEOB[49m.EOBRunPy([38;5;28mself[39m.pars)
+[32m     62[39m     [38;5;28mself[39m._u = t
+[32m     63[39m     hlm_conv = convert_hlm(hlm)
+
+[31mNameError[39m: name 'EOB' is not defined
+

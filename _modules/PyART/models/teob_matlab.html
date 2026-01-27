@@ -1,0 +1,1039 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>PyART.models.teob_matlab - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/intro_to_waveforms.html">1. Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../autoapi/PyART/index.html">PyART</a><input aria-label="Toggle navigation of PyART" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/simulations/index.html">PyART.simulations</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../autoapi/simulations/index.html">simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../autoapi/tocatalog_icc/index.html">tocatalog_icc</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for PyART.models.teob_matlab</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">loadmat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">string</span><span class="w"> </span><span class="kn">import</span> <span class="n">Template</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..waveform</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waveform</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">wf_utils</span> <span class="k">as</span> <span class="n">wfu</span>
+
+<div class="viewcode-block" id="matlab_setup_base">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matlab_setup_base">[docs]</a>
+<span class="n">matlab_setup_base</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">addpath(&#39;$</span><span class="si">{code_dir}</span><span class="s2">TEOBRun/&#39;);</span>
+<span class="s2">addpath(&#39;$</span><span class="si">{code_dir}</span><span class="s2">TEOBRun/parfiles/&#39;);</span>
+<span class="s2">addpath(&#39;$</span><span class="si">{code_dir}</span><span class="s2">PointMass/&#39;);</span>
+<span class="s2">evalc(&quot;SetNaming(&#39;new&#39;)&quot;);</span>
+<span class="s2">&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="matlab_base">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matlab_base">[docs]</a>
+<span class="n">matlab_base</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">eval$</span><span class="si">{verbose}</span><span class="s2">(&quot;eob_run_spin_eccentric_Pade33($</span><span class="si">{q}</span><span class="s2">, &#39;single&#39;, $</span><span class="si">{chi1}</span><span class="s2">, $</span><span class="si">{chi2}</span><span class="s2">$</span><span class="si">{ecc_s}</span><span class="s2">$</span><span class="si">{omg_ap_s}</span><span class="s2">$</span><span class="si">{c3_s}</span><span class="s2">$</span><span class="si">{a6_s}</span><span class="s2">$</span><span class="si">{nr_s}</span><span class="s2">$</span><span class="si">{outdir_s}</span><span class="s2">$</span><span class="si">{ell_s}</span><span class="s2">$</span><span class="si">{rholm}</span><span class="s2">$</span><span class="si">{H_model}</span><span class="s2">$</span><span class="si">{Tmax}</span><span class="s2">$</span><span class="si">{newlogs}</span><span class="s2">$</span><span class="si">{rho22_SO_resum}</span><span class="s2">$</span><span class="si">{rend}</span><span class="s2">$</span><span class="si">{nqc_amp}</span><span class="s2">$</span><span class="si">{nqc_omg}</span><span class="s2">)&quot;);</span>
+<span class="s2">quit;</span>
+<span class="s2">&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="matlab_base_hyp">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matlab_base_hyp">[docs]</a>
+<span class="n">matlab_base_hyp</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">eval$</span><span class="si">{verbose}</span><span class="s2">(&quot;eob_run_hyperbolic($</span><span class="si">{q}</span><span class="s2">, $</span><span class="si">{E0}</span><span class="s2">, $</span><span class="si">{L0}</span><span class="s2">, $</span><span class="si">{chi1}</span><span class="s2">, $</span><span class="si">{chi2}</span><span class="s2">$</span><span class="si">{Tmax}</span><span class="s2">$</span><span class="si">{r0}</span><span class="s2">$</span><span class="si">{c3_s}</span><span class="s2">$</span><span class="si">{a6_s}</span><span class="s2">$</span><span class="si">{nr_s}</span><span class="s2">$</span><span class="si">{outdir_s}</span><span class="s2">$</span><span class="si">{ell_s}</span><span class="s2">$</span><span class="si">{rholm}</span><span class="s2">$</span><span class="si">{H_model}</span><span class="s2">$</span><span class="si">{newlogs}</span><span class="s2">$</span><span class="si">{rho22_SO_resum}</span><span class="s2">$</span><span class="si">{rend}</span><span class="s2">$</span><span class="si">{nqc_amp}</span><span class="s2">$</span><span class="si">{nqc_omg}</span><span class="s2">)&quot;);</span>
+<span class="s2">quit;</span>
+<span class="s2">&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="matlab_base_leob">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matlab_base_leob">[docs]</a>
+<span class="n">matlab_base_leob</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">eval$</span><span class="si">{verbose}</span><span class="s2">(&quot;eob_run_spin_leob($</span><span class="si">{q}</span><span class="s2">, $</span><span class="si">{irf}</span><span class="s2">, $</span><span class="si">{chi1}</span><span class="s2">, $</span><span class="si">{chi2}</span><span class="s2">$</span><span class="si">{omg_ap_s}</span><span class="s2">$</span><span class="si">{r0}</span><span class="s2">$</span><span class="si">{Tmax}</span><span class="s2">$</span><span class="si">{c3_s}</span><span class="s2">$</span><span class="si">{a6_s}</span><span class="s2">$</span><span class="si">{nr_s}</span><span class="s2">$</span><span class="si">{outdir_s}</span><span class="s2">$</span><span class="si">{ell_s}</span><span class="s2">$</span><span class="si">{rholm}</span><span class="s2">$</span><span class="si">{newlogs}</span><span class="s2">$</span><span class="si">{rho22_SO_resum}</span><span class="s2">$</span><span class="si">{rend}</span><span class="s2">$</span><span class="si">{ASS_fact}</span><span class="s2">$</span><span class="si">{SSPM}</span><span class="s2">$</span><span class="si">{nqc_amp}</span><span class="s2">$</span><span class="si">{nqc_omg}</span><span class="s2">)&quot;);</span>
+<span class="s2">quit;</span>
+<span class="s2">&quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="Waveform_EOBMatlab">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Waveform_EOBMatlab</span><span class="p">(</span><span class="n">Waveform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle EOB waveforms generated with the Matlab code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">code_dir</span><span class="o">=</span><span class="s2">&quot;/home/danilo.chiaramello/teobresumsmatlab/&quot;</span><span class="p">,</span>
+        <span class="n">data_dir</span><span class="o">=</span><span class="s2">&quot;/data/prometeo/danilo.chiaramello/teob_seob/data/matlab_data/&quot;</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;/usr/local/src/R2020b/bin/matlab&quot;</span><span class="p">,</span>
+        <span class="n">run</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">load_insp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Waveform_EOBMatlab class.</span>
+<span class="sd">        TODO: remove defaults for the code and data dir,</span>
+<span class="sd">        they should be always set by the user (not be preferentially</span>
+<span class="sd">        set for ONE user...) or automatically detected, if possible.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : dict, optional</span>
+<span class="sd">            Dictionary of waveform parameters. Must contain keys such as &#39;H_hyp&#39;, &#39;j_hyp&#39;, &#39;leob&#39;, &#39;q&#39;, &#39;chi1z&#39;, &#39;chi2z&#39;,</span>
+<span class="sd">            &#39;ecc&#39;, &#39;initial_frequency&#39;, &#39;r0&#39;, &#39;nr&#39;.</span>
+<span class="sd">        code_dir : str, optional</span>
+<span class="sd">            Path to the directory containing the MATLAB code. Default is &quot;/home/danilo.chiaramello/teobresumsmatlab/&quot;.</span>
+<span class="sd">        data_dir : str, optional</span>
+<span class="sd">            Path to the directory containing MATLAB data files. Default is &quot;/data/prometeo/danilo.chiaramello/teob_seob/data/matlab_data/&quot;.</span>
+<span class="sd">        source : str, optional</span>
+<span class="sd">            Path to the MATLAB executable. Default is &quot;/usr/local/src/R2020b/bin/matlab&quot;.</span>
+<span class="sd">        run : bool, optional</span>
+<span class="sd">            If True, runs the MATLAB code to generate waveform data. Default is False.</span>
+<span class="sd">        verbose : bool, optional</span>
+<span class="sd">            If True, enables verbose output. Default is False.</span>
+<span class="sd">        load_insp : bool, optional</span>
+<span class="sd">            If True, loads inspiral-only waveform data. Default is False.</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If hyperbolic orbit parameters are incomplete (i.e., &#39;H_hyp&#39; is provided but &#39;j_hyp&#39; is None).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<div class="viewcode-block" id="Waveform_EOBMatlab.pars">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.pars">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pars</span> <span class="o">=</span> <span class="n">pars</span></div>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab._kind">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._kind">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kind</span> <span class="o">=</span> <span class="s2">&quot;EOB&quot;</span></div>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.code_dir">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.code_dir">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code_dir</span> <span class="o">=</span> <span class="n">code_dir</span></div>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.dir">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.dir">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dir</span> <span class="o">=</span> <span class="n">data_dir</span></div>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.source">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.source">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span></div>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.run">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.run">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run</span> <span class="o">=</span> <span class="n">run</span></div>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.verbose">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.verbose">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span></div>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.load_insp">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.load_insp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_insp</span> <span class="o">=</span> <span class="n">load_insp</span></div>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.hyp">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.hyp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;H_hyp&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.leob">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.leob">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">leob</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s2">&quot;leob&quot;</span><span class="p">]</span></div>
+
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;j_hyp&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;For hyperbolic orbits, H_hyp and j_hyp must be provided.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_insp</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Inspiral-only waveform is needed for hyperbolic orbits.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="n">matlab_base_hyp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">leob</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="n">matlab_base_leob</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="n">matlab_base</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">wavefile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynfile</span> <span class="o">=</span> <span class="n">matnames</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">],</span>
+            <span class="n">chi1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;chi1z&quot;</span><span class="p">],</span>
+            <span class="n">chi2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;chi2z&quot;</span><span class="p">],</span>
+            <span class="n">ecc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;ecc&quot;</span><span class="p">],</span>
+            <span class="n">f0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;initial_frequency&quot;</span><span class="p">],</span>
+            <span class="n">E0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;H_hyp&quot;</span><span class="p">],</span>
+            <span class="n">L0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;j_hyp&quot;</span><span class="p">],</span>
+            <span class="n">r0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;r0&quot;</span><span class="p">],</span>
+            <span class="n">nr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;nr&quot;</span><span class="p">],</span>
+            <span class="n">leob</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">leob</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_run_matlab</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_dir</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_run_matlab</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_dyn</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_hlm</span><span class="p">()</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.compute_energetics">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.compute_energetics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_energetics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the binding energy and angular momentum from the dynamics.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Eb : np.ndarray</span>
+<span class="sd">            The binding energy.</span>
+<span class="sd">        j : np.ndarray</span>
+<span class="sd">            The dimensionless angular momentum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="n">nu</span> <span class="o">=</span> <span class="n">q</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">q</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">dyn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dyn</span>
+        <span class="n">E</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">dyn</span><span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">],</span> <span class="n">dyn</span><span class="p">[</span><span class="s2">&quot;Pphi&quot;</span><span class="p">]</span>
+        <span class="n">Eb</span> <span class="o">=</span> <span class="p">(</span><span class="n">E</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">nu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Eb</span> <span class="o">=</span> <span class="n">Eb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">=</span> <span class="n">j</span>
+        <span class="k">return</span> <span class="n">Eb</span><span class="p">,</span> <span class="n">j</span></div>
+
+
+<div class="viewcode-block" id="Waveform_EOBMatlab._check_dir">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._check_dir">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the waveform and dynamics files exist in the specified directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavefile</span><span class="p">))</span> <span class="o">==</span> <span class="kc">True</span>
+            <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynfile</span><span class="p">))</span> <span class="o">==</span> <span class="kc">True</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="Waveform_EOBMatlab._convert_pars">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._convert_pars">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_pars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build dictionary for template, converting parameters as needed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;a6c&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">a6_d</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;a6c&quot;</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">a6_d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;a6c&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;a6c&quot;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">a6_d</span> <span class="o">=</span> <span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;a6c&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;a6c must be a float or a string.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;cN3LO&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">c3_d</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;cN3LO&quot;</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">c3_d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;cN3LO&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;cN3LO&quot;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">c3_d</span> <span class="o">=</span> <span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;cN3LO&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cN3LO must be a float or a string.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;ode_rend&quot;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">rend_val</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s1">&#39;ode_rend&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;ode_rend&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rend_val</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s1">&#39;ode_rend&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rend_val</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+
+        <span class="n">temp_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="k">else</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;code_dir&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_dir</span><span class="p">,</span>
+            <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;chi1&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;chi1z&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;chi2&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;chi2z&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;c3_s&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;cN3LO&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c3_d</span><span class="p">)</span> <span class="k">if</span> <span class="n">c3_d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;a6_s&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;a6&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a6_d</span><span class="p">)</span> <span class="k">if</span> <span class="n">a6_d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;nr_s&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;, &#39;nrid&#39;, &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;nr&quot;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;nr&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;outdir_s&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;outdir&#39;, &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">),</span>
+            <span class="s2">&quot;ell_s&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;l_max&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;l_max&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;newlogs&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;newlogs&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;newlogs&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;rho22_SO_resum&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;rho22_SO_resum&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;rho22_SO_resum&quot;</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;rholm&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;rholm&#39;, &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;rholm&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;H_model&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;H_model&#39;, &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;H_model&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;Tmax&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;Tmax&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;ode_tmax&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;rend&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;rend&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rend_val</span><span class="p">),</span>
+            <span class="s2">&quot;nqc_amp&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;, &#39;nqc_amp_params&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;nqc_amp_params&quot;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;nqc_amp_params&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="mi">2</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;nqc_omg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;, &#39;nqc_omg_params&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;nqc_omg_params&quot;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;nqc_omg_params&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="mi">2</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">:</span>
+            <span class="n">temp_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;E0&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;H_hyp&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;L0&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;j_hyp&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;r0&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;r0&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;r0&quot;</span><span class="p">]),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">leob</span><span class="p">:</span>
+            <span class="n">temp_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;irf&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;iresum&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;omg_ap_s&quot;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="s2">&quot;, &#39;omg_ap&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;initial_frequency&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;initial_frequency&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="p">),</span>
+                    <span class="s2">&quot;r0&quot;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="s2">&quot;, &#39;r0&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;r0&quot;</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;r0&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="p">),</span>
+                    <span class="s2">&quot;ASS_fact&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;ASS_fact&#39;, &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;ASS_fact&quot;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;ASS_fact&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="p">),</span>
+                    <span class="s2">&quot;SSPM&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;SSPM&#39;, &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;SSPM&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;SSPM&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="p">),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">temp_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;omg_ap_s&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;omg_ap&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;initial_frequency&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+                    <span class="p">),</span>
+                    <span class="s2">&quot;ecc_s&quot;</span><span class="p">:</span> <span class="s2">&quot;, &#39;ecc&#39;, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;ecc&quot;</span><span class="p">]),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">temp_dict</span></div>
+
+
+<div class="viewcode-block" id="Waveform_EOBMatlab._run_matlab">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._run_matlab">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_matlab</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run the matlab</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_pars</span><span class="p">()</span>
+
+        <span class="n">setup_code</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="n">matlab_setup_base</span><span class="p">)</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span><span class="o">**</span><span class="n">temp_dict</span><span class="p">)</span>
+        <span class="n">run_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span><span class="o">**</span><span class="n">temp_dict</span><span class="p">)</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">setup_code</span><span class="si">}{</span><span class="n">run_code</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span> <span class="o">+</span> <span class="s2">&quot;runmatlab.m&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">),</span>
+                <span class="s2">&quot;-nojvm&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;-nodesktop&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;-nodisplay&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;-nosplash&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;-batch&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;run(&#39;</span><span class="si">{}</span><span class="s2">&#39;)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span> <span class="o">+</span> <span class="s2">&quot;runmatlab.m&quot;</span><span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="Waveform_EOBMatlab._load_hlm">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._load_hlm">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_hlm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load the waveform modes from the matlab .mat file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mat</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavefile</span><span class="p">))</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="s2">&quot;s/inspl_mrg_rng/ell/emm&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_u</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;t&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hlm</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;l_max&quot;</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="p">(</span><span class="n">el</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">el</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="n">el</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">el</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">mat</span><span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="n">l</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;psi&quot;</span><span class="p">][</span><span class="n">m</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">h</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">l</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_hlm</span><span class="p">[(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;real&quot;</span><span class="p">:</span> <span class="n">h</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
+                    <span class="s2">&quot;imag&quot;</span><span class="p">:</span> <span class="n">h</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
+                    <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">h</span><span class="p">),</span>
+                    <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">h</span><span class="p">)),</span>
+                    <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">h</span><span class="p">,</span>
+                <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="s2">&quot;Time&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hc</span> <span class="o">=</span> <span class="n">wfu</span><span class="o">.</span><span class="n">compute_hphc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hlm</span><span class="p">,</span> <span class="n">modes</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hlm</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_insp</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="s2">&quot;s/inspl/ell/emm&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hlm_inspl</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;l_max&quot;</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="p">(</span><span class="n">el</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">el</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="n">el</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">el</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                            <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">mat</span><span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="n">l</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;psi&quot;</span><span class="p">][</span><span class="n">m</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">h</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">l</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">hlm_inspl</span><span class="p">[(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;real&quot;</span><span class="p">:</span> <span class="n">h</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
+                        <span class="s2">&quot;imag&quot;</span><span class="p">:</span> <span class="n">h</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
+                        <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">h</span><span class="p">),</span>
+                        <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">h</span><span class="p">)),</span>
+                        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">h</span><span class="p">,</span>
+                    <span class="p">}</span>
+
+            <span class="n">s</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="s2">&quot;s/inspl_mrg/ell/emm&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hlm_inspl_mrg</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;l_max&quot;</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="p">(</span><span class="n">el</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">el</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="n">el</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">el</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                            <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">mat</span><span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="n">l</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;psi&quot;</span><span class="p">][</span><span class="n">m</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">h</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">l</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">hlm_inspl_mrg</span><span class="p">[(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;real&quot;</span><span class="p">:</span> <span class="n">h</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
+                        <span class="s2">&quot;imag&quot;</span><span class="p">:</span> <span class="n">h</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
+                        <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">h</span><span class="p">),</span>
+                        <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">h</span><span class="p">)),</span>
+                        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">h</span><span class="p">,</span>
+                    <span class="p">}</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Waveform_EOBMatlab._load_dyn">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._load_dyn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_dyn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load the dynamics from the matlab .mat file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mat</span> <span class="o">=</span> <span class="n">loadmat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynfile</span><span class="p">))</span>
+
+        <span class="n">N_pt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;T&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dyn</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;T&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]),</span>
+            <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;r&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]),</span>
+            <span class="s2">&quot;phi&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;phi&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]),</span>
+            <span class="s2">&quot;Pr&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;pr&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]),</span>
+            <span class="s2">&quot;Prstar&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;pr_star&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;Pphi&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;pph&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]),</span>
+            <span class="s2">&quot;E&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;E&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]),</span>
+            <span class="s2">&quot;MOmega&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;Omg&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]),</span>
+            <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;metric&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;A&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;metric&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;B&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;dA&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;metric&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;dA&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;dB&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;metric&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;dB&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;d2A&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;metric&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;d2A&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;d2B&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">mat</span><span class="p">[</span><span class="s2">&quot;EOB&quot;</span><span class="p">][</span><span class="s2">&quot;metric&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;d2B&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_pt</span><span class="p">)]</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Waveform_EOBMatlab.clean_data">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.clean_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clean_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove the generated .mat files to clean up the data directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavefile</span><span class="p">))</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynfile</span><span class="p">))</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="matnames">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matnames">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">matnames</span><span class="p">(</span>
+    <span class="n">q</span><span class="p">,</span>
+    <span class="n">chi1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">chi2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">ecc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">f0</span><span class="o">=</span><span class="mf">0.01</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+    <span class="n">E0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">L0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">r0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">leob</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Name of dynamics, wave mat files given parameters.</span>
+<span class="sd">    If nr is given, use it as identifier. Otherwise, build name from parameters.</span>
+<span class="sd">    If leob is True, build names for leob runs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    q : float</span>
+<span class="sd">        Mass ratio.</span>
+<span class="sd">    chi1 : float, optional</span>
+<span class="sd">        Dimensionless spin of the primary black hole. Default is 0.</span>
+<span class="sd">    chi2 : float, optional</span>
+<span class="sd">        Dimensionless spin of the secondary black hole. Default is 0.</span>
+<span class="sd">    ecc : float, optional</span>
+<span class="sd">        Eccentricity. Default is 0.</span>
+<span class="sd">    f0 : float, optional</span>
+<span class="sd">        Initial gravitational wave frequency in units of 1/M. Default is 0.01/pi</span>
+<span class="sd">    E0 : float, optional</span>
+<span class="sd">        Initial energy for hyperbolic orbits. Default is None.</span>
+<span class="sd">    L0 : float, optional</span>
+<span class="sd">        Initial angular momentum for hyperbolic orbits. Default is None.</span>
+<span class="sd">    r0 : float, optional</span>
+<span class="sd">        Initial separation. Default is None.</span>
+<span class="sd">    nr : str, optional</span>
+<span class="sd">        Identifier for numerical relativity data. If provided, it will be used</span>
+<span class="sd">        to build the filenames. Default is None.</span>
+<span class="sd">    leob : bool, optional</span>
+<span class="sd">        If True, build names for leob runs. Default is False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">nr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Waves_</span><span class="si">{}</span><span class="s2">.mat&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nr</span><span class="p">),</span> <span class="s2">&quot;Dynam_</span><span class="si">{}</span><span class="s2">.mat&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nr</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">chi1s</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">chi1</span><span class="si">:</span><span class="s2">+.6g</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">chi1</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.0001</span> <span class="k">else</span> <span class="s2">&quot;0&quot;</span>
+        <span class="n">chi2s</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">chi2</span><span class="si">:</span><span class="s2">+.6g</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">chi2</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.0001</span> <span class="k">else</span> <span class="s2">&quot;0&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;q</span><span class="si">{:.6g}</span><span class="s2">_chi1_</span><span class="si">{:s}</span><span class="s2">_chi2_</span><span class="si">{:s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">chi1s</span><span class="p">,</span> <span class="n">chi2s</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">E0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">E0s</span> <span class="o">=</span> <span class="s2">&quot;_E0_</span><span class="si">{:.6g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">E0</span><span class="p">)</span>
+            <span class="n">L0s</span> <span class="o">=</span> <span class="s2">&quot;_L0_</span><span class="si">{:.6g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">L0</span><span class="p">)</span>
+            <span class="n">r0s</span> <span class="o">=</span> <span class="s2">&quot;_r0_</span><span class="si">{:.6g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="s2">&quot;Waves_&quot;</span> <span class="o">+</span> <span class="n">base</span> <span class="o">+</span> <span class="n">E0s</span> <span class="o">+</span> <span class="n">L0s</span> <span class="o">+</span> <span class="n">r0s</span> <span class="o">+</span> <span class="s2">&quot;.mat&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Dynam_&quot;</span> <span class="o">+</span> <span class="n">base</span> <span class="o">+</span> <span class="n">E0s</span> <span class="o">+</span> <span class="n">L0s</span> <span class="o">+</span> <span class="n">r0s</span> <span class="o">+</span> <span class="s2">&quot;.mat&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">leob</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">r0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">r0</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ids</span> <span class="o">=</span> <span class="s2">&quot;_r0_</span><span class="si">{:.6g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">f0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ids</span> <span class="o">=</span> <span class="s2">&quot;_omg0_</span><span class="si">{:.6g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f0</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;matnames(): provide one of r0 or omg0 for LEOB.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="s2">&quot;Waves_&quot;</span> <span class="o">+</span> <span class="n">base</span> <span class="o">+</span> <span class="n">ids</span> <span class="o">+</span> <span class="s2">&quot;_leob.mat&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Dynam_&quot;</span> <span class="o">+</span> <span class="n">base</span> <span class="o">+</span> <span class="n">ids</span> <span class="o">+</span> <span class="s2">&quot;_leob.mat&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">eccs</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">ecc</span> <span class="o">&lt;</span> <span class="mf">1.0e-5</span> <span class="k">else</span> <span class="s2">&quot;_ecc_</span><span class="si">{:.3g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ecc</span><span class="p">)</span>
+            <span class="n">omgs</span> <span class="o">=</span> <span class="s2">&quot;_omg0_</span><span class="si">{:.6g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f0</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="s2">&quot;Waves_&quot;</span> <span class="o">+</span> <span class="n">base</span> <span class="o">+</span> <span class="n">omgs</span> <span class="o">+</span> <span class="n">eccs</span> <span class="o">+</span> <span class="s2">&quot;.mat&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Dynam_&quot;</span> <span class="o">+</span> <span class="n">base</span> <span class="o">+</span> <span class="n">omgs</span> <span class="o">+</span> <span class="n">eccs</span> <span class="o">+</span> <span class="s2">&quot;.mat&quot;</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="CreateDict">
+<a class="viewcode-back" href="../../../autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.CreateDict">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">CreateDict</span><span class="p">(</span>
+    <span class="n">M</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">q</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">chi1z</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">chi2z</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">chi1x</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">chi2x</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">chi1y</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">chi2y</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">f0</span><span class="o">=</span><span class="mf">0.0035</span><span class="p">,</span>
+    <span class="n">ecc</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+    <span class="n">l_max</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">ode_tmax</span><span class="o">=</span><span class="mf">1e6</span><span class="p">,</span>
+    <span class="n">ode_rend</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">r0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">H_hyp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">J_hyp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cN3LO</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">a6c</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">Hmod</span><span class="o">=</span><span class="s2">&quot;std&quot;</span><span class="p">,</span>
+    <span class="n">rho22_SO_resum</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">newlogs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">rholm</span><span class="o">=</span><span class="s2">&quot;newlogs&quot;</span><span class="p">,</span>
+    <span class="n">nqc_amp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">nqc_omg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">leob</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">iresum</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">ASS_fact</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+    <span class="n">SSPM</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create the dictionary of parameters for teobresumsmatlab.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    M : float, optional</span>
+<span class="sd">        Total mass of the system (default is 1.0).</span>
+<span class="sd">    q : float, optional</span>
+<span class="sd">        Mass ratio (default is 1).</span>
+<span class="sd">    chi1z : float, optional</span>
+<span class="sd">        z-component of spin for object 1 (default is 0.0).</span>
+<span class="sd">    chi2z : float, optional</span>
+<span class="sd">        z-component of spin for object 2 (default is 0.0).</span>
+<span class="sd">    chi1x : float, optional</span>
+<span class="sd">        x-component of spin for object 1 (default is 0.0).</span>
+<span class="sd">    chi2x : float, optional</span>
+<span class="sd">        x-component of spin for object 2 (default is 0.0).</span>
+<span class="sd">    chi1y : float, optional</span>
+<span class="sd">        y-component of spin for object 1 (default is 0.0).</span>
+<span class="sd">    chi2y : float, optional</span>
+<span class="sd">        y-component of spin for object 2 (default is 0.0).</span>
+<span class="sd">    f0 : float, optional</span>
+<span class="sd">        Initial frequency (default is 0.0035).</span>
+<span class="sd">    ecc : float, optional</span>
+<span class="sd">        Initial eccentricity (default is 1e-8).</span>
+<span class="sd">    l_max : int, optional</span>
+<span class="sd">        Maximum multipole order (default is 2).</span>
+<span class="sd">    ode_tmax : float, optional</span>
+<span class="sd">        Maximum time for ODE integration (default is 1e6).</span>
+<span class="sd">    ode_rend : float or None, optional</span>
+<span class="sd">        End radius for ODE integration (default is None).</span>
+<span class="sd">    r0 : float or None, optional</span>
+<span class="sd">        Initial separation (default is None).</span>
+<span class="sd">    H_hyp : any, optional</span>
+<span class="sd">        Initial energy parameter for hyperbolic orbits (default is None).</span>
+<span class="sd">    J_hyp : any, optional</span>
+<span class="sd">        Initial angular momentum parameter for hyperbolic orbits (default is None).</span>
+<span class="sd">    cN3LO : any, optional</span>
+<span class="sd">        cN3LO parameter (default is None).</span>
+<span class="sd">    a6c : any, optional</span>
+<span class="sd">        a6c parameter (default is None).</span>
+<span class="sd">    nr : any, optional</span>
+<span class="sd">        nr parameter (default is None).</span>
+<span class="sd">    Hmod : str, optional</span>
+<span class="sd">        Hamiltonian model (default is &quot;std&quot;).</span>
+<span class="sd">    rho22_SO_resum : int, optional</span>
+<span class="sd">        Spin-orbit resummation flag (default is 0).</span>
+<span class="sd">    newlogs : int, optional</span>
+<span class="sd">        New logarithms flag (default is 1).</span>
+<span class="sd">    rholm : str, optional</span>
+<span class="sd">        rholm parameter (default is &quot;newlogs&quot;).</span>
+<span class="sd">    nqc_amp : int, optional</span>
+<span class="sd">        NQC amplitude parameters (default is 2).</span>
+<span class="sd">    nqc_omg : int, optional</span>
+<span class="sd">        NQC omega parameters (default is 2).</span>
+<span class="sd">    leob : bool, optional</span>
+<span class="sd">        LEOB mode flag (default is False).</span>
+<span class="sd">    iresum : int, optional</span>
+<span class="sd">        iresum parameter (default is 0).</span>
+<span class="sd">    ASS_fact : str, optional</span>
+<span class="sd">        ASS factor (default is &quot;none&quot;).</span>
+<span class="sd">    SSPM : int, optional</span>
+<span class="sd">        SSPM parameter (default is 4).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Dictionary containing all parameters for teobresumsmatlab.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">pardic</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="n">M</span><span class="p">,</span>
+        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">q</span><span class="p">,</span>
+        <span class="s2">&quot;chi1&quot;</span><span class="p">:</span> <span class="n">chi1z</span><span class="p">,</span>
+        <span class="s2">&quot;chi2&quot;</span><span class="p">:</span> <span class="n">chi2z</span><span class="p">,</span>
+        <span class="s2">&quot;chi1z&quot;</span><span class="p">:</span> <span class="n">chi1z</span><span class="p">,</span>
+        <span class="s2">&quot;chi2z&quot;</span><span class="p">:</span> <span class="n">chi2z</span><span class="p">,</span>
+        <span class="s2">&quot;chi1x&quot;</span><span class="p">:</span> <span class="n">chi1x</span><span class="p">,</span>
+        <span class="s2">&quot;chi2x&quot;</span><span class="p">:</span> <span class="n">chi2x</span><span class="p">,</span>
+        <span class="s2">&quot;chi1y&quot;</span><span class="p">:</span> <span class="n">chi1y</span><span class="p">,</span>
+        <span class="s2">&quot;chi2y&quot;</span><span class="p">:</span> <span class="n">chi2y</span><span class="p">,</span>
+        <span class="s2">&quot;initial_frequency&quot;</span><span class="p">:</span> <span class="n">f0</span><span class="p">,</span>
+        <span class="s2">&quot;output_hpc&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;l_max&quot;</span><span class="p">:</span> <span class="n">l_max</span><span class="p">,</span>
+        <span class="s2">&quot;ecc&quot;</span><span class="p">:</span> <span class="n">ecc</span><span class="p">,</span>
+        <span class="s2">&quot;ode_tmax&quot;</span><span class="p">:</span> <span class="n">ode_tmax</span><span class="p">,</span>
+        <span class="s2">&quot;a6c&quot;</span><span class="p">:</span> <span class="n">a6c</span><span class="p">,</span>
+        <span class="s2">&quot;cN3LO&quot;</span><span class="p">:</span> <span class="n">cN3LO</span><span class="p">,</span>
+        <span class="s2">&quot;nr&quot;</span><span class="p">:</span> <span class="n">nr</span><span class="p">,</span>
+        <span class="s2">&quot;H_model&quot;</span><span class="p">:</span> <span class="n">Hmod</span><span class="p">,</span>
+        <span class="s2">&quot;rho22_SO_resum&quot;</span><span class="p">:</span> <span class="n">rho22_SO_resum</span><span class="p">,</span>
+        <span class="s2">&quot;newlogs&quot;</span><span class="p">:</span> <span class="n">newlogs</span><span class="p">,</span>
+        <span class="s2">&quot;rholm&quot;</span><span class="p">:</span> <span class="n">rholm</span><span class="p">,</span>
+        <span class="s2">&quot;ode_rend&quot;</span><span class="p">:</span> <span class="n">ode_rend</span><span class="p">,</span>
+        <span class="s2">&quot;r0&quot;</span><span class="p">:</span> <span class="n">r0</span><span class="p">,</span>
+        <span class="s2">&quot;H_hyp&quot;</span><span class="p">:</span> <span class="n">H_hyp</span><span class="p">,</span>
+        <span class="s2">&quot;j_hyp&quot;</span><span class="p">:</span> <span class="n">J_hyp</span><span class="p">,</span>
+        <span class="s2">&quot;leob&quot;</span><span class="p">:</span> <span class="n">leob</span><span class="p">,</span>
+        <span class="s2">&quot;iresum&quot;</span><span class="p">:</span> <span class="n">iresum</span><span class="p">,</span>
+        <span class="s2">&quot;ASS_fact&quot;</span><span class="p">:</span> <span class="n">ASS_fact</span><span class="p">,</span>
+        <span class="s2">&quot;SSPM&quot;</span><span class="p">:</span> <span class="n">SSPM</span><span class="p">,</span>
+        <span class="s2">&quot;nqc_amp_params&quot;</span><span class="p">:</span> <span class="n">nqc_amp</span><span class="p">,</span>
+        <span class="s2">&quot;nqc_omg_params&quot;</span><span class="p">:</span> <span class="n">nqc_omg</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">leob</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">r0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">f0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;both r0 and f0 provided for LEOB; using r0.&quot;</span><span class="p">)</span>
+            <span class="n">pardic</span><span class="p">[</span><span class="s2">&quot;initial_frequency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">pardic</span></div>
+
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

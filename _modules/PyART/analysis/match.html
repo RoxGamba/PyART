@@ -1,0 +1,1516 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>PyART.analysis.match - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/intro_to_waveforms.html">1. Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../autoapi/PyART/index.html">PyART</a><input aria-label="Toggle navigation of PyART" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/simulations/index.html">PyART.simulations</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../autoapi/simulations/index.html">simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../autoapi/tocatalog_icc/index.html">tocatalog_icc</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for PyART.analysis.match</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Stuff for mismatches, still need to port the parallelization,</span>
+<span class="sd">the precessing case and debug/test the code</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize_scalar</span><span class="p">,</span> <span class="n">dual_annealing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">ut</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">wf_utils</span> <span class="k">as</span> <span class="n">wf_ut</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">lal</span>
+<span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;lal not installed.&quot;</span><span class="p">)</span>
+
+<span class="c1"># PyCBC imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pycbc.filter</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">sigmasq</span><span class="p">,</span>
+    <span class="n">matched_filter_core</span><span class="p">,</span>
+    <span class="n">overlap_cplx</span><span class="p">,</span>
+    <span class="n">optimized_match</span><span class="p">,</span>
+    <span class="n">matched_filter</span><span class="p">,</span>
+    <span class="n">compute_max_snr_over_sky_loc_stat_no_phase</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pycbc.types.timeseries</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeries</span><span class="p">,</span> <span class="n">FrequencySeries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pycbc.psd</span><span class="w"> </span><span class="kn">import</span> <span class="n">aLIGOZeroDetHighPower</span><span class="p">,</span> <span class="n">sensitivity_curve_lisa_semi_analytical</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pycbc.psd.read</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_txt</span>
+
+
+<div class="viewcode-block" id="Matcher">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Matcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Matcher class for computing the mismatch (or match) between two gravitational waveforms.</span>
+<span class="sd">    This class provides a flexible interface for comparing two waveforms, supporting various</span>
+<span class="sd">    matching strategies including single-mode, higher-mode, and polarization-based overlaps.</span>
+<span class="sd">    It handles waveform conditioning, alignment, mass rescaling, PSD selection, and supports</span>
+<span class="sd">    caching for efficiency.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    WaveForm1 : WaveForm</span>
+<span class="sd">        The first waveform object (target).</span>
+<span class="sd">    WaveForm2 : WaveForm</span>
+<span class="sd">        The second waveform object (model).</span>
+<span class="sd">    settings : dict, optional</span>
+<span class="sd">        Dictionary of settings to override default parameters. See __default_parameters__ for options.</span>
+<span class="sd">    cache : dict, optional</span>
+<span class="sd">        Optional cache for precomputed frequency-domain waveforms and mass.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cache : dict</span>
+<span class="sd">        Stores cached frequency-domain waveforms and mass.</span>
+<span class="sd">    settings : dict</span>
+<span class="sd">        Parameters used for the mismatch calculation.</span>
+<span class="sd">    modes : list</span>
+<span class="sd">        List of modes used in the match calculation.</span>
+<span class="sd">    mismatch : float</span>
+<span class="sd">        The computed mismatch value (1 - match).</span>
+<span class="sd">    match_out : dict</span>
+<span class="sd">        Additional output from the match calculation (e.g., frequency-domain waveforms, shifts).</span>
+<span class="sd">    h1f : FrequencySeries or None</span>
+<span class="sd">        Frequency-domain representation of the first waveform (if available).</span>
+<span class="sd">    h2f : FrequencySeries or None</span>
+<span class="sd">        Frequency-domain representation of the second waveform (if available).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">WaveForm1</span><span class="p">,</span>
+        <span class="n">WaveForm2</span><span class="p">,</span>
+        <span class="n">settings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="o">=</span><span class="p">{},</span>  <span class="c1"># {} or {&#39;h1f&#39;:h1f, &#39;h2f&#39;:h2f, &#39;M&#39;:M} (can specify also only h1f or h2f)</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the matcher for comparing two waveforms.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        WaveForm1 : WaveForm</span>
+<span class="sd">            The first waveform object to be matched.</span>
+<span class="sd">        WaveForm2 : WaveForm</span>
+<span class="sd">            The second waveform object to be matched.</span>
+<span class="sd">        settings : dict, optional</span>
+<span class="sd">            Dictionary of settings to configure the matching process. If not provided, defaults are used.</span>
+<span class="sd">        cache : dict, optional</span>
+<span class="sd">            Optional cache for precomputed quantities (e.g., {&#39;h1f&#39;: ..., &#39;h2f&#39;: ..., &#39;M&#39;: ...}).</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If an invalid &#39;kind&#39; or &#39;modes-or-pol&#39; setting is provided.</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If incompatible waveform cutting options are set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Matcher.cache">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.cache">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">cache</span></div>
+
+<div class="viewcode-block" id="Matcher.settings">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.settings">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__default_parameters__</span><span class="p">()</span></div>
+
+        <span class="k">if</span> <span class="n">settings</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<div class="viewcode-block" id="Matcher.modes">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.modes">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;modes&quot;</span><span class="p">,</span> <span class="p">[])</span></div>
+
+        <span class="k">del</span> <span class="n">settings</span>
+
+        <span class="c1"># Choose the appropriate mismatch function</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;single-mode&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">match_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_mm_single_mode</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;hm&quot;</span>
+            <span class="ow">or</span> <span class="s2">&quot;prec&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">match_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_mm_skymax</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;hm-overlap&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modes-or-pol&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;modes&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only &#39;pol&#39; is allowed for &#39;hm-overlap&#39; kind&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">match_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_overlap_skymax</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Kind &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; not recognized&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;cut_longer&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;cut_second_waveform&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;The options &#39;cut_longer&#39; and &#39;cut_second_waveform&#39; cannot be used together!&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;cut_second_waveform&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;cut_longer&quot;</span><span class="p">]:</span>
+            <span class="n">tmrg1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">WaveForm1</span><span class="o">.</span><span class="n">find_max</span><span class="p">()</span> <span class="o">-</span> <span class="n">WaveForm1</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">tmrg2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">WaveForm2</span><span class="o">.</span><span class="n">find_max</span><span class="p">()</span> <span class="o">-</span> <span class="n">WaveForm2</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">DeltaT</span> <span class="o">=</span> <span class="n">tmrg2</span> <span class="o">-</span> <span class="n">tmrg1</span>
+            <span class="k">if</span> <span class="n">DeltaT</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">WaveForm2</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">DeltaT</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">DeltaT</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;cut_longer&quot;</span><span class="p">]:</span>
+                <span class="n">WaveForm1</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="o">-</span><span class="n">DeltaT</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;pre_align&quot;</span><span class="p">]:</span>
+            <span class="c1"># pre-align</span>
+            <span class="n">umrg1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">WaveForm1</span><span class="o">.</span><span class="n">find_max</span><span class="p">()</span>
+            <span class="n">umrg2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">WaveForm2</span><span class="o">.</span><span class="n">find_max</span><span class="p">()</span>
+
+            <span class="c1"># shift time of second waveform</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="n">umrg1</span> <span class="o">-</span> <span class="n">umrg2</span>
+            <span class="n">WaveForm2</span><span class="o">.</span><span class="n">_u</span> <span class="o">=</span> <span class="n">WaveForm2</span><span class="o">.</span><span class="n">_u</span> <span class="o">+</span> <span class="n">shift</span>
+
+            <span class="c1"># fix WaveForm2.hlm[(2,2)] with (approximate) phase difference</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">WaveForm1</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">WaveForm2</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;pre_align_shift&quot;</span><span class="p">]</span>
+            <span class="n">i01</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">WaveForm1</span><span class="o">.</span><span class="n">u</span> <span class="o">&gt;=</span> <span class="n">t0</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">i02</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">WaveForm2</span><span class="o">.</span><span class="n">u</span> <span class="o">&gt;=</span> <span class="n">t0</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dphi22</span> <span class="o">=</span> <span class="n">WaveForm1</span><span class="o">.</span><span class="n">hlm</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)][</span><span class="s2">&quot;p&quot;</span><span class="p">][</span><span class="n">i01</span><span class="p">]</span> <span class="o">-</span> <span class="n">WaveForm2</span><span class="o">.</span><span class="n">hlm</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)][</span><span class="s2">&quot;p&quot;</span><span class="p">][</span><span class="n">i02</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">lm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modes&quot;</span><span class="p">]:</span>
+
+                <span class="n">h</span> <span class="o">=</span> <span class="n">WaveForm2</span><span class="o">.</span><span class="n">hlm</span><span class="p">[</span><span class="n">lm</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">dphi22</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">lm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">WaveForm2</span><span class="o">.</span><span class="n">_hlm</span><span class="p">[</span><span class="n">lm</span><span class="p">]</span> <span class="o">=</span> <span class="n">wf_ut</span><span class="o">.</span><span class="n">get_multipole_dict</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;f0_from_merger&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;single-mode&quot;</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;The option &#39;f0_from_merger&#39; can be used only with a single mode&quot;</span>
+                <span class="p">)</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">i_mrg</span> <span class="o">=</span> <span class="n">WaveForm1</span><span class="o">.</span><span class="n">find_max</span><span class="p">(</span><span class="n">return_idx</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">p1</span> <span class="o">=</span> <span class="n">WaveForm1</span><span class="o">.</span><span class="n">hlm</span><span class="p">[</span><span class="n">mode</span><span class="p">][</span><span class="s2">&quot;p&quot;</span><span class="p">]</span>
+            <span class="n">Omg1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">WaveForm1</span><span class="o">.</span><span class="n">u</span><span class="p">))</span>
+            <span class="n">Omg10_postmrg</span> <span class="o">=</span> <span class="n">Omg1</span><span class="p">[</span><span class="n">i_mrg</span><span class="p">]</span>
+            <span class="n">f0_postmrg</span> <span class="o">=</span> <span class="n">Omg10_postmrg</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">ut</span><span class="o">.</span><span class="n">Msun</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f0_postmrg</span>
+
+        <span class="c1"># Get local objects with TimeSeries</span>
+        <span class="n">wf1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wave2locobj</span><span class="p">(</span><span class="n">WaveForm1</span><span class="p">)</span>
+        <span class="n">wf2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wave2locobj</span><span class="p">(</span><span class="n">WaveForm2</span><span class="p">)</span>
+
+        <span class="c1"># Determine time length for resizing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;tlen&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_tlen</span><span class="p">(</span>
+            <span class="n">wf1</span><span class="p">,</span> <span class="n">wf2</span><span class="p">,</span> <span class="n">resize_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;resize_factor&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># Compute and store the mismatch</span>
+        <span class="n">mm</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_f</span><span class="p">(</span><span class="n">wf1</span><span class="p">,</span> <span class="n">wf2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">)</span>
+<div class="viewcode-block" id="Matcher.mismatch">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.mismatch">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mismatch</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">mm</span></div>
+
+<div class="viewcode-block" id="Matcher.match_out">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.match_out">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">match_out</span> <span class="o">=</span> <span class="n">out</span></div>
+
+        <span class="k">if</span> <span class="s2">&quot;h1f&quot;</span> <span class="ow">in</span> <span class="n">out</span> <span class="ow">and</span> <span class="s2">&quot;h2f&quot;</span> <span class="ow">in</span> <span class="n">out</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h1f</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;h1f&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h2f</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;h2f&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># when using skymax</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h1f</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h2f</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Matcher._wave2locobj">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._wave2locobj">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_wave2locobj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">WaveForm</span><span class="p">,</span> <span class="n">isgeom</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a WaveForm object into a local waveform object with time series and mode data,</span>
+<span class="sd">        optionally applying geometric rescaling. Updates polarization and mode information as needed.</span>
+<span class="sd">        TODO: get rid of lambda object</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        WaveForm : object</span>
+<span class="sd">            Input waveform object containing time series and mode data.</span>
+<span class="sd">        isgeom : bool, optional</span>
+<span class="sd">            If True, applies geometric rescaling to the time series (default: True).</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        wf : object</span>
+<span class="sd">            Local waveform object with updated time series, polarization, and mode data.</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If the input WaveForm does not have the required &#39;hp&#39; attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">WaveForm</span><span class="p">,</span> <span class="s2">&quot;hp&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;hp not found! Compute it before calling Matcher&quot;</span><span class="p">)</span>
+
+        <span class="n">wf</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span>
+        <span class="n">wf</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">domain</span>
+        <span class="n">wf</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Assume TD waveform at the moment</span>
+        <span class="n">wf</span><span class="o">.</span><span class="n">hlm</span> <span class="o">=</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">hlm</span>
+        <span class="n">wf</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">u</span>
+        <span class="n">wf</span><span class="o">.</span><span class="n">compute_hphc</span> <span class="o">=</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">compute_hphc</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modes-or-pol&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;pol&quot;</span><span class="p">:</span>
+            <span class="c1"># Get updated time and hp/hc-TimeSeries</span>
+            <span class="c1"># compute hphc, eventually again. WaveForm might have been cut/pre-aligned</span>
+            <span class="k">if</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">hp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">coa_phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;pol_phase&quot;</span><span class="p">]</span>
+                <span class="n">incl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;pol_incl&quot;</span><span class="p">]</span>
+                <span class="n">WaveForm</span><span class="o">.</span><span class="n">compute_hphc</span><span class="p">(</span><span class="n">coa_phase</span><span class="p">,</span> <span class="n">incl</span><span class="p">,</span> <span class="n">modes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span>
+            <span class="n">wf</span><span class="o">.</span><span class="n">hp</span><span class="p">,</span> <span class="n">wf</span><span class="o">.</span><span class="n">hc</span><span class="p">,</span> <span class="n">wf</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mass_rescaled_TimeSeries</span><span class="p">(</span>
+                <span class="n">WaveForm</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">hp</span><span class="p">,</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">hc</span><span class="p">,</span> <span class="n">isgeom</span><span class="o">=</span><span class="n">isgeom</span>
+            <span class="p">)</span>
+
+        <span class="c1"># also update the modes in a TimeSeries</span>
+        <span class="n">wf</span><span class="o">.</span><span class="n">modes</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># for k in WaveForm.hlm.keys():</span>
+        <span class="n">wf</span><span class="o">.</span><span class="n">mrg_idx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modes&quot;</span><span class="p">]:</span>
+            <span class="n">re</span> <span class="o">=</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">hlm</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s2">&quot;real&quot;</span><span class="p">]</span>
+            <span class="n">im</span> <span class="o">=</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">hlm</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s2">&quot;imag&quot;</span><span class="p">]</span>
+            <span class="n">re_lm</span><span class="p">,</span> <span class="n">im_lm</span><span class="p">,</span> <span class="n">wf</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mass_rescaled_TimeSeries</span><span class="p">(</span>
+                <span class="n">WaveForm</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">re</span><span class="p">,</span> <span class="n">im</span><span class="p">,</span> <span class="n">isgeom</span><span class="o">=</span><span class="n">isgeom</span>
+            <span class="p">)</span>
+            <span class="n">wf</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;real&quot;</span><span class="p">:</span> <span class="n">re_lm</span><span class="p">,</span> <span class="s2">&quot;imag&quot;</span><span class="p">:</span> <span class="n">im_lm</span><span class="p">}</span>
+            <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">umrg</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">find_max</span><span class="p">()</span>
+                <span class="n">C</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">D</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">A</span> <span class="o">=</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">B</span> <span class="o">=</span> <span class="n">WaveForm</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">umrg_TS</span> <span class="o">=</span> <span class="p">(</span><span class="n">D</span> <span class="o">-</span> <span class="n">C</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">umrg</span> <span class="o">-</span> <span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">B</span> <span class="o">-</span> <span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="n">C</span>
+                <span class="n">wf</span><span class="o">.</span><span class="n">mrg_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">wf</span><span class="o">.</span><span class="n">u</span> <span class="o">&gt;=</span> <span class="n">umrg_TS</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">wf</span></div>
+
+
+<div class="viewcode-block" id="Matcher._mass_rescaled_TimeSeries">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._mass_rescaled_TimeSeries">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mass_rescaled_TimeSeries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">hp</span><span class="p">,</span> <span class="n">hc</span><span class="p">,</span> <span class="n">isgeom</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rescales the time series data according to mass and returns interpolated hp and hc TimeSeries.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        u : array-like</span>
+<span class="sd">            Array of time or parameter values.</span>
+<span class="sd">        hp : array-like</span>
+<span class="sd">            Plus polarization data.</span>
+<span class="sd">        hc : array-like</span>
+<span class="sd">            Cross polarization data.</span>
+<span class="sd">        isgeom : bool, optional</span>
+<span class="sd">            If True, perform geometric mass rescaling. Default is True.</span>
+<span class="sd">        kind : str, optional</span>
+<span class="sd">            Spline interpolation type. Default is &quot;cubic&quot;.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        TimeSeries</span>
+<span class="sd">            Interpolated hp time series.</span>
+<span class="sd">        TimeSeries</span>
+<span class="sd">            Interpolated hc time series.</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Rescaled time array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO : test isgeom==False</span>
+        <span class="n">dT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dt&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">isgeom</span><span class="p">:</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span>
+            <span class="n">dT_resc</span> <span class="o">=</span> <span class="n">dT</span> <span class="o">/</span> <span class="p">(</span><span class="n">M</span> <span class="o">*</span> <span class="n">ut</span><span class="o">.</span><span class="n">Msun</span><span class="p">)</span>
+            <span class="n">new_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dT_resc</span><span class="p">)</span>
+            <span class="n">hp</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">spline</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">hp</span><span class="p">,</span> <span class="n">new_u</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">)</span>
+            <span class="n">hc</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">spline</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">hc</span><span class="p">,</span> <span class="n">new_u</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">TimeSeries</span><span class="p">(</span><span class="n">hp</span><span class="p">,</span> <span class="n">dT</span><span class="p">),</span> <span class="n">TimeSeries</span><span class="p">(</span><span class="n">hc</span><span class="p">,</span> <span class="n">dT</span><span class="p">),</span> <span class="n">new_u</span></div>
+
+
+<div class="viewcode-block" id="Matcher._find_tlen">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._find_tlen">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_tlen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wf1</span><span class="p">,</span> <span class="n">wf2</span><span class="p">,</span> <span class="n">resize_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given two local-waveform objects (see wave2locobj()),</span>
+<span class="sd">        return the time-length to use in TD-waveform</span>
+<span class="sd">        conditioning (before match computation)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        wf1 : object</span>
+<span class="sd">            First local waveform object with time series data.</span>
+<span class="sd">        wf2 : object</span>
+<span class="sd">            Second local waveform object with time series data.</span>
+<span class="sd">        resize_factor : int, optional</span>
+<span class="sd">            Factor to determine the length of the time series (default is 2).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Length of the time series to be used for conditioning.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dt&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modes-or-pol&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;pol&quot;</span><span class="p">:</span>
+            <span class="n">h1</span> <span class="o">=</span> <span class="n">TimeSeries</span><span class="p">(</span><span class="n">wf1</span><span class="o">.</span><span class="n">hp</span><span class="p">,</span> <span class="n">dT</span><span class="p">)</span>
+            <span class="n">h2</span> <span class="o">=</span> <span class="n">TimeSeries</span><span class="p">(</span><span class="n">wf2</span><span class="o">.</span><span class="n">hp</span><span class="p">,</span> <span class="n">dT</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mode_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wf1</span><span class="o">.</span><span class="n">modes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">h1</span> <span class="o">=</span> <span class="n">TimeSeries</span><span class="p">(</span><span class="n">wf1</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="n">mode_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;real&quot;</span><span class="p">],</span> <span class="n">dT</span><span class="p">)</span>
+            <span class="n">h2</span> <span class="o">=</span> <span class="n">TimeSeries</span><span class="p">(</span><span class="n">wf2</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="n">mode_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;real&quot;</span><span class="p">],</span> <span class="n">dT</span><span class="p">)</span>
+        <span class="n">LM</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h1</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">h2</span><span class="p">))</span>
+        <span class="n">tl</span> <span class="o">=</span> <span class="p">(</span><span class="n">LM</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dT</span>
+        <span class="n">tN</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">nextpow2</span><span class="p">(</span><span class="n">resize_factor</span> <span class="o">*</span> <span class="n">tl</span><span class="p">)</span>
+        <span class="n">tlen</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tN</span> <span class="o">/</span> <span class="n">dT</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tlen</span> <span class="o">&lt;</span> <span class="n">LM</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tlen=</span><span class="si">{</span><span class="n">tlen</span><span class="si">}</span><span class="s2">, LM=</span><span class="si">{</span><span class="n">LM</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tlen</span> <span class="k">if</span> <span class="n">tlen</span> <span class="o">&gt;</span> <span class="n">LM</span> <span class="k">else</span> <span class="n">LM</span></div>
+
+
+<div class="viewcode-block" id="Matcher.__default_parameters__">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.__default_parameters__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__default_parameters__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Default parameters for the mismatch calculation</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary of default parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;single-mode&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;modes-or-pol&quot;</span><span class="p">:</span> <span class="s2">&quot;modes&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;modes&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span>
+            <span class="s2">&quot;pre_align&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;pre_align_shift&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span>
+            <span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">:</span> <span class="mf">2048.0</span><span class="p">,</span>
+            <span class="s2">&quot;psd&quot;</span><span class="p">:</span> <span class="s2">&quot;aLIGOZeroDetHighPower&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mi">4096</span><span class="p">,</span>
+            <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span>
+            <span class="s2">&quot;iota&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">&quot;coa_phase&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;eff_pols&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;pad_end_frac&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># fraction of pad after the signal</span>
+            <span class="s2">&quot;taper&quot;</span><span class="p">:</span> <span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span>  <span class="c1"># None, &#39;sigmoid&#39;, or &#39;tukey&#39;</span>
+            <span class="s2">&quot;taper_start&quot;</span><span class="p">:</span> <span class="mf">0.10</span><span class="p">,</span>  <span class="c1"># parameter for sigmoid or tukey window</span>
+            <span class="s2">&quot;taper_end&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># parameter for sigmoid or tukey window</span>
+            <span class="s2">&quot;taper_alpha&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># alpha parameter for sigmoid or tukey (will be M-normalized)</span>
+            <span class="s2">&quot;taper_alpha_end&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># if specified, use this alpha for the end (only with sigmoid)</span>
+            <span class="s2">&quot;resize_factor&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;geom&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;cut_longer&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># cut longer waveform</span>
+            <span class="s2">&quot;cut_second_waveform&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># cut waveform2 if longer than waveform1</span>
+            <span class="s2">&quot;f0_from_merger&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># Use frequency at merger as initial_frequency_mm</span>
+            <span class="c1"># (computed from WaveForm1)</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Matcher._get_psd">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._get_psd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_psd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flen</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">fmin</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the PSD for the mismatch calculation</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        flen : int</span>
+<span class="sd">            Length of the frequency series.</span>
+<span class="sd">        df : float</span>
+<span class="sd">            Frequency resolution.</span>
+<span class="sd">        fmin : float</span>
+<span class="sd">            Minimum frequency for the PSD.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        FrequencySeries</span>
+<span class="sd">            The computed power spectral density.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;psd&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;aLIGOZeroDetHighPower&quot;</span><span class="p">:</span>
+            <span class="n">psd</span> <span class="o">=</span> <span class="n">aLIGOZeroDetHighPower</span><span class="p">(</span><span class="n">flen</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">fmin</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;psd&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;LISA&quot;</span><span class="p">:</span>
+            <span class="n">psd</span> <span class="o">=</span> <span class="n">sensitivity_curve_lisa_semi_analytical</span><span class="p">(</span><span class="n">flen</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">fmin</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;psd&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;flat&quot;</span><span class="p">:</span>
+            <span class="n">psd</span> <span class="o">=</span> <span class="n">FrequencySeries</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">flen</span><span class="p">),</span> <span class="n">delta_f</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;psd&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;txt&quot;</span><span class="p">:</span>
+            <span class="n">psd</span> <span class="o">=</span> <span class="n">from_txt</span><span class="p">(</span>
+                <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;asd_file&quot;</span><span class="p">],</span>
+                <span class="n">length</span><span class="o">=</span><span class="n">flen</span><span class="p">,</span>
+                <span class="n">delta_f</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                <span class="n">low_freq_cutoff</span><span class="o">=</span><span class="n">fmin</span><span class="p">,</span>
+                <span class="n">is_asd_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;psd not recognized&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">psd</span></div>
+
+
+<div class="viewcode-block" id="Matcher._get_single_mode_nc">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._get_single_mode_nc">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_single_mode_nc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wf</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the non-conditioned waveform for single-mode mismatch calculation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        wf : object</span>
+<span class="sd">            Local waveform object with time series data.</span>
+<span class="sd">        settings : dict</span>
+<span class="sd">            Dictionary of settings for the mismatch calculation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        TimeSeries</span>
+<span class="sd">            Non-conditioned waveform time series.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If multiple modes are specified when &#39;modes-or-pol&#39; is set to &#39;modes&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modes-or-pol&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;pol&quot;</span><span class="p">:</span>
+            <span class="n">h_nc</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">hp</span>
+        <span class="k">elif</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modes-or-pol&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;modes&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modes&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only one mode is allowed in this function&quot;</span><span class="p">)</span>
+            <span class="n">h_nc</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modes&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;real&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">h_nc</span></div>
+
+
+<div class="viewcode-block" id="Matcher._compute_mm_single_mode">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._compute_mm_single_mode">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_mm_single_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wf1</span><span class="p">,</span> <span class="n">wf2</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the mismatch between two waveforms with only a single mode.</span>
+<span class="sd">        Use either h+ (modes-or-pol = &#39;pol&#39;) or the mode itself (modes-or-pol = &#39;modes&#39;)</span>
+<span class="sd">        This is true for non-precessing systems with a single (ell, |m|)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        wf1 : object</span>
+<span class="sd">            First local waveform object with time series data.</span>
+<span class="sd">        wf2 : object</span>
+<span class="sd">            Second local waveform object with time series data.</span>
+<span class="sd">        settings : dict</span>
+<span class="sd">            Dictionary of settings for the mismatch calculation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The computed match value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">h1_nc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_single_mode_nc</span><span class="p">(</span><span class="n">wf1</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        <span class="n">h2_nc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_single_mode_nc</span><span class="p">(</span><span class="n">wf2</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+
+        <span class="n">Mref</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;h1f&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">Mref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-14</span><span class="p">):</span>
+            <span class="n">h1f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="s2">&quot;h1f&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">wf1</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="s2">&quot;Time&quot;</span><span class="p">:</span>
+            <span class="n">h1</span><span class="p">,</span> <span class="n">tap_times_w1</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span>
+                <span class="n">h1_nc</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">mrg_idx</span><span class="o">=</span><span class="n">wf1</span><span class="o">.</span><span class="n">mrg_idx</span><span class="p">,</span> <span class="n">return_tap_times</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">h1f</span> <span class="o">=</span> <span class="n">h1</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">h1f</span> <span class="o">=</span> <span class="n">h1_nc</span>
+
+        <span class="k">if</span> <span class="s2">&quot;h2f&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">Mref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-14</span><span class="p">):</span>
+            <span class="n">h2f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="s2">&quot;h2f&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">wf2</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="s2">&quot;Time&quot;</span><span class="p">:</span>
+            <span class="n">h2</span><span class="p">,</span> <span class="n">tap_times_w2</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span>
+                <span class="n">h2_nc</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">mrg_idx</span><span class="o">=</span><span class="n">wf2</span><span class="o">.</span><span class="n">mrg_idx</span><span class="p">,</span> <span class="n">return_tap_times</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">h2f</span> <span class="o">=</span> <span class="n">h2</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">h2f</span> <span class="o">=</span> <span class="n">h2_nc</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;fAM&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">]:</span>
+                <span class="n">fAM</span> <span class="o">=</span> <span class="n">h1f</span><span class="o">.</span><span class="n">sample_frequencies</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">h1f</span><span class="p">))]</span>
+                <span class="n">fms</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">fms</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;fAM&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">fms</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;fAM&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">fAM</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                        <span class="nb">eval</span><span class="p">(</span><span class="n">fms</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;fAM&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">fAM</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">fms</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;fAM&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;A&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">]:</span>
+                <span class="n">thr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">j_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">h1f</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Mref</span> <span class="o">*</span> <span class="n">lal</span><span class="o">.</span><span class="n">MTSUN_SI</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">thr</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">h1f</span><span class="o">.</span><span class="n">sample_frequencies</span><span class="p">[</span><span class="n">j_f</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">h1f</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">h2f</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">h1f</span><span class="o">.</span><span class="n">duration</span>
+        <span class="n">flen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h1f</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">psd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_psd</span><span class="p">(</span><span class="n">flen</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">])</span>
+
+        <span class="n">m</span><span class="p">,</span> <span class="n">j_shift</span><span class="p">,</span> <span class="n">ph_shift</span> <span class="o">=</span> <span class="n">optimized_match</span><span class="p">(</span>
+            <span class="n">h1f</span><span class="p">,</span>
+            <span class="n">h2f</span><span class="p">,</span>
+            <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span>
+            <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">],</span>
+            <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">],</span>
+            <span class="n">return_phase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span>
+            <span class="ow">and</span> <span class="n">wf1</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="s2">&quot;Time&quot;</span>
+            <span class="ow">and</span> <span class="n">wf2</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="s2">&quot;Time&quot;</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_debug_plot_waveforms</span><span class="p">(</span>
+                <span class="n">h1_nc</span><span class="p">,</span>
+                <span class="n">h2_nc</span><span class="p">,</span>
+                <span class="n">h1</span><span class="p">,</span>
+                <span class="n">h2</span><span class="p">,</span>
+                <span class="n">psd</span><span class="p">,</span>
+                <span class="n">settings</span><span class="p">,</span>
+                <span class="n">tap_times_w1</span><span class="o">=</span><span class="n">tap_times_w1</span><span class="p">,</span>
+                <span class="n">tap_times_w2</span><span class="o">=</span><span class="n">tap_times_w2</span><span class="p">,</span>
+                <span class="n">mm</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span> <span class="n">m</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;h1f&quot;</span><span class="p">:</span> <span class="n">h1f</span><span class="p">,</span>
+            <span class="s2">&quot;h2f&quot;</span><span class="p">:</span> <span class="n">h2f</span><span class="p">,</span>
+            <span class="s2">&quot;j_shift&quot;</span><span class="p">:</span> <span class="n">j_shift</span> <span class="o">*</span> <span class="n">h2</span><span class="o">.</span><span class="n">delta_t</span><span class="p">,</span>
+            <span class="s2">&quot;ph_shift&quot;</span><span class="p">:</span> <span class="n">ph_shift</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">m</span><span class="p">,</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="Matcher._debug_plot_waveforms">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._debug_plot_waveforms">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_debug_plot_waveforms</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">h1_nc</span><span class="p">,</span>
+        <span class="n">h2_nc</span><span class="p">,</span>
+        <span class="n">h1</span><span class="p">,</span>
+        <span class="n">h2</span><span class="p">,</span>
+        <span class="n">psd</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">,</span>
+        <span class="n">tap_times_w1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tap_times_w2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">six_panels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">mm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot waveforms and PSD for debugging.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h1_nc : TimeSeries</span>
+<span class="sd">            Non-conditioned first waveform.</span>
+<span class="sd">        h2_nc : TimeSeries</span>
+<span class="sd">            Non-conditioned second waveform.</span>
+<span class="sd">        h1 : TimeSeries</span>
+<span class="sd">            Conditioned first waveform.</span>
+<span class="sd">        h2 : TimeSeries</span>
+<span class="sd">            Conditioned second waveform.</span>
+<span class="sd">        psd : FrequencySeries</span>
+<span class="sd">            Power spectral density used for the match calculation.</span>
+<span class="sd">        settings : dict</span>
+<span class="sd">            Dictionary of settings for the mismatch calculation.</span>
+<span class="sd">        tap_times_w1 : dict, optional</span>
+<span class="sd">            Taper times for the first waveform (default is None).</span>
+<span class="sd">        tap_times_w2 : dict, optional</span>
+<span class="sd">            Taper times for the second waveform (default is None).</span>
+<span class="sd">        six_panels : bool, optional</span>
+<span class="sd">            If True, create a six-panel plot (default is False).</span>
+<span class="sd">        mm : float, optional</span>
+<span class="sd">            Mismatch value to display in the plot title (default is None).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">hf1</span> <span class="o">=</span> <span class="n">h1</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+        <span class="n">f1</span> <span class="o">=</span> <span class="n">hf1</span><span class="o">.</span><span class="n">get_sample_frequencies</span><span class="p">()</span>
+        <span class="n">hf2</span> <span class="o">=</span> <span class="n">h2</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+        <span class="n">f2</span> <span class="o">=</span> <span class="n">hf2</span><span class="o">.</span><span class="n">get_sample_frequencies</span><span class="p">()</span>
+        <span class="n">Af1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hf1</span><span class="p">)</span>
+        <span class="n">Af2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hf2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">six_panels</span><span class="p">:</span>
+            <span class="n">figm</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">fign</span> <span class="o">=</span> <span class="mi">3</span>
+            <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+            <span class="n">FT_panels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">figm</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">fign</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+            <span class="n">FT_panels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">figm</span><span class="p">,</span> <span class="n">fign</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Real part of waveforms before conditioning&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">h1_nc</span><span class="o">.</span><span class="n">sample_times</span><span class="p">,</span>
+            <span class="n">h1_nc</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;h1 unconditioned&quot;</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+            <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">h2_nc</span><span class="o">.</span><span class="n">sample_times</span><span class="p">,</span>
+            <span class="n">h2_nc</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;h2 unconditioned&quot;</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+            <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">figm</span><span class="p">,</span> <span class="n">fign</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Real part of waveforms after conditioning&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">h1</span><span class="o">.</span><span class="n">sample_times</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;h1 conditioned&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">h2</span><span class="o">.</span><span class="n">sample_times</span><span class="p">,</span> <span class="n">h2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;h2 conditioned&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tap_times_w1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">t1</span> <span class="o">=</span> <span class="n">tap_times_w1</span><span class="p">[</span><span class="s2">&quot;t1&quot;</span><span class="p">]</span>
+            <span class="n">t2</span> <span class="o">=</span> <span class="n">tap_times_w1</span><span class="p">[</span><span class="s2">&quot;t2&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">t1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">t2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tap_times_w2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">t1</span> <span class="o">=</span> <span class="n">tap_times_w2</span><span class="p">[</span><span class="s2">&quot;t1&quot;</span><span class="p">]</span>
+            <span class="n">t2</span> <span class="o">=</span> <span class="n">tap_times_w2</span><span class="p">[</span><span class="s2">&quot;t2&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">t1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">t2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">six_panels</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">figm</span><span class="p">,</span> <span class="n">fign</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;PSD used for match&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span>
+                <span class="n">psd</span><span class="o">.</span><span class="n">sample_frequencies</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">psd</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="n">psd</span><span class="o">.</span><span class="n">sample_frequencies</span><span class="p">),</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;PSD&quot;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">figm</span><span class="p">,</span> <span class="n">fign</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Overlap integrand between h1 and h2&quot;</span><span class="p">)</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">],</span>
+                <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">],</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">h1</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">hf1</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">hf2</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">FT_panels</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">figm</span><span class="p">,</span> <span class="n">fign</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Fourier transforms (abs value)&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">Af1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;FT h1&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span> <span class="n">Af2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;FT h2&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">FT_panels</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">figm</span><span class="p">,</span> <span class="n">fign</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mismatch: </span><span class="si">{</span><span class="n">mm</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;save&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving to </span><span class="si">{</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Matcher._compute_overlap_skymax">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._compute_overlap_skymax">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_overlap_skymax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wf1</span><span class="p">,</span> <span class="n">wf2</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Same as compute_mm_skymax, but without numerical</span>
+<span class="sd">        optimization of the orbital phase. Uses directly</span>
+<span class="sd">        the polarizations of the waveforms, instead of the modes.</span>
+<span class="sd">        This has to be specified for a **single** value of</span>
+<span class="sd">        effective polarization.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        wf1 : object</span>
+<span class="sd">            First local waveform object with time series data.</span>
+<span class="sd">        wf2 : object</span>
+<span class="sd">            Second local waveform object with time series data.</span>
+<span class="sd">        settings : dict</span>
+<span class="sd">            Dictionary of settings for the mismatch calculation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        overlap : float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;eff_pols&quot;</span><span class="p">]</span>
+        <span class="c1"># target</span>
+        <span class="n">sp</span><span class="p">,</span> <span class="n">sx</span> <span class="o">=</span> <span class="n">wf1</span><span class="o">.</span><span class="n">hp</span><span class="p">,</span> <span class="n">wf1</span><span class="o">.</span><span class="n">hc</span>
+        <span class="n">sp</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span><span class="n">sp</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        <span class="n">sx</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        <span class="n">spf</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+        <span class="n">sxf</span> <span class="o">=</span> <span class="n">sx</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">spf</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">sxf</span>
+
+        <span class="c1"># model</span>
+        <span class="n">hp</span><span class="p">,</span> <span class="n">hc</span> <span class="o">=</span> <span class="n">wf2</span><span class="o">.</span><span class="n">hp</span><span class="p">,</span> <span class="n">wf2</span><span class="o">.</span><span class="n">hc</span>
+        <span class="n">hp</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span><span class="n">hp</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        <span class="n">hc</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span><span class="n">hc</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        <span class="n">hpf</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+        <span class="n">hcf</span> <span class="o">=</span> <span class="n">hc</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+
+        <span class="n">psd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_psd</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spf</span><span class="p">),</span> <span class="n">spf</span><span class="o">.</span><span class="n">delta_f</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">sky_and_time_maxed_overlap</span><span class="p">(</span>
+                <span class="n">s</span><span class="p">,</span>
+                <span class="n">hpf</span><span class="p">,</span>
+                <span class="n">hcf</span><span class="p">,</span>
+                <span class="n">psd</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">],</span>
+                <span class="n">kind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">],</span>
+            <span class="p">),</span>
+            <span class="p">{},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Matcher._compute_mm_skymax">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._compute_mm_skymax">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_mm_skymax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wf1</span><span class="p">,</span> <span class="n">wf2</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the match between two waveforms with higher modes.</span>
+<span class="sd">        Use wf1 as a fixed target, and decompose wf2 in modes to find the</span>
+<span class="sd">        best orbital phase.</span>
+<span class="sd">        This can only be applied to non-precessing systems, as it involves</span>
+<span class="sd">        no optimization over the in-plane spin components.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        wf1 : object</span>
+<span class="sd">            First local waveform object with time series data.</span>
+<span class="sd">        wf2 : object</span>
+<span class="sd">            Second local waveform object with time series data.</span>
+<span class="sd">        settings : dict</span>
+<span class="sd">            Dictionary of settings for the mismatch calculation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        match : float</span>
+<span class="sd">            Average match value over the coalescence phases and effective polarizations.</span>
+<span class="sd">        out : dict</span>
+<span class="sd">            Additional output from the match calculation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">iota</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;iota&quot;</span><span class="p">]</span>
+        <span class="n">mms</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">coa_phase</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;coa_phase&quot;</span><span class="p">]:</span>
+            <span class="n">sp</span><span class="p">,</span> <span class="n">sx</span> <span class="o">=</span> <span class="n">wf1</span><span class="o">.</span><span class="n">compute_hphc</span><span class="p">(</span><span class="n">coa_phase</span><span class="p">,</span> <span class="n">iota</span><span class="p">,</span> <span class="n">modes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span>
+            <span class="n">sp</span><span class="p">,</span> <span class="n">sx</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mass_rescaled_TimeSeries</span><span class="p">(</span>
+                <span class="n">wf1</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">sx</span><span class="p">,</span> <span class="n">isgeom</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;geom&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">sp</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span><span class="n">sp</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+            <span class="n">sx</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+            <span class="n">spf</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+            <span class="n">sxf</span> <span class="o">=</span> <span class="n">sx</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+            <span class="n">psd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_psd</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spf</span><span class="p">),</span> <span class="n">spf</span><span class="o">.</span><span class="n">delta_f</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">])</span>
+
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;eff_pols&quot;</span><span class="p">]:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">spf</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">sxf</span>
+
+                <span class="n">mm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">skymax_match</span><span class="p">(</span>
+                    <span class="n">s</span><span class="p">,</span>
+                    <span class="n">wf2</span><span class="p">,</span>
+                    <span class="n">iota</span><span class="p">,</span>
+                    <span class="n">psd</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">,</span>
+                    <span class="n">dT</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dt&quot;</span><span class="p">],</span>
+                    <span class="n">fmin_mm</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">],</span>
+                    <span class="n">fmax</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+                <span class="n">mms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># FIXME: just for consistency with compute_mm_single_mode</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">mm</span><span class="p">),</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="Matcher.skymax_match">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.skymax_match">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">skymax_match</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">wf</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">psd</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">dT</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mi">4096</span><span class="p">,</span> <span class="n">fmin_mm</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">fmax</span><span class="o">=</span><span class="mf">2048.0</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the sky- and time-maximized match between a signal s</span>
+<span class="sd">        and a waveform object wf, by optimizing over the orbital phase.</span>
+<span class="sd">        This can only be applied to non-precessing systems, as it involves</span>
+<span class="sd">        no optimization over the in-plane spin components.</span>
+
+<span class="sd">        TODO: remove unused parameters</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        s : FrequencySeries</span>
+<span class="sd">            The signal waveform in the frequency domain.</span>
+<span class="sd">        wf : object</span>
+<span class="sd">            Local waveform object with time series data.</span>
+<span class="sd">        inc : float</span>
+<span class="sd">            Inclination angle for the waveform.</span>
+<span class="sd">        psd : FrequencySeries</span>
+<span class="sd">            Power spectral density used for the match calculation.</span>
+<span class="sd">        modes : list</span>
+<span class="sd">            List of modes to be used in the waveform computation.</span>
+<span class="sd">        dT : float, optional</span>
+<span class="sd">            Time step for the waveform (default is 1/4096).</span>
+<span class="sd">        fmin_mm : float, optional</span>
+<span class="sd">            Minimum frequency for the match calculation (default is 20.0).</span>
+<span class="sd">        fmax : float, optional</span>
+<span class="sd">            Maximum frequency for the match calculation (default is 2048.0).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mismatch : float</span>
+<span class="sd">            The computed mismatch value (1 - match).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">to_minimize_dphi</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">hp</span><span class="p">,</span> <span class="n">hc</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">compute_hphc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">modes</span><span class="o">=</span><span class="n">modes</span><span class="p">)</span>
+            <span class="n">hp</span><span class="p">,</span> <span class="n">hc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mass_rescaled_TimeSeries</span><span class="p">(</span>
+                <span class="n">wf</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">hp</span><span class="p">,</span> <span class="n">hc</span><span class="p">,</span> <span class="n">isgeom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;geom&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">hps</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span><span class="n">hp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">)</span>
+            <span class="n">hxs</span> <span class="o">=</span> <span class="n">condition_td_waveform</span><span class="p">(</span><span class="n">hc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">)</span>
+            <span class="c1"># To FD</span>
+            <span class="n">hpf</span> <span class="o">=</span> <span class="n">hps</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+            <span class="n">hcf</span> <span class="o">=</span> <span class="n">hxs</span><span class="o">.</span><span class="n">to_frequencyseries</span><span class="p">()</span>
+            <span class="k">return</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">sky_and_time_maxed_overlap</span><span class="p">(</span>
+                <span class="n">s</span><span class="p">,</span>
+                <span class="n">hpf</span><span class="p">,</span>
+                <span class="n">hcf</span><span class="p">,</span>
+                <span class="n">psd</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;initial_frequency_mm&quot;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;final_frequency_mm&quot;</span><span class="p">],</span>
+                <span class="n">kind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+
+        <span class="n">res_ms</span> <span class="o">=</span> <span class="n">minimize_scalar</span><span class="p">(</span>
+            <span class="n">to_minimize_dphi</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bounded&quot;</span><span class="p">,</span>
+            <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span>
+            <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;xatol&quot;</span><span class="p">:</span> <span class="mf">1e-15</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">to_minimize_dphi</span><span class="p">(</span><span class="n">res_ms</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># print(&#39;minimize_scalar:&#39;, res)</span>
+        <span class="k">if</span> <span class="n">res</span> <span class="o">&gt;</span> <span class="mf">1e-2</span><span class="p">:</span>
+            <span class="c1"># try also with (more expensive) dual annealing</span>
+            <span class="c1"># and choose the minimum</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">res_da</span> <span class="o">=</span> <span class="n">dual_annealing_wrap</span><span class="p">(</span>
+                <span class="n">to_minimize_dphi</span><span class="p">,</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)],</span> <span class="n">maxfun</span><span class="o">=</span><span class="mi">100</span>
+            <span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">res_da</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">res</span></div>
+</div>
+
+
+
+<span class="c1">### other functions, not just code related to the class</span>
+<div class="viewcode-block" id="condition_td_waveform">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.condition_td_waveform">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">condition_td_waveform</span><span class="p">(</span><span class="n">h_in</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">return_tap_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mrg_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Condition the waveforms before computing the mismatch.</span>
+<span class="sd">    h is already a TimeSeries</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h_in : TimeSeries</span>
+<span class="sd">        Input waveform time series.</span>
+<span class="sd">    settings : dict</span>
+<span class="sd">        Dictionary of settings for the conditioning.</span>
+<span class="sd">    return_tap_times : bool, optional</span>
+<span class="sd">        If True, return the taper times (default is False).</span>
+<span class="sd">    mrg_idx : int, optional</span>
+<span class="sd">        Index of the merger time in the time series (default is None).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    h : TimeSeries</span>
+<span class="sd">        Conditioned waveform time series.</span>
+<span class="sd">    tap_times : dict, optional</span>
+<span class="sd">        Dictionary containing taper times &#39;t1&#39; and &#39;t2&#39; (only if return_tap_times is True).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">h_in</span><span class="p">)</span>  <span class="c1"># shallow-copy</span>
+    <span class="n">hlen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+    <span class="n">tlen</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;tlen&quot;</span><span class="p">]</span>
+    <span class="n">ndiff</span> <span class="o">=</span> <span class="n">tlen</span> <span class="o">-</span> <span class="n">hlen</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;pad_end_frac&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;pad_end_frac&#39; can&#39;t be greater than 1.0!&quot;</span><span class="p">)</span>
+    <span class="n">npad_after</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ndiff</span> <span class="o">*</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;pad_end_frac&quot;</span><span class="p">])</span>
+    <span class="n">npad_before</span> <span class="o">=</span> <span class="n">ndiff</span> <span class="o">-</span> <span class="n">npad_after</span>
+    <span class="n">h</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">hlen</span> <span class="o">+</span> <span class="n">npad_after</span><span class="p">)</span>
+    <span class="n">h_numpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="p">(</span><span class="n">npad_before</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">TimeSeries</span><span class="p">(</span><span class="n">h_numpy</span><span class="p">,</span> <span class="n">delta_t</span><span class="o">=</span><span class="n">h</span><span class="o">.</span><span class="n">delta_t</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;taper&quot;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">tap1</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;taper_start&quot;</span><span class="p">]</span>
+        <span class="n">tap2</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;taper_end&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">mrg_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">wlen</span> <span class="o">=</span> <span class="n">hlen</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">wlen</span> <span class="o">=</span> <span class="n">mrg_idx</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">npad_before</span> <span class="o">+</span> <span class="n">wlen</span> <span class="o">*</span> <span class="n">tap1</span> <span class="k">if</span> <span class="p">(</span><span class="n">tap1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tap1</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">npad_before</span> <span class="o">+</span> <span class="n">hlen</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">tap2</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">tap2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tap2</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tlen</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">tlen</span><span class="p">)</span>
+        <span class="n">alpha_M</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;taper_alpha&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;taper_alpha_end&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">alpha_end_M</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;taper_alpha_end&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alpha_end_M</span> <span class="o">=</span> <span class="n">alpha_M</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">taper_waveform</span><span class="p">(</span>
+            <span class="n">t</span><span class="p">,</span>
+            <span class="n">h</span><span class="p">,</span>
+            <span class="n">t1</span><span class="o">=</span><span class="n">t1</span><span class="p">,</span>
+            <span class="n">t2</span><span class="o">=</span><span class="n">t2</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha_M</span><span class="p">,</span>
+            <span class="n">alpha_end</span><span class="o">=</span><span class="n">alpha_end_M</span><span class="p">,</span>
+            <span class="n">kind</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;taper&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">return_tap_times</span><span class="p">:</span>
+        <span class="n">rescaled_t1</span> <span class="o">=</span> <span class="n">t1</span> <span class="o">/</span> <span class="n">tlen</span> <span class="o">*</span> <span class="n">h</span><span class="o">.</span><span class="n">sample_times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">t1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">rescaled_t2</span> <span class="o">=</span> <span class="n">t2</span> <span class="o">/</span> <span class="n">tlen</span> <span class="o">*</span> <span class="n">h</span><span class="o">.</span><span class="n">sample_times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">t2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">tap_times</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;t1&quot;</span><span class="p">:</span> <span class="n">rescaled_t1</span><span class="p">,</span> <span class="s2">&quot;t2&quot;</span><span class="p">:</span> <span class="n">rescaled_t2</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">h</span><span class="p">,</span> <span class="n">tap_times</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">h</span></div>
+
+
+
+<div class="viewcode-block" id="dual_annealing_wrap">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.dual_annealing_wrap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dual_annealing_wrap</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">maxfun</span><span class="o">=</span><span class="mi">2000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper for scipy.optimize.dual_annealing to minimize a function func</span>
+<span class="sd">    within given bounds.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : callable</span>
+<span class="sd">        The objective function to be minimized.</span>
+<span class="sd">    bounds : list of tuple</span>
+<span class="sd">        Bounds for variables (min, max) pairs for each element in x.</span>
+<span class="sd">    maxfun : int, optional</span>
+<span class="sd">        Maximum number of function evaluations (default is 2000).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    opt_pars : ndarray</span>
+<span class="sd">        Optimal parameters that minimize the function.</span>
+<span class="sd">    opt_val : float</span>
+<span class="sd">        Minimum value of the function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">dual_annealing</span><span class="p">(</span>
+        <span class="n">func</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">maxfun</span><span class="o">=</span><span class="n">maxfun</span>
+    <span class="p">)</span>  <span class="c1"># , local_search_options={&quot;method&quot;: &quot;Nelder-Mead&quot;})</span>
+    <span class="n">opt_pars</span><span class="p">,</span> <span class="n">opt_val</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;fun&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">opt_pars</span><span class="p">,</span> <span class="n">opt_val</span></div>
+
+
+
+<div class="viewcode-block" id="sky_and_time_maxed_overlap">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.sky_and_time_maxed_overlap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sky_and_time_maxed_overlap</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">hp</span><span class="p">,</span> <span class="n">hc</span><span class="p">,</span> <span class="n">psd</span><span class="p">,</span> <span class="n">low_freq</span><span class="p">,</span> <span class="n">high_freq</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;hm&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the sky and time maximized overlap between a signal and a template.</span>
+<span class="sd">    See https://arxiv.org/pdf/1709.09181 and Eq. 10 of https://arxiv.org/pdf/2207.01654</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : FrequencySeries</span>
+<span class="sd">        The signal waveform in the frequency domain.</span>
+<span class="sd">    hp : FrequencySeries</span>
+<span class="sd">        Plus polarization of the template waveform in the frequency domain.</span>
+<span class="sd">    hc : FrequencySeries</span>
+<span class="sd">        Cross polarization of the template waveform in the frequency domain.</span>
+<span class="sd">    psd : FrequencySeries</span>
+<span class="sd">        Power spectral density used for the match calculation.</span>
+<span class="sd">    low_freq : float</span>
+<span class="sd">        Minimum frequency for the match calculation.</span>
+<span class="sd">    high_freq : float</span>
+<span class="sd">        Maximum frequency for the match calculation.</span>
+<span class="sd">    kind : str, optional</span>
+<span class="sd">        Type of waveform (&#39;hm&#39; for higher modes, &#39;precessing&#39; for precessing 22-only) (default is &#39;hm&#39;).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    o : float</span>
+<span class="sd">        The computed overlap value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">signal_norm</span> <span class="o">=</span> <span class="n">s</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="n">sigmasq</span><span class="p">(</span>
+            <span class="n">s</span><span class="p">,</span> <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span> <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">low_freq</span><span class="p">,</span> <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">high_freq</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">hplus_norm</span> <span class="o">=</span> <span class="n">hp</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="n">sigmasq</span><span class="p">(</span>
+            <span class="n">hp</span><span class="p">,</span> <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span> <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">low_freq</span><span class="p">,</span> <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">high_freq</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">hcross_norm</span> <span class="o">=</span> <span class="n">hc</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="n">sigmasq</span><span class="p">(</span>
+            <span class="n">hc</span><span class="p">,</span> <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span> <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">low_freq</span><span class="p">,</span> <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">high_freq</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">hphc_corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span>
+        <span class="n">overlap_cplx</span><span class="p">(</span>
+            <span class="n">hplus_norm</span><span class="p">,</span>
+            <span class="n">hcross_norm</span><span class="p">,</span>
+            <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span>
+            <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">low_freq</span><span class="p">,</span>
+            <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">high_freq</span><span class="p">,</span>
+            <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">Iplus</span> <span class="o">=</span> <span class="n">matched_filter</span><span class="p">(</span>
+        <span class="n">hplus_norm</span><span class="p">,</span>
+        <span class="n">signal_norm</span><span class="p">,</span>
+        <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span>
+        <span class="n">sigmasq</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">low_freq</span><span class="p">,</span>
+        <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">high_freq</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">Icross</span> <span class="o">=</span> <span class="n">matched_filter</span><span class="p">(</span>
+        <span class="n">hcross_norm</span><span class="p">,</span>
+        <span class="n">signal_norm</span><span class="p">,</span>
+        <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span>
+        <span class="n">sigmasq</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">low_freq</span><span class="p">,</span>
+        <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">high_freq</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;hm&quot;</span> <span class="ow">in</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">det_stat</span> <span class="o">=</span> <span class="n">compute_max_snr_over_sky_loc_stat_no_phase</span><span class="p">(</span>
+            <span class="n">Iplus</span><span class="p">,</span>
+            <span class="n">Icross</span><span class="p">,</span>
+            <span class="n">hphccorr</span><span class="o">=</span><span class="n">hphc_corr</span><span class="p">,</span>
+            <span class="n">hpnorm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">hcnorm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">thresh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">analyse_slice</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Iplus</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;precessing&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pycbc.filter</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_u_val_for_sky_loc_stat</span>
+
+        <span class="n">det_stat</span> <span class="o">=</span> <span class="n">compute_u_val_for_sky_loc_stat</span><span class="p">(</span>
+            <span class="n">Iplus</span><span class="p">,</span>
+            <span class="n">Icross</span><span class="p">,</span>
+            <span class="n">hphccorr</span><span class="o">=</span><span class="n">hphc_corr</span><span class="p">,</span>
+            <span class="n">hpnorm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">hcnorm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">thresh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">analyse_slice</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Iplus</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Currently only HM and precessing is supported!&quot;</span><span class="p">)</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">det_stat</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">det_stat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">o</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">return</span> <span class="n">o</span></div>
+
+
+
+<div class="viewcode-block" id="time_maxed_overlap">
+<a class="viewcode-back" href="../../../autoapi/PyART/analysis/match/index.html#PyART.analysis.match.time_maxed_overlap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">time_maxed_overlap</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">hp</span><span class="p">,</span> <span class="n">hc</span><span class="p">,</span> <span class="n">psd</span><span class="p">,</span> <span class="n">low_freq</span><span class="p">,</span> <span class="n">high_freq</span><span class="p">,</span> <span class="n">max_pol</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Assume s is + only.</span>
+<span class="sd">    We allow for a polarization shift, i.e. a **global** change of sign in the waveform.</span>
+<span class="sd">    TODO: check if this is implemented correctly, see Sec. VD of https://arxiv.org/abs/1812.07865</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : FrequencySeries</span>
+<span class="sd">        The signal waveform in the frequency domain.</span>
+<span class="sd">    hp : FrequencySeries</span>
+<span class="sd">        Plus polarization of the template waveform in the frequency domain.</span>
+<span class="sd">    hc : FrequencySeries</span>
+<span class="sd">        Cross polarization of the template waveform in the frequency domain. (Unused)</span>
+<span class="sd">    psd : FrequencySeries</span>
+<span class="sd">        Power spectral density used for the match calculation.</span>
+<span class="sd">    low_freq : float</span>
+<span class="sd">        Minimum frequency for the match calculation.</span>
+<span class="sd">    high_freq : float</span>
+<span class="sd">        Maximum frequency for the match calculation.</span>
+<span class="sd">    max_pol : bool, optional</span>
+<span class="sd">        If True, maximize over polarization (default is True).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    o : float</span>
+<span class="sd">        The computed overlap value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">sigmasq</span><span class="p">(</span>
+        <span class="n">s</span><span class="p">,</span> <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span> <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">low_freq</span><span class="p">,</span> <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">high_freq</span>
+    <span class="p">)</span>
+    <span class="n">hphp</span> <span class="o">=</span> <span class="n">sigmasq</span><span class="p">(</span>
+        <span class="n">hp</span><span class="p">,</span> <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span> <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">low_freq</span><span class="p">,</span> <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">high_freq</span>
+    <span class="p">)</span>
+    <span class="n">hp</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">hphp</span><span class="p">)</span>
+
+    <span class="n">rhop</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">nrm</span> <span class="o">=</span> <span class="n">matched_filter_core</span><span class="p">(</span>
+        <span class="n">hp</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">psd</span><span class="o">=</span><span class="n">psd</span><span class="p">,</span> <span class="n">low_frequency_cutoff</span><span class="o">=</span><span class="n">low_freq</span><span class="p">,</span> <span class="n">high_frequency_cutoff</span><span class="o">=</span><span class="n">high_freq</span>
+    <span class="p">)</span>
+    <span class="n">rhop</span> <span class="o">*=</span> <span class="n">nrm</span>
+
+    <span class="c1"># allow for different polarization conventions</span>
+    <span class="c1"># potential global - sign change</span>
+    <span class="n">os</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ang</span> <span class="ow">in</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]:</span>
+        <span class="n">re_rhop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">rhop</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">ang</span><span class="p">))</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="n">re_rhop</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ss</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+
+    <span class="c1"># maximize over allowed polarization</span>
+    <span class="k">if</span> <span class="n">max_pol</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">os</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="n">os</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">o</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">return</span> <span class="n">o</span></div>
+
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

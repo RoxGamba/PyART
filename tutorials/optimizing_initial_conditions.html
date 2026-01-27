@@ -1,0 +1,903 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Working with ICCUB Catalog and Waveform Integration" href="iccub_waveform_integration.html"><link rel="prev" title="Computing Mismatches Between NR and EOB Waveforms" href="nr_eob_mismatch.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>Optimizing Initial Conditions for EOB Waveforms - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro_to_waveforms.html">1. Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../autoapi/PyART/index.html">PyART</a><input aria-label="Toggle navigation of PyART" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/PyART/logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/PyART/simulations/index.html">PyART.simulations</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/PyART/waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../autoapi/simulations/index.html">simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../autoapi/tocatalog_icc/index.html">tocatalog_icc</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/tutorials/optimizing_initial_conditions.ipynb.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="optimizing-initial-conditions-for-eob-waveforms">
+<h1>Optimizing Initial Conditions for EOB Waveforms<a class="headerlink" href="#optimizing-initial-conditions-for-eob-waveforms" title="Link to this heading">¶</a></h1>
+<p>This tutorial demonstrates how to optimize the initial conditions of Effective One Body (EOB) waveforms to best match Numerical Relativity (NR) simulations.</p>
+<p>The optimizer searches for the best initial energy (E₀) and angular momentum (pₚₕ₀) that minimize the mismatch between EOB and NR waveforms.</p>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading">¶</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="o">%</span><span class="k">config</span> InlineBackend.figure_format = &#39;retina&#39;
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyART.analysis.opt_ic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyART.catalogs.sxs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waveform_SXS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyART.catalogs.rit</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waveform_RIT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyART.analysis.match</span><span class="w"> </span><span class="kn">import</span> <span class="n">Matcher</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/match.py:15: UserWarning: Wswiglal-redir-stdio:
+
+SWIGLAL standard output/error redirection is enabled in IPython.
+This may lead to performance penalties. To disable locally, use:
+
+with lal.no_swig_redirect_standard_output_error():
+    ...
+
+To disable globally, use:
+
+lal.swig_redirect_standard_output_error(False)
+
+Note however that this will likely lead to error messages from
+LAL functions being either misdirected or lost when called from
+Jupyter notebooks.
+
+To suppress this warning, use:
+
+import warnings
+warnings.filterwarnings(&quot;ignore&quot;, &quot;Wswiglal-redir-stdio&quot;)
+import lal
+
+  import lal
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING: TEOBResumS not installed.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="load-nr-waveform">
+<h2>Load NR Waveform<a class="headerlink" href="#load-nr-waveform" title="Link to this heading">¶</a></h2>
+<p>First, we load a numerical relativity waveform that we want to match with EOB:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load an SXS waveform</span>
+<span class="n">catalog</span> <span class="o">=</span> <span class="s1">&#39;sxs&#39;</span>
+<span class="n">sim_id</span> <span class="o">=</span> <span class="mi">180</span>
+
+<span class="k">if</span> <span class="n">catalog</span> <span class="o">==</span> <span class="s1">&#39;sxs&#39;</span><span class="p">:</span>
+    <span class="n">ebbh</span> <span class="o">=</span> <span class="n">Waveform_SXS</span><span class="p">(</span>
+        <span class="n">path</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">,</span> 
+        <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+        <span class="n">ID</span><span class="o">=</span><span class="n">sim_id</span><span class="p">,</span> 
+        <span class="n">order</span><span class="o">=</span><span class="s2">&quot;Extrapolated_N3.dir&quot;</span><span class="p">,</span> 
+        <span class="n">ellmax</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+        <span class="n">nu_rescale</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="c1"># Remove junk radiation from the beginning</span>
+    <span class="n">ebbh</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># For RIT or other catalogs</span>
+    <span class="n">ebbh</span> <span class="o">=</span> <span class="n">Waveform_RIT</span><span class="p">(</span>
+        <span class="n">path</span><span class="o">=</span><span class="s1">&#39;./local_data/rit/&#39;</span><span class="p">,</span> 
+        <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+        <span class="n">ID</span><span class="o">=</span><span class="n">sim_id</span><span class="p">,</span> 
+        <span class="n">nu_rescale</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+<span class="c1"># Display metadata</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Waveform Metadata:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ebbh</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s1">15s</span><span class="si">}</span><span class="s1"> : </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Waveform Metadata:
+==================================================
+name            : SXS:BBH:0180
+ref_time        : 250.0
+m1              : 0.499999985387
+m2              : 0.499999985116
+M               : 0.999999970503
+q               : 1.000000000542
+nu              : 0.24999999999999994
+S1              : [-6.95604332e-13  3.90134701e-13 -9.17626593e-10]
+S2              : [ 5.69749564e-13 -5.89768887e-13 -5.39321192e-10]
+chi1x           : -2.78241749107e-12
+chi1y           : 1.5605388945e-12
+chi1z           : -3.67050658542e-09
+chi2x           : 2.27899839037e-12
+chi2y           : -2.35907568866e-12
+chi2z           : -2.1572848954e-09
+LambdaAl2       : 0.0
+LambdaBl2       : 0.0
+pos1            : [-9.23165599e+00  6.45733324e-01  3.68318004e-10]
+pos2            : [ 9.23165601e+00 -6.45734196e-01  5.40638974e-10]
+r0              : 18.50842452509741
+e0              : 5.11e-05
+f0v             : [-4.00190520e-14 -5.11164262e-14  3.90474262e-03]
+f0              : 0.003904742624312793
+E0              : 0.9937350479750683
+P0              : [ 5.000e-15  3.539e-13 -3.778e-13]
+J0              : [-1.56989012e-06 -3.87578732e-07  1.18461067e+00]
+Jz0             : 1.184610674783749
+E0byM           : 0.9937350772872718
+pph0            : 4.738442984502489
+Mf              : 0.951614826833
+afv             : [-2.14539981e-13 -8.96386037e-12  6.86429827e-01]
+af              : 0.686429826547
+scat_angle      : None
+flags           : [&#39;nonspinning&#39;, &#39;equal-mass&#39;, &#39;quasi-circular&#39;]
+==================================================
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="configure-optimizer-settings">
+<h2>Configure Optimizer Settings<a class="headerlink" href="#configure-optimizer-settings" title="Link to this heading">¶</a></h2>
+<p>The optimizer requires several settings:</p>
+<ol class="arabic simple">
+<li><p><strong>Mismatch settings</strong>: Parameters for computing mismatches</p></li>
+<li><p><strong>Minimizer</strong>: Algorithm and parameters for optimization</p></li>
+<li><p><strong>Bounds</strong>: Search ranges for initial conditions</p></li>
+<li><p><strong>Iteration settings</strong>: How to adaptively adjust bounds</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Mismatch computation settings</span>
+<span class="n">mm_settings</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;cut_second_waveform&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;initial_frequency_mm&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s1">&#39;M&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># Total mass in solar masses</span>
+    <span class="s1">&#39;final_frequency_mm&#39;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+    <span class="s1">&#39;taper_alpha&#39;</span><span class="p">:</span> <span class="mf">0.50</span><span class="p">,</span>
+    <span class="s1">&#39;taper_start&#39;</span><span class="p">:</span> <span class="mf">0.10</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Add catalog-specific alignment settings</span>
+<span class="k">if</span> <span class="n">catalog</span> <span class="o">==</span> <span class="s1">&#39;rit&#39;</span><span class="p">:</span>
+    <span class="n">mm_settings</span><span class="p">[</span><span class="s1">&#39;pre_align_shift&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.</span>
+<span class="k">elif</span> <span class="n">catalog</span> <span class="o">==</span> <span class="s1">&#39;sxs&#39;</span><span class="p">:</span>
+    <span class="n">mm_settings</span><span class="p">[</span><span class="s1">&#39;pre_align_shift&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+
+<span class="c1"># Optimizer settings</span>
+<span class="n">kind_ic</span> <span class="o">=</span> <span class="s1">&#39;E0pph0&#39;</span>  <span class="c1"># Optimize E0 (energy) and pph0 (angular momentum)</span>
+
+<span class="c1"># Bounds for the optimization</span>
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;E0byM&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="s1">&#39;pph0&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]}</span>
+
+<span class="c1"># Adaptive bounds iteration</span>
+<span class="n">bounds_iter</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;eps_initial&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;E0byM&#39;</span><span class="p">:</span> <span class="mf">5e-3</span><span class="p">,</span> <span class="s1">&#39;pph0&#39;</span><span class="p">:</span> <span class="mf">1e-2</span><span class="p">},</span>
+    <span class="s1">&#39;eps_factors&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;E0byM&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;pph0&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+    <span class="s1">&#39;bad_mm&#39;</span><span class="p">:</span> <span class="mf">1e-2</span><span class="p">,</span>
+    <span class="s1">&#39;max_iter&#39;</span><span class="p">:</span> <span class="mi">3</span>
+<span class="p">}</span>
+
+<span class="c1"># Minimizer configuration (using dual annealing)</span>
+<span class="n">minimizer</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;kind&#39;</span><span class="p">:</span> <span class="s1">&#39;dual_annealing&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;opt_maxfun&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># Maximum function evaluations</span>
+    <span class="s1">&#39;opt_max_iter&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># Maximum optimization iterations</span>
+    <span class="s1">&#39;opt_seed&#39;</span><span class="p">:</span> <span class="mi">190521</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimizer configured with:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Kind: </span><span class="si">{</span><span class="n">kind_ic</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Minimizer: </span><span class="si">{</span><span class="n">minimizer</span><span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Target mass: </span><span class="si">{</span><span class="n">mm_settings</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> Msun&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Good mismatch threshold: 5e-3&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Optimizer configured with:
+  Kind: E0pph0
+  Minimizer: dual_annealing
+  Target mass: 100 Msun
+  Good mismatch threshold: 5e-3
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="run-the-optimizer">
+<h2>Run the Optimizer<a class="headerlink" href="#run-the-optimizer" title="Link to this heading">¶</a></h2>
+<p>Now we create the optimizer and let it find the best initial conditions:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create and run optimizer</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span>
+    <span class="n">ebbh</span><span class="p">,</span>
+    <span class="n">kind_ic</span><span class="o">=</span><span class="n">kind_ic</span><span class="p">,</span>
+    <span class="n">mm_settings</span><span class="o">=</span><span class="n">mm_settings</span><span class="p">,</span>
+    <span class="n">use_nqc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">minimizer</span><span class="o">=</span><span class="n">minimizer</span><span class="p">,</span>
+    <span class="n">opt_good_mm</span><span class="o">=</span><span class="mf">5e-3</span><span class="p">,</span>
+    <span class="n">opt_bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+    <span class="n">bounds_iter</span><span class="o">=</span><span class="n">bounds_iter</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">json_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Optimization Results:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimized E0/M    : </span><span class="si">{</span><span class="n">opt</span><span class="o">.</span><span class="n">opt_Waveform</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;E0byM&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimized pph0    : </span><span class="si">{</span><span class="n">opt</span><span class="o">.</span><span class="n">opt_Waveform</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pph0&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final mismatch    : </span><span class="si">{</span><span class="n">opt</span><span class="o">.</span><span class="n">opt_mismatch</span><span class="si">:</span><span class="s2">.5e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>###########################################
+###          Running Optimizer          ###
+###########################################
+
+Reference waveform : SXS:BBH:0180
+(q, chi1z, chi2z)  : (1.00, -0.00, -0.00)
+binary type        : nonspinning, equal-mass, quasi-circular
+Variables for ICs  : [&#39;E0byM&#39;, &#39;pph0&#39;]
+ 
+
+*********************************************
+Search bounds (eps) iteration  #1
+*********************************************
+---------------------------------------------
+Optimization iteration #1
+---------------------------------------------
+Original  mismatch    : 1.000e+00
+Optimization interval :
+                        E0byM : [9.888e-01,9.987e-01]
+                        pph0  : [4.691e+00,4.786e+00]
+Initial guess         :
+                        E0byM : 0.993735077287272
+                        pph0  : 4.738442984502489
+</pre></div>
+</div>
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">line</span> <span class="mi">2</span>
+<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="c1"># Create and run optimizer</span>
+<span class="ne">----&gt; </span><span class="mi">2</span> <span class="n">opt</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span>     <span class="n">ebbh</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span>     <span class="n">kind_ic</span><span class="o">=</span><span class="n">kind_ic</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span>     <span class="n">mm_settings</span><span class="o">=</span><span class="n">mm_settings</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span>     <span class="n">use_nqc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span>     <span class="n">minimizer</span><span class="o">=</span><span class="n">minimizer</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span>     <span class="n">opt_good_mm</span><span class="o">=</span><span class="mf">5e-3</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span>     <span class="n">opt_bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">10</span>     <span class="n">bounds_iter</span><span class="o">=</span><span class="n">bounds_iter</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">11</span>     <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">12</span>     <span class="n">json_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">13</span>     <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span>
+<span class="g g-Whitespace">     </span><span class="mi">14</span> <span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">16</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Optimization Results:&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">17</span> <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:218,</span> in <span class="ni">Optimizer.__init__</span><span class="nt">(self, ref_Waveform, kind_ic, vrs, map_function, use_nqc, r0_eob, model_opts, opt_max_iter, opt_good_mm, opt_bounds, bounds_iter, minimizer, use_matcher_cache, json_file, overwrite, json_save_dyn, mm_settings, verbose, debug)</span>
+<span class="g g-Whitespace">    </span><span class="mi">214</span>     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dashes</span><span class="si">}</span><span class="se">\n</span><span class="s2">Optimization iteration #</span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">dashes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">215</span> <span class="k">if</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">216</span>     <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">opt_data</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">217</span> <span class="p">):</span>  <span class="c1"># if first iter of both loops</span>
+<span class="ne">--&gt; </span><span class="mi">218</span>     <span class="n">opt_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_mismatch</span><span class="p">(</span><span class="n">use_ref_guess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">219</span> <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">220</span>     <span class="n">opt_data_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_mismatch</span><span class="p">(</span><span class="n">use_ref_guess</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:788,</span> in <span class="ni">Optimizer.optimize_mismatch</span><span class="nt">(self, use_ref_guess, verbose)</span>
+<span class="g g-Whitespace">    </span><span class="mi">785</span> <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__func_to_minimize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kys</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">787</span> <span class="n">t0_annealing</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="ne">--&gt; </span><span class="mi">788</span> <span class="n">opts</span><span class="p">,</span> <span class="n">mm_opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">bounds_array</span><span class="p">,</span> <span class="n">kys</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">790</span> <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">791</span>     <span class="nb">print</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">792</span>         <span class="s2">&quot;  &gt;&gt; mismatch - iter  : </span><span class="si">{:.3e}</span><span class="s2"> - </span><span class="si">{:3d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">793</span>             <span class="n">mm_opt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">annealing_counter</span>
+<span class="g g-Whitespace">    </span><span class="mi">794</span>         <span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">795</span>         <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">796</span>     <span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:911,</span> in <span class="ni">Optimizer.__minimize_annealing_</span><span class="nt">(self, f, x0, bounds_array, kys)</span>
+<span class="g g-Whitespace">    </span><span class="mi">908</span> <span class="n">seed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;opt_seed&quot;</span><span class="p">,</span> <span class="mi">190521</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">909</span> <span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span>
+<span class="ne">--&gt; </span><span class="mi">911</span> <span class="n">opt_result</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">dual_annealing</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">912</span>     <span class="n">f</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">913</span>     <span class="n">maxfun</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">914</span>     <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">915</span>     <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">916</span>     <span class="n">bounds</span><span class="o">=</span><span class="n">bounds_array</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">917</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">919</span> <span class="n">opt_pars</span> <span class="o">=</span> <span class="n">opt_result</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">920</span> <span class="n">opts</span> <span class="o">=</span> <span class="p">{</span><span class="n">kys</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="n">opt_pars</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kys</span><span class="p">))}</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/scipy/_lib/_util.py:365,</span> in <span class="ni">_transition_to_rng.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="nt">(*args, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">358</span>     <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">359</span>         <span class="s2">&quot;The NumPy global RNG was seeded by calling &quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">360</span>         <span class="sa">f</span><span class="s2">&quot;`np.random.seed`. Beginning in </span><span class="si">{</span><span class="n">end_version</span><span class="si">}</span><span class="s2">, this &quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">361</span>         <span class="s2">&quot;function will no longer use the global RNG.&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">362</span>     <span class="p">)</span> <span class="o">+</span> <span class="n">cmn_msg</span>
+<span class="g g-Whitespace">    </span><span class="mi">363</span>     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">365</span> <span class="k">return</span> <span class="n">fun</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/scipy/optimize/_dual_annealing.py:674,</span> in <span class="ni">dual_annealing</span><span class="nt">(func, bounds, args, maxiter, minimizer_kwargs, initial_temp, restart_temp_ratio, visit, accept, maxfun, rng, no_local_search, callback, x0)</span>
+<span class="g g-Whitespace">    </span><span class="mi">672</span> <span class="c1"># Initialization of the energy state</span>
+<span class="g g-Whitespace">    </span><span class="mi">673</span> <span class="n">energy_state</span> <span class="o">=</span> <span class="n">EnergyState</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">674</span> <span class="n">energy_state</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">func_wrapper</span><span class="p">,</span> <span class="n">rng_gen</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">675</span> <span class="c1"># Minimum value of annealing temperature reached to perform</span>
+<span class="g g-Whitespace">    </span><span class="mi">676</span> <span class="c1"># re-annealing</span>
+<span class="g g-Whitespace">    </span><span class="mi">677</span> <span class="n">temperature_restart</span> <span class="o">=</span> <span class="n">initial_temp</span> <span class="o">*</span> <span class="n">restart_temp_ratio</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/scipy/optimize/_dual_annealing.py:173,</span> in <span class="ni">EnergyState.reset</span><span class="nt">(self, func_wrapper, rng_gen, x0)</span>
+<span class="g g-Whitespace">    </span><span class="mi">171</span> <span class="n">reinit_counter</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="g g-Whitespace">    </span><span class="mi">172</span> <span class="k">while</span> <span class="n">init_error</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">173</span>     <span class="bp">self</span><span class="o">.</span><span class="n">current_energy</span> <span class="o">=</span> <span class="n">func_wrapper</span><span class="o">.</span><span class="n">fun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_location</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">174</span>     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">175</span>         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Objective function is returning None&#39;</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/scipy/optimize/_dual_annealing.py:381,</span> in <span class="ni">ObjectiveFunWrapper.fun</span><span class="nt">(self, x)</span>
+<span class="g g-Whitespace">    </span><span class="mi">379</span> <span class="k">def</span><span class="w"> </span><span class="nf">fun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">380</span>     <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="ne">--&gt; </span><span class="mi">381</span>     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:785,</span> in <span class="ni">Optimizer.optimize_mismatch.&lt;locals&gt;.&lt;lambda&gt;</span><span class="nt">(x)</span>
+<span class="g g-Whitespace">    </span><span class="mi">783</span> <span class="n">x0</span> <span class="o">=</span> <span class="p">[</span><span class="n">vs0</span><span class="p">[</span><span class="n">ky</span><span class="p">]</span> <span class="k">for</span> <span class="n">ky</span> <span class="ow">in</span> <span class="n">kys</span><span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">784</span> <span class="n">bounds_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">bounds</span><span class="p">[</span><span class="n">ky</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">bounds</span><span class="p">[</span><span class="n">ky</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">ky</span> <span class="ow">in</span> <span class="n">kys</span><span class="p">])</span>
+<span class="ne">--&gt; </span><span class="mi">785</span> <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__func_to_minimize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kys</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">787</span> <span class="n">t0_annealing</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">788</span> <span class="n">opts</span><span class="p">,</span> <span class="n">mm_opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">bounds_array</span><span class="p">,</span> <span class="n">kys</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:704,</span> in <span class="ni">Optimizer.__func_to_minimize</span><span class="nt">(self, x, kys, verbose, cache)</span>
+<span class="g g-Whitespace">    </span><span class="mi">702</span>     <span class="n">chi2</span> <span class="o">=</span> <span class="n">ref_meta</span><span class="p">[</span><span class="s2">&quot;chi2z&quot;</span><span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">703</span>     <span class="n">rvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">704</span>     <span class="n">Vmin</span> <span class="o">=</span> <span class="n">PotentialMinimum</span><span class="p">(</span><span class="n">rvec</span><span class="p">,</span> <span class="n">pph0</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">chi1</span><span class="p">,</span> <span class="n">chi2</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">705</span>     <span class="n">dV</span> <span class="o">=</span> <span class="n">Vmin</span> <span class="o">-</span> <span class="n">vs</span><span class="p">[</span><span class="s2">&quot;E0byM&quot;</span><span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">706</span> <span class="k">else</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:440,</span> in <span class="ni">PotentialMinimum</span><span class="nt">(rvec, pph, q, chi1, chi2)</span>
+<span class="g g-Whitespace">    </span><span class="mi">420</span> <span class="k">def</span><span class="w"> </span><span class="nf">PotentialMinimum</span><span class="p">(</span><span class="n">rvec</span><span class="p">,</span> <span class="n">pph</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">chi1</span><span class="p">,</span> <span class="n">chi2</span><span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">421</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">422</span><span class="sd">     Compute the minimum of the EOB radial potential for given parameters.</span>
+<span class="g g-Whitespace">    </span><span class="mi">423</span><span class="sd">     Parameters</span>
+<span class="sd">   (...)    438         The minimum value of the EOB radial potential.</span>
+<span class="g g-Whitespace">    </span><span class="mi">439</span><span class="sd">     &quot;&quot;&quot;</span>
+<span class="ne">--&gt; </span><span class="mi">440</span>     <span class="n">V</span> <span class="o">=</span> <span class="n">RadialPotential</span><span class="p">(</span><span class="n">rvec</span><span class="p">,</span> <span class="n">pph</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">chi1</span><span class="p">,</span> <span class="n">chi2</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">441</span>     <span class="n">peaks</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">V</span><span class="p">,</span> <span class="n">height</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">442</span>     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:383,</span> in <span class="ni">RadialPotential</span><span class="nt">(r, pph, q, chi1, chi2)</span>
+<span class="g g-Whitespace">    </span><span class="mi">362</span> <span class="k">def</span><span class="w"> </span><span class="nf">RadialPotential</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">pph</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">chi1</span><span class="p">,</span> <span class="n">chi2</span><span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">363</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">364</span><span class="sd">     Compute the EOB radial potential for given parameters.</span>
+<span class="g g-Whitespace">    </span><span class="mi">365</span><span class="sd">     Parameters</span>
+<span class="sd">   (...)    381         The EOB radial potential values.</span>
+<span class="g g-Whitespace">    </span><span class="mi">382</span><span class="sd">     &quot;&quot;&quot;</span>
+<span class="ne">--&gt; </span><span class="mi">383</span>     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">SpinHamiltonian</span><span class="p">(</span><span class="n">ri</span><span class="p">,</span> <span class="n">pph</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">chi1</span><span class="p">,</span> <span class="n">chi2</span><span class="p">)</span> <span class="k">for</span> <span class="n">ri</span> <span class="ow">in</span> <span class="n">r</span><span class="p">])</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:383,</span> in <span class="ni">&lt;listcomp&gt;</span><span class="nt">(.0)</span>
+<span class="g g-Whitespace">    </span><span class="mi">362</span> <span class="k">def</span><span class="w"> </span><span class="nf">RadialPotential</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">pph</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">chi1</span><span class="p">,</span> <span class="n">chi2</span><span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">363</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">364</span><span class="sd">     Compute the EOB radial potential for given parameters.</span>
+<span class="g g-Whitespace">    </span><span class="mi">365</span><span class="sd">     Parameters</span>
+<span class="sd">   (...)    381         The EOB radial potential values.</span>
+<span class="g g-Whitespace">    </span><span class="mi">382</span><span class="sd">     &quot;&quot;&quot;</span>
+<span class="ne">--&gt; </span><span class="mi">383</span>     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">SpinHamiltonian</span><span class="p">(</span><span class="n">ri</span><span class="p">,</span> <span class="n">pph</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">chi1</span><span class="p">,</span> <span class="n">chi2</span><span class="p">)</span> <span class="k">for</span> <span class="n">ri</span> <span class="ow">in</span> <span class="n">r</span><span class="p">])</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:356,</span> in <span class="ni">SpinHamiltonian</span><span class="nt">(r, pph, q, chi1, chi2, prstar)</span>
+<span class="g g-Whitespace">    </span><span class="mi">332</span> <span class="k">def</span><span class="w"> </span><span class="nf">SpinHamiltonian</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">pph</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">chi1</span><span class="p">,</span> <span class="n">chi2</span><span class="p">,</span> <span class="n">prstar</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">333</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">334</span><span class="sd">     Compute the EOB Hamiltonian for given parameters.</span>
+<span class="g g-Whitespace">    </span><span class="mi">335</span><span class="sd"> </span>
+<span class="sd">   (...)    354         The EOB Hamiltonian value.</span>
+<span class="g g-Whitespace">    </span><span class="mi">355</span><span class="sd">     &quot;&quot;&quot;</span>
+<span class="ne">--&gt; </span><span class="mi">356</span>     <span class="n">hatH</span> <span class="o">=</span> <span class="n">EOB</span><span class="o">.</span><span class="n">eob_ham_s_py</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">pph</span><span class="p">,</span> <span class="n">prstar</span><span class="p">,</span> <span class="n">chi1</span><span class="p">,</span> <span class="n">chi2</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">357</span>     <span class="n">nu</span> <span class="o">=</span> <span class="n">q</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">q</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+<span class="g g-Whitespace">    </span><span class="mi">358</span>     <span class="n">E0</span> <span class="o">=</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">hatH</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="ne">NameError</span>: name &#39;EOB&#39; is not defined
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="visualize-mismatch-vs-total-mass">
+<h2>Visualize: Mismatch vs Total Mass<a class="headerlink" href="#visualize-mismatch-vs-total-mass" title="Link to this heading">¶</a></h2>
+<p>Let’s see how the optimized waveform performs across different total masses:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute mismatch for a range of masses</span>
+<span class="n">masses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">19</span><span class="p">)</span>
+<span class="n">mm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">masses</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">M</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">masses</span><span class="p">):</span>
+    <span class="n">mm_settings</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">M</span>
+    <span class="n">matcher</span> <span class="o">=</span> <span class="n">Matcher</span><span class="p">(</span><span class="n">ebbh</span><span class="p">,</span> <span class="n">opt</span><span class="o">.</span><span class="n">opt_Waveform</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">mm_settings</span><span class="p">)</span>
+    <span class="n">mm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">mismatch</span>
+    
+    <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;M = </span><span class="si">{</span><span class="n">M</span><span class="si">:</span><span class="s1">6.1f</span><span class="si">}</span><span class="s1"> Msun, mismatch = </span><span class="si">{</span><span class="n">mm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Plot</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">mm</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Total Mass $M$ [$M_\odot$]&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Mismatch $\bar{\mathcal</span><span class="si">{F}</span><span class="s1">}$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Optimized EOB vs NR Mismatch&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mf">5e-3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Good mismatch threshold&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Acceptable threshold&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Minimum mismatch: </span><span class="si">{</span><span class="n">mm</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1"> at M = </span><span class="si">{</span><span class="n">masses</span><span class="p">[</span><span class="n">mm</span><span class="o">.</span><span class="n">argmin</span><span class="p">()]</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> Msun&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="compare-waveforms">
+<h2>Compare Waveforms<a class="headerlink" href="#compare-waveforms" title="Link to this heading">¶</a></h2>
+<p>Let’s visually compare the NR and optimized EOB waveforms:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get merger times</span>
+<span class="n">nr_mrg</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ebbh</span><span class="o">.</span><span class="n">find_max</span><span class="p">()</span>
+<span class="n">eob_mrg</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">opt_Waveform</span><span class="o">.</span><span class="n">find_max</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="c1"># Real part</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ebbh</span><span class="o">.</span><span class="n">u</span> <span class="o">-</span> <span class="n">nr_mrg</span><span class="p">,</span> <span class="n">ebbh</span><span class="o">.</span><span class="n">hlm</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)][</span><span class="s1">&#39;real&#39;</span><span class="p">],</span> 
+         <span class="n">label</span><span class="o">=</span><span class="s1">&#39;NR&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">opt</span><span class="o">.</span><span class="n">opt_Waveform</span><span class="o">.</span><span class="n">u</span> <span class="o">-</span> <span class="n">eob_mrg</span><span class="p">,</span> <span class="n">opt</span><span class="o">.</span><span class="n">opt_Waveform</span><span class="o">.</span><span class="n">hlm</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)][</span><span class="s1">&#39;real&#39;</span><span class="p">],</span> 
+         <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Optimized EOB&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time (M)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Re[$h_</span><span class="si">{22}</span><span class="s1">$]&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Waveform Comparison&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+
+<span class="c1"># Amplitude</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ebbh</span><span class="o">.</span><span class="n">u</span> <span class="o">-</span> <span class="n">nr_mrg</span><span class="p">,</span> <span class="n">ebbh</span><span class="o">.</span><span class="n">hlm</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)][</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> 
+         <span class="n">label</span><span class="o">=</span><span class="s1">&#39;NR&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">opt</span><span class="o">.</span><span class="n">opt_Waveform</span><span class="o">.</span><span class="n">u</span> <span class="o">-</span> <span class="n">eob_mrg</span><span class="p">,</span> <span class="n">opt</span><span class="o">.</span><span class="n">opt_Waveform</span><span class="o">.</span><span class="n">hlm</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)][</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> 
+         <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Optimized EOB&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time (M)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$|h_</span><span class="si">{22}</span><span class="s1">|$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Amplitude Comparison&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">¶</a></h2>
+<p>This tutorial demonstrated:</p>
+<ul class="simple">
+<li><p>Loading NR waveforms from various catalogs (SXS, RIT)</p></li>
+<li><p>Configuring the optimizer with appropriate settings</p></li>
+<li><p>Running the optimization to find best-fit initial conditions</p></li>
+<li><p>Evaluating the optimized waveform across different masses</p></li>
+<li><p>Visualizing the agreement between NR and optimized EOB</p></li>
+</ul>
+<section id="key-points">
+<h3>Key Points<a class="headerlink" href="#key-points" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>The optimizer uses dual annealing by default for robust global optimization</p></li>
+<li><p>Initial conditions (E₀, pₚₕ₀) significantly affect EOB waveform quality</p></li>
+<li><p>Mismatches typically vary with total mass</p></li>
+<li><p>Good mismatches (&lt; 5×10⁻³) indicate excellent EOB-NR agreement</p></li>
+</ul>
+</section>
+<section id="next-steps">
+<h3>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Try different catalogs (RIT, CoRe, ICCUB)</p></li>
+<li><p>Experiment with different initial condition parameterizations (e0f0 vs E0pph0)</p></li>
+<li><p>Use NQC (Non-Quasi-Circular) corrections for eccentric binaries</p></li>
+<li><p>Optimize for multiple modes simultaneously</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="iccub_waveform_integration.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Working with ICCUB Catalog and Waveform Integration</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="nr_eob_mismatch.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Computing Mismatches Between NR and EOB Waveforms</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Optimizing Initial Conditions for EOB Waveforms</a><ul>
+<li><a class="reference internal" href="#setup">Setup</a></li>
+<li><a class="reference internal" href="#load-nr-waveform">Load NR Waveform</a></li>
+<li><a class="reference internal" href="#configure-optimizer-settings">Configure Optimizer Settings</a></li>
+<li><a class="reference internal" href="#run-the-optimizer">Run the Optimizer</a></li>
+<li><a class="reference internal" href="#visualize-mismatch-vs-total-mass">Visualize: Mismatch vs Total Mass</a></li>
+<li><a class="reference internal" href="#compare-waveforms">Compare Waveforms</a></li>
+<li><a class="reference internal" href="#summary">Summary</a><ul>
+<li><a class="reference internal" href="#key-points">Key Points</a></li>
+<li><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>
