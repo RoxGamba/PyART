@@ -128,7 +128,7 @@ class Waveform_GRA(Waveform):
         Load the metadata, if path is None assume
         that they are in the same dir as the .h5 files
         """
-        path = os.path.join(self.path, f"GRA_BHBH_{self.ID}", self.res, "metadata.json")
+        path = os.path.join(self.path, f"GRA_BHBH_{self.ID}", "metadata.json")
         ometa = json.load(open(path, "r"))
 
         m1 = float(ometa["initial-mass1"])
