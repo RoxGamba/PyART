@@ -522,7 +522,31 @@ def download_safe(session, url, filename, chunk_size=1024 * 1024):
     with session.get(url, stream=True, headers=headers, timeout=60) as r:
         r.raise_for_status()
 
-        mode = "ab" if downloaded > 0 else "wb"
+        # Decide whether we can safely resume or must restart from scratch.
+        resume_supported = False
+        if downloaded > 0:
+            if r.status_code == 206:
+                content_range = r.headers.get("Content-Range", "")
+                # Expect the content range to start at our downloaded offset.
+                expected = f"bytes {downloaded}-"
+                if content_range.startswith(expected) or expected in content_range:
+                    resume_supported = True
+            else:
+                logging.info(
+                    "Server did not honor Range header (status %s); "
+                    "restarting full download",
+                    r.status_code,
+                )
+
+        if not resume_supported:
+            # If we had a partial file, overwrite it rather than append, to avoid
+            # corrupting the file when the server sends the full content.
+            if downloaded > 0:
+                logging.info("Discarding existing partial download and restarting")
+                downloaded = 0
+            mode = "wb"
+        else:
+            mode = "ab"
         with open(tmp_file, mode) as f:
             for chunk in r.iter_content(chunk_size=chunk_size):
                 if chunk:
