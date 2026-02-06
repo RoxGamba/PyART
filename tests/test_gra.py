@@ -18,6 +18,7 @@ def test_gra():
         download=True,
         res="128",
         downloads=["hlm", "metadata"],
+        ext="CCE",
     )
     # check attributes
     assert wf.ID == "0001"
