@@ -47,6 +47,11 @@ class Waveform_GRA(Waveform):
     ):
 
         super().__init__()
+        # Normalize ID to a 4-digit zero-padded string for consistency
+        if isinstance(ID, int):
+            ID = f"{ID:04d}"
+        elif isinstance(ID, str) and ID.isdigit() and len(ID) < 4:
+            ID = ID.zfill(4)
         self.ID = ID
         self.path = path
         self.cut_N = cut_N
