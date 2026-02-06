@@ -7,7 +7,7 @@ import logging
 import re
 import time
 
-# librares for downloading
+# libraries for downloading
 try:
     import requests
     from bs4 import BeautifulSoup
