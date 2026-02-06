@@ -84,6 +84,9 @@ class Waveform_GRA(Waveform):
         simulation from scholarsphere.
         """
 
+        if path is None:
+            path = self.path
+
         session = make_session()
 
         logging.info("Fetching catalog...")
@@ -130,8 +133,7 @@ class Waveform_GRA(Waveform):
 
     def load_metadata(self):
         """
-        Load the metadata, if path is None assume
-        that they are in the same dir as the .h5 files
+        Load the metadata from the json file and store it in self.metadata
         """
         path = os.path.join(self.path, f"GRA_BHBH_{self.ID}", "metadata.json")
         ometa = json.load(open(path, "r"))
@@ -318,13 +320,14 @@ class Waveform_GRA(Waveform):
 
     def load_psi4lm(
         self,
-        path=None,
-        fname=None,
         ellmax=None,
         r_ext=None,
         extrap="ext",
         load_m0=False,
     ):
+        """
+        Load the data from the h5 file, but for psi4 instead of h.
+        """
         if ellmax == None:
             ellmax = self.ellmax
 
@@ -332,11 +335,26 @@ class Waveform_GRA(Waveform):
             r_ext = "100.00"
 
         if extrap == "ext":
-            h5_file = os.path.join(self.path, "rPsi4_Asymptotic_GeometricUnits.h5")
+            h5_file = os.path.join(
+                self.path,
+                f"GRA_BHBH_{self.ID}",
+                self.res,
+                "rPsi4_Asymptotic_GeometricUnits.h5",
+            )
         elif extrap == "CCE":
-            h5_file = os.path.join(self.path, "rPsi4_CCE_GeometricUnits.h5")
+            h5_file = os.path.join(
+                self.path,
+                f"GRA_BHBH_{self.ID}",
+                self.res,
+                "rPsi4_CCE_GeometricUnits.h5",
+            )
         elif extrap == "finite":
-            h5_file = os.path.join(self.path, "rPsi4_FiniteRadii_GeometricUnits.h5")
+            h5_file = os.path.join(
+                self.path,
+                f"GRA_BHBH_{self.ID}",
+                self.res,
+                "rPsi4_FiniteRadii_GeometricUnits.h5",
+            )
         else:
             raise ValueError('extrap should be either "ext", "CCE" or "finite"')
 

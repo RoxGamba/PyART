@@ -1,5 +1,5 @@
 """
-Tests for the SXS catalog.
+Tests for the GRA catalog.
 """
 
 from PyART.catalogs import gra
@@ -10,7 +10,7 @@ mode_keys = ["A", "p", "real", "imag", "z"]
 
 def test_gra():
     """
-    Test the SXS download function.
+    Test the GRA download function.
     """
     wf = gra.Waveform_GRA(
         ID="0001",
