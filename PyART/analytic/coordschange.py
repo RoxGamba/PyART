@@ -271,6 +271,10 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
         'x2' : x coordinate of puncture 2
         'D' : coordinate separation between punctures
         'x_offset' : offset to be added to x coordinates
+        'qe' : EOB coordinates (x,y)
+        'pe' : EOB momenta (px, py), mu-normalized
+        'qe_chk' : EOB coordinates (x,y), EOB->ADM->EOB
+        'pe_chk' : EOB momenta (px, py), mu-normalized, EOB->ADM->EOB
     """
     # Get info from EOB dynamics
     q = eob_Wave.pars["q"]
@@ -320,8 +324,10 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
         "x2": x2,
         "D": d_ADM,
         "x_offset": x_offset,
-        "qe_check": qe_check,
-        "pe_check": pe_check,
+        "qe": qe,
+        "pe": pe,   
+        "qe_chk": qe_check, # EOB->ADM->EOB
+        "pe_chk": pe_check, # EOB->ADM->EOB
     }
 
     if verbose:
