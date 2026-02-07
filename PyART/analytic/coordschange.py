@@ -325,9 +325,9 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
         "D": d_ADM,
         "x_offset": x_offset,
         "qe": qe,
-        "pe": pe,   
-        "qe_chk": qe_check, # EOB->ADM->EOB
-        "pe_chk": pe_check, # EOB->ADM->EOB
+        "pe": pe,
+        "qe_chk": qe_check,  # EOB->ADM->EOB
+        "pe_chk": pe_check,  # EOB->ADM->EOB
     }
 
     if verbose:
