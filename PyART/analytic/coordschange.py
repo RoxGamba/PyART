@@ -309,7 +309,7 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
     x_offset = -b_par + d_ADM / (q + 1)
 
     qe_check, pe_check = Adm2Eob(qa, pa, nu, PN_order=PN_order)
-    
+
     # wrap output
     out = {
         "q_cart": qa,
@@ -320,8 +320,8 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
         "x2": x2,
         "D": d_ADM,
         "x_offset": x_offset,
-        "qe_check":qe_check,
-        "pe_check":pe_check
+        "qe_check": qe_check,
+        "pe_check": pe_check,
     }
 
     if verbose:
