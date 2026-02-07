@@ -1,0 +1,314 @@
+PyART.simulations
+=================
+
+.. py:module:: PyART.simulations
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.simulations.ufact
+   PyART.simulations.COMMENTS_IGNORE
+   PyART.simulations.METADATA_EXTENSION
+   PyART.simulations.KEYMAP
+   PyART.simulations.s
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.simulations.geom
+   PyART.simulations.cgs
+   PyART.simulations.metric
+   PyART.simulations.Simulations
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.simulations.runcmd
+   PyART.simulations.adm_to_eob
+   PyART.simulations.polar_to_cartesian
+   PyART.simulations.cartesian_to_polar
+
+
+Module Contents
+---------------
+
+.. py:data:: ufact
+
+.. py:class:: geom
+
+   Geometric units + Msun = 1
+
+
+   .. py:attribute:: grav_constant
+      :value: 1.0
+
+
+
+   .. py:attribute:: light_speed
+      :value: 1.0
+
+
+
+   .. py:attribute:: solar_mass
+      :value: 1.0
+
+
+
+   .. py:attribute:: MeV
+      :value: 1.0
+
+
+
+.. py:class:: cgs
+
+   CGS units
+
+
+   .. py:attribute:: grav_constant
+      :value: 6.673e-08
+
+
+
+   .. py:attribute:: light_speed
+      :value: 29979245800.0
+
+
+
+   .. py:attribute:: solar_mass
+      :value: 1.9884099021470417e+33
+
+
+
+   .. py:attribute:: MeV
+      :value: 11604505000.0
+
+
+
+.. py:class:: metric
+
+   Standard SI units
+
+
+   .. py:attribute:: grav_constant
+      :value: 6.673e-11
+
+
+
+   .. py:attribute:: light_speed
+      :value: 299792458.0
+
+
+
+   .. py:attribute:: solar_mass
+      :value: 1.9884099021470415e+30
+
+
+
+   .. py:attribute:: MeV
+      :value: 11604505000.0
+
+
+
+.. py:function:: runcmd(cmd, workdir, out=None)
+
+   Execute cmd in workdir
+
+
+.. py:function:: adm_to_eob(q_vec, p_vec, nu)
+
+   Convert q_ADM, p_ADM to EOB, 2PN trafo.
+   (E18) and (E19) of https://arxiv.org/pdf/1210.2834.pdf
+
+   q_vec: ADM puncture relative distance, x_p - x_m, cartesian
+   p_vec: ADM puncture relative linear momentum, p_p, cartesian, nu-normalized
+   nu   : symmetric mass ratio
+
+
+.. py:function:: polar_to_cartesian(q_p, p_p)
+
+   q_p : [r , phi ]
+   p_p : [pr, pphi]
+
+
+.. py:function:: cartesian_to_polar(q_c, p_c)
+
+   q_c : [x , y ]
+   p_c : [px, py]
+
+
+.. py:data:: COMMENTS_IGNORE
+   :value: ['#']
+
+
+.. py:data:: METADATA_EXTENSION
+   :value: ['.txt', '.bbh', '.json']
+
+
+.. py:data:: KEYMAP
+
+.. py:class:: Simulations(path='./', metadata_ext=METADATA_EXTENSION, comments_ignore=COMMENTS_IGNORE, keymap=KEYMAP, sxs_unpack=True, rit_ids_unpack=False, icc_add_meta=False, verbose=False)
+
+   Class representing simulation data
+
+   path : path to the metadata
+          search is recursive from this level
+
+   metadata_ext : extension(s) of metadata files
+
+   comments_ignore : list of characters to ignore
+
+   keymap : dictionary to map key names
+
+
+   .. py:attribute:: path
+      :value: './'
+
+
+
+   .. py:attribute:: verbose
+      :value: False
+
+
+
+   .. py:attribute:: files
+
+
+   .. py:attribute:: comments_ignore
+      :value: ['#']
+
+
+
+   .. py:attribute:: data
+      :value: []
+
+
+
+   .. py:method:: info(verbose=None)
+
+
+   .. py:method:: read_txt(fname)
+
+      Read metadata from a txt file
+
+
+
+   .. py:method:: read_json(fname)
+
+      Read metadata from a json file
+
+
+
+   .. py:method:: sxs_json_extract_append(db, catalog, f)
+
+      Special method to extract single-simulation metadata
+      from sxs_catalog.json and append those
+
+
+
+   .. py:method:: rit_tex_read_punctures_id(fname, verbose=None)
+
+              Special method to read punctures ID in ADM coordinates
+              from `rit_id_table.txt`
+
+              Headers:
+              Run, x_1/m, x_2/m, P_r/m, P_t/m, m^p_1/m, m^p_2/m, |S_1/m^2|, |S_2/m^2|, m^H_1/m, m^H_2/m, M_{
+      m ADM}/m,|a_1/m_1^H|,|a_2/m_2^H|
+              or
+              Run, x_1/m, x_2/m, P_r/m, P_t/m, m^p_1/m, m^p_2/m, m^H_1/m, m^H_2/m, M_{
+      m ADM}/m, e, N_{orb}
+
+
+
+
+   .. py:method:: rit_extract_punctures_id(db, id_db, verbose=None)
+
+      Special method to extract punctures ID in ADM coordinates
+      from id_db and add it to simulation
+
+
+
+   .. py:method:: parse_metadata(keymap=KEYMAP)
+
+      Parse metadata dictionary
+      For basic quantities:
+      * add keys with uniform names across catalogs
+      * make sure necessary data are present
+
+
+
+   .. py:method:: cast_to_float(x, ReturnLast=True)
+
+
+   .. py:method:: remove_empty_vals()
+
+
+   .. py:method:: search(key, val, bound=0.0)
+
+      Return list of simulations matching
+      a particular key-value pair
+
+
+
+   .. py:method:: q_to_nu(q)
+
+
+   .. py:method:: ADM_to_EOB(nu, q_adm, p_adm, polar=False)
+
+      Transform the initial conditions q_adm, p_adm to EOB coordinates.
+
+
+
+   .. py:method:: www_get_RIT(simulation)
+
+      Return command to get RIT data from www
+
+      RIT catalog offers 3 type of files,
+      names are based on a few metadata entries
+
+      Example:
+
+      catalog-tag                             = RIT:BBH:0001
+      resolution-tag                          = n100
+      id-tag                                  = id3
+
+      'Metadata/RIT:BBH:0001-n100-id3_Metadata.txt'
+      'Data/ExtrapPsi4_RIT-BBH-0001-n100-id3.tar.gz
+      'Data/ExtrapStrain_RIT-BBH-0001-n100.h5'
+
+      Note: Currently relies on the system call 'wget'.
+      There python packages (see below), but would need installation.
+      What is available within anaconda?
+
+
+
+   .. py:method:: www_get_SXS(simulation)
+
+      Return command to get SXS data from www
+
+      TODO
+      SXS metadata contains a 'url' key to Zenodo
+      can use wget, curl or the various pyton-based packages:
+      https://pypi.org/project/requests/
+      https://pypi.org/project/zenodo-get/
+
+
+
+   .. py:method:: www_get(data=None, outdir='Data/', dryrun=False, verbose=None)
+
+      Get data corresponding to the input metadata
+      Websites and www get are set based on the CATALOG key
+      Outdir is pre-pended by path and CATALOG
+
+
+
+.. py:data:: s
+

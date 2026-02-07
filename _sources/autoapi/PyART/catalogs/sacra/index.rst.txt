@@ -1,0 +1,90 @@
+PyART.catalogs.sacra
+====================
+
+.. py:module:: PyART.catalogs.sacra
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.sacra.Waveform_SACRA
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_SACRA(ID=None, name=None, path='./', nu_rescale=False, cut_final=150)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   This class is used to load the SACRA data and store it
+   in a convenient way. Some relevant info is stored in the
+   file sacra.info, while the waveform are downloaded from
+   Tullio.
+
+
+   .. py:attribute:: name
+      :value: None
+
+
+
+   .. py:attribute:: ID
+      :value: None
+
+
+
+   .. py:attribute:: info
+
+
+   .. py:attribute:: path
+      :value: './'
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:attribute:: cut_final
+      :value: 150
+
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:method:: load_tex_info()
+
+      Load info from TeX table stored in sacra.info,
+      taken from Zappa+:1903.11622
+
+      :returns: **info** -- List of dictionaries with the info for each simulation.
+      :rtype: list of dict
+
+
+
+   .. py:method:: load_metadata()
+
+      Load metadata from sacra.info file.
+
+
+
+   .. py:method:: load_hlm()
+
+      Load hlm from SACRA data.
+
+
+
+   .. py:method:: get_MOmega0_from_FFT(h, u)
+
+      Estimate the initial frequency from the Fourier Transform of the
+      waveform. This gives a rough estimate of the initial frequency.
+
+
+

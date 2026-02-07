@@ -1,0 +1,22 @@
+PyART.models
+============
+
+.. py:module:: PyART.models
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/PyART/models/bajes/index
+   /autoapi/PyART/models/lal/index
+   /autoapi/PyART/models/ringdown/index
+   /autoapi/PyART/models/ringdown_fits/index
+   /autoapi/PyART/models/ringdown_fits_noncirc/index
+   /autoapi/PyART/models/seob/index
+   /autoapi/PyART/models/teob/index
+   /autoapi/PyART/models/teob_matlab/index
+
+

@@ -1,0 +1,1208 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>PyART.utils.convert_sxs_to_lvc - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/intro_to_waveforms.html">1. Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../autoapi/PyART/index.html">PyART</a><input aria-label="Toggle navigation of PyART" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/simulations/index.html">PyART.simulations</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../autoapi/simulations/index.html">simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../autoapi/tocatalog_icc/index.html">tocatalog_icc</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for PyART.utils.convert_sxs_to_lvc</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Distributed under the MIT License.</span>
+<span class="c1"># See LICENSE.txt for details.</span>
+
+<span class="c1"># A script to convert binary-black-hole simulations from the SXS catalog</span>
+<span class="c1"># to the LVC format described in https://arxiv.org/abs/1703.01076</span>
+<span class="c1"># Based on an earlier script by Patricia Schmidt, with input from</span>
+<span class="c1"># Geoffrey Lovelace and Alyssa Garcia.</span>
+
+<span class="c1"># RG</span>
+<span class="c1"># Taken from https://github.com/sxs-collaboration/catalog_tools/tree/master,</span>
+<span class="c1"># with very slight modifications to not need the sxs_catalog.json and the</span>
+<span class="c1"># sxs_catalog_resolutions.json files.</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">romspline</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="p">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.p">[docs]</a>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Convert SXS data to LVC format&quot;</span><span class="p">)</span></div>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--sxs_data&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path containing rh*h5, Horizons.h5, metadata.json&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--resolution&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Int giving the resolution of the data to convert&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--sxs_catalog_metadata&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to sxs_catalog.json (via get_sxs_public_metadata.py)&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--sxs_catalog_resolutions&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to sxs_catalog_resolutions.json&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--modes&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;&#39;all&#39;, &#39;22only&#39;, or int for max l&quot;</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--out_path&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path where LVC format file is output&quot;</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--truncation_time&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;If specified, truncate time series at this time instead of at the reference time&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">modes</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+        <span class="n">modes</span> <span class="o">=</span> <span class="p">[[</span><span class="n">l</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">l</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">modes</span> <span class="o">==</span> <span class="s2">&quot;22only&quot;</span><span class="p">:</span>
+        <span class="n">modes</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">l_max</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span>
+        <span class="n">modes</span> <span class="o">=</span> <span class="p">[[</span><span class="n">l</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">l_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">l</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+
+<span class="c1">########################################################</span>
+<span class="c1"># Logging</span>
+<span class="c1">########################################################</span>
+<span class="c1"># A global variable holding all of the messages printed.</span>
+<span class="c1"># Will be saved in auxiliary-info of the conversion script.</span>
+<div class="viewcode-block" id="history">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.history">[docs]</a>
+<span class="n">history</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="log">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.log">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">history</span>
+    <span class="n">history</span> <span class="o">+=</span> <span class="n">string</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">string</span><span class="p">)</span></div>
+
+
+
+<span class="c1">########################################################</span>
+<span class="c1"># Getting a list of BBH simulations from a list of all</span>
+<span class="c1"># simulations</span>
+<span class="c1">########################################################</span>
+
+
+<div class="viewcode-block" id="bbh_keys_from_simulation_keys">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.bbh_keys_from_simulation_keys">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bbh_keys_from_simulation_keys</span><span class="p">(</span><span class="n">simulation_keys</span><span class="p">):</span>
+    <span class="n">bbh_simulations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">simulation</span> <span class="ow">in</span> <span class="n">simulation_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">simulation</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;BBH&quot;</span><span class="p">:</span>
+            <span class="n">bbh_simulations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bbh_simulations</span></div>
+
+
+
+<span class="c1">########################################################</span>
+<span class="c1"># Functions to convert waveform quantities to LVC format</span>
+<span class="c1">########################################################</span>
+
+
+<div class="viewcode-block" id="sxs_id_from_alt_names">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.sxs_id_from_alt_names">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sxs_id_from_alt_names</span><span class="p">(</span><span class="n">alt_names</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Takes an array of alternative names from an SXS metadata.json file</span>
+<span class="sd">    and returns the SXS ID of the simulation.&quot;&quot;&quot;</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="s2">&quot;SXS&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">alt_names</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">alt_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">alt_names</span><span class="p">]</span>
+    <span class="n">sxs_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">next</span><span class="p">((</span><span class="n">ss</span> <span class="k">for</span> <span class="n">ss</span> <span class="ow">in</span> <span class="n">alt_names</span> <span class="k">if</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">ss</span><span class="p">),</span> <span class="kc">None</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">sxs_id</span></div>
+
+
+
+<div class="viewcode-block" id="first_index_after_time">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.first_index_after_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">first_index_after_time</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">target_time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the index of the first time in a list of times after</span>
+<span class="sd">    time target_time.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">times</span> <span class="o">-</span> <span class="n">target_time</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span></div>
+
+
+
+<div class="viewcode-block" id="first_index_after_relaxation_time">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.first_index_after_relaxation_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">first_index_after_relaxation_time</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">offset</span><span class="o">=-</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the index of the first time in a list of times after the</span>
+<span class="sd">    relaxation time, which is given as a key in metadata, i.e.</span>
+<span class="sd">    metadata[&#39;relaxation_time&#39;], except actually return an</span>
+<span class="sd">    index offset earlier.&quot;&quot;&quot;</span>
+    <span class="n">relaxation_time</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;relaxation_time&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">first_index_after_time</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">relaxation_time</span><span class="p">)</span> <span class="o">-</span> <span class="n">offset</span></div>
+
+
+
+<div class="viewcode-block" id="first_index_before_reference_time">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.first_index_before_reference_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">first_index_before_reference_time</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the index of the first time in a list of times before the</span>
+<span class="sd">    reference time, which is given as a key in metadata, i.e.</span>
+<span class="sd">    metadata[&#39;reference_time&#39;], except actually return an</span>
+<span class="sd">    index offset earlier.&quot;&quot;&quot;</span>
+    <span class="n">reference_time</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_time&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">first_index_after_time</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">reference_time</span><span class="p">)</span> <span class="o">-</span> <span class="n">offset</span></div>
+
+
+
+<div class="viewcode-block" id="waveform_norm_squared">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.waveform_norm_squared">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">waveform_norm_squared</span><span class="p">(</span><span class="n">sxs_format_waveform</span><span class="p">,</span> <span class="n">extrapolation_order</span><span class="o">=</span><span class="s2">&quot;Extrapolated_N2&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Takes an SXS-format waveform and returns the sum of the squared</span>
+<span class="sd">    amplitude of each (l,m) mode of the wave.&quot;&quot;&quot;</span>
+    <span class="n">extrap</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">extrapolation_order</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">sxs_format_waveform</span><span class="p">[</span><span class="n">extrap</span><span class="p">][</span><span class="s2">&quot;Y_l2_m2.dat&quot;</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">sum_amp_squared</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">times</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">sxs_format_waveform</span><span class="p">[</span><span class="n">extrap</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s2">&quot;Y_&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+                <span class="n">sum_amp_squared</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sxs_format_waveform</span><span class="p">[</span><span class="n">extrap</span><span class="p">][</span><span class="n">key</span><span class="p">][:,</span> <span class="n">i</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">sum_amp_squared</span></div>
+
+
+
+<div class="viewcode-block" id="peak_time_from_sxs">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.peak_time_from_sxs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">peak_time_from_sxs</span><span class="p">(</span>
+    <span class="n">sxs_format_waveform</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">extrapolation_order</span><span class="o">=</span><span class="s2">&quot;Extrapolated_N2&quot;</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the time when the sum of the squared amplitudes of an</span>
+<span class="sd">    SXS-format waveform is largest. Note: this is not necessarily the time of</span>
+<span class="sd">    the peak of the l=m=2 mode.&quot;&quot;&quot;</span>
+    <span class="n">extrap</span> <span class="o">=</span> <span class="n">extrapolation_order</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
+    <span class="c1"># All modes have the same time, so just look at the l=m=2 mode to get the</span>
+    <span class="c1"># times</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">sxs_format_waveform</span><span class="p">[</span><span class="n">extrapolation_order</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span><span class="p">][</span><span class="s2">&quot;Y_l2_m2.dat&quot;</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">first_index_before_reference_time</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+    <span class="n">sum_amp_squared</span> <span class="o">=</span> <span class="n">waveform_norm_squared</span><span class="p">(</span><span class="n">sxs_format_waveform</span><span class="p">,</span> <span class="n">extrapolation_order</span><span class="p">)</span>
+    <span class="n">index_peak</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">sum_amp_squared</span><span class="p">[</span><span class="n">start</span><span class="p">:]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">sxs_format_waveform</span><span class="p">[</span><span class="n">extrap</span><span class="p">][</span><span class="s2">&quot;Y_l2_m2.dat&quot;</span><span class="p">][</span><span class="n">index_peak</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="amp_phase_from_sxs">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.amp_phase_from_sxs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">amp_phase_from_sxs</span><span class="p">(</span>
+    <span class="n">sxs_format_waveform</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">modes</span><span class="p">,</span>
+    <span class="n">extrapolation_order</span><span class="o">=</span><span class="s2">&quot;Extrapolated_N2&quot;</span><span class="p">,</span>
+    <span class="n">truncation_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns amplitude and phase for an SXS-format waveform, for a list of</span>
+<span class="sd">    Ylm modes. If modes=&#39;all&#39;, return all modes for l=2 through l=8,</span>
+<span class="sd">    inclusive.&quot;&quot;&quot;</span>
+    <span class="n">extrap</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">extrapolation_order</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
+
+    <span class="k">if</span> <span class="n">modes</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+        <span class="n">modes</span> <span class="o">=</span> <span class="p">[[</span><span class="n">l</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">l</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Modes: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">modes</span><span class="p">))</span>
+    <span class="n">amps</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">phases</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">times_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">l_max</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># All modes have the same time, so just look at the l=m=2 mode to get</span>
+    <span class="c1"># the times</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">sxs_format_waveform</span><span class="p">[</span><span class="n">extrap</span><span class="p">][</span><span class="s2">&quot;Y_l2_m2.dat&quot;</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">truncation_time</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">first_index_before_reference_time</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">first_index_after_time</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">truncation_time</span><span class="p">)</span>
+    <span class="n">peak</span> <span class="o">=</span> <span class="n">peak_time_from_sxs</span><span class="p">(</span><span class="n">sxs_format_waveform</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">extrapolation_order</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">:</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">mode</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">mode</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Computing mode: l = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, m = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;Y_l&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_m&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span>
+        <span class="n">hlm</span> <span class="o">=</span> <span class="n">sxs_format_waveform</span><span class="p">[</span><span class="n">extrap</span><span class="p">][</span><span class="n">mode</span><span class="p">]</span>
+
+        <span class="c1"># CHECK ME: is the + sign correct here?</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">hlm</span><span class="p">[</span><span class="n">start</span><span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">hlm</span><span class="p">[</span><span class="n">start</span><span class="p">:,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">amps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+        <span class="n">phases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">h</span><span class="p">)))</span>
+        <span class="n">times_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">start</span><span class="p">:]</span> <span class="o">-</span> <span class="n">peak</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">l_max</span><span class="p">:</span>
+            <span class="n">l_max</span> <span class="o">=</span> <span class="n">l</span>
+
+    <span class="k">return</span> <span class="n">modes</span><span class="p">,</span> <span class="n">times_list</span><span class="p">,</span> <span class="n">amps</span><span class="p">,</span> <span class="n">phases</span><span class="p">,</span> <span class="n">times</span><span class="p">[</span><span class="n">start</span><span class="p">],</span> <span class="n">peak</span><span class="p">,</span> <span class="n">l_max</span></div>
+
+
+
+<div class="viewcode-block" id="spline_amp_phase_from_sxs">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.spline_amp_phase_from_sxs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">spline_amp_phase_from_sxs</span><span class="p">(</span>
+    <span class="n">sxs_format_waveform</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">modes</span><span class="p">,</span>
+    <span class="n">extrapolation_order</span><span class="o">=</span><span class="s2">&quot;Extrapolated_N2&quot;</span><span class="p">,</span>
+    <span class="n">truncation_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns spline amplitude and phase for an SXS-format waveform, for a</span>
+<span class="sd">    list of Ylm modes. If modes=&#39;all&#39;, return all modes for l=2 through l=8,</span>
+<span class="sd">    inclusive.&quot;&quot;&quot;</span>
+    <span class="n">modes</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">amps</span><span class="p">,</span> <span class="n">phases</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">,</span> <span class="n">l_max</span> <span class="o">=</span> <span class="n">amp_phase_from_sxs</span><span class="p">(</span>
+        <span class="n">sxs_format_waveform</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">extrapolation_order</span><span class="p">,</span> <span class="n">truncation_time</span>
+    <span class="p">)</span>
+    <span class="n">spline_amps</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">spline_phases</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mode</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">modes</span><span class="p">):</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Computing spline for amplitude of mode &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mode</span><span class="p">))</span>
+        <span class="n">spline_amps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">romspline</span><span class="o">.</span><span class="n">ReducedOrderSpline</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">amps</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Computing spline for phase of mode &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mode</span><span class="p">))</span>
+        <span class="n">spline_phases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">romspline</span><span class="o">.</span><span class="n">ReducedOrderSpline</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">phases</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">modes</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">spline_amps</span><span class="p">,</span> <span class="n">spline_phases</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">,</span> <span class="n">l_max</span></div>
+
+
+
+<div class="viewcode-block" id="write_splines_to_H5">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.write_splines_to_H5">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_splines_to_H5</span><span class="p">(</span><span class="n">out_filename</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">spline_amps</span><span class="p">,</span> <span class="n">spline_phases</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes spline amplitudes and phases to an HDF5 file</span>
+<span class="sd">    named out_filename.&quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Writing waveform data to &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">out_filename</span><span class="p">))</span>
+    <span class="n">out_file</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">out_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mode</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">modes</span><span class="p">):</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">mode</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">mode</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">out_group_amp</span> <span class="o">=</span> <span class="n">out_file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;amp_l</span><span class="si">%d</span><span class="s2">_m</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+        <span class="n">out_group_phase</span> <span class="o">=</span> <span class="n">out_file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;phase_l</span><span class="si">%d</span><span class="s2">_m</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+        <span class="n">spline_amps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_group_amp</span><span class="p">)</span>
+        <span class="n">spline_phases</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_group_phase</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">m</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">out_file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;NRtimes&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<span class="c1">########################################################</span>
+<span class="c1"># Functions to convert horizon quantities to LVC format</span>
+<span class="c1">########################################################</span>
+
+
+<div class="viewcode-block" id="prepare_horizon_quantity">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.prepare_horizon_quantity">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_horizon_quantity</span><span class="p">(</span><span class="n">sxs_horizon_quantity</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns times and values of an SXS-format horizon quantity, such as</span>
+<span class="sd">    AhA.dir/ArealMass.dat. This function first truncates the horizon data,</span>
+<span class="sd">    including only data after the reference time. Then, it shifts the time</span>
+<span class="sd">    by the same amount as the waveforms (i.e., by the peak time). Then,</span>
+<span class="sd">    return the truncated/shifted times and truncated values.&quot;&quot;&quot;</span>
+    <span class="c1"># First, figure out the correct time series</span>
+    <span class="n">times_raw_AH</span> <span class="o">=</span> <span class="n">sxs_horizon_quantity</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">start_AH</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">times_raw_AH</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">))</span>
+    <span class="n">times_AH</span> <span class="o">=</span> <span class="n">times_raw_AH</span><span class="p">[</span><span class="n">start_AH</span><span class="p">:]</span> <span class="o">-</span> <span class="n">peak_time</span>
+
+    <span class="c1"># Loop over remaining components, truncating each one to match times_AH</span>
+    <span class="n">quantity_AH_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sxs_horizon_quantity</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+        <span class="n">quantity_AH_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sxs_horizon_quantity</span><span class="p">[</span><span class="n">start_AH</span><span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
+    <span class="n">quantity_AH</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">quantity_AH_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">times_AH</span><span class="p">,</span> <span class="n">quantity_AH</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">spline_horizon_quantity</span><span class="p">(</span><span class="n">sxs_horizon_quantity</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepares sxs_horizon_quantity by passing it to</span>
+<span class="sd">    prepare_horizon_quantity() and then returns a spline of the result.&quot;&quot;&quot;</span>
+    <span class="n">times_AH</span><span class="p">,</span> <span class="n">quantity_AH</span> <span class="o">=</span> <span class="n">prepare_horizon_quantity</span><span class="p">(</span>
+        <span class="n">sxs_horizon_quantity</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span>
+    <span class="p">)</span>
+    <span class="n">spline_AH_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sxs_horizon_quantity</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">spline_AH_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">romspline</span><span class="o">.</span><span class="n">ReducedOrderSpline</span><span class="p">(</span><span class="n">times_AH</span><span class="p">,</span> <span class="n">quantity_AH</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">spline_AH_list</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="insert_spline">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.insert_spline">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">insert_spline</span><span class="p">(</span>
+    <span class="n">sxs_horizons</span><span class="p">,</span>
+    <span class="n">spline_dictionary</span><span class="p">,</span>
+    <span class="n">spline_keys</span><span class="p">,</span>
+    <span class="n">horizon_key</span><span class="p">,</span>
+    <span class="n">quantity_key</span><span class="p">,</span>
+    <span class="n">start_time</span><span class="p">,</span>
+    <span class="n">peak_time</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Inserts a spline for a quantity in Horizons.h5 into a dictionary of</span>
+<span class="sd">    horizon splines. Note: spline_keys is a vector of key names (should be</span>
+<span class="sd">    length 1 for scalars, length 3 for vectors), where each key is the name</span>
+<span class="sd">    of a group that will be written in the LVC file, such as mass1-vs-time or</span>
+<span class="sd">    spin1x-vs-time; horizon_key is AhA, AhB, or AhC; and quantity_key</span>
+<span class="sd">    is e.g. ChristodoulouMass, the name of the quantity in Horizons.h5</span>
+<span class="sd">    to be read and splined.&quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Computing &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">spline_keys</span><span class="p">))</span>
+    <span class="n">ah</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">horizon_key</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.dir&quot;</span>
+    <span class="n">qty</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">quantity_key</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span>
+    <span class="n">quantity</span> <span class="o">=</span> <span class="n">sxs_horizons</span><span class="p">[</span><span class="n">ah</span><span class="p">][</span><span class="n">qty</span><span class="p">]</span>
+    <span class="n">spline</span> <span class="o">=</span> <span class="n">spline_horizon_quantity</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">spline_key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spline_keys</span><span class="p">):</span>
+        <span class="n">spline_dictionary</span><span class="p">[</span><span class="n">spline_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">spline</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="derived_horizon_quantities_from_sxs">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.derived_horizon_quantities_from_sxs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">derived_horizon_quantities_from_sxs</span><span class="p">(</span><span class="n">sxs_horizons</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes quantities derived from quanities in the SXS-format file</span>
+<span class="sd">    Horizons.h5. Specifically, returns a tuple containing nhat, a unit vector</span>
+<span class="sd">    from the secondary black hole to the primary black hole; omega_orbit,</span>
+<span class="sd">    the orbital frequency; LNhat, a unit vector in the direction of the</span>
+<span class="sd">    orbital angular momentum; and the horizon times of the primary,</span>
+<span class="sd">    secondary, and remnant, truncated and shifted.&quot;&quot;&quot;</span>
+    <span class="n">t_A</span><span class="p">,</span> <span class="n">x_A</span> <span class="o">=</span> <span class="n">prepare_horizon_quantity</span><span class="p">(</span>
+        <span class="n">sxs_horizons</span><span class="p">[</span><span class="s2">&quot;AhA.dir&quot;</span><span class="p">][</span><span class="s2">&quot;CoordCenterInertial.dat&quot;</span><span class="p">],</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span>
+    <span class="p">)</span>
+    <span class="n">t_B</span><span class="p">,</span> <span class="n">x_B</span> <span class="o">=</span> <span class="n">prepare_horizon_quantity</span><span class="p">(</span>
+        <span class="n">sxs_horizons</span><span class="p">[</span><span class="s2">&quot;AhB.dir&quot;</span><span class="p">][</span><span class="s2">&quot;CoordCenterInertial.dat&quot;</span><span class="p">],</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span>
+    <span class="p">)</span>
+    <span class="c1"># This is used only for t_C</span>
+    <span class="n">t_C</span><span class="p">,</span> <span class="n">x_C</span> <span class="o">=</span> <span class="n">prepare_horizon_quantity</span><span class="p">(</span>
+        <span class="n">sxs_horizons</span><span class="p">[</span><span class="s2">&quot;AhC.dir&quot;</span><span class="p">][</span><span class="s2">&quot;CoordCenterInertial.dat&quot;</span><span class="p">],</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span>
+    <span class="p">)</span>
+
+    <span class="c1"># n_vec is a unit vector pointing from the secondary (black hole B) to</span>
+    <span class="c1"># the primary (black hole A). We use np.linalg.norm() to get the Euclidean</span>
+    <span class="c1"># magnitude of n_vec.</span>
+    <span class="n">x_A</span> <span class="o">=</span> <span class="n">x_A</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">x_B</span> <span class="o">=</span> <span class="n">x_B</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">n_vec</span> <span class="o">=</span> <span class="n">x_A</span> <span class="o">-</span> <span class="n">x_B</span>
+    <span class="n">n_vec_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">n_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">n_hat</span> <span class="o">=</span> <span class="n">n_vec</span> <span class="o">/</span> <span class="n">n_vec_norm</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="c1"># We compute dn_vec/dt to get a velocity vector, by computing differences</span>
+    <span class="c1"># for dn_vec and dt.</span>
+    <span class="n">dn_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">n_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t_A</span><span class="p">)</span>
+    <span class="n">dn_vec_dt</span> <span class="o">=</span> <span class="n">dn_vec</span> <span class="o">/</span> <span class="n">dt</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="c1"># The orbital frequency is the magnitude of n_vec x dn_vec/dt</span>
+    <span class="c1"># This is just from the Newtonian expression |r x v| = r^2 \omega.</span>
+    <span class="c1"># Because taking a time derivative reduces the length of the array by 1,</span>
+    <span class="c1"># drop the last time of n_vec so n_vec and dn_vec_dt have the same number</span>
+    <span class="c1"># of points.</span>
+    <span class="n">r_cross_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">n_vec</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dn_vec_dt</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dn_vec_dt</span><span class="p">))]</span>
+    <span class="p">)</span>
+    <span class="n">r_cross_v_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r_cross_v</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">omega_orbit</span> <span class="o">=</span> <span class="n">r_cross_v_norm</span> <span class="o">/</span> <span class="n">n_vec_norm</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="c1"># Finally, LNhat is a unit vector in the direction of the orbital</span>
+    <span class="c1"># angular momentum. That is, it is a unit vector in the direction of</span>
+    <span class="c1"># r x p, which is the same direction as r x v.</span>
+    <span class="n">LN_hat</span> <span class="o">=</span> <span class="n">r_cross_v</span> <span class="o">/</span> <span class="n">r_cross_v_norm</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="c1"># Horizons.h5 stores quantities as functions of time. Append time to the</span>
+    <span class="c1"># derived quantities.</span>
+    <span class="n">n_hat_vs_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">t_A</span><span class="p">,</span> <span class="n">n_hat</span><span class="p">]</span>
+    <span class="n">omega_orbit_vs_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">t_A</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">omega_orbit</span><span class="p">]</span>
+    <span class="n">LN_hat_vs_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">t_A</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">LN_hat</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">n_hat_vs_time</span><span class="p">,</span> <span class="n">omega_orbit_vs_time</span><span class="p">,</span> <span class="n">LN_hat_vs_time</span><span class="p">,</span> <span class="n">t_A</span><span class="p">,</span> <span class="n">t_B</span><span class="p">,</span> <span class="n">t_C</span></div>
+
+
+
+<div class="viewcode-block" id="spline_horizon_quantity">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.spline_horizon_quantity">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">spline_horizon_quantity</span><span class="p">(</span><span class="n">sxs_horizon_quantity</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepares sxs_horizon_quantity by passing it to</span>
+<span class="sd">    prepare_horizon_quantity() and then returns a spline of the result.&quot;&quot;&quot;</span>
+    <span class="n">times_AH</span><span class="p">,</span> <span class="n">quantity_AH</span> <span class="o">=</span> <span class="n">prepare_horizon_quantity</span><span class="p">(</span>
+        <span class="n">sxs_horizon_quantity</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span>
+    <span class="p">)</span>
+    <span class="n">spline_AH_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sxs_horizon_quantity</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">spline_AH_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">romspline</span><span class="o">.</span><span class="n">ReducedOrderSpline</span><span class="p">(</span><span class="n">times_AH</span><span class="p">,</span> <span class="n">quantity_AH</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">spline_AH_list</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="insert_derived_spline">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.insert_derived_spline">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">insert_derived_spline</span><span class="p">(</span><span class="n">spline_dictionary</span><span class="p">,</span> <span class="n">spline_keys</span><span class="p">,</span> <span class="n">derived_quantity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Inserts a spline into a dictionary of horizon splines for a quantity</span>
+<span class="sd">    derived from Horizons.h5. Note: spline_keys is a vector of key names</span>
+<span class="sd">    (should be length 1 for scalars, length 3 for vectors), where each key is</span>
+<span class="sd">    the name of a group that will be written in the LVC file, such as</span>
+<span class="sd">    Omega-vs-time or LNhatx-vs-time; and derived_quantity is the quantity to</span>
+<span class="sd">    be splined. The derived_quantity should be computed using</span>
+<span class="sd">    erived_horizon_quantities_from_sxs().&quot;&quot;&quot;</span>
+    <span class="c1"># N.B. times already shifted, truncated to remove junk by</span>
+    <span class="c1"># derived_horizon_quantities_from_sxs()</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Computing &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">spline_keys</span><span class="p">))</span>
+    <span class="n">times_AH</span> <span class="o">=</span> <span class="n">derived_quantity</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">quantity_AH</span> <span class="o">=</span> <span class="n">derived_quantity</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+    <span class="n">spline_AH_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">derived_quantity</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">spline_AH_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">romspline</span><span class="o">.</span><span class="n">ReducedOrderSpline</span><span class="p">(</span><span class="n">times_AH</span><span class="p">,</span> <span class="n">quantity_AH</span><span class="p">[:,</span> <span class="n">a</span><span class="p">]))</span>
+    <span class="n">spline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">spline_AH_list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">spline_key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spline_keys</span><span class="p">):</span>
+        <span class="n">spline_dictionary</span><span class="p">[</span><span class="n">spline_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">spline</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="horizon_splines_from_sxs">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.horizon_splines_from_sxs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">horizon_splines_from_sxs</span><span class="p">(</span><span class="n">horizons</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepares a dictionary of the horizon-quantity splines that the LVC</span>
+<span class="sd">    format expects, starting with an SXS-format Horizons.h5. start_time and</span>
+<span class="sd">    peak_time are determined by amp_phase_from_sxs().&quot;&quot;&quot;</span>
+    <span class="n">horizon_splines</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Christodoulou mass</span>
+    <span class="n">insert_spline</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span>
+        <span class="n">horizon_splines</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;mass1-vs-time&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AhA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ChristodoulouMass&quot;</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">,</span>
+        <span class="n">peak_time</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">insert_spline</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span>
+        <span class="n">horizon_splines</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;mass2-vs-time&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AhB&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ChristodoulouMass&quot;</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">,</span>
+        <span class="n">peak_time</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">insert_spline</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span>
+        <span class="n">horizon_splines</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;remnant-mass-vs-time&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AhC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ChristodoulouMass&quot;</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">,</span>
+        <span class="n">peak_time</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Dimensionless spin</span>
+    <span class="n">insert_spline</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span>
+        <span class="n">horizon_splines</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;spin1x-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;spin1y-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;spin1z-vs-time&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AhA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chiInertial&quot;</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">,</span>
+        <span class="n">peak_time</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">insert_spline</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span>
+        <span class="n">horizon_splines</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;spin2x-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;spin2y-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;spin2z-vs-time&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AhB&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chiInertial&quot;</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">,</span>
+        <span class="n">peak_time</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">insert_spline</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span>
+        <span class="n">horizon_splines</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;remnant-spinx-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;remnant-spiny-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;remnant-spinz-vs-time&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AhC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chiInertial&quot;</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">,</span>
+        <span class="n">peak_time</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Position</span>
+    <span class="n">insert_spline</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span>
+        <span class="n">horizon_splines</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;position1x-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;position1y-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;position1z-vs-time&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AhA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CoordCenterInertial&quot;</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">,</span>
+        <span class="n">peak_time</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">insert_spline</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span>
+        <span class="n">horizon_splines</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;position2x-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;position2y-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;position2z-vs-time&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AhB&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CoordCenterInertial&quot;</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">,</span>
+        <span class="n">peak_time</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">insert_spline</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span>
+        <span class="n">horizon_splines</span><span class="p">,</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;remnant-positionx-vs-time&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;remnant-positiony-vs-time&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;remnant-positionz-vs-time&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;AhC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CoordCenterInertial&quot;</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">,</span>
+        <span class="n">peak_time</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Derived quantities: nhat, omega_orbit, LNhat</span>
+    <span class="n">n_hat</span><span class="p">,</span> <span class="n">omega_orbit</span><span class="p">,</span> <span class="n">LN_hat</span><span class="p">,</span> <span class="n">t_A</span><span class="p">,</span> <span class="n">t_B</span><span class="p">,</span> <span class="n">t_C</span> <span class="o">=</span> <span class="n">derived_horizon_quantities_from_sxs</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span>
+    <span class="p">)</span>
+    <span class="n">insert_derived_spline</span><span class="p">(</span>
+        <span class="n">horizon_splines</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;nhatx-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;nhaty-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;nhatz-vs-time&quot;</span><span class="p">],</span> <span class="n">n_hat</span>
+    <span class="p">)</span>
+    <span class="n">insert_derived_spline</span><span class="p">(</span><span class="n">horizon_splines</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Omega-vs-time&quot;</span><span class="p">],</span> <span class="n">omega_orbit</span><span class="p">)</span>
+    <span class="n">insert_derived_spline</span><span class="p">(</span>
+        <span class="n">horizon_splines</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;LNhatx-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;LNhaty-vs-time&quot;</span><span class="p">,</span> <span class="s2">&quot;LNhatz-vs-time&quot;</span><span class="p">],</span> <span class="n">LN_hat</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">horizon_splines</span><span class="p">,</span> <span class="n">t_A</span><span class="p">,</span> <span class="n">t_B</span><span class="p">,</span> <span class="n">t_C</span></div>
+
+
+
+<div class="viewcode-block" id="write_horizon_splines_from_sxs">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.write_horizon_splines_from_sxs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_horizon_splines_from_sxs</span><span class="p">(</span>
+    <span class="n">out_filename</span><span class="p">,</span>
+    <span class="n">horizon_splines</span><span class="p">,</span>
+    <span class="n">primary_horizon_times</span><span class="p">,</span>
+    <span class="n">secondary_horizon_times</span><span class="p">,</span>
+    <span class="n">remnant_horizon_times</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Takes a dictionary of horizon splines, prepared with</span>
+<span class="sd">    horizon_splines_from_sxs, and writes each spline into an HDF5 file. Also</span>
+<span class="sd">    outputs the horizon times for the individual and remnant black holes,</span>
+<span class="sd">    truncated to remove junk radiation and shifted.&quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Writing horizon data to &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">out_filename</span><span class="p">))</span>
+    <span class="n">out_file</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">out_filename</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">horizon_splines</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">out_group</span> <span class="o">=</span> <span class="n">out_file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">horizon_splines</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_group</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;HorizonATimes&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">primary_horizon_times</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;HorizonBTimes&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">secondary_horizon_times</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;CommonHorizonTimes&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">remnant_horizon_times</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<span class="c1">########################################################</span>
+<span class="c1"># Functions to convert metadata to the LVC format</span>
+<span class="c1">########################################################</span>
+
+
+<div class="viewcode-block" id="simulation_type_from_spins">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.simulation_type_from_spins">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">simulation_type_from_spins</span><span class="p">(</span><span class="n">dimensionless_spin_1</span><span class="p">,</span> <span class="n">dimensionless_spin_2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function that classifies a simulation with dimensionless_spin_1</span>
+<span class="sd">    on the primary (larger) black hole and dimensionless_spin_2 on the</span>
+<span class="sd">    secondary black hole as nonspinning (if no spin component &gt; 0.01),</span>
+<span class="sd">    aligned-spin (if only z components are &gt; 0.01),</span>
+<span class="sd">    or precessing (otherwise).&quot;&quot;&quot;</span>
+    <span class="n">spin_zero_threshold</span> <span class="o">=</span> <span class="mf">0.01</span>  <span class="c1"># treat spins smaller than this as zero</span>
+    <span class="c1"># Types defined in arXiv:1703.01076</span>
+    <span class="n">nonspinning_type</span> <span class="o">=</span> <span class="s2">&quot;non-spinning&quot;</span>
+    <span class="n">aligned_type</span> <span class="o">=</span> <span class="s2">&quot;aligned-spins&quot;</span>
+    <span class="n">precessing_type</span> <span class="o">=</span> <span class="s2">&quot;precessing&quot;</span>
+
+    <span class="n">simulation_type</span> <span class="o">=</span> <span class="n">nonspinning_type</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="nb">abs</span><span class="p">(</span><span class="n">dimensionless_spin_1</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">spin_zero_threshold</span>
+        <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dimensionless_spin_2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">spin_zero_threshold</span>
+    <span class="p">):</span>
+        <span class="n">simulation_type</span> <span class="o">=</span> <span class="n">aligned_type</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="nb">abs</span><span class="p">(</span><span class="n">dimensionless_spin_1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">spin_zero_threshold</span>
+        <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dimensionless_spin_2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">spin_zero_threshold</span>
+        <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dimensionless_spin_1</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">spin_zero_threshold</span>
+        <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dimensionless_spin_2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">spin_zero_threshold</span>
+    <span class="p">):</span>
+        <span class="n">simulation_type</span> <span class="o">=</span> <span class="n">precessing_type</span>
+
+    <span class="k">return</span> <span class="n">simulation_type</span></div>
+
+
+
+<div class="viewcode-block" id="write_metadata_from_sxs">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.write_metadata_from_sxs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_metadata_from_sxs</span><span class="p">(</span>
+    <span class="n">out_filename</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">,</span> <span class="n">l_max</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes metadata to an LVC-format file, including both adding</span>
+<span class="sd">    auxiliary-info/metadata.json and setting attributes conforming to</span>
+<span class="sd">    the format given by arXiv:1703.01076. Input arguments are the</span>
+<span class="sd">    output filename out_filename, the resolution of the simulation (an int),</span>
+<span class="sd">    metadata (read from metadata.json) for this simulation/resolution,</span>
+<span class="sd">    the start_time, peak time, and l_max determined by amp_phase_from_sxs().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Writing metadata&quot;</span><span class="p">)</span>
+    <span class="c1"># Get the SXS ID for the current simulation</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;alternative_names&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span><span class="p">]</span>
+    <span class="n">sxs_id</span> <span class="o">=</span> <span class="n">sxs_id_from_alt_names</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+    <span class="n">out_file</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">out_filename</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Put the metadata for this simulation into the auxiliary-info group</span>
+    <span class="n">aux_group</span> <span class="o">=</span> <span class="n">out_file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;auxiliary-info&quot;</span><span class="p">)</span>
+    <span class="n">json_this_sim</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+    <span class="n">aux_group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;metadata.json&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">json_this_sim</span><span class="p">)</span>
+
+    <span class="c1"># Note: all numerical quantities for LVC attributes</span>
+    <span class="c1"># are at the reference time unless otherwise indicated</span>
+    <span class="n">mass1</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_mass1&quot;</span><span class="p">]</span>
+    <span class="n">mass2</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_mass2&quot;</span><span class="p">]</span>
+    <span class="n">total_mass</span> <span class="o">=</span> <span class="n">mass1</span> <span class="o">+</span> <span class="n">mass2</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="p">(</span><span class="n">mass1</span> <span class="o">*</span> <span class="n">mass2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">total_mass</span><span class="p">)</span>
+
+    <span class="c1"># Round slightly larger mass ratios to 1</span>
+    <span class="c1"># CHECK ME: should we do this?</span>
+    <span class="k">if</span> <span class="n">eta</span> <span class="o">&gt;</span> <span class="mf">0.25</span> <span class="ow">and</span> <span class="n">eta</span> <span class="o">&lt;</span> <span class="mf">0.2501</span><span class="p">:</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="mf">0.25</span>
+
+    <span class="n">dimensionless_spin1</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_dimensionless_spin1&quot;</span><span class="p">]</span>
+    <span class="n">dimensionless_spin2</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_dimensionless_spin2&quot;</span><span class="p">]</span>
+
+    <span class="n">position1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_position1&quot;</span><span class="p">])</span>
+    <span class="n">position2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_position2&quot;</span><span class="p">])</span>
+    <span class="n">separation</span> <span class="o">=</span> <span class="n">position1</span> <span class="o">-</span> <span class="n">position2</span>
+
+    <span class="n">n_hat</span> <span class="o">=</span> <span class="n">separation</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">separation</span><span class="p">)</span>
+    <span class="n">omega_orbit_vec</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_orbital_frequency&quot;</span><span class="p">]</span>
+    <span class="n">omega_orbit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">omega_orbit_vec</span><span class="p">)</span>
+    <span class="n">omega_grav_22</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">omega_orbit</span>
+
+    <span class="c1"># Unit vector in direction of orbital angular momentum, which</span>
+    <span class="c1"># is the same as the direction of the orbital angular velocity</span>
+    <span class="c1"># at the reference time</span>
+    <span class="n">ln_hat</span> <span class="o">=</span> <span class="n">omega_orbit_vec</span> <span class="o">/</span> <span class="n">omega_orbit</span>
+
+    <span class="c1"># Compute 1 solar mass * G/c^3</span>
+    <span class="c1"># Use the same value as in Patricia Schmidt&#39;s conversion script,</span>
+    <span class="c1"># attributed to lal</span>
+    <span class="n">msun_seconds</span> <span class="o">=</span> <span class="mf">4.925491025543576e-06</span>
+
+    <span class="c1"># Eccentricity quantities</span>
+    <span class="n">eccentricity</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_eccentricity&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">eccentricity</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">:</span>
+        <span class="n">eccentricity</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">eccentricity</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">eccentricity</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">:</span>
+        <span class="n">eccentricity</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">eccentricity</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">eccentricity</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;[simulation too short]&quot;</span>
+        <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">eccentricity</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;[unknown]&quot;</span>
+    <span class="p">):</span>
+        <span class="c1"># CHECK ME: is this the right thing to do for cases where we can&#39;t</span>
+        <span class="c1"># measure eccentricity?</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Warning: eccentricity not measured for this simulation&quot;</span><span class="p">)</span>
+        <span class="n">eccentricity</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">eccentricity</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">eccentricity</span><span class="p">)</span>
+
+    <span class="n">mean_anomaly</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_mean_anomaly&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mean_anomaly</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mean_anomaly</span> <span class="o">==</span> <span class="s2">&quot;[unknown]&quot;</span><span class="p">:</span>
+            <span class="n">mean_anomaly</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mean_anomaly</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">mean_anomaly</span><span class="p">)</span>
+
+    <span class="c1"># Set metadata attributes of the output file</span>
+
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NR-group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;SXS&quot;</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sxs_id</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;alternative-names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;simulation-type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">simulation_type_from_spins</span><span class="p">(</span>
+        <span class="n">dimensionless_spin1</span><span class="p">,</span> <span class="n">dimensionless_spin2</span>
+    <span class="p">)</span>
+
+    <span class="c1"># our metdata uses lowercase for object types (bh, ns), but LVC wants</span>
+    <span class="c1"># BH or NS, so convert to uppercase with upper()</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;object1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;object1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;object2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;object2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;PN_approximant&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;none, NR only&quot;</span>
+
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NR_reference_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">()</span>
+
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;mass1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mass1</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;mass2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mass2</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;eta&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eta</span>
+
+    <span class="c1"># Metadata not in arXiv:1703.01076</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NR_reference_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference_time&quot;</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NR_start_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start_time</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NR_peak_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">peak_time</span>  <span class="c1"># not in Patricia&#39;s script</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NR_frame&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;inertial&quot;</span>
+
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;f_lower_at_1MSUN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">omega_grav_22</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">msun_seconds</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;Omega&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">omega_orbit</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;spin1x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dimensionless_spin1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;spin1y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dimensionless_spin1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;spin1z&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dimensionless_spin1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;spin2x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dimensionless_spin2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;spin2y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dimensionless_spin2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;spin2z&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dimensionless_spin2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;nhatx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;nhaty&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;nhatz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;LNhatx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ln_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;LNhaty&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ln_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;LNhatz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ln_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;eccentricity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eccentricity</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;mean_anomaly&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_anomaly</span>
+
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;NRinjection&quot;</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;Format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NR-code&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;SpEC&quot;</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;modification-date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;point-of-contact-email&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;questions@black-holes.org&quot;</span>
+    <span class="c1"># CHECK ME: is this always the right reference to cite?</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;INSPIRE-bibtex-keys&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Boyle:2019kee&quot;</span>
+
+    <span class="c1"># CHECK-ME: should this be public?</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;license&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;LVC-internal&quot;</span>
+
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NR-techniques&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Quasi-Equilibrium-ID, GH, RWZ-h, &quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;Extrapolated-Waveform, ApproxKillingVectorSpin, Christodoulou-Mass&quot;</span>
+    <span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;Lmax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_max</span>
+
+    <span class="n">out_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="convert_simulation">
+<a class="viewcode-back" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.convert_simulation">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_simulation</span><span class="p">(</span>
+    <span class="n">sxs_data_path</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">truncation_time</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a simulation from the SXS BBH catalog into the LVC format.</span>
+<span class="sd">    sxs_data_path is a path to a directory that must contain the following:</span>
+<span class="sd">        i)   rhOverM_Asymptotic_GeometricUnits_CoM.h5</span>
+<span class="sd">        ii)  Horizons.h5</span>
+<span class="sd">        iii) metadata.json</span>
+<span class="sd">    Additionally, the function requires paths to the following:</span>
+<span class="sd">        iv)  sxs_catalog_metadata_path points to sxs_catalog.json, which</span>
+<span class="sd">             contains information such as masses and spins. A file in this</span>
+<span class="sd">             format is available at https://data.black-holes.org/catalog.json.</span>
+<span class="sd">        v)   sxs_catalog_resolutions_path points to a file whose keys are</span>
+<span class="sd">             SXS ID numbers and whose values are lists of integers, where each</span>
+<span class="sd">             integer corresponds to a resolution available in the catalog.</span>
+<span class="sd">    The option resolution is an integer labeling the resolution of the</span>
+<span class="sd">    converted waveform. Modes is an array of the format</span>
+<span class="sd">    [[l1, m1], [l2, m2], ...] listing the l,m modes to convert. This function</span>
+<span class="sd">    outputs a file in LVC format named SXS_BBH_\#\#\#\#_Res\#.h5</span>
+<span class="sd">    in out_path.&quot;&quot;&quot;</span>
+    <span class="n">horizons</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">sxs_data_path</span> <span class="o">+</span> <span class="s2">&quot;/Horizons.h5&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">rhOverM</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">sxs_data_path</span> <span class="o">+</span> <span class="s2">&quot;/rhOverM_Asymptotic_GeometricUnits_CoM.h5&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">sxs_data_path</span> <span class="o">+</span> <span class="s2">&quot;/metadata.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">sxs_id</span> <span class="o">=</span> <span class="n">sxs_id_from_alt_names</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;alternative_names&quot;</span><span class="p">])</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Converting &quot;</span> <span class="o">+</span> <span class="n">sxs_id</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Running script &quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; in &quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;convert_sxs_to_lvc.py called with the following parameters:&quot;</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;  sxs_data_path: &quot;</span> <span class="o">+</span> <span class="n">sxs_data_path</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;  resolution: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">resolution</span><span class="p">))</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;  modes: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">modes</span><span class="p">))</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;  out_path: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">out_path</span><span class="p">))</span>
+
+    <span class="n">extrapolation_order</span> <span class="o">=</span> <span class="s2">&quot;Extrapolated_N2&quot;</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Extrapolation order: &quot;</span> <span class="o">+</span> <span class="n">extrapolation_order</span><span class="p">)</span>
+
+    <span class="n">out_name</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">out_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">sxs_id</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_Res&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">resolution</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.h5&quot;</span>
+    <span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Output filename is &quot;</span> <span class="o">+</span> <span class="n">out_name</span><span class="p">)</span>
+
+    <span class="n">modes</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">spline_amps</span><span class="p">,</span> <span class="n">spline_phases</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">,</span> <span class="n">l_max</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">spline_amp_phase_from_sxs</span><span class="p">(</span>
+            <span class="n">rhOverM</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">extrapolation_order</span><span class="p">,</span> <span class="n">truncation_time</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">write_splines_to_H5</span><span class="p">(</span><span class="n">out_name</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">spline_amps</span><span class="p">,</span> <span class="n">spline_phases</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
+
+    <span class="n">horizon_splines_to_write</span><span class="p">,</span> <span class="n">t_A</span><span class="p">,</span> <span class="n">t_B</span><span class="p">,</span> <span class="n">t_C</span> <span class="o">=</span> <span class="n">horizon_splines_from_sxs</span><span class="p">(</span>
+        <span class="n">horizons</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span>
+    <span class="p">)</span>
+    <span class="n">write_horizon_splines_from_sxs</span><span class="p">(</span><span class="n">out_name</span><span class="p">,</span> <span class="n">horizon_splines_to_write</span><span class="p">,</span> <span class="n">t_A</span><span class="p">,</span> <span class="n">t_B</span><span class="p">,</span> <span class="n">t_C</span><span class="p">)</span>
+
+    <span class="n">write_metadata_from_sxs</span><span class="p">(</span>
+        <span class="n">out_name</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">peak_time</span><span class="p">,</span> <span class="n">l_max</span>
+    <span class="p">)</span>
+
+    <span class="n">out_file</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">out_name</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Save a copy of this script in auxiliary-info</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">out_file</span><span class="p">[</span><span class="s2">&quot;auxiliary-info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
+            <span class="s2">&quot;convert_sxs_to_lvc.py&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;VersionHist.ver&quot;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">rhOverM</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Writing VersionHist.ver&quot;</span><span class="p">)</span>
+        <span class="n">out_file</span><span class="p">[</span><span class="s2">&quot;auxiliary-info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
+            <span class="s2">&quot;VersionHist.ver&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">rhOverM</span><span class="p">[</span><span class="s2">&quot;VersionHist.ver&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No VersionHist.ver found. Data being converted is version 0.&quot;</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Writing log&quot;</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="p">[</span><span class="s2">&quot;auxiliary-info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;ConversionLog.txt&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">history</span><span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">horizons</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">rhOverM</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">convert_simulation</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">sxs_data</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">modes</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">out_path</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">truncation_time</span>
+    <span class="p">)</span>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

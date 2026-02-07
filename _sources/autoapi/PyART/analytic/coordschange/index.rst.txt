@@ -1,0 +1,143 @@
+PyART.analytic.coordschange
+===========================
+
+.. py:module:: PyART.analytic.coordschange
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.analytic.coordschange.pi
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analytic.coordschange.Polar2Cartesian
+   PyART.analytic.coordschange.Cartesian2Polar
+   PyART.analytic.coordschange.Eob2Adm
+   PyART.analytic.coordschange.Adm2Eob
+   PyART.analytic.coordschange.eob_ID_to_ADM
+
+
+Module Contents
+---------------
+
+.. py:data:: pi
+
+.. py:function:: Polar2Cartesian(r, phi, pr, pphi)
+
+   Transform polar coordinates (r, phi) and momenta (pr, pphi)
+   to Cartesian coordinates (x, y) and momenta (px, py).
+
+   :param r: Radial coordinate.
+   :type r: array_like
+   :param phi: Angular coordinate.
+   :type phi: array_like
+   :param pr: Radial momentum.
+   :type pr: array_like
+   :param pphi: Angular momentum.
+   :type pphi: array_like
+
+   :returns: * **x** (*array_like*) -- Cartesian x coordinate.
+             * **y** (*array_like*) -- Cartesian y coordinate.
+             * **px** (*array_like*) -- Cartesian x momentum.
+             * **py** (*array_like*) -- Cartesian y momentum.
+
+
+.. py:function:: Cartesian2Polar(x, y, px, py)
+
+   Transform Cartesian coordinates (x, y) and momenta (px, py)
+   to polar coordinates (r, phi) and momenta (pr, pphi).
+
+   :param x: Cartesian x coordinate.
+   :type x: array_like
+   :param y: Cartesian y coordinate.
+   :type y: array_like
+   :param px: Cartesian x momentum.
+   :type px: array_like
+   :param py: Cartesian y momentum.
+   :type py: array_like
+
+   :returns: * **r** (*array_like*) -- Radial coordinate.
+             * **phi** (*array_like*) -- Angular coordinate.
+             * **pr** (*array_like*) -- Radial momentum.
+             * **pphi** (*array_like*) -- Angular momentum.
+
+
+.. py:function:: Eob2Adm(qe_vec, pe_vec, nu, PN_order)
+
+   Convert EOB coordinates and momenta to ADM coordinates and momenta
+   up to 2PN order. Use the transformation in
+   Buonanno, Damour:9811091 and Bini, Damour:1210.2834 (Appendix E)
+   Note: momenta are mu-normalized
+
+   :param qe_vec: EOB coordinates (x, y).
+   :type qe_vec: array_like
+   :param pe_vec: EOB momenta (px, py), mu-normalized.
+   :type pe_vec: array_like
+   :param nu: Symmetric mass ratio.
+   :type nu: float
+   :param PN_order: Post-Newtonian order (0, 1, or 2).
+   :type PN_order: int
+
+   :returns: * **qa_vec** (*array_like*) -- ADM coordinates (x, y).
+             * **pa_vec** (*array_like*) -- ADM momenta (px, py), mu-normalized.
+
+
+.. py:function:: Adm2Eob(qa_vec, pa_vec, nu, PN_order)
+
+   Convert ADM coordinates and momenta to EOB coordinates and momenta
+   up to 2PN order. Use the transformation in
+   Buonanno, Damour:9811091 and Bini, Damour:1210.2834 (Appendix E)
+   Note: momenta are mu-normalized
+
+   :param qa_vec: ADM coordinates (x, y).
+   :type qa_vec: array_like
+   :param pa_vec: ADM momenta (px, py), mu-normalized.
+   :type pa_vec: array_like
+   :param nu: Symmetric mass ratio.
+   :type nu: float
+   :param PN_order: Post-Newtonian order (0, 1, or 2).
+   :type PN_order: int
+
+   :returns: * **qe_vec** (*array_like*) -- EOB coordinates (x, y).
+             * **pe_vec** (*array_like*) -- EOB momenta (px, py), mu-normalized.
+
+
+.. py:function:: eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True)
+
+   Generate initial ID for NR simulations with initial
+   data from TwoPuncturesC
+
+   :param eob_Wave: EOB waveform, instance of PyART.models.teob.Waveform_EOB
+   :type eob_Wave: object
+   :param verbose: If True, print out info for testing. Default is False.
+   :type verbose: bool, optional
+   :param PN_order: Post-Newtonian order for EOB <-> ADM transformation.
+                    Default is 2 (max available).
+   :type PN_order: int, optional
+   :param rotate_on_x_axis: If True, rotate system so that punctures are on x-axis at t=0.
+                            Default is True.
+   :type rotate_on_x_axis: bool, optional
+
+   :returns: **out** -- Dictionary with the following keys:
+             'q_cart' : ADM coordinates (x, y)
+             'p_cart' : ADM momenta (px, py), mu-normalized
+             'px' : ADM momentum px, M-normalized
+             'py' : ADM momentum py, M-normalized
+             'x1' : x coordinate of puncture 1
+             'x2' : x coordinate of puncture 2
+             'D' : coordinate separation between punctures
+             'x_offset' : offset to be added to x coordinates
+             'qe' : EOB coordinates (x,y)
+             'pe' : EOB momenta (px, py), mu-normalized
+             'qe_chk' : EOB coordinates (x,y), EOB->ADM->EOB
+             'pe_chk' : EOB momenta (px, py), mu-normalized, EOB->ADM->EOB
+   :rtype: dict
+
+

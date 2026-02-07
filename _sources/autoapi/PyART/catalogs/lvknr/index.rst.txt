@@ -1,0 +1,107 @@
+PyART.catalogs.lvknr
+====================
+
+.. py:module:: PyART.catalogs.lvknr
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.catalogs.lvknr.Msun_m
+   PyART.catalogs.lvknr.Msun_s
+   PyART.catalogs.lvknr.ID
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.lvknr.Waveform_LVKNR
+
+
+Module Contents
+---------------
+
+.. py:data:: Msun_m
+   :value: 1476.6250614046494
+
+
+.. py:data:: Msun_s
+   :value: 4.925491025543576e-06
+
+
+.. py:class:: Waveform_LVKNR(lvcnr_path=None, catalog='SXS', ID=None, ellmax=8, load_m0=True, download=False, nu_rescale=False, **kwargs)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle waveforms from the LVCNR catalog
+
+
+   .. py:attribute:: ID
+      :value: None
+
+
+
+   .. py:attribute:: lvcnr_path
+      :value: None
+
+
+
+   .. py:attribute:: catalog
+      :value: 'SXS'
+
+
+
+   .. py:attribute:: data_path
+
+
+   .. py:attribute:: ellmax
+      :value: 8
+
+
+
+   .. py:attribute:: load_m0
+      :value: True
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:attribute:: data
+
+
+   .. py:method:: load_metadata()
+
+      Load (some) metadata from the simulation"
+
+
+
+   .. py:method:: load_hlm()
+
+      Load the waveform modes
+
+
+
+   .. py:method:: download_simulation(ID)
+
+      Download the simulation from the LVCNR catalog.
+
+
+
+   .. py:method:: _is_git_lfs_pointer(path)
+
+      Check if a file is still a Git LFS pointer (not downloaded)
+
+
+
+.. py:data:: ID
+   :value: 'SXS_BBH_0007_Res5'
+
+

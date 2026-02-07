@@ -1,0 +1,100 @@
+tocatalog_icc
+=============
+
+.. py:module:: tocatalog_icc
+
+.. autoapi-nested-parse::
+
+   1) Spread metadata in each folder and assign also an id to each configuration
+   2) Store in dirs like ICC_BBH_????
+
+   SA: 07/31/2024
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   tocatalog_icc.json_file
+   tocatalog_icc.data
+   tocatalog_icc.new_dir
+   tocatalog_icc.sims_qeq1_nospin
+   tocatalog_icc.sims_qeq1_spin
+   tocatalog_icc.sims_scat
+   tocatalog_icc.nsims_qeq1_nospin
+   tocatalog_icc.nsims_qeq1_spin
+   tocatalog_icc.nsims_scat
+   tocatalog_icc.all_sims
+   tocatalog_icc.ID
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   tocatalog_icc.runcmd
+   tocatalog_icc.load_puncts
+   tocatalog_icc.parse_nr_metadata
+   tocatalog_icc.count_subdirs
+   tocatalog_icc.get_info_from_name
+
+
+Module Contents
+---------------
+
+.. py:function:: runcmd(cmd, workdir, out=None)
+
+   Execute cmd in workdir
+
+
+.. py:function:: load_puncts(sim_path, fname='puncturetracker-pt_loc..asc')
+
+.. py:function:: parse_nr_metadata(file_path)
+
+.. py:function:: count_subdirs(path)
+
+.. py:function:: get_info_from_name(name, field)
+
+.. py:data:: json_file
+   :value: 'ICC_catalogue_optimized_metadata.json'
+
+
+.. py:data:: data
+
+.. py:data:: new_dir
+   :value: 'catalog'
+
+
+.. py:data:: sims_qeq1_nospin
+   :value: []
+
+
+.. py:data:: sims_qeq1_spin
+   :value: []
+
+
+.. py:data:: sims_scat
+   :value: []
+
+
+.. py:data:: nsims_qeq1_nospin
+   :value: 0
+
+
+.. py:data:: nsims_qeq1_spin
+   :value: 0
+
+
+.. py:data:: nsims_scat
+   :value: 0
+
+
+.. py:data:: all_sims
+   :value: []
+
+
+.. py:data:: ID
+

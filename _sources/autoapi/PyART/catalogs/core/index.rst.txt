@@ -1,0 +1,193 @@
+PyART.catalogs.core
+===================
+
+.. py:module:: PyART.catalogs.core
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.catalogs.core.conversion_dict_floats
+   PyART.catalogs.core.conversion_dict_vectors
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.core.Waveform_CoRe
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.catalogs.core.vector_string_to_array
+   PyART.catalogs.core.radius_extrap_polynomial
+
+
+Module Contents
+---------------
+
+.. py:data:: conversion_dict_floats
+
+.. py:data:: conversion_dict_vectors
+
+.. py:function:: vector_string_to_array(vstr)
+
+.. py:class:: Waveform_CoRe(path='../dat/CoRe/', ID='0001', run=None, code='BAM', kind='h5', mtdt_path=None, ell_emms='all', download=False, cut_at_mrg=False, cut_junk=None, nu_rescale=False, K=1)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class for handling waveforms from the CoRe catalog.
+   See https://core-gitlab.tpi.uni-jena.de/core_database for more information.
+   The data is downloaded via git clone. Make sure you have git-lfs installed.
+
+
+   .. py:attribute:: ID
+      :value: 'BAM_0001'
+
+
+
+   .. py:attribute:: run
+      :value: None
+
+
+
+   .. py:attribute:: ell_emms
+      :value: 'all'
+
+
+
+   .. py:attribute:: core_data_path
+
+
+   .. py:attribute:: metadata
+      :value: None
+
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:attribute:: simpath
+
+
+   .. py:method:: download_simulation(ID='BAM_0001', path='.', protocol='https', verbose=False)
+
+      Download simulation from the CoRe database via git clone.
+      Make sure you have git-lfs installed.
+
+      :param ID: Simulation ID, e.g., 'BAM_0001'. Default is 'BAM_0001'.
+      :type ID: str, optional
+      :param path: Path to the directory where the simulation will be downloaded. Default is '.'.
+      :type path: str, optional
+      :param protocol: Protocol to use for downloading. Options are 'ssh' or 'https'. Default is 'https'.
+      :type protocol: str, optional
+      :param verbose: If True, print out info for testing. Default is False.  Default is False.
+      :type verbose: bool, optional
+
+      :raises NameError: If the specified protocol is not supported.
+
+
+
+   .. py:method:: cut_at_mrg()
+
+      Find the global peak of the 22 and cut the waveform at this time + 10 M.
+      Assuming that this is the merger time. For some wfs with postmerger this
+      might not be true!
+
+      :raises NameError: If the 22 mode is not available.
+
+
+
+   .. py:method:: load_metadata(mtdt_path)
+
+      Load metadata from the metadata_main.txt file.
+      :param mtdt_path: Path to the metadata file.
+      :type mtdt_path: str
+
+      :returns: **metadata** -- Dictionary containing the metadata.
+      :rtype: dict
+
+
+
+   .. py:method:: load_hlm(kind='h5', K=1)
+
+      Load waveform modes from the specified format.
+      If h5, extrapolate to infinity with a polynomial of order K.
+      :param kind: Format of the waveform data. Options are 'h5' for HDF5 files or
+                   'txt' for text files. Default is 'h5'.
+      :type kind: str, optional
+      :param K: Order of the polynomial used for extrapolating the waveform to
+                infinite radius. Default is 1.
+      :type K: int, optional
+
+      :raises NameError: If the specified kind is not recognized.
+
+
+
+   .. py:method:: read_h_h5(basepath, K=1)
+
+      Read modes from the h5 file.
+      Extract both the modes at finite radius
+      and extrapolate to infinity using a K=1 polynomial
+
+      :param basepath: Path to the directory containing the data.h5 file.
+      :type basepath: str
+      :param K: Order of the polynomial used for extrapolating the waveform to
+                infinite radius. Default is 1.
+      :type K: int, optional
+
+      :raises FileNotFoundError: If the data.h5 file is not found.
+
+
+
+   .. py:method:: read_h_txt(basepath)
+
+      Read modes from the txt files.
+      :param basepath: Path to the directory containing the txt files.
+      :type basepath: str
+
+      :raises FileNotFoundError: If no txt files are found in the specified directory.
+
+
+
+.. py:function:: radius_extrap_polynomial(ys, rs, K)
+
+   Given different datasets yi, i=1...N, collected as
+            ys = [y0, y1, y2, ... , yN]
+   and array containing extraction radii
+            rs = [r0, r1, r2, ... , rN],
+   compute the asymptotic value of y as r goes to infinity from an Kth
+   order polynomial in 1/r, e.g.
+
+     yi = y_infty + \\sum_i=k^K ci / ri^k,
+
+   where y_infty and the K coefficients ci are determined through a least
+   squares polynomial fit from the above data.
+
+   :param ys: Collection of data sets yi which all are of the same length,
+              e.g. all sampled on the same grid u.
+   :type ys: list of arrays
+   :param rs: Extraction radii of the data samples yi
+   :type rs: list of floats
+   :param K: Maximum polynomial order of 1/r polynomial
+   :type K: int
+
+   :returns: **yinfty** -- Extrapolated data set at r -> infinity
+   :rtype: array
+
+

@@ -1,0 +1,226 @@
+PyART.utils.convert_sxs_to_lvc
+==============================
+
+.. py:module:: PyART.utils.convert_sxs_to_lvc
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.utils.convert_sxs_to_lvc.p
+   PyART.utils.convert_sxs_to_lvc.history
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.utils.convert_sxs_to_lvc.log
+   PyART.utils.convert_sxs_to_lvc.bbh_keys_from_simulation_keys
+   PyART.utils.convert_sxs_to_lvc.sxs_id_from_alt_names
+   PyART.utils.convert_sxs_to_lvc.first_index_after_time
+   PyART.utils.convert_sxs_to_lvc.first_index_after_relaxation_time
+   PyART.utils.convert_sxs_to_lvc.first_index_before_reference_time
+   PyART.utils.convert_sxs_to_lvc.waveform_norm_squared
+   PyART.utils.convert_sxs_to_lvc.peak_time_from_sxs
+   PyART.utils.convert_sxs_to_lvc.amp_phase_from_sxs
+   PyART.utils.convert_sxs_to_lvc.spline_amp_phase_from_sxs
+   PyART.utils.convert_sxs_to_lvc.write_splines_to_H5
+   PyART.utils.convert_sxs_to_lvc.prepare_horizon_quantity
+   PyART.utils.convert_sxs_to_lvc.spline_horizon_quantity
+   PyART.utils.convert_sxs_to_lvc.insert_spline
+   PyART.utils.convert_sxs_to_lvc.derived_horizon_quantities_from_sxs
+   PyART.utils.convert_sxs_to_lvc.spline_horizon_quantity
+   PyART.utils.convert_sxs_to_lvc.insert_derived_spline
+   PyART.utils.convert_sxs_to_lvc.horizon_splines_from_sxs
+   PyART.utils.convert_sxs_to_lvc.write_horizon_splines_from_sxs
+   PyART.utils.convert_sxs_to_lvc.simulation_type_from_spins
+   PyART.utils.convert_sxs_to_lvc.write_metadata_from_sxs
+   PyART.utils.convert_sxs_to_lvc.convert_simulation
+
+
+Module Contents
+---------------
+
+.. py:data:: p
+
+.. py:data:: history
+   :value: ''
+
+
+.. py:function:: log(string)
+
+.. py:function:: bbh_keys_from_simulation_keys(simulation_keys)
+
+.. py:function:: sxs_id_from_alt_names(alt_names)
+
+   Takes an array of alternative names from an SXS metadata.json file
+   and returns the SXS ID of the simulation.
+
+
+.. py:function:: first_index_after_time(times, target_time)
+
+   Returns the index of the first time in a list of times after
+   time target_time.
+
+
+.. py:function:: first_index_after_relaxation_time(times, metadata, offset=-2)
+
+   Returns the index of the first time in a list of times after the
+   relaxation time, which is given as a key in metadata, i.e.
+   metadata['relaxation_time'], except actually return an
+   index offset earlier.
+
+
+.. py:function:: first_index_before_reference_time(times, metadata, offset=2)
+
+   Returns the index of the first time in a list of times before the
+   reference time, which is given as a key in metadata, i.e.
+   metadata['reference_time'], except actually return an
+   index offset earlier.
+
+
+.. py:function:: waveform_norm_squared(sxs_format_waveform, extrapolation_order='Extrapolated_N2')
+
+   Takes an SXS-format waveform and returns the sum of the squared
+   amplitude of each (l,m) mode of the wave.
+
+
+.. py:function:: peak_time_from_sxs(sxs_format_waveform, metadata, extrapolation_order='Extrapolated_N2')
+
+   Returns the time when the sum of the squared amplitudes of an
+   SXS-format waveform is largest. Note: this is not necessarily the time of
+   the peak of the l=m=2 mode.
+
+
+.. py:function:: amp_phase_from_sxs(sxs_format_waveform, metadata, modes, extrapolation_order='Extrapolated_N2', truncation_time=None)
+
+   Returns amplitude and phase for an SXS-format waveform, for a list of
+   Ylm modes. If modes='all', return all modes for l=2 through l=8,
+   inclusive.
+
+
+.. py:function:: spline_amp_phase_from_sxs(sxs_format_waveform, metadata, modes, extrapolation_order='Extrapolated_N2', truncation_time=None)
+
+   Returns spline amplitude and phase for an SXS-format waveform, for a
+   list of Ylm modes. If modes='all', return all modes for l=2 through l=8,
+   inclusive.
+
+
+.. py:function:: write_splines_to_H5(out_filename, modes, spline_amps, spline_phases, times)
+
+   Writes spline amplitudes and phases to an HDF5 file
+   named out_filename.
+
+
+.. py:function:: prepare_horizon_quantity(sxs_horizon_quantity, start_time, peak_time)
+
+   Returns times and values of an SXS-format horizon quantity, such as
+   AhA.dir/ArealMass.dat. This function first truncates the horizon data,
+   including only data after the reference time. Then, it shifts the time
+   by the same amount as the waveforms (i.e., by the peak time). Then,
+   return the truncated/shifted times and truncated values.
+
+
+.. py:function:: spline_horizon_quantity(sxs_horizon_quantity, start_time, peak_time)
+
+   Prepares sxs_horizon_quantity by passing it to
+   prepare_horizon_quantity() and then returns a spline of the result.
+
+
+.. py:function:: insert_spline(sxs_horizons, spline_dictionary, spline_keys, horizon_key, quantity_key, start_time, peak_time)
+
+   Inserts a spline for a quantity in Horizons.h5 into a dictionary of
+   horizon splines. Note: spline_keys is a vector of key names (should be
+   length 1 for scalars, length 3 for vectors), where each key is the name
+   of a group that will be written in the LVC file, such as mass1-vs-time or
+   spin1x-vs-time; horizon_key is AhA, AhB, or AhC; and quantity_key
+   is e.g. ChristodoulouMass, the name of the quantity in Horizons.h5
+   to be read and splined.
+
+
+.. py:function:: derived_horizon_quantities_from_sxs(sxs_horizons, start_time, peak_time)
+
+   Computes quantities derived from quanities in the SXS-format file
+   Horizons.h5. Specifically, returns a tuple containing nhat, a unit vector
+   from the secondary black hole to the primary black hole; omega_orbit,
+   the orbital frequency; LNhat, a unit vector in the direction of the
+   orbital angular momentum; and the horizon times of the primary,
+   secondary, and remnant, truncated and shifted.
+
+
+.. py:function:: spline_horizon_quantity(sxs_horizon_quantity, start_time, peak_time)
+
+   Prepares sxs_horizon_quantity by passing it to
+   prepare_horizon_quantity() and then returns a spline of the result.
+
+
+.. py:function:: insert_derived_spline(spline_dictionary, spline_keys, derived_quantity)
+
+   Inserts a spline into a dictionary of horizon splines for a quantity
+   derived from Horizons.h5. Note: spline_keys is a vector of key names
+   (should be length 1 for scalars, length 3 for vectors), where each key is
+   the name of a group that will be written in the LVC file, such as
+   Omega-vs-time or LNhatx-vs-time; and derived_quantity is the quantity to
+   be splined. The derived_quantity should be computed using
+   erived_horizon_quantities_from_sxs().
+
+
+.. py:function:: horizon_splines_from_sxs(horizons, start_time, peak_time)
+
+   Prepares a dictionary of the horizon-quantity splines that the LVC
+   format expects, starting with an SXS-format Horizons.h5. start_time and
+   peak_time are determined by amp_phase_from_sxs().
+
+
+.. py:function:: write_horizon_splines_from_sxs(out_filename, horizon_splines, primary_horizon_times, secondary_horizon_times, remnant_horizon_times)
+
+   Takes a dictionary of horizon splines, prepared with
+   horizon_splines_from_sxs, and writes each spline into an HDF5 file. Also
+   outputs the horizon times for the individual and remnant black holes,
+   truncated to remove junk radiation and shifted.
+
+
+.. py:function:: simulation_type_from_spins(dimensionless_spin_1, dimensionless_spin_2)
+
+   Helper function that classifies a simulation with dimensionless_spin_1
+   on the primary (larger) black hole and dimensionless_spin_2 on the
+   secondary black hole as nonspinning (if no spin component > 0.01),
+   aligned-spin (if only z components are > 0.01),
+   or precessing (otherwise).
+
+
+.. py:function:: write_metadata_from_sxs(out_filename, resolution, metadata, start_time, peak_time, l_max)
+
+   Writes metadata to an LVC-format file, including both adding
+   auxiliary-info/metadata.json and setting attributes conforming to
+   the format given by arXiv:1703.01076. Input arguments are the
+   output filename out_filename, the resolution of the simulation (an int),
+   metadata (read from metadata.json) for this simulation/resolution,
+   the start_time, peak time, and l_max determined by amp_phase_from_sxs().
+
+
+.. py:function:: convert_simulation(sxs_data_path, resolution, modes, out_path, truncation_time=None)
+
+   Convert a simulation from the SXS BBH catalog into the LVC format.
+   sxs_data_path is a path to a directory that must contain the following:
+       i)   rhOverM_Asymptotic_GeometricUnits_CoM.h5
+       ii)  Horizons.h5
+       iii) metadata.json
+   Additionally, the function requires paths to the following:
+       iv)  sxs_catalog_metadata_path points to sxs_catalog.json, which
+            contains information such as masses and spins. A file in this
+            format is available at https://data.black-holes.org/catalog.json.
+       v)   sxs_catalog_resolutions_path points to a file whose keys are
+            SXS ID numbers and whose values are lists of integers, where each
+            integer corresponds to a resolution available in the catalog.
+   The option resolution is an integer labeling the resolution of the
+   converted waveform. Modes is an array of the format
+   [[l1, m1], [l2, m2], ...] listing the l,m modes to convert. This function
+   outputs a file in LVC format named SXS_BBH_\#\#\#\#_Res\#.h5
+   in out_path.
+
+

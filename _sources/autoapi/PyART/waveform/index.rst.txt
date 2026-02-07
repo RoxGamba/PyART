@@ -1,0 +1,398 @@
+PyART.waveform
+==============
+
+.. py:module:: PyART.waveform
+
+.. autoapi-nested-parse::
+
+   Classes to handle waveforms
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.waveform.Waveform
+   PyART.waveform.WaveIntegrated
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.waveform.waveform2energetics
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform
+
+   Bases: :py:obj:`object`
+
+
+   Parent class to handle waveforms
+   Children classes will inherit methods & propreties
+
+
+   .. py:attribute:: _t
+      :value: None
+
+
+
+   .. py:attribute:: _u
+      :value: None
+
+
+
+   .. py:attribute:: _t_psi4
+      :value: None
+
+
+
+   .. py:attribute:: _f
+      :value: None
+
+
+
+   .. py:attribute:: _hp
+      :value: None
+
+
+
+   .. py:attribute:: _hc
+      :value: None
+
+
+
+   .. py:attribute:: _hlm
+
+
+   .. py:attribute:: _dothlm
+
+
+   .. py:attribute:: _psi4lm
+
+
+   .. py:attribute:: _dyn
+
+
+   .. py:attribute:: _kind
+      :value: None
+
+
+
+   .. py:property:: t
+
+
+   .. py:property:: u
+
+
+   .. py:property:: t_psi4
+
+
+   .. py:property:: f
+
+
+   .. py:property:: hp
+
+
+   .. py:property:: hc
+
+
+   .. py:property:: hlm
+
+
+   .. py:property:: dothlm
+
+
+   .. py:property:: psi4lm
+
+
+   .. py:property:: dyn
+
+
+   .. py:property:: kind
+
+
+   .. py:method:: find_max(mode=(2, 2), kind='last-peak', wave='hlm', umin=0, height=0.15, return_idx=False)
+
+      Find peak time, amplitude, frequency and frequency derivative
+      from the specified waveform multipole
+
+      :param mode: (l,m) mode to consider
+      :type mode: tuple
+      :param kind: 'first-max-after-t': first maximum after umin
+                   'last-peak': last peak in the waveform
+                   'global': global maximum
+      :type kind: str
+      :param wave: 'hlm' or 'psi4lm'
+      :type wave: str
+      :param umin: minimum time to consider (for 'first-max-after-t')
+      :type umin: float
+      :param height: minimum height of the peak (for scipy find_peaks)
+      :type height: float
+      :param return_idx: if True, return also the index of the peak
+      :type return_idx: bool
+
+      :returns: **out** -- time, amplitude, frequency and frequency derivative at the peak
+                if return_idx is True, also return the index of the peak
+      :rtype: (t_mrg, A_mrg, omg_mrg, domg_mrg[, idx])
+
+
+
+   .. py:method:: compute_dothlm(factor=1.0, only_warn=False)
+
+      Compute dothlm from self.hlm using
+      numerical differentiation.
+
+      :param factor: factor to multiply the derivative.
+      :type factor: float, optional
+      :param only_warn: if True, only warn if hlm is not loaded.
+                        if False, raise an error.
+      :type only_warn: bool, optional
+
+      :returns: **out** -- dictionary with dothlm.
+      :rtype: dict
+
+
+
+   .. py:method:: compute_psi4lm(factor=1.0, only_warn=False)
+
+      Compute psi4lm from self.dothlm using
+      numerical differentiation
+
+      :param factor: factor to multiply the derivative.
+      :type factor: float, optional
+      :param only_warn: if True, only warn if dothlm is not stored.
+                        if False, raise an error.
+      :type only_warn: bool, optional
+
+      :returns: **out** -- dictionary with psi4 multipoles
+      :rtype: dict
+
+
+
+   .. py:method:: multiply_by(var=['hlm'], factor=1.0)
+
+      Multiply specified variable by factor
+      :param var: list of variables to multiply, e.g. ['hlm', 'dothlm']
+      :type var: list
+      :param factor: factor to multiply by
+      :type factor: float
+
+
+
+   .. py:method:: cut(DeltaT, cut_hpc=True, from_the_end=False, cut_dothlm=False, cut_psi4lm=False)
+
+      Cut the waveform removing the
+      first DeltaT M (or last if from_the_end=True)
+      If cut_psi4lm is True, cut also psi4lm using
+      self.t_psi4
+
+      :param DeltaT: time to cut
+      :type DeltaT: float
+      :param cut_hpc: if True, cut also hp and hc
+      :type cut_hpc: bool
+      :param from_the_end: if True, cut from the end
+                           if False, cut from the beginning
+      :type from_the_end: bool
+      :param cut_dothlm: if True, cut also dothlm
+      :type cut_dothlm: bool
+      :param cut_psi4lm: if True, cut also psi4lm
+      :type cut_psi4lm: bool
+
+
+
+   .. py:method:: compute_hphc(phi=0, i=0, modes=[(2, 2)])
+
+      For aligned spins, compute hp and hc
+      assuming usual symmetry between hlm and hl-m
+      :param phi: azimuthal angle of the observer
+      :type phi: float
+      :param i: inclination angle of the observer
+      :type i: float
+      :param modes: list of (l,m) modes to consider
+      :type modes: list
+
+      :returns: **out** -- plus and cross polarizations
+      :rtype: (hp, hc)
+
+
+
+   .. py:method:: interpolate_hlm(dT)
+
+      Interpolate the hlm dictionary to a grid of uniform dT
+
+      :param dT: time step of the new grid
+      :type dT: float
+
+      :returns: **out** -- new time array and interpolated hlm dictionary
+      :rtype: (new_u, hlm_i)
+
+
+
+   .. py:method:: dynamics_from_hlm(modes, warning=False)
+
+      Compute GW energy and angular momentum fluxes from multipolar waveform
+
+      :param modes: list of (l,m) modes to consider
+      :type modes: list
+      :param warning: if True, warn if dothlm is not found and needs to be computed
+      :type warning: bool
+
+      :returns: **out** -- dictionary with dynamics quantities
+      :rtype: dict
+
+
+
+   .. py:method:: ej_from_hlm(M_adm, J_adm, m1, m2, modes)
+
+      Compute GW energy and angular momentum from multipolar waveform
+
+      :param M_adm: ADM mass of the system
+      :type M_adm: float
+      :param J_adm: ADM angular momentum of the system
+      :type J_adm: float
+      :param m1: mass of the first object
+      :type m1: float
+      :param m2: mass of the second object
+      :type m2: float
+      :param modes: list of (l,m) modes to consider
+      :type modes: list
+
+
+
+   .. py:method:: to_frequency(taper=True, pad=True)
+
+      Fourier transform the waveform from time to frequency domain
+
+      :param taper: if True, apply a tapering window to the time-domain waveform
+      :type taper: bool
+      :param pad: if True, pad the time-domain waveform to the next power of 2
+      :type pad: bool
+
+      :returns: **out**
+      :rtype: (f, hp, hc)
+
+
+
+   .. py:method:: integrate_data(t_psi4, radius, integr_opts={'method': 'FFI', 'f0': 0.01, 'integrand': 'psi4'}, modes=None, M=1.0)
+
+      Method to integrate psi4/news
+
+      :param t_psi4: time array for psi4lm
+      :type t_psi4: ndarray
+      :param radius: extraction radius
+      :type radius: float
+      :param integr_opts: dictionary with integration options
+                          method: 'FFI' or 'trapezoid'
+                          f0: frequency cutoff for FFI
+                          deg: degree of the polynomial for trapezoid
+                          integrand: 'psi4' or 'news'
+      :type integr_opts: dict
+      :param modes: list of (l,m) modes to integrate
+      :type modes: list
+      :param M: total mass
+      :type M: float
+
+      :returns: **out** -- dictionary with integration options used
+      :rtype: dict
+
+
+
+.. py:function:: waveform2energetics(h, doth, t, modes, mnegative=False)
+
+   Compute GW energy and angular momentum from multipolar waveform
+   See e.g. https://arxiv.org/abs/0912.1285
+
+   :param h: dictionary with multipolar strain
+   :type h: dict
+   :param doth: dictionary with time-derivative of multipolar strain
+   :type doth: dict
+   :param t: time array
+   :type t: ndarray
+   :param modes: list of (l,m) modes
+   :type modes: list
+   :param mnegative: if True, account for the factor 2 due to m<0 modes
+   :type mnegative: bool
+
+   :returns: **out** -- dictionary with dynamics quantities
+   :rtype: dict
+
+
+.. py:class:: WaveIntegrated(path='./', ellmax=4, r_extr=1, M=1, modes=[(2, 2)], integr_opts={}, fmt='etk', fname='mp_psi4_l@L@_m@M@_r100.00.asc', integrand='psi4', norm=None)
+
+   Bases: :py:obj:`Waveform`
+
+
+   Child class to get NR psi4 and integrate to obtain dh and h
+
+
+   .. py:attribute:: path
+      :value: './'
+
+
+
+   .. py:attribute:: r_extr
+      :value: 1
+
+
+
+   .. py:attribute:: M
+      :value: 1
+
+
+
+   .. py:attribute:: modes
+      :value: [(2, 2)]
+
+
+
+   .. py:attribute:: fmt
+      :value: 'etk'
+
+
+
+   .. py:attribute:: fname
+      :value: 'mp_psi4_l@L@_m@M@_r100.00.asc'
+
+
+
+   .. py:attribute:: integrand
+      :value: ''
+
+
+
+   .. py:attribute:: norm
+      :value: None
+
+
+
+   .. py:method:: load_wave()
+
+      Load waveform from file
+
+
+
+   .. py:method:: normalize_wave(norm=None)
+
+      Normalize loaded waveform.
+      For example, norm='factor2_minusodd_minusm0' activate three flags: factor2, minusodd, minusm0
+
+      :param norm: if not None, normalize the waveform according to the specified flags
+      :type norm: str or None
+
+
+
+   .. py:method:: integrate_wave(integr_opts)
+
+      Integrate loaded waveform
+      :param integr_opts: dictionary with integration options
+      :type integr_opts: dict
+
+
+

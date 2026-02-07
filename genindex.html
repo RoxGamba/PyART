@@ -1,0 +1,2812 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="#"><link rel="search" title="Search" href="search.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 --><title>Index - PyART 0.0.1dev documentation</title>
+<link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/intro_to_waveforms.html">1. Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="autoapi/PyART/index.html">PyART</a><input aria-label="Toggle navigation of PyART" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/PyART/analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/PyART/analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/PyART/catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/PyART/logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/PyART/models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/PyART/numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/PyART/simulations/index.html">PyART.simulations</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/PyART/utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/PyART/utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/PyART/waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="autoapi/simulations/index.html">simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autoapi/tocatalog_icc/index.html">tocatalog_icc</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          
+<section class="genindex-section">
+  <h1 id="index">Index</h1>
+  <div class="genindex-jumpbox"><a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#H"><strong>H</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#J"><strong>J</strong></a> | <a href="#K"><strong>K</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#Q"><strong>Q</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#W"><strong>W</strong></a> | <a href="#X"><strong>X</strong></a> | <a href="#Y"><strong>Y</strong></a> | <a href="#Z"><strong>Z</strong></a></div>
+</section>
+<section id="_" class="genindex-section">
+  <h2>_</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM.__attach__">__attach__() (PyART.models.bajes.Waveform_NRPM method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.__bounds_iter_defaults__">__bounds_iter_defaults__() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM.__convert_pars__">__convert_pars__() (PyART.models.bajes.Waveform_NRPM method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.__default_parameters__">__default_parameters__() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.__func_to_minimize">__func_to_minimize() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA.__interp_qnt__">__interp_qnt__() (PyART.catalogs.maya.MAYA method)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.__interp_qnt__">(PyART.catalogs.rit.Waveform_RIT method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.__is_in_valid_range">__is_in_valid_range() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.LinearScaler.__lin_transf">__lin_transf() (PyART.numerical.twopuncts_ID.LinearScaler method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.__minimize__dynesty__">__minimize__dynesty__() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.__minimize_annealing_">__minimize_annealing_() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.__minimize_differential_evo_">__minimize_differential_evo_() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.__minimizer__defaults__">__minimizer__defaults__() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM.__NRPM__">__NRPM__() (PyART.models.bajes.Waveform_NRPM method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.__parallel_run">__parallel_run() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM.__set__default_pars__">__set__default_pars__() (PyART.models.bajes.Waveform_NRPM method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.__set_variables">__set_variables() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.__update_bounds">__update_bounds() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._alpha1">_alpha1() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._alpha21">_alpha21() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._amplitude_peak">_amplitude_peak() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._c3_A">_c3_A() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._c3_phi">_c3_phi() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._c4_phi">_c4_phi() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._check_dir">_check_dir() (PyART.models.teob_matlab.Waveform_EOBMatlab method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ._clean_parfile_line">_clean_parfile_line() (PyART.catalogs.rwz.Waveform_RWZ method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator._compute_eccentricity_gwecc">_compute_eccentricity_gwecc() (PyART.analysis.eccentricity_calc.EccentricityCalculator method)</a>, <a href="autoapi/PyART/analysis/eccentricity_calc/index.html#id8">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator._compute_eccentricity_PN_EJ">_compute_eccentricity_PN_EJ() (PyART.analysis.eccentricity_calc.EccentricityCalculator method)</a>, <a href="autoapi/PyART/analysis/eccentricity_calc/index.html#id7">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._compute_mm_single_mode">_compute_mm_single_mode() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._compute_mm_skymax">_compute_mm_skymax() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._compute_overlap_skymax">_compute_overlap_skymax() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._convert_pars">_convert_pars() (PyART.models.teob_matlab.Waveform_EOBMatlab method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._debug_plot_waveforms">_debug_plot_waveforms() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._DeltaPhi">_DeltaPhi() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._DeltaT">_DeltaT() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._dOmega">_dOmega() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._dothlm">_dothlm (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._dyn">_dyn (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/lal/index.html#PyART.models.lal.Waveform_LAL._eob_to_lal_dict">_eob_to_lal_dict() (PyART.models.lal.Waveform_LAL method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown._eval_fits">_eval_fits() (PyART.models.ringdown.TEOBRingdown method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown._eval_fits_qnm">_eval_fits_qnm() (PyART.models.ringdown.TEOBRingdown method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ._eventual_int_float_conv">_eventual_int_float_conv() (PyART.catalogs.rwz.Waveform_RWZ method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._f">_f (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._find_tlen">_find_tlen() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._get_psd">_get_psd() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._get_single_mode_nc">_get_single_mode_nc() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._hc">_hc (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._hlm">_hlm (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._hp">_hp (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown._intrinsic_to_rdpars">_intrinsic_to_rdpars() (PyART.models.ringdown.TEOBRingdown method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR._is_git_lfs_pointer">_is_git_lfs_pointer() (PyART.catalogs.lvknr.Waveform_LVKNR method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._JimenezFortezaRemnantMass">_JimenezFortezaRemnantMass() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._JimenezFortezaRemnantSpin">_JimenezFortezaRemnantSpin() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp._kind">_kind (PyART.catalogs.gra_hyp.Waveform_GRAHyp attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC._kind">(PyART.catalogs.icc.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ._kind">(PyART.catalogs.rwz.Waveform_RWZ attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS._kind">(PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM._kind">(PyART.models.bajes.Waveform_NRPM attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/lal/index.html#PyART.models.lal.Waveform_LAL._kind">(PyART.models.lal.Waveform_LAL attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/seob/index.html#PyART.models.seob.Waveform_SEOB._kind">(PyART.models.seob.Waveform_SEOB attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.Waveform_EOB._kind">(PyART.models.teob.Waveform_EOB attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._kind">(PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._kind">(PyART.waveform.Waveform attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._load_dyn">_load_dyn() (PyART.models.teob_matlab.Waveform_EOBMatlab method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._load_hlm">_load_hlm() (PyART.models.teob_matlab.Waveform_EOBMatlab method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/lal/index.html#PyART.models.lal.Waveform_LAL._load_lal_lvcnr">_load_lal_lvcnr() (PyART.models.lal.Waveform_LAL method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._mass_rescaled_TimeSeries">_mass_rescaled_TimeSeries() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown._noncircular_corrections">_noncircular_corrections() (PyART.models.ringdown.TEOBRingdown method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._omega1">_omega1() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._omega_peak">_omega_peak() (in module PyART.models.ringdown_fits)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown._overwrite_rdpars">_overwrite_rdpars() (PyART.models.ringdown.TEOBRingdown method)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._psi4lm">_psi4lm (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown._rd_template">_rd_template() (PyART.models.ringdown.TEOBRingdown method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/seob/index.html#PyART.models.seob.Waveform_SEOB._run">_run() (PyART.models.seob.Waveform_SEOB method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/lal/index.html#PyART.models.lal.Waveform_LAL._run_lal">_run_lal() (PyART.models.lal.Waveform_LAL method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/lal/index.html#PyART.models.lal.Waveform_LAL._run_lal_FD">_run_lal_FD() (PyART.models.lal.Waveform_LAL method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/lal/index.html#PyART.models.lal.Waveform_LAL._run_lal_TD">_run_lal_TD() (PyART.models.lal.Waveform_LAL method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab._run_matlab">_run_matlab() (PyART.models.teob_matlab.Waveform_EOBMatlab method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.Waveform_EOB._run_py">_run_py() (PyART.models.teob.Waveform_EOB method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown._set_rd_params">_set_rd_params() (PyART.models.ringdown.TEOBRingdown method)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._t">_t (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._t_psi4">_t_psi4 (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform._u">_u (PyART.waveform.Waveform attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher._wave2locobj">_wave2locobj() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits._Y">_Y() (in module PyART.models.ringdown_fits)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="A" class="genindex-section">
+  <h2>A</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.LinearScaler.A">A (PyART.numerical.twopuncts_ID.LinearScaler attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analytic/coordschange/index.html#PyART.analytic.coordschange.Adm2Eob">Adm2Eob() (in module PyART.analytic.coordschange)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.adm_to_eob">adm_to_eob() (in module PyART.simulations)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.adm_to_eob">(in module simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.ADM_to_EOB">ADM_to_EOB() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.ADM_to_EOB">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.Align">Align() (in module PyART.utils.wf_utils)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.align_phase">align_phase() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.all_sims">all_sims (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.amp_phase_from_sxs">amp_phase_from_sxs() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.annealing_counter">annealing_counter (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.apply_window">apply_window() (PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id7">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/models/lal/index.html#PyART.models.lal.Waveform_LAL.approx">approx (PyART.models.lal.Waveform_LAL attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.are_dictionaries_equal">are_dictionaries_equal() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.areal_radius">areal_radius() (PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id3">[1]</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="B" class="genindex-section">
+  <h2>B</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.LinearScaler.B">B (PyART.numerical.twopuncts_ID.LinearScaler attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.BASE_URL">BASE_URL (in module PyART.catalogs.gra)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.basename">basename (PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.bbh_keys_from_simulation_keys">bbh_keys_from_simulation_keys() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.bounds_iter">bounds_iter (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.bracketing">bracketing() (in module PyART.models.teob)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.bracketing">(PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.build_colormap">build_colormap() (in module PyART.analysis.parspace_TEOB)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="C" class="genindex-section">
+  <h2>C</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.LinearScaler.C">C (PyART.numerical.twopuncts_ID.LinearScaler attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.cache">cache (PyART.analysis.match.Matcher attribute)</a>, <a href="autoapi/PyART/analysis/match/index.html#id0">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/calc_coprecessing/index.html#PyART.analysis.calc_coprecessing.calc_coprecessing_angles">calc_coprecessing_angles() (in module PyART.analysis.calc_coprecessing)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/calc_coprecessing/index.html#PyART.analysis.calc_coprecessing.calc_initial_jframe">calc_initial_jframe() (in module PyART.analysis.calc_coprecessing)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/calc_coprecessing/index.html#PyART.analysis.calc_coprecessing.calc_Lab_tensor">calc_Lab_tensor() (in module PyART.analysis.calc_coprecessing)</a>
+</li>
+        <li><a href="autoapi/PyART/analytic/coordschange/index.html#PyART.analytic.coordschange.Cartesian2Polar">Cartesian2Polar() (in module PyART.analytic.coordschange)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.cartesian_to_polar">cartesian_to_polar() (in module PyART.simulations)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.cartesian_to_polar">(in module simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.cast_to_float">cast_to_float() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.cast_to_float">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Catalog">Catalog (class in PyART.catalogs.rit)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.catalog">catalog (PyART.catalogs.cataloger.Cataloger attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.catalog">(PyART.catalogs.lvknr.Waveform_LVKNR attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Catalog.catalog_meta">catalog_meta (PyART.catalogs.rit.Catalog attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.CATALOG_URL">CATALOG_URL (in module PyART.catalogs.gra)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger">Cataloger (class in PyART.catalogs.cataloger)</a>
+</li>
+        <li><a href="autoapi/PyART/index.html#PyART.cgs">cgs (class in PyART)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.cgs">(class in PyART.simulations)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.cgs">(class in simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.check_cut_consistency">check_cut_consistency() (PyART.catalogs.gra.Waveform_GRA method)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.check_cut_consistency">(PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/cat_utils/index.html#PyART.utils.cat_utils.check_metadata">check_metadata() (in module PyART.utils.cat_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/models/seob/index.html#PyART.models.seob.Waveform_SEOB.check_pars">check_pars() (PyART.models.seob.Waveform_SEOB method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.chi1">chi1 (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.chi1z">chi1z (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.chi2">chi2 (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.chi2z">chi2z (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.clean_data">clean_data() (PyART.models.teob_matlab.Waveform_EOBMatlab method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA.coalescence">coalescence (PyART.catalogs.maya.MAYA attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.code_dir">code_dir (PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.COMMENTS_IGNORE">COMMENTS_IGNORE (in module PyART.simulations)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.COMMENTS_IGNORE">(in module simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.comments_ignore">comments_ignore (PyART.simulations.Simulations attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.comments_ignore">(simulations.Simulations attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.compute_chi">compute_chi() (PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id2">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.compute_chi_from_fit">compute_chi_from_fit() (PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id3">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.compute_chi_hypfit">compute_chi_hypfit() (PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id4">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.compute_dothlm">compute_dothlm() (PyART.waveform.Waveform method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA.compute_dynamics">compute_dynamics() (PyART.catalogs.maya.MAYA method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator.compute_eccentricity">compute_eccentricity() (PyART.analysis.eccentricity_calc.EccentricityCalculator method)</a>, <a href="autoapi/PyART/analysis/eccentricity_calc/index.html#id6">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/models/seob/index.html#PyART.models.seob.Waveform_SEOB.compute_energetics">compute_energetics() (PyART.models.seob.Waveform_SEOB method)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.Waveform_EOB.compute_energetics">(PyART.models.teob.Waveform_EOB method)</a>
+</li>
+          <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.compute_energetics">(PyART.models.teob_matlab.Waveform_EOBMatlab method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.compute_hphc">compute_hphc() (in module PyART.utils.wf_utils)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.compute_hphc">(PyART.waveform.Waveform method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA.compute_initial_data">compute_initial_data() (PyART.catalogs.maya.MAYA method)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.compute_initial_data">(PyART.catalogs.rit.Waveform_RIT method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown.compute_modes">compute_modes() (PyART.models.ringdown.TEOBRingdown method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.compute_psi4_from_hlm">compute_psi4_from_hlm() (PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.compute_psi4lm">compute_psi4lm() (PyART.waveform.Waveform method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.compute_psi4lm_from_hlm">compute_psi4lm_from_hlm() (PyART.catalogs.icc_public.Waveform_ICC method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.compute_r0_from_IClist">compute_r0_from_IClist() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.compute_spins_at_tref">compute_spins_at_tref() (PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ComputeChiFrom2Sims">ComputeChiFrom2Sims() (in module PyART.analysis.scattering_angle)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.condition_td_waveform">condition_td_waveform() (in module PyART.analysis.match)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.conversion_dict_floats">conversion_dict_floats (in module PyART.catalogs.core)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.conversion_dict_from_bajes">conversion_dict_from_bajes (in module PyART.models.bajes)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.conversion_dict_to_bajes">conversion_dict_to_bajes (in module PyART.models.bajes)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.conversion_dict_vectors">conversion_dict_vectors (in module PyART.catalogs.core)</a>
+</li>
+        <li><a href="autoapi/PyART/models/seob/index.html#PyART.models.seob.convert_hlm">convert_hlm() (in module PyART.models.seob)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.convert_hlm">(in module PyART.models.teob)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.convert_simulation">convert_simulation() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.core_data_path">core_data_path (PyART.catalogs.core.Waveform_CoRe attribute)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.count_subdirs">count_subdirs() (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.create_TP_parfile">create_TP_parfile() (PyART.numerical.twopuncts_ID.TwoPunctID method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/seob/index.html#PyART.models.seob.CreateDict">CreateDict() (in module PyART.models.seob)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.CreateDict">(in module PyART.models.teob)</a>
+</li>
+          <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.CreateDict">(in module PyART.models.teob_matlab)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.cut">cut() (PyART.waveform.Waveform method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.cut_at_mrg">cut_at_mrg() (PyART.catalogs.core.Waveform_CoRe method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.cut_final">cut_final (PyART.catalogs.sacra.Waveform_SACRA attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.cut_N">cut_N (PyART.catalogs.gra.Waveform_GRA attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.cut_N">(PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.cut_U">cut_U (PyART.catalogs.gra.Waveform_GRA attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ.cut_u">cut_u (PyART.catalogs.rwz.Waveform_RWZ attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.cut_U">cut_U (PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="D" class="genindex-section">
+  <h2>D</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.LinearScaler.D">D (PyART.numerical.twopuncts_ID.LinearScaler attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.D">(PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.D02">D02() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.D1">D1() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.data">data (in module tocatalog_icc)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.data">(PyART.catalogs.cataloger.Cataloger attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.data">(PyART.catalogs.lvknr.Waveform_LVKNR attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Catalog.data">(PyART.catalogs.rit.Catalog attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.data">(PyART.simulations.Simulations attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.data">(simulations.Simulations attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.data_path">data_path (PyART.catalogs.lvknr.Waveform_LVKNR attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.dE_bound">dE_bound (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.debug">debug (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.deg">deg (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.delta_a_b">delta_a_b() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.derived_horizon_quantities_from_sxs">derived_horizon_quantities_from_sxs() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.determine_r0_from_pphE">determine_r0_from_pphE() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.dh">dh (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.dir">dir (PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.domain">domain (PyART.catalogs.core.Waveform_CoRe attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.domain">(PyART.catalogs.gra.Waveform_GRA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp.domain">(PyART.catalogs.gra_hyp.Waveform_GRAHyp attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.domain">(PyART.catalogs.icc.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.domain">(PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ.domain">(PyART.catalogs.rwz.Waveform_RWZ attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.domain">(PyART.catalogs.sacra.Waveform_SACRA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.domain">(PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM.domain">(PyART.models.bajes.Waveform_NRPM attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.dothlm">dothlm (PyART.waveform.Waveform property)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.download">download (PyART.catalogs.icc_public.Waveform_ICC attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.download_data">download_data() (PyART.catalogs.rit.Waveform_RIT method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.download_iccub_entry">download_iccub_entry() (PyART.catalogs.icc_public.Waveform_ICC method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.download_safe">download_safe() (in module PyART.catalogs.gra)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.download_simulation">download_simulation() (PyART.catalogs.core.Waveform_CoRe method)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.download_simulation">(PyART.catalogs.gra.Waveform_GRA method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.download_simulation">(PyART.catalogs.lvknr.Waveform_LVKNR method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.download_simulation">(PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.dual_annealing_wrap">dual_annealing_wrap() (in module PyART.analysis.match)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.DUMMY">DUMMY (in module PyART.numerical.twopuncts_ID)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.dump_npz">dump_npz() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.dump_txt">dump_txt() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.dyn">dyn (PyART.waveform.Waveform property)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.dynamics_from_hlm">dynamics_from_hlm() (PyART.waveform.Waveform method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="E" class="genindex-section">
+  <h2>E</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator.e">e (PyART.analysis.eccentricity_calc.EccentricityCalculator attribute)</a>, <a href="autoapi/PyART/analysis/eccentricity_calc/index.html#id5">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.E">E (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.E_min">E_min (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator">EccentricityCalculator (class in PyART.analysis.eccentricity_calc)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.ej_from_hlm">ej_from_hlm() (PyART.waveform.Waveform method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.ell_emms">ell_emms (PyART.catalogs.core.Waveform_CoRe attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA.ell_emms">(PyART.catalogs.maya.MAYA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Catalog.ell_emms">(PyART.catalogs.rit.Catalog attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.ell_emms">(PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.ellmax">ellmax (PyART.catalogs.gra.Waveform_GRA attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.ellmax">(PyART.catalogs.icc.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.ellmax">(PyART.catalogs.icc_public.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.ellmax">(PyART.catalogs.lvknr.Waveform_LVKNR attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Catalog.ellmax">(PyART.catalogs.rit.Catalog attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ.ellmax">(PyART.catalogs.rwz.Waveform_RWZ attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.ellmax">(PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.Emax">Emax (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.Emin">Emin (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.EnergyLimitsSpin">EnergyLimitsSpin() (in module PyART.analysis.parspace_TEOB)</a>
+</li>
+        <li><a href="autoapi/PyART/analytic/coordschange/index.html#PyART.analytic.coordschange.Eob2Adm">Eob2Adm() (in module PyART.analytic.coordschange)</a>
+</li>
+        <li><a href="autoapi/PyART/analytic/coordschange/index.html#PyART.analytic.coordschange.eob_ID_to_ADM">eob_ID_to_ADM() (in module PyART.analytic.coordschange)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.eobcommonpars">eobcommonpars (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/cat_utils/index.html#PyART.utils.cat_utils.errwarn">errwarn() (in module PyART.utils.cat_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits_noncirc/index.html#PyART.models.ringdown_fits_noncirc.eval_fit">eval_fit() (in module PyART.models.ringdown_fits_noncirc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.extract_value_from_str">extract_value_from_str() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.extraction">extraction (PyART.catalogs.icc_public.Waveform_ICC attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.extrap">extrap (PyART.catalogs.gra.Waveform_GRA attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.extrap_psi4">extrap_psi4 (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.extrapolate_psi4">extrapolate_psi4() (PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id6">[1]</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="F" class="genindex-section">
+  <h2>F</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.f">f (PyART.waveform.Waveform property)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.f0">f0 (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.fetch_and_save_egrav_json">fetch_and_save_egrav_json() (in module PyART.catalogs.icc_public)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.fft">fft() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.file_dir">file_dir (in module PyART.numerical.twopuncts_ID)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.file_path">file_path (in module PyART.numerical.twopuncts_ID)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.files">files (PyART.simulations.Simulations attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.files">(simulations.Simulations attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/os_utils/index.html#PyART.utils.os_utils.find_dirs_with_subdirs">find_dirs_with_subdirs() (in module PyART.utils.os_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/os_utils/index.html#PyART.utils.os_utils.find_dirs_with_token">find_dirs_with_token() (in module PyART.utils.os_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/os_utils/index.html#PyART.utils.os_utils.find_fnames_with_token">find_fnames_with_token() (in module PyART.utils.os_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.find_max">find_max() (PyART.waveform.Waveform method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.find_metadata_file">find_metadata_file() (in module PyART.catalogs.gra)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.find_nearest">find_nearest() (in module PyART.utils.utils)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.find_subset">find_subset() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.find_tar_for_resolution">find_tar_for_resolution() (in module PyART.catalogs.gra)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.first_index_after_relaxation_time">first_index_after_relaxation_time() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.first_index_after_time">first_index_after_time() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.first_index_before_reference_time">first_index_before_reference_time() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits_noncirc/index.html#PyART.models.ringdown_fits_noncirc.fit_dim">fit_dim (in module PyART.models.ringdown_fits_noncirc)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.fit_iter">fit_iter() (PyART.numerical.twopuncts_ID.TwoPunctID method)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.fit_iterations">fit_iterations() (PyART.numerical.twopuncts_ID.TwoPunctID method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/hypfit/index.html#PyART.analysis.hypfit.fit_quadratic">fit_quadratic() (in module PyART.analysis.hypfit)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.fixed_freq_int">fixed_freq_int() (PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id9">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.fmt">fmt (PyART.utils.load_nr_utils.LoadWave attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.fmt">(PyART.waveform.WaveIntegrated attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.fname">fname (PyART.utils.load_nr_utils.LoadWave attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.fname">(PyART.waveform.WaveIntegrated attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.freq_interval">freq_interval() (PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id8">[1]</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="G" class="genindex-section">
+  <h2>G</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.generate_EOB">generate_EOB() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/index.html#PyART.geom">geom (class in PyART)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.geom">(class in PyART.simulations)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.geom">(class in simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.get_colors_for_subset">get_colors_for_subset() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/cat_utils/index.html#PyART.utils.cat_utils.get_flags">get_flags() (in module PyART.utils.cat_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.get_id_to_item_url">get_id_to_item_url() (in module PyART.catalogs.gra)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.get_indices_dict">get_indices_dict() (PyART.catalogs.gra.Waveform_GRA method)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.get_indices_dict">(PyART.utils.load_nr_utils.LoadWave method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.get_info_from_name">get_info_from_name() (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.get_item_soup">get_item_soup() (in module PyART.catalogs.gra)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.get_lev_fname">get_lev_fname() (PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.get_model_waveform">get_model_waveform() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.get_MOmega0_from_FFT">get_MOmega0_from_FFT() (PyART.catalogs.sacra.Waveform_SACRA method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.get_multipole_dict">get_multipole_dict() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.get_pph_lso">get_pph_lso() (in module PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.Waveform_EOB.get_Pr">get_Pr() (PyART.models.teob.Waveform_EOB method)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.get_radial_turning_points">get_radial_turning_points() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.get_Waveform">get_Waveform() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.get_xy">get_xy() (PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id0">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/index.html#PyART.cgs.grav_constant">grav_constant (PyART.cgs attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/index.html#PyART.geom.grav_constant">(PyART.geom attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/index.html#PyART.metric.grav_constant">(PyART.metric attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.cgs.grav_constant">(PyART.simulations.cgs attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.geom.grav_constant">(PyART.simulations.geom attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.metric.grav_constant">(PyART.simulations.metric attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.cgs.grav_constant">(simulations.cgs attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.geom.grav_constant">(simulations.geom attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.metric.grav_constant">(simulations.metric attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="H" class="genindex-section">
+  <h2>H</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator.h">h (PyART.analysis.eccentricity_calc.EccentricityCalculator attribute)</a>, <a href="autoapi/PyART/analysis/eccentricity_calc/index.html#id0">[1]</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.h">(PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.h1f">h1f (PyART.analysis.match.Matcher attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.h2f">h2f (PyART.analysis.match.Matcher attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA.h_file">h_file (PyART.catalogs.maya.MAYA attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.hc">hc (PyART.waveform.Waveform property)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.history">history (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown.hlm">hlm (PyART.models.ringdown.TEOBRingdown attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.hlm">(PyART.waveform.Waveform property)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.horizon_splines_from_sxs">horizon_splines_from_sxs() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.hp">hp (PyART.waveform.Waveform property)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.hyp">hyp (PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/hypfit/index.html#PyART.analysis.hypfit.hyp_branches">hyp_branches() (in module PyART.analysis.hypfit)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/hypfit/index.html#PyART.analysis.hypfit.hyp_parametrization">hyp_parametrization() (in module PyART.analysis.hypfit)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.hypfit">hypfit (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="I" class="genindex-section">
+  <h2>I</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.ID">ID (in module PyART.catalogs.lvknr)</a>
+
+        <ul>
+          <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.ID">(in module tocatalog_icc)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.ID">(PyART.catalogs.core.Waveform_CoRe attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.ID">(PyART.catalogs.gra.Waveform_GRA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp.ID">(PyART.catalogs.gra_hyp.Waveform_GRAHyp attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.ID">(PyART.catalogs.icc.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.ID">(PyART.catalogs.icc_public.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.ID">(PyART.catalogs.lvknr.Waveform_LVKNR attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.ID">(PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.ID">(PyART.catalogs.sacra.Waveform_SACRA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.ID">(PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Catalog.idx_from_value">idx_from_value() (PyART.catalogs.rit.Catalog method)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.ifft">ifft() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.info">info (PyART.catalogs.sacra.Waveform_SACRA attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.info">info() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.info">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.info_string">info_string() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.input_file">input_file (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.insert_derived_spline">insert_derived_spline() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.insert_spline">insert_spline() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.integr_opts">integr_opts (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id2">[1]</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Catalog.integr_opts">(PyART.catalogs.rit.Catalog attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.integrand">integrand (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.integrand">(PyART.waveform.WaveIntegrated attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.integrate">integrate() (in module PyART.utils.utils)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.integrate">(PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id12">[1]</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.integrate_data">integrate_data() (PyART.waveform.Waveform method)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.integrate_wave">integrate_wave() (PyART.waveform.WaveIntegrated method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole">IntegrateMultipole (class in PyART.analysis.integrate_wave)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.interpolate_hlm">interpolate_hlm() (PyART.waveform.Waveform method)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.LinearScaler.inverse_transform">inverse_transform() (PyART.numerical.twopuncts_ID.LinearScaler method)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/os_utils/index.html#PyART.utils.os_utils.is_subdir">is_subdir() (in module PyART.utils.os_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.iteration">iteration (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="J" class="genindex-section">
+  <h2>J</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.json_file">json_file (in module tocatalog_icc)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.json_file">(PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.json_file">(PyART.catalogs.cataloger.Cataloger attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.json_save_dyn">json_save_dyn (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="K" class="genindex-section">
+  <h2>K</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.k_to_ell">k_to_ell() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.k_to_emm">k_to_emm() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.KEYMAP">KEYMAP (in module PyART.simulations)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.KEYMAP">(in module simulations)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/cat_utils/index.html#PyART.utils.cat_utils.KEYS">KEYS (in module PyART.utils.cat_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator.kind">kind (PyART.analysis.eccentricity_calc.EccentricityCalculator attribute)</a>, <a href="autoapi/PyART/analysis/eccentricity_calc/index.html#id3">[1]</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.kind">(PyART.waveform.Waveform property)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.kind_ic">kind_ic (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="L" class="genindex-section">
+  <h2>L</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.l">l (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.L">L (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.leob">leob (PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.level">level (PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/index.html#PyART.cgs.light_speed">light_speed (PyART.cgs attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/index.html#PyART.geom.light_speed">(PyART.geom attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/index.html#PyART.metric.light_speed">(PyART.metric attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.cgs.light_speed">(PyART.simulations.cgs attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.geom.light_speed">(PyART.simulations.geom attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.metric.light_speed">(PyART.simulations.metric attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.cgs.light_speed">(simulations.cgs attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.geom.light_speed">(simulations.geom attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.metric.light_speed">(simulations.metric attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.LinearScaler">LinearScaler (class in PyART.numerical.twopuncts_ID)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ.load_dynamics">load_dynamics() (PyART.catalogs.rwz.Waveform_RWZ method)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.load_file">load_file() (PyART.utils.load_nr_utils.LoadWave method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.load_hlm">load_hlm() (PyART.catalogs.core.Waveform_CoRe method)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.load_hlm">(PyART.catalogs.gra.Waveform_GRA method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp.load_hlm">(PyART.catalogs.gra_hyp.Waveform_GRAHyp method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.load_hlm">(PyART.catalogs.icc.Waveform_ICC method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.load_hlm">(PyART.catalogs.icc_public.Waveform_ICC method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.load_hlm">(PyART.catalogs.lvknr.Waveform_LVKNR method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA.load_hlm">(PyART.catalogs.maya.MAYA method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.load_hlm">(PyART.catalogs.rit.Waveform_RIT method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ.load_hlm">(PyART.catalogs.rwz.Waveform_RWZ method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.load_hlm">(PyART.catalogs.sacra.Waveform_SACRA method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.load_hlm">(PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.load_horizon">load_horizon() (PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.load_insp">load_insp (PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.load_m0">load_m0 (PyART.catalogs.lvknr.Waveform_LVKNR attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.load_metadata">load_metadata() (PyART.catalogs.core.Waveform_CoRe method)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.load_metadata">(PyART.catalogs.gra.Waveform_GRA method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp.load_metadata">(PyART.catalogs.gra_hyp.Waveform_GRAHyp method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.load_metadata">(PyART.catalogs.icc.Waveform_ICC method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.load_metadata">(PyART.catalogs.icc_public.Waveform_ICC method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.load_metadata">(PyART.catalogs.lvknr.Waveform_LVKNR method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA.load_metadata">(PyART.catalogs.maya.MAYA method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.load_metadata">(PyART.catalogs.rit.Waveform_RIT method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ.load_metadata">(PyART.catalogs.rwz.Waveform_RWZ method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.load_metadata">(PyART.catalogs.sacra.Waveform_SACRA method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.load_metadata">(PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.load_multipole_txtfile">load_multipole_txtfile() (PyART.catalogs.icc.Waveform_ICC method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.load_or_create_mismatches">load_or_create_mismatches() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.load_psi4lm">load_psi4lm() (PyART.catalogs.gra.Waveform_GRA method)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp.load_psi4lm">(PyART.catalogs.gra_hyp.Waveform_GRAHyp method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.load_psi4lm">(PyART.catalogs.icc.Waveform_ICC method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.load_psi4lm">(PyART.catalogs.icc_public.Waveform_ICC method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.load_psi4lm">(PyART.catalogs.rit.Waveform_RIT method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.load_psi4lm">(PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.load_puncts">load_puncts() (in module tocatalog_icc)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp.load_puncts">(PyART.catalogs.gra_hyp.Waveform_GRAHyp method)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.load_puncts">(PyART.catalogs.icc.Waveform_ICC method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Catalog.load_simulations_in_path">load_simulations_in_path() (PyART.catalogs.rit.Catalog method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.load_tex_info">load_tex_info() (PyART.catalogs.sacra.Waveform_SACRA method)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.load_wave">load_wave() (PyART.waveform.WaveIntegrated method)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave">LoadWave (class in PyART.utils.load_nr_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.log">log() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.lvcnr_path">lvcnr_path (PyART.catalogs.lvknr.Waveform_LVKNR attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="M" class="genindex-section">
+  <h2>M</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.m">m (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.M">M (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.M">(PyART.waveform.WaveIntegrated attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.make_session">make_session() (in module PyART.catalogs.gra)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.mass">mass (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.match_against_ref">match_against_ref() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.match_out">match_out (PyART.analysis.match.Matcher attribute)</a>, <a href="autoapi/PyART/analysis/match/index.html#id4">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher">Matcher (class in PyART.analysis.match)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matlab_base">matlab_base (in module PyART.models.teob_matlab)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matlab_base_hyp">matlab_base_hyp (in module PyART.models.teob_matlab)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matlab_base_leob">matlab_base_leob (in module PyART.models.teob_matlab)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matlab_setup_base">matlab_setup_base (in module PyART.models.teob_matlab)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.matnames">matnames() (in module PyART.models.teob_matlab)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA">MAYA (class in PyART.catalogs.maya)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.mc_a">mc_a() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.mc_b">mc_b() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.mc_c">mc_c() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.mc_d">mc_d() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.mc_f">mc_f() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.metadata">metadata (PyART.catalogs.core.Waveform_CoRe attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.MAYA.metadata">(PyART.catalogs.maya.MAYA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.metadata">(PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.METADATA_EXTENSION">METADATA_EXTENSION (in module PyART.simulations)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.METADATA_EXTENSION">(in module simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.metadata_psi4">metadata_psi4 (PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.method">method (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/index.html#PyART.metric">metric (class in PyART)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.metric">(class in PyART.simulations)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.metric">(class in simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/index.html#PyART.cgs.MeV">MeV (PyART.cgs attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/index.html#PyART.geom.MeV">(PyART.geom attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/index.html#PyART.metric.MeV">(PyART.metric attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.cgs.MeV">(PyART.simulations.cgs attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.geom.MeV">(PyART.simulations.geom attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.metric.MeV">(PyART.simulations.metric attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.cgs.MeV">(simulations.cgs attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.geom.MeV">(simulations.geom attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.metric.MeV">(simulations.metric attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.minimizer">minimizer (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.minmax_array">minmax_array() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.mismatch">mismatch (PyART.analysis.match.Matcher attribute)</a>, <a href="autoapi/PyART/analysis/match/index.html#id3">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.mm_at_M">mm_at_M() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.mm_settings">mm_settings (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.mm_vs_M">mm_vs_M() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ.mmin">mmin (PyART.catalogs.rwz.Waveform_RWZ attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.mnfactor">mnfactor() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.mode_to_k">mode_to_k() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.model_opts">model_opts (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.modes">modes (PyART.analysis.match.Matcher attribute)</a>, <a href="autoapi/PyART/analysis/match/index.html#id2">[1]</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.modes">(PyART.catalogs.gra.Waveform_GRA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown.modes">(PyART.models.ringdown.TEOBRingdown attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.modes">(PyART.utils.load_nr_utils.LoadWave attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.modes">(PyART.waveform.WaveIntegrated attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.modes_to_k">modes_to_k() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li>
+    module
+
+        <ul>
+          <li><a href="autoapi/PyART/index.html#module-PyART">PyART</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/index.html#module-PyART.analysis">PyART.analysis</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/calc_coprecessing/index.html#module-PyART.analysis.calc_coprecessing">PyART.analysis.calc_coprecessing</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#module-PyART.analysis.eccentricity_calc">PyART.analysis.eccentricity_calc</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/hypfit/index.html#module-PyART.analysis.hypfit">PyART.analysis.hypfit</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#module-PyART.analysis.integrate_wave">PyART.analysis.integrate_wave</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/match/index.html#module-PyART.analysis.match">PyART.analysis.match</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/opt_ic/index.html#module-PyART.analysis.opt_ic">PyART.analysis.opt_ic</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#module-PyART.analysis.parspace_TEOB">PyART.analysis.parspace_TEOB</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#module-PyART.analysis.scattering_angle">PyART.analysis.scattering_angle</a>
+</li>
+          <li><a href="autoapi/PyART/analytic/index.html#module-PyART.analytic">PyART.analytic</a>
+</li>
+          <li><a href="autoapi/PyART/analytic/coordschange/index.html#module-PyART.analytic.coordschange">PyART.analytic.coordschange</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/index.html#module-PyART.catalogs">PyART.catalogs</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/cataloger/index.html#module-PyART.catalogs.cataloger">PyART.catalogs.cataloger</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/core/index.html#module-PyART.catalogs.core">PyART.catalogs.core</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#module-PyART.catalogs.gra">PyART.catalogs.gra</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#module-PyART.catalogs.gra_hyp">PyART.catalogs.gra_hyp</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#module-PyART.catalogs.icc">PyART.catalogs.icc</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#module-PyART.catalogs.icc_public">PyART.catalogs.icc_public</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#module-PyART.catalogs.lvknr">PyART.catalogs.lvknr</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/maya/index.html#module-PyART.catalogs.maya">PyART.catalogs.maya</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#module-PyART.catalogs.rit">PyART.catalogs.rit</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rwz/index.html#module-PyART.catalogs.rwz">PyART.catalogs.rwz</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sacra/index.html#module-PyART.catalogs.sacra">PyART.catalogs.sacra</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#module-PyART.catalogs.sxs">PyART.catalogs.sxs</a>
+</li>
+          <li><a href="autoapi/PyART/logging_config/index.html#module-PyART.logging_config">PyART.logging_config</a>
+</li>
+          <li><a href="autoapi/PyART/models/index.html#module-PyART.models">PyART.models</a>
+</li>
+          <li><a href="autoapi/PyART/models/bajes/index.html#module-PyART.models.bajes">PyART.models.bajes</a>
+</li>
+          <li><a href="autoapi/PyART/models/lal/index.html#module-PyART.models.lal">PyART.models.lal</a>
+</li>
+          <li><a href="autoapi/PyART/models/ringdown/index.html#module-PyART.models.ringdown">PyART.models.ringdown</a>
+</li>
+          <li><a href="autoapi/PyART/models/ringdown_fits/index.html#module-PyART.models.ringdown_fits">PyART.models.ringdown_fits</a>
+</li>
+          <li><a href="autoapi/PyART/models/ringdown_fits_noncirc/index.html#module-PyART.models.ringdown_fits_noncirc">PyART.models.ringdown_fits_noncirc</a>
+</li>
+          <li><a href="autoapi/PyART/models/seob/index.html#module-PyART.models.seob">PyART.models.seob</a>
+</li>
+          <li><a href="autoapi/PyART/models/teob/index.html#module-PyART.models.teob">PyART.models.teob</a>
+</li>
+          <li><a href="autoapi/PyART/models/teob_matlab/index.html#module-PyART.models.teob_matlab">PyART.models.teob_matlab</a>
+</li>
+          <li><a href="autoapi/PyART/numerical/index.html#module-PyART.numerical">PyART.numerical</a>
+</li>
+          <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#module-PyART.numerical.twopuncts_ID">PyART.numerical.twopuncts_ID</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#module-PyART.simulations">PyART.simulations</a>
+</li>
+          <li><a href="autoapi/PyART/utils/index.html#module-PyART.utils">PyART.utils</a>
+</li>
+          <li><a href="autoapi/PyART/utils/cat_utils/index.html#module-PyART.utils.cat_utils">PyART.utils.cat_utils</a>
+</li>
+          <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#module-PyART.utils.convert_sxs_to_lvc">PyART.utils.convert_sxs_to_lvc</a>
+</li>
+          <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#module-PyART.utils.load_nr_utils">PyART.utils.load_nr_utils</a>
+</li>
+          <li><a href="autoapi/PyART/utils/os_utils/index.html#module-PyART.utils.os_utils">PyART.utils.os_utils</a>
+</li>
+          <li><a href="autoapi/PyART/utils/utils/index.html#module-PyART.utils.utils">PyART.utils.utils</a>
+</li>
+          <li><a href="autoapi/PyART/utils/wf_utils/index.html#module-PyART.utils.wf_utils">PyART.utils.wf_utils</a>
+</li>
+          <li><a href="autoapi/PyART/waveform/index.html#module-PyART.waveform">PyART.waveform</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#module-simulations">simulations</a>
+</li>
+          <li><a href="autoapi/tocatalog_icc/index.html#module-tocatalog_icc">tocatalog_icc</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.module">module (in module PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.mpc_m">mpc_m (in module PyART.models.bajes)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.Msun">Msun (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Msun_m">Msun_m (in module PyART.catalogs.lvknr)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.msun_m">msun_m (in module PyART.models.bajes)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Msun_s">Msun_s (in module PyART.catalogs.lvknr)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.msun_s">msun_s (in module PyART.models.bajes)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.mtdt_path">mtdt_path (PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.mtdt_psi4">mtdt_psi4 (PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.multiply_by">multiply_by() (PyART.waveform.Waveform method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="N" class="genindex-section">
+  <h2>N</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.n_extract">n_extract (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.name">name (PyART.catalogs.sacra.Waveform_SACRA attribute)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.new_dir">new_dir (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.nextpow2">nextpow2() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.nfits">nfits (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.nj">nj (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.nmax">nmax (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.nmin">nmin (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Catalog.nonspinning">nonspinning (PyART.catalogs.rit.Catalog attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.norm">norm (PyART.waveform.WaveIntegrated attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.normalize_wave">normalize_wave() (PyART.waveform.WaveIntegrated method)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.npoints_A">npoints_A (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.npoints_B">npoints_B (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.npoints_phi">npoints_phi (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.nproc">nproc (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.nr">nr (PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.nsims">nsims (PyART.catalogs.cataloger.Cataloger attribute)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.nsims_qeq1_nospin">nsims_qeq1_nospin (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.nsims_qeq1_spin">nsims_qeq1_spin (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.nsims_scat">nsims_scat (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits_noncirc/index.html#PyART.models.ringdown_fits_noncirc.nu">nu (in module PyART.models.ringdown_fits_noncirc)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.nu">(PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.nu_rescale">nu_rescale (PyART.catalogs.core.Waveform_CoRe attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.nu_rescale">(PyART.catalogs.gra.Waveform_GRA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp.nu_rescale">(PyART.catalogs.gra_hyp.Waveform_GRAHyp attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.nu_rescale">(PyART.catalogs.icc.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.nu_rescale">(PyART.catalogs.icc_public.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR.nu_rescale">(PyART.catalogs.lvknr.Waveform_LVKNR attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.nu_rescale">(PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.nu_rescale">(PyART.catalogs.sacra.Waveform_SACRA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.nu_rescale">(PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="O" class="genindex-section">
+  <h2>O</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator.omg">omg (PyART.analysis.eccentricity_calc.EccentricityCalculator attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.opt_bounds">opt_bounds (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.opt_data">opt_data (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.opt_good_mm">opt_good_mm (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.opt_max_iter">opt_max_iter (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.opt_Waveform">opt_Waveform (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.optimize_mismatch">optimize_mismatch() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.optimize_mismatches">optimize_mismatches() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.optimize_mismatches_batch">optimize_mismatches_batch() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer">Optimizer (class in PyART.analysis.opt_ic)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.order">order (PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.outdir">outdir (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.outdir">(PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.overwrite">overwrite (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="P" class="genindex-section">
+  <h2>P</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.p">p (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ.par_rel_path">par_rel_path (PyART.catalogs.rwz.Waveform_RWZ attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.params">params (in module PyART.models.ringdown)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown.params">(PyART.models.ringdown.TEOBRingdown attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator.pars">pars (PyART.analysis.eccentricity_calc.EccentricityCalculator attribute)</a>, <a href="autoapi/PyART/analysis/eccentricity_calc/index.html#id4">[1]</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM.pars">(PyART.models.bajes.Waveform_NRPM attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/lal/index.html#PyART.models.lal.Waveform_LAL.pars">(PyART.models.lal.Waveform_LAL attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/seob/index.html#PyART.models.seob.Waveform_SEOB.pars">(PyART.models.seob.Waveform_SEOB attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.Waveform_EOB.pars">(PyART.models.teob.Waveform_EOB attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.pars">(PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM.pars_bajes">pars_bajes (PyART.models.bajes.Waveform_NRPM attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.parse_metadata">parse_metadata() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.parse_metadata">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.parse_nr_metadata">parse_nr_metadata() (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.parser">parser (in module PyART.analysis.parspace_TEOB)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.parser">(in module PyART.numerical.twopuncts_ID)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.parspace_populate">parspace_populate() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.patch_opts">patch_opts (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.patch_psi4">patch_psi4() (PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id5">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.path">path (PyART.catalogs.cataloger.Cataloger attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.path">(PyART.catalogs.gra.Waveform_GRA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp.path">(PyART.catalogs.gra_hyp.Waveform_GRAHyp attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.path">(PyART.catalogs.icc.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.path">(PyART.catalogs.icc_public.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ.path">(PyART.catalogs.rwz.Waveform_RWZ attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA.path">(PyART.catalogs.sacra.Waveform_SACRA attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.path">(PyART.simulations.Simulations attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.path">(PyART.utils.load_nr_utils.LoadWave attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.path">(PyART.waveform.WaveIntegrated attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.path">(simulations.Simulations attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.peak_time_from_sxs">peak_time_from_sxs() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/analytic/coordschange/index.html#PyART.analytic.coordschange.pi">pi (in module PyART.analytic.coordschange)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.plot_colorbar">plot_colorbar() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_chi">plot_fit_chi() (PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id10">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_diffs">plot_fit_diffs() (PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id8">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_extrapolation">plot_fit_extrapolation() (PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id9">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/hypfit/index.html#PyART.analysis.hypfit.plot_hypfit">plot_hypfit() (in module PyART.analysis.hypfit)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.plot_hypfit">(PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id5">[1]</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.plot_parspace">plot_parspace() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.plot_summary">plot_summary() (PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id7">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.plot_waves">plot_waves() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/analytic/coordschange/index.html#PyART.analytic.coordschange.Polar2Cartesian">Polar2Cartesian() (in module PyART.analytic.coordschange)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.polar_to_cartesian">polar_to_cartesian() (in module PyART.simulations)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.polar_to_cartesian">(in module simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.poly_int">poly_int (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.polyfit_svd">polyfit_svd() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.PotentialMinimum">PotentialMinimum() (in module PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.PotentialPlot">PotentialPlot() (in module PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.powspace">powspace() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.pph_max">pph_max (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.pph_min">pph_min (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.prepare_horizon_quantity">prepare_horizon_quantity() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.print_dict_comparison">print_dict_comparison() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.process_with_redirect">process_with_redirect() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.psi4">psi4 (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.psi4lm">psi4lm (PyART.waveform.Waveform property)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.psi_path">psi_path (PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.puncts">puncts (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+        <li>
+    PyART
+
+        <ul>
+          <li><a href="autoapi/PyART/index.html#module-PyART">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analysis
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/index.html#module-PyART.analysis">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analysis.calc_coprecessing
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/calc_coprecessing/index.html#module-PyART.analysis.calc_coprecessing">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analysis.eccentricity_calc
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#module-PyART.analysis.eccentricity_calc">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analysis.hypfit
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/hypfit/index.html#module-PyART.analysis.hypfit">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analysis.integrate_wave
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#module-PyART.analysis.integrate_wave">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analysis.match
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/match/index.html#module-PyART.analysis.match">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analysis.opt_ic
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/opt_ic/index.html#module-PyART.analysis.opt_ic">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analysis.parspace_TEOB
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#module-PyART.analysis.parspace_TEOB">module</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    PyART.analysis.scattering_angle
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#module-PyART.analysis.scattering_angle">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analytic
+
+        <ul>
+          <li><a href="autoapi/PyART/analytic/index.html#module-PyART.analytic">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.analytic.coordschange
+
+        <ul>
+          <li><a href="autoapi/PyART/analytic/coordschange/index.html#module-PyART.analytic.coordschange">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/index.html#module-PyART.catalogs">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.cataloger
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/cataloger/index.html#module-PyART.catalogs.cataloger">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.core
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/core/index.html#module-PyART.catalogs.core">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.gra
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra/index.html#module-PyART.catalogs.gra">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.gra_hyp
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#module-PyART.catalogs.gra_hyp">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.icc
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#module-PyART.catalogs.icc">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.icc_public
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#module-PyART.catalogs.icc_public">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.lvknr
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/lvknr/index.html#module-PyART.catalogs.lvknr">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.maya
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/maya/index.html#module-PyART.catalogs.maya">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.rit
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#module-PyART.catalogs.rit">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.rwz
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/rwz/index.html#module-PyART.catalogs.rwz">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.sacra
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/sacra/index.html#module-PyART.catalogs.sacra">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.catalogs.sxs
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/sxs/index.html#module-PyART.catalogs.sxs">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.logging_config
+
+        <ul>
+          <li><a href="autoapi/PyART/logging_config/index.html#module-PyART.logging_config">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.models
+
+        <ul>
+          <li><a href="autoapi/PyART/models/index.html#module-PyART.models">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.models.bajes
+
+        <ul>
+          <li><a href="autoapi/PyART/models/bajes/index.html#module-PyART.models.bajes">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.models.lal
+
+        <ul>
+          <li><a href="autoapi/PyART/models/lal/index.html#module-PyART.models.lal">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.models.ringdown
+
+        <ul>
+          <li><a href="autoapi/PyART/models/ringdown/index.html#module-PyART.models.ringdown">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.models.ringdown_fits
+
+        <ul>
+          <li><a href="autoapi/PyART/models/ringdown_fits/index.html#module-PyART.models.ringdown_fits">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.models.ringdown_fits_noncirc
+
+        <ul>
+          <li><a href="autoapi/PyART/models/ringdown_fits_noncirc/index.html#module-PyART.models.ringdown_fits_noncirc">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.models.seob
+
+        <ul>
+          <li><a href="autoapi/PyART/models/seob/index.html#module-PyART.models.seob">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.models.teob
+
+        <ul>
+          <li><a href="autoapi/PyART/models/teob/index.html#module-PyART.models.teob">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.models.teob_matlab
+
+        <ul>
+          <li><a href="autoapi/PyART/models/teob_matlab/index.html#module-PyART.models.teob_matlab">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.numerical
+
+        <ul>
+          <li><a href="autoapi/PyART/numerical/index.html#module-PyART.numerical">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.numerical.twopuncts_ID
+
+        <ul>
+          <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#module-PyART.numerical.twopuncts_ID">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.simulations
+
+        <ul>
+          <li><a href="autoapi/PyART/simulations/index.html#module-PyART.simulations">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.utils
+
+        <ul>
+          <li><a href="autoapi/PyART/utils/index.html#module-PyART.utils">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.utils.cat_utils
+
+        <ul>
+          <li><a href="autoapi/PyART/utils/cat_utils/index.html#module-PyART.utils.cat_utils">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.utils.convert_sxs_to_lvc
+
+        <ul>
+          <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#module-PyART.utils.convert_sxs_to_lvc">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.utils.load_nr_utils
+
+        <ul>
+          <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#module-PyART.utils.load_nr_utils">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.utils.os_utils
+
+        <ul>
+          <li><a href="autoapi/PyART/utils/os_utils/index.html#module-PyART.utils.os_utils">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.utils.utils
+
+        <ul>
+          <li><a href="autoapi/PyART/utils/utils/index.html#module-PyART.utils.utils">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.utils.wf_utils
+
+        <ul>
+          <li><a href="autoapi/PyART/utils/wf_utils/index.html#module-PyART.utils.wf_utils">module</a>
+</li>
+        </ul></li>
+        <li>
+    PyART.waveform
+
+        <ul>
+          <li><a href="autoapi/PyART/waveform/index.html#module-PyART.waveform">module</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="Q" class="genindex-section">
+  <h2>Q</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.q">q (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.q">(PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.q_to_nu">q_to_nu() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.q_to_nu">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.qchi1chi2_list_str">qchi1chi2_list_str() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/hypfit/index.html#PyART.analysis.hypfit.quadratic_to_canonical">quadratic_to_canonical() (in module PyART.analysis.hypfit)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.quantity_from_dataset">quantity_from_dataset() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="R" class="genindex-section">
+  <h2>R</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/catalogs/maya/index.html#PyART.catalogs.maya.r">r (in module PyART.catalogs.maya)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.r0_eob">r0_eob (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.r0_type">r0_type (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.r0_val">r0_val (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_in_high">r_cutoff_in_high (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_in_low">r_cutoff_in_low (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_out_high">r_cutoff_out_high (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_out_low">r_cutoff_out_low (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.r_ext">r_ext (PyART.catalogs.gra.Waveform_GRA attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated.r_extr">r_extr (PyART.waveform.WaveIntegrated attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.r_infty">r_infty (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.RadialPotential">RadialPotential() (in module PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.RadialPotential_MaxMin">RadialPotential_MaxMin() (in module PyART.analysis.parspace_TEOB)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.radius">radius (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.radius_extrap_polynomial">radius_extrap_polynomial() (in module PyART.catalogs.core)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown.rd_params">rd_params (PyART.models.ringdown.TEOBRingdown attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits_noncirc/index.html#PyART.models.ringdown_fits_noncirc.read_fit_coefficients">read_fit_coefficients() (in module PyART.models.ringdown_fits_noncirc)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.read_h_h5">read_h_h5() (PyART.catalogs.core.Waveform_CoRe method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.read_h_txt">read_h_txt() (PyART.catalogs.core.Waveform_CoRe method)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.read_json">read_json() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.read_json">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.read_TP_output">read_TP_output() (PyART.numerical.twopuncts_ID.TwoPunctID method)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.read_txt">read_txt() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.read_txt">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.ref_Waveform">ref_Waveform (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.reflect_unwrap">reflect_unwrap() (in module PyART.utils.utils)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.remap">remap() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.remove_empty_vals">remove_empty_vals() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.remove_empty_vals">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.remove_time_drift">remove_time_drift() (PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id10">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA.res">res (PyART.catalogs.gra.Waveform_GRA attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.resize">resize (PyART.utils.load_nr_utils.LoadWave attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.retarded_time">retarded_time() (in module PyART.utils.utils)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.retarded_time">(PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id4">[1]</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.rit_extract_punctures_id">rit_extract_punctures_id() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.rit_extract_punctures_id">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.rit_tex_read_punctures_id">rit_tex_read_punctures_id() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.rit_tex_read_punctures_id">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.rmin_given_spins">rmin_given_spins() (in module PyART.analysis.parspace_TEOB)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.rotate3">rotate3() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.rotate3_axis">rotate3_axis() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/calc_coprecessing/index.html#PyART.analysis.calc_coprecessing.rotate_wfarrs_at_all_times">rotate_wfarrs_at_all_times() (in module PyART.analysis.calc_coprecessing)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.run">run (PyART.catalogs.core.Waveform_CoRe attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.run">(PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.run_TEOB_list">run_TEOB_list() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.run_TEOB_parallel">run_TEOB_parallel() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.run_TP_from_parfile">run_TP_from_parfile() (PyART.numerical.twopuncts_ID.TwoPunctID method)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.run_TP_parallel">run_TP_parallel() (PyART.numerical.twopuncts_ID.TwoPunctID method)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.run_TP_wrapper">run_TP_wrapper() (PyART.numerical.twopuncts_ID.TwoPunctID method)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.runcmd">runcmd() (in module PyART.simulations)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/utils/os_utils/index.html#PyART.utils.os_utils.runcmd">(in module PyART.utils.os_utils)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.runcmd">(in module simulations)</a>
+</li>
+          <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.runcmd">(in module tocatalog_icc)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="S" class="genindex-section">
+  <h2>S</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.s">s (in module PyART.simulations)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.s">(in module simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.safe_loadtxt">safe_loadtxt() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.safe_sigmoid">safe_sigmoid() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.save_dict_to_h5">save_dict_to_h5() (in module PyART.catalogs.sxs)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.save_mismatches">save_mismatches() (PyART.analysis.opt_ic.Optimizer method)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.save_plot">save_plot() (in module PyART.utils.utils)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.save_plot">(PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id6">[1]</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle">ScatteringAngle (class in PyART.analysis.scattering_angle)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.search">search() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.search">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.search_apastron">search_apastron() (in module PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.search_radial_turning_points">search_radial_turning_points() (in module PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/hypfit/index.html#PyART.analysis.hypfit.seed">seed (in module PyART.analysis.hypfit)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits_noncirc/index.html#PyART.models.ringdown_fits_noncirc.select_fitting_quantities">select_fitting_quantities() (in module PyART.models.ringdown_fits_noncirc)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits_noncirc/index.html#PyART.models.ringdown_fits_noncirc.select_template_model">select_template_model() (in module PyART.models.ringdown_fits_noncirc)</a>
+</li>
+        <li><a href="autoapi/PyART/models/seob/index.html#PyART.models.seob.Waveform_SEOB.SEOB">SEOB (PyART.models.seob.Waveform_SEOB attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.settings">settings (PyART.analysis.match.Matcher attribute)</a>, <a href="autoapi/PyART/analysis/match/index.html#id1">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/logging_config/index.html#PyART.logging_config.setup_logging">setup_logging() (in module PyART.logging_config)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.shift_waveform">shift_waveform() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.shorten_rng">shorten_rng (PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.sim_list">sim_list (PyART.catalogs.cataloger.Cataloger attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp.sim_path">sim_path (PyART.catalogs.gra_hyp.Waveform_GRAHyp attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.sim_path">(PyART.catalogs.icc.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC.sim_path">(PyART.catalogs.icc_public.Waveform_ICC attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.sim_path">(PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe.simpath">simpath (PyART.catalogs.core.Waveform_CoRe attribute)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.sims_qeq1_nospin">sims_qeq1_nospin (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.sims_qeq1_spin">sims_qeq1_spin (in module tocatalog_icc)</a>
+</li>
+        <li><a href="autoapi/tocatalog_icc/index.html#tocatalog_icc.sims_scat">sims_scat (in module tocatalog_icc)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.simulation_type_from_spins">simulation_type_from_spins() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li>
+    simulations
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#module-simulations">module</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations">Simulations (class in PyART.simulations)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations">(class in simulations)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.single_run_TEOB">single_run_TEOB() (PyART.analysis.parspace_TEOB.Spanner method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.sky_and_time_maxed_overlap">sky_and_time_maxed_overlap() (in module PyART.analysis.match)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.Matcher.skymax_match">skymax_match() (PyART.analysis.match.Matcher method)</a>
+</li>
+        <li><a href="autoapi/PyART/index.html#PyART.cgs.solar_mass">solar_mass (PyART.cgs attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/index.html#PyART.geom.solar_mass">(PyART.geom attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/index.html#PyART.metric.solar_mass">(PyART.metric attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.cgs.solar_mass">(PyART.simulations.cgs attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.geom.solar_mass">(PyART.simulations.geom attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.metric.solar_mass">(PyART.simulations.metric attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.cgs.solar_mass">(simulations.cgs attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.geom.solar_mass">(simulations.geom attribute)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.metric.solar_mass">(simulations.metric attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.source">source (PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner">Spanner (class in PyART.analysis.parspace_TEOB)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.SpinHamiltonian">SpinHamiltonian() (in module PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.spinsphericalharm">spinsphericalharm() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.spline">spline() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.spline_amp_phase_from_sxs">spline_amp_phase_from_sxs() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.spline_antidiff">spline_antidiff() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.spline_diff">spline_diff() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.spline_horizon_quantity">spline_horizon_quantity() (in module PyART.utils.convert_sxs_to_lvc)</a>, <a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#id0">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.src">src (PyART.catalogs.sxs.Waveform_SXS attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.sxs_id_from_alt_names">sxs_id_from_alt_names() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.sxs_json_extract_append">sxs_json_extract_append() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.sxs_json_extract_append">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="T" class="genindex-section">
+  <h2>T</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/eccentricity_calc/index.html#PyART.analysis.eccentricity_calc.EccentricityCalculator.t">t (PyART.analysis.eccentricity_calc.EccentricityCalculator attribute)</a>, <a href="autoapi/PyART/analysis/eccentricity_calc/index.html#id2">[1]</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.t">(PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id0">[1]</a>
+</li>
+          <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.t">(PyART.utils.load_nr_utils.LoadWave attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.t">(PyART.waveform.Waveform property)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT.t_h">t_h (PyART.catalogs.rit.Waveform_RIT attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.t_psi4">t_psi4 (PyART.waveform.Waveform property)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/wf_utils/index.html#PyART.utils.wf_utils.taper">taper() (in module PyART.utils.wf_utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.taper_waveform">taper_waveform() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown_fits_noncirc/index.html#PyART.models.ringdown_fits_noncirc.template">template() (in module PyART.models.ringdown_fits_noncirc)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.TEOB_info">TEOB_info() (in module PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/models/ringdown/index.html#PyART.models.ringdown.TEOBRingdown">TEOBRingdown (class in PyART.models.ringdown)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.tex_label_from_key">tex_label_from_key() (PyART.catalogs.cataloger.Cataloger method)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.time_domain_int">time_domain_int() (PyART.analysis.integrate_wave.IntegrateMultipole method)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id11">[1]</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/match/index.html#PyART.analysis.match.time_maxed_overlap">time_maxed_overlap() (in module PyART.analysis.match)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC.tmax_after_peak">tmax_after_peak (PyART.catalogs.icc.Waveform_ICC attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.to_commonformat">to_commonformat() (PyART.analysis.scattering_angle.ScatteringAngle method)</a>, <a href="autoapi/PyART/analysis/scattering_angle/index.html#id1">[1]</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.to_frequency">to_frequency() (PyART.waveform.Waveform method)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS.to_lvk">to_lvk() (PyART.catalogs.sxs.Waveform_SXS method)</a>
+</li>
+        <li>
+    tocatalog_icc
+
+        <ul>
+          <li><a href="autoapi/tocatalog_icc/index.html#module-tocatalog_icc">module</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.TP_dummy">TP_dummy (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.TP_exe">TP_exe (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.TP_int_vars">TP_int_vars (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.TP_pars">TP_pars (PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.LinearScaler.transform">transform() (PyART.numerical.twopuncts_ID.LinearScaler method)</a>
+</li>
+        <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID">TwoPunctID (class in PyART.numerical.twopuncts_ID)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="U" class="genindex-section">
+  <h2>U</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.u">u (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>, <a href="autoapi/PyART/analysis/integrate_wave/index.html#id1">[1]</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform.u">(PyART.waveform.Waveform property)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/index.html#PyART.ufact">ufact (in module PyART)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.ufact">(in module PyART.simulations)</a>
+</li>
+          <li><a href="autoapi/simulations/index.html#simulations.ufact">(in module simulations)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.upoly_fits">upoly_fits() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.use_matcher_cache">use_matcher_cache (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.use_nqc">use_nqc (PyART.analysis.opt_ic.Optimizer attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.use_single_punct">use_single_punct (PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="V" class="genindex-section">
+  <h2>V</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.vec_differences">vec_differences() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.vector_string_to_array">vector_string_to_array() (in module PyART.catalogs.core)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/opt_ic/index.html#PyART.analysis.opt_ic.Optimizer.verbose">verbose (PyART.analysis.opt_ic.Optimizer attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.verbose">(PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/analysis/scattering_angle/index.html#PyART.analysis.scattering_angle.ScatteringAngle.verbose">(PyART.analysis.scattering_angle.ScatteringAngle attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/catalogs/cataloger/index.html#PyART.catalogs.cataloger.Cataloger.verbose">(PyART.catalogs.cataloger.Cataloger attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab.verbose">(PyART.models.teob_matlab.Waveform_EOBMatlab attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/numerical/twopuncts_ID/index.html#PyART.numerical.twopuncts_ID.TwoPunctID.verbose">(PyART.numerical.twopuncts_ID.TwoPunctID attribute)</a>
+</li>
+          <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.verbose">(PyART.simulations.Simulations attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/parspace_TEOB/index.html#PyART.analysis.parspace_TEOB.Spanner.vverbose">vverbose (PyART.analysis.parspace_TEOB.Spanner attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="W" class="genindex-section">
+  <h2>W</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.walpha">walpha (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.wave">wave (PyART.utils.load_nr_utils.LoadWave attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.LoadWave.wave_lm_name">wave_lm_name() (PyART.utils.load_nr_utils.LoadWave method)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.Waveform">Waveform (class in PyART.waveform)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.waveform2energetics">waveform2energetics() (in module PyART.waveform)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/core/index.html#PyART.catalogs.core.Waveform_CoRe">Waveform_CoRe (class in PyART.catalogs.core)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob/index.html#PyART.models.teob.Waveform_EOB">Waveform_EOB (class in PyART.models.teob)</a>
+</li>
+        <li><a href="autoapi/PyART/models/teob_matlab/index.html#PyART.models.teob_matlab.Waveform_EOBMatlab">Waveform_EOBMatlab (class in PyART.models.teob_matlab)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra/index.html#PyART.catalogs.gra.Waveform_GRA">Waveform_GRA (class in PyART.catalogs.gra)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/gra_hyp/index.html#PyART.catalogs.gra_hyp.Waveform_GRAHyp">Waveform_GRAHyp (class in PyART.catalogs.gra_hyp)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/icc/index.html#PyART.catalogs.icc.Waveform_ICC">Waveform_ICC (class in PyART.catalogs.icc)</a>
+
+        <ul>
+          <li><a href="autoapi/PyART/catalogs/icc_public/index.html#PyART.catalogs.icc_public.Waveform_ICC">(class in PyART.catalogs.icc_public)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/models/lal/index.html#PyART.models.lal.Waveform_LAL">Waveform_LAL (class in PyART.models.lal)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/lvknr/index.html#PyART.catalogs.lvknr.Waveform_LVKNR">Waveform_LVKNR (class in PyART.catalogs.lvknr)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.waveform_norm_squared">waveform_norm_squared() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM">Waveform_NRPM (class in PyART.models.bajes)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rit/index.html#PyART.catalogs.rit.Waveform_RIT">Waveform_RIT (class in PyART.catalogs.rit)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/rwz/index.html#PyART.catalogs.rwz.Waveform_RWZ">Waveform_RWZ (class in PyART.catalogs.rwz)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/catalogs/sacra/index.html#PyART.catalogs.sacra.Waveform_SACRA">Waveform_SACRA (class in PyART.catalogs.sacra)</a>
+</li>
+        <li><a href="autoapi/PyART/models/seob/index.html#PyART.models.seob.Waveform_SEOB">Waveform_SEOB (class in PyART.models.seob)</a>
+</li>
+        <li><a href="autoapi/PyART/catalogs/sxs/index.html#PyART.catalogs.sxs.Waveform_SXS">Waveform_SXS (class in PyART.catalogs.sxs)</a>
+</li>
+        <li><a href="autoapi/PyART/waveform/index.html#PyART.waveform.WaveIntegrated">WaveIntegrated (class in PyART.waveform)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.wdelement">wdelement() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/models/bajes/index.html#PyART.models.bajes.Waveform_NRPM.wf">wf (PyART.models.bajes.Waveform_NRPM attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.wigner_d_function">wigner_d_function() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/analysis/integrate_wave/index.html#PyART.analysis.integrate_wave.IntegrateMultipole.window">window (PyART.analysis.integrate_wave.IntegrateMultipole attribute)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.windowing">windowing() (in module PyART.utils.utils)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.write_horizon_splines_from_sxs">write_horizon_splines_from_sxs() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.write_metadata_from_sxs">write_metadata_from_sxs() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/utils/convert_sxs_to_lvc/index.html#PyART.utils.convert_sxs_to_lvc.write_splines_to_H5">write_splines_to_H5() (in module PyART.utils.convert_sxs_to_lvc)</a>
+</li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.www_get">www_get() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.www_get">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.www_get_RIT">www_get_RIT() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.www_get_RIT">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/PyART/simulations/index.html#PyART.simulations.Simulations.www_get_SXS">www_get_SXS() (PyART.simulations.Simulations method)</a>
+
+        <ul>
+          <li><a href="autoapi/simulations/index.html#simulations.Simulations.www_get_SXS">(simulations.Simulations method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="X" class="genindex-section">
+  <h2>X</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/load_nr_utils/index.html#PyART.utils.load_nr_utils.x">x (in module PyART.utils.load_nr_utils)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="Y" class="genindex-section">
+  <h2>Y</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/models/ringdown_fits/index.html#PyART.models.ringdown_fits.Y">Y() (in module PyART.models.ringdown_fits)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="Z" class="genindex-section">
+  <h2>Z</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/PyART/utils/utils/index.html#PyART.utils.utils.zero_pad_before">zero_pad_before() (in module PyART.utils.utils)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

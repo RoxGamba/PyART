@@ -1,0 +1,61 @@
+PyART.analysis.calc_coprecessing
+================================
+
+.. py:module:: PyART.analysis.calc_coprecessing
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analysis.calc_coprecessing.rotate_wfarrs_at_all_times
+   PyART.analysis.calc_coprecessing.calc_coprecessing_angles
+   PyART.analysis.calc_coprecessing.calc_Lab_tensor
+   PyART.analysis.calc_coprecessing.calc_initial_jframe
+
+
+Module Contents
+---------------
+
+.. py:function:: rotate_wfarrs_at_all_times(l, m, like_l_multipoles_dict, euler_alpha_beta_gamma, ref_orientation=None)
+
+   Given dictionary of multipoles all with the same l, calculate the roated multipole with (l,mp).
+   Key reference -- arxiv:1012:2879
+   Based on LL,EZH 2018
+
+
+.. py:function:: calc_coprecessing_angles(multipole_dict, domain_vals=None, ref_orientation=None, return_xyz=False, safe_domain_range=None)
+
+   Given a dictionary of multipole data, calculate the Euler angles corresponding to a co-precessing frame
+   Key referece: https://arxiv.org/pdf/1304.3176.pdf
+   Secondary ref: https://arxiv.org/pdf/1205.2287.pdf
+   INPUT
+   ---
+   multipole_dict,       # dict of multipoles { ... l,m:data_lm ... }
+   t,                    # The time series corresponding to multipole data; needed
+                           only to calculate gamma; Optional
+   OUTPUT
+   ---
+   alpha,beta,gamma euler angles as defined in https://arxiv.org/pdf/1205.2287.pdf
+   AUTHOR
+   ---
+   Lionel London (spxll) 2017
+
+
+.. py:function:: calc_Lab_tensor(multipole_dict)
+
+   Given a dictionary of multipole moments (single values or time series)
+   determine the emission tensor, <L(aLb)>.
+
+   See:
+   - https://arxiv.org/pdf/1304.3176.pdf
+   - https://arxiv.org/pdf/1205.2287.pdf
+
+
+.. py:function:: calc_initial_jframe(u, dyn, wlm)
+
+   Rotate multipoles wlm to an initial frame aligned with the
+   total angular momentum J = L + S
+
+

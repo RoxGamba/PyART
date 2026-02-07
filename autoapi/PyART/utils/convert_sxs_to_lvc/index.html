@@ -1,0 +1,722 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../../genindex.html"><link rel="search" title="Search" href="../../../../search.html"><link rel="next" title="PyART.utils.load_nr_utils" href="../load_nr_utils/index.html"><link rel="prev" title="PyART.utils.cat_utils" href="../cat_utils/index.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>PyART.utils.convert_sxs_to_lvc - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/intro_to_waveforms.html">1. Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../../index.html">PyART</a><input aria-label="Toggle navigation of PyART" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../simulations/index.html">PyART.simulations</a></li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="../index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../simulations/index.html">simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tocatalog_icc/index.html">tocatalog_icc</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../../../../_sources/autoapi/PyART/utils/convert_sxs_to_lvc/index.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-PyART.utils.convert_sxs_to_lvc">
+<span id="pyart-utils-convert-sxs-to-lvc"></span><h1>PyART.utils.convert_sxs_to_lvc<a class="headerlink" href="#module-PyART.utils.convert_sxs_to_lvc" title="Link to this heading">¶</a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.p" title="PyART.utils.convert_sxs_to_lvc.p"><code class="xref py py-obj docutils literal notranslate"><span class="pre">p</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.history" title="PyART.utils.convert_sxs_to_lvc.history"><code class="xref py py-obj docutils literal notranslate"><span class="pre">history</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.log" title="PyART.utils.convert_sxs_to_lvc.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a>(string)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.bbh_keys_from_simulation_keys" title="PyART.utils.convert_sxs_to_lvc.bbh_keys_from_simulation_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bbh_keys_from_simulation_keys</span></code></a>(simulation_keys)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.sxs_id_from_alt_names" title="PyART.utils.convert_sxs_to_lvc.sxs_id_from_alt_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sxs_id_from_alt_names</span></code></a>(alt_names)</p></td>
+<td><p>Takes an array of alternative names from an SXS metadata.json file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.first_index_after_time" title="PyART.utils.convert_sxs_to_lvc.first_index_after_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">first_index_after_time</span></code></a>(times, target_time)</p></td>
+<td><p>Returns the index of the first time in a list of times after</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.first_index_after_relaxation_time" title="PyART.utils.convert_sxs_to_lvc.first_index_after_relaxation_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">first_index_after_relaxation_time</span></code></a>(times, metadata[, ...])</p></td>
+<td><p>Returns the index of the first time in a list of times after the</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.first_index_before_reference_time" title="PyART.utils.convert_sxs_to_lvc.first_index_before_reference_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">first_index_before_reference_time</span></code></a>(times, metadata[, ...])</p></td>
+<td><p>Returns the index of the first time in a list of times before the</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.waveform_norm_squared" title="PyART.utils.convert_sxs_to_lvc.waveform_norm_squared"><code class="xref py py-obj docutils literal notranslate"><span class="pre">waveform_norm_squared</span></code></a>(sxs_format_waveform[, ...])</p></td>
+<td><p>Takes an SXS-format waveform and returns the sum of the squared</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.peak_time_from_sxs" title="PyART.utils.convert_sxs_to_lvc.peak_time_from_sxs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">peak_time_from_sxs</span></code></a>(sxs_format_waveform, metadata[, ...])</p></td>
+<td><p>Returns the time when the sum of the squared amplitudes of an</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.amp_phase_from_sxs" title="PyART.utils.convert_sxs_to_lvc.amp_phase_from_sxs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amp_phase_from_sxs</span></code></a>(sxs_format_waveform, metadata, modes)</p></td>
+<td><p>Returns amplitude and phase for an SXS-format waveform, for a list of</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.spline_amp_phase_from_sxs" title="PyART.utils.convert_sxs_to_lvc.spline_amp_phase_from_sxs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spline_amp_phase_from_sxs</span></code></a>(sxs_format_waveform, ...[, ...])</p></td>
+<td><p>Returns spline amplitude and phase for an SXS-format waveform, for a</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.write_splines_to_H5" title="PyART.utils.convert_sxs_to_lvc.write_splines_to_H5"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_splines_to_H5</span></code></a>(out_filename, modes, spline_amps, ...)</p></td>
+<td><p>Writes spline amplitudes and phases to an HDF5 file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.prepare_horizon_quantity" title="PyART.utils.convert_sxs_to_lvc.prepare_horizon_quantity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_horizon_quantity</span></code></a>(sxs_horizon_quantity, ...)</p></td>
+<td><p>Returns times and values of an SXS-format horizon quantity, such as</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="PyART.utils.convert_sxs_to_lvc.spline_horizon_quantity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spline_horizon_quantity</span></code></a>(sxs_horizon_quantity, ...)</p></td>
+<td><p>Prepares sxs_horizon_quantity by passing it to</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.insert_spline" title="PyART.utils.convert_sxs_to_lvc.insert_spline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_spline</span></code></a>(sxs_horizons, spline_dictionary, ...)</p></td>
+<td><p>Inserts a spline for a quantity in Horizons.h5 into a dictionary of</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.derived_horizon_quantities_from_sxs" title="PyART.utils.convert_sxs_to_lvc.derived_horizon_quantities_from_sxs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_horizon_quantities_from_sxs</span></code></a>(sxs_horizons, ...)</p></td>
+<td><p>Computes quantities derived from quanities in the SXS-format file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="PyART.utils.convert_sxs_to_lvc.spline_horizon_quantity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spline_horizon_quantity</span></code></a>(sxs_horizon_quantity, ...)</p></td>
+<td><p>Prepares sxs_horizon_quantity by passing it to</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.insert_derived_spline" title="PyART.utils.convert_sxs_to_lvc.insert_derived_spline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_derived_spline</span></code></a>(spline_dictionary, spline_keys, ...)</p></td>
+<td><p>Inserts a spline into a dictionary of horizon splines for a quantity</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.horizon_splines_from_sxs" title="PyART.utils.convert_sxs_to_lvc.horizon_splines_from_sxs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">horizon_splines_from_sxs</span></code></a>(horizons, start_time, peak_time)</p></td>
+<td><p>Prepares a dictionary of the horizon-quantity splines that the LVC</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.write_horizon_splines_from_sxs" title="PyART.utils.convert_sxs_to_lvc.write_horizon_splines_from_sxs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_horizon_splines_from_sxs</span></code></a>(out_filename, ...)</p></td>
+<td><p>Takes a dictionary of horizon splines, prepared with</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.simulation_type_from_spins" title="PyART.utils.convert_sxs_to_lvc.simulation_type_from_spins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulation_type_from_spins</span></code></a>(dimensionless_spin_1, ...)</p></td>
+<td><p>Helper function that classifies a simulation with dimensionless_spin_1</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.write_metadata_from_sxs" title="PyART.utils.convert_sxs_to_lvc.write_metadata_from_sxs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_metadata_from_sxs</span></code></a>(out_filename, resolution, ...)</p></td>
+<td><p>Writes metadata to an LVC-format file, including both adding</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.convert_simulation" title="PyART.utils.convert_sxs_to_lvc.convert_simulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_simulation</span></code></a>(sxs_data_path, resolution, modes, ...)</p></td>
+<td><p>Convert a simulation from the SXS BBH catalog into the LVC format.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.p">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">p</span></span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#p"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.p" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.history">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">history</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.history" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.log">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.log" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.bbh_keys_from_simulation_keys">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">bbh_keys_from_simulation_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulation_keys</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#bbh_keys_from_simulation_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.bbh_keys_from_simulation_keys" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.sxs_id_from_alt_names">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">sxs_id_from_alt_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alt_names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#sxs_id_from_alt_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.sxs_id_from_alt_names" title="Link to this definition">¶</a></dt>
+<dd><p>Takes an array of alternative names from an SXS metadata.json file
+and returns the SXS ID of the simulation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.first_index_after_time">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">first_index_after_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#first_index_after_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.first_index_after_time" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the index of the first time in a list of times after
+time target_time.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.first_index_after_relaxation_time">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">first_index_after_relaxation_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#first_index_after_relaxation_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.first_index_after_relaxation_time" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the index of the first time in a list of times after the
+relaxation time, which is given as a key in metadata, i.e.
+metadata[‘relaxation_time’], except actually return an
+index offset earlier.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.first_index_before_reference_time">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">first_index_before_reference_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#first_index_before_reference_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.first_index_before_reference_time" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the index of the first time in a list of times before the
+reference time, which is given as a key in metadata, i.e.
+metadata[‘reference_time’], except actually return an
+index offset earlier.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.waveform_norm_squared">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">waveform_norm_squared</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_format_waveform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrapolation_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Extrapolated_N2'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#waveform_norm_squared"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.waveform_norm_squared" title="Link to this definition">¶</a></dt>
+<dd><p>Takes an SXS-format waveform and returns the sum of the squared
+amplitude of each (l,m) mode of the wave.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.peak_time_from_sxs">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">peak_time_from_sxs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_format_waveform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrapolation_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Extrapolated_N2'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#peak_time_from_sxs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.peak_time_from_sxs" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the time when the sum of the squared amplitudes of an
+SXS-format waveform is largest. Note: this is not necessarily the time of
+the peak of the l=m=2 mode.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.amp_phase_from_sxs">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">amp_phase_from_sxs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_format_waveform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrapolation_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Extrapolated_N2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truncation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#amp_phase_from_sxs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.amp_phase_from_sxs" title="Link to this definition">¶</a></dt>
+<dd><p>Returns amplitude and phase for an SXS-format waveform, for a list of
+Ylm modes. If modes=’all’, return all modes for l=2 through l=8,
+inclusive.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.spline_amp_phase_from_sxs">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">spline_amp_phase_from_sxs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_format_waveform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrapolation_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Extrapolated_N2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truncation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#spline_amp_phase_from_sxs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.spline_amp_phase_from_sxs" title="Link to this definition">¶</a></dt>
+<dd><p>Returns spline amplitude and phase for an SXS-format waveform, for a
+list of Ylm modes. If modes=’all’, return all modes for l=2 through l=8,
+inclusive.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.write_splines_to_H5">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">write_splines_to_H5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_amps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#write_splines_to_H5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.write_splines_to_H5" title="Link to this definition">¶</a></dt>
+<dd><p>Writes spline amplitudes and phases to an HDF5 file
+named out_filename.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.prepare_horizon_quantity">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">prepare_horizon_quantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_horizon_quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#prepare_horizon_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.prepare_horizon_quantity" title="Link to this definition">¶</a></dt>
+<dd><p>Returns times and values of an SXS-format horizon quantity, such as
+AhA.dir/ArealMass.dat. This function first truncates the horizon data,
+including only data after the reference time. Then, it shifts the time
+by the same amount as the waveforms (i.e., by the peak time). Then,
+return the truncated/shifted times and truncated values.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.spline_horizon_quantity">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">spline_horizon_quantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_horizon_quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#spline_horizon_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.spline_horizon_quantity" title="Link to this definition">¶</a></dt>
+<dd><p>Prepares sxs_horizon_quantity by passing it to
+prepare_horizon_quantity() and then returns a spline of the result.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.insert_spline">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">insert_spline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_horizons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#insert_spline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.insert_spline" title="Link to this definition">¶</a></dt>
+<dd><p>Inserts a spline for a quantity in Horizons.h5 into a dictionary of
+horizon splines. Note: spline_keys is a vector of key names (should be
+length 1 for scalars, length 3 for vectors), where each key is the name
+of a group that will be written in the LVC file, such as mass1-vs-time or
+spin1x-vs-time; horizon_key is AhA, AhB, or AhC; and quantity_key
+is e.g. ChristodoulouMass, the name of the quantity in Horizons.h5
+to be read and splined.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.derived_horizon_quantities_from_sxs">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">derived_horizon_quantities_from_sxs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_horizons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#derived_horizon_quantities_from_sxs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.derived_horizon_quantities_from_sxs" title="Link to this definition">¶</a></dt>
+<dd><p>Computes quantities derived from quanities in the SXS-format file
+Horizons.h5. Specifically, returns a tuple containing nhat, a unit vector
+from the secondary black hole to the primary black hole; omega_orbit,
+the orbital frequency; LNhat, a unit vector in the direction of the
+orbital angular momentum; and the horizon times of the primary,
+secondary, and remnant, truncated and shifted.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">spline_horizon_quantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_horizon_quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#spline_horizon_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Prepares sxs_horizon_quantity by passing it to
+prepare_horizon_quantity() and then returns a spline of the result.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.insert_derived_spline">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">insert_derived_spline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spline_dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_quantity</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#insert_derived_spline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.insert_derived_spline" title="Link to this definition">¶</a></dt>
+<dd><p>Inserts a spline into a dictionary of horizon splines for a quantity
+derived from Horizons.h5. Note: spline_keys is a vector of key names
+(should be length 1 for scalars, length 3 for vectors), where each key is
+the name of a group that will be written in the LVC file, such as
+Omega-vs-time or LNhatx-vs-time; and derived_quantity is the quantity to
+be splined. The derived_quantity should be computed using
+erived_horizon_quantities_from_sxs().</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.horizon_splines_from_sxs">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">horizon_splines_from_sxs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">horizons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#horizon_splines_from_sxs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.horizon_splines_from_sxs" title="Link to this definition">¶</a></dt>
+<dd><p>Prepares a dictionary of the horizon-quantity splines that the LVC
+format expects, starting with an SXS-format Horizons.h5. start_time and
+peak_time are determined by amp_phase_from_sxs().</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.write_horizon_splines_from_sxs">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">write_horizon_splines_from_sxs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon_splines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_horizon_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">secondary_horizon_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remnant_horizon_times</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#write_horizon_splines_from_sxs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.write_horizon_splines_from_sxs" title="Link to this definition">¶</a></dt>
+<dd><p>Takes a dictionary of horizon splines, prepared with
+horizon_splines_from_sxs, and writes each spline into an HDF5 file. Also
+outputs the horizon times for the individual and remnant black holes,
+truncated to remove junk radiation and shifted.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.simulation_type_from_spins">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">simulation_type_from_spins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dimensionless_spin_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensionless_spin_2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#simulation_type_from_spins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.simulation_type_from_spins" title="Link to this definition">¶</a></dt>
+<dd><p>Helper function that classifies a simulation with dimensionless_spin_1
+on the primary (larger) black hole and dimensionless_spin_2 on the
+secondary black hole as nonspinning (if no spin component &gt; 0.01),
+aligned-spin (if only z components are &gt; 0.01),
+or precessing (otherwise).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.write_metadata_from_sxs">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">write_metadata_from_sxs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_max</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#write_metadata_from_sxs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.write_metadata_from_sxs" title="Link to this definition">¶</a></dt>
+<dd><p>Writes metadata to an LVC-format file, including both adding
+auxiliary-info/metadata.json and setting attributes conforming to
+the format given by arXiv:1703.01076. Input arguments are the
+output filename out_filename, the resolution of the simulation (an int),
+metadata (read from metadata.json) for this simulation/resolution,
+the start_time, peak time, and l_max determined by amp_phase_from_sxs().</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.convert_sxs_to_lvc.convert_simulation">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.convert_sxs_to_lvc.</span></span><span class="sig-name descname"><span class="pre">convert_simulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxs_data_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truncation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/convert_sxs_to_lvc.html#convert_simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.convert_sxs_to_lvc.convert_simulation" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a simulation from the SXS BBH catalog into the LVC format.
+sxs_data_path is a path to a directory that must contain the following:</p>
+<blockquote>
+<div><ol class="lowerroman simple">
+<li><p>rhOverM_Asymptotic_GeometricUnits_CoM.h5</p></li>
+<li><p>Horizons.h5</p></li>
+<li><p>metadata.json</p></li>
+</ol>
+</div></blockquote>
+<dl class="simple">
+<dt>Additionally, the function requires paths to the following:</dt><dd><ol class="lowerroman simple" start="4">
+<li><p>sxs_catalog_metadata_path points to sxs_catalog.json, which
+contains information such as masses and spins. A file in this
+format is available at <a class="reference external" href="https://data.black-holes.org/catalog.json">https://data.black-holes.org/catalog.json</a>.</p></li>
+<li><p>sxs_catalog_resolutions_path points to a file whose keys are
+SXS ID numbers and whose values are lists of integers, where each
+integer corresponds to a resolution available in the catalog.</p></li>
+</ol>
+</dd>
+</dl>
+<p>The option resolution is an integer labeling the resolution of the
+converted waveform. Modes is an array of the format
+[[l1, m1], [l2, m2], …] listing the l,m modes to convert. This function
+outputs a file in LVC format named <a href="#id1"><span class="problematic" id="id2">SXS_BBH_</span></a>####_Res#.h5
+in out_path.</p>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../load_nr_utils/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">PyART.utils.load_nr_utils</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../cat_utils/index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">PyART.utils.cat_utils</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">PyART.utils.convert_sxs_to_lvc</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.p"><code class="docutils literal notranslate"><span class="pre">p</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.history"><code class="docutils literal notranslate"><span class="pre">history</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.log"><code class="docutils literal notranslate"><span class="pre">log()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.bbh_keys_from_simulation_keys"><code class="docutils literal notranslate"><span class="pre">bbh_keys_from_simulation_keys()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.sxs_id_from_alt_names"><code class="docutils literal notranslate"><span class="pre">sxs_id_from_alt_names()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.first_index_after_time"><code class="docutils literal notranslate"><span class="pre">first_index_after_time()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.first_index_after_relaxation_time"><code class="docutils literal notranslate"><span class="pre">first_index_after_relaxation_time()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.first_index_before_reference_time"><code class="docutils literal notranslate"><span class="pre">first_index_before_reference_time()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.waveform_norm_squared"><code class="docutils literal notranslate"><span class="pre">waveform_norm_squared()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.peak_time_from_sxs"><code class="docutils literal notranslate"><span class="pre">peak_time_from_sxs()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.amp_phase_from_sxs"><code class="docutils literal notranslate"><span class="pre">amp_phase_from_sxs()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.spline_amp_phase_from_sxs"><code class="docutils literal notranslate"><span class="pre">spline_amp_phase_from_sxs()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.write_splines_to_H5"><code class="docutils literal notranslate"><span class="pre">write_splines_to_H5()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.prepare_horizon_quantity"><code class="docutils literal notranslate"><span class="pre">prepare_horizon_quantity()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.spline_horizon_quantity"><code class="docutils literal notranslate"><span class="pre">spline_horizon_quantity()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.insert_spline"><code class="docutils literal notranslate"><span class="pre">insert_spline()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.derived_horizon_quantities_from_sxs"><code class="docutils literal notranslate"><span class="pre">derived_horizon_quantities_from_sxs()</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">spline_horizon_quantity()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.insert_derived_spline"><code class="docutils literal notranslate"><span class="pre">insert_derived_spline()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.horizon_splines_from_sxs"><code class="docutils literal notranslate"><span class="pre">horizon_splines_from_sxs()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.write_horizon_splines_from_sxs"><code class="docutils literal notranslate"><span class="pre">write_horizon_splines_from_sxs()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.simulation_type_from_spins"><code class="docutils literal notranslate"><span class="pre">simulation_type_from_spins()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.write_metadata_from_sxs"><code class="docutils literal notranslate"><span class="pre">write_metadata_from_sxs()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.convert_sxs_to_lvc.convert_simulation"><code class="docutils literal notranslate"><span class="pre">convert_simulation()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

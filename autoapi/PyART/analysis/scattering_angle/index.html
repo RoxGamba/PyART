@@ -1,0 +1,907 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../../genindex.html"><link rel="search" title="Search" href="../../../../search.html"><link rel="next" title="PyART.analytic" href="../../analytic/index.html"><link rel="prev" title="PyART.analysis.parspace_TEOB" href="../parspace_TEOB/index.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>PyART.analysis.scattering_angle - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/intro_to_waveforms.html">1. Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../../index.html">PyART</a><input aria-label="Toggle navigation of PyART" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 current has-children"><a class="reference internal" href="../index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../simulations/index.html">PyART.simulations</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../simulations/index.html">simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tocatalog_icc/index.html">tocatalog_icc</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../../../../_sources/autoapi/PyART/analysis/scattering_angle/index.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-PyART.analysis.scattering_angle">
+<span id="pyart-analysis-scattering-angle"></span><h1>PyART.analysis.scattering_angle<a class="headerlink" href="#module-PyART.analysis.scattering_angle" title="Link to this heading">¶</a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle" title="PyART.analysis.scattering_angle.ScatteringAngle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScatteringAngle</span></code></a></p></td>
+<td><p>Computes the scattering angle in a numerical relativity (NR) scattering simulation,</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.analysis.scattering_angle.ComputeChiFrom2Sims" title="PyART.analysis.scattering_angle.ComputeChiFrom2Sims"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ComputeChiFrom2Sims</span></code></a>([path_hres, path_lres, ...])</p></td>
+<td><p>Computes the scattering angle (chi) and associated errors from two simulation datasets</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">PyART.analysis.scattering_angle.</span></span><span class="sig-name descname"><span class="pre">ScatteringAngle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the scattering angle in a numerical relativity (NR) scattering simulation,
+with error estimates related to uncertainties in extrapolation at infinity.</p>
+<p>This class supports input data from both NR and effective-one-body (EOB) formats.
+It provides methods for fitting, extrapolation, and visualization of the scattering
+process, including polynomial and hyperbolic fits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>puncts</strong> (<em>dict</em><em>, </em><em>optional</em>) – Input data containing puncture positions and/or EOB coordinates.</p></li>
+<li><p><strong>use_single_punct</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Determines which puncture to use (None, 0, or 1).</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Controls verbosity of output.</p></li>
+<li><p><strong>nmin</strong> (<em>int</em><em>, </em><em>optional</em>) – Minimum polynomial order for u-poly extrapolation.</p></li>
+<li><p><strong>nmax</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum polynomial order for u-poly extrapolation.</p></li>
+<li><p><strong>n_extract</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Polynomial order to extract for final fit.</p></li>
+<li><p><strong>r_cutoff_in_low</strong> (<em>float</em><em>, </em><em>optional</em>) – Lower cutoff for ‘in’ region in radius.</p></li>
+<li><p><strong>r_cutoff_in_high</strong> (<em>float</em><em>, </em><em>optional</em>) – Upper cutoff for ‘in’ region in radius.</p></li>
+<li><p><strong>r_cutoff_out_low</strong> (<em>float</em><em>, </em><em>optional</em>) – Lower cutoff for ‘out’ region in radius.</p></li>
+<li><p><strong>r_cutoff_out_high</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Upper cutoff for ‘out’ region in radius.</p></li>
+<li><p><strong>hypfit</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use hyperbolic fit instead of polynomial extrapolation.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.get_xy">
+<span class="sig-name descname"><span class="pre">get_xy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.get_xy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.get_xy" title="Link to this definition">¶</a></dt>
+<dd><p>Computes x and y coordinates based on puncture selection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.to_commonformat">
+<span class="sig-name descname"><span class="pre">to_commonformat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.to_commonformat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.to_commonformat" title="Link to this definition">¶</a></dt>
+<dd><p>Converts input data to a common format for analysis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.compute_chi">
+<span class="sig-name descname"><span class="pre">compute_chi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.compute_chi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.compute_chi" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the scattering angle and associated errors.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.compute_chi_from_fit">
+<span class="sig-name descname"><span class="pre">compute_chi_from_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.compute_chi_from_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.compute_chi_from_fit" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates scattering angle from fit coefficients.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.compute_chi_hypfit">
+<span class="sig-name descname"><span class="pre">compute_chi_hypfit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.compute_chi_hypfit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.compute_chi_hypfit" title="Link to this definition">¶</a></dt>
+<dd><p>Computes scattering angle using hyperbolic fit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.plot_hypfit">
+<span class="sig-name descname"><span class="pre">plot_hypfit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">swap_ab_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[True,</span> <span class="pre">True]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_hypfit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_hypfit" title="Link to this definition">¶</a></dt>
+<dd><p>Plots the hyperbolic fit for both regions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.save_plot">
+<span class="sig-name descname"><span class="pre">save_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'plot.png'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.save_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.save_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Saves or displays the current plot.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.plot_summary">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_summary" title="Link to this definition">¶</a></dt>
+<dd><p>Plots a summary of the scattering process.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_diffs">
+<span class="sig-name descname"><span class="pre">plot_fit_diffs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xvar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_fit_diffs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_diffs" title="Link to this definition">¶</a></dt>
+<dd><p>Plots differences between fits and track.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_extrapolation">
+<span class="sig-name descname"><span class="pre">plot_fit_extrapolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xvar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'u'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_fit_extrapolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_extrapolation" title="Link to this definition">¶</a></dt>
+<dd><p>Plots fit extrapolation to infinity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_chi">
+<span class="sig-name descname"><span class="pre">plot_fit_chi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_fit_chi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_chi" title="Link to this definition">¶</a></dt>
+<dd><p>Plots scattering angle as a function of fit order.</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If unknown options are passed or invalid values are encountered.</p></li>
+<li><p><strong>RuntimeError</strong> – If input data format is invalid or unsupported.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Instantiate with simulation data and optional parameters, then use provided methods
+to compute and visualize the scattering angle and its uncertainty.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.puncts">
+<span class="sig-name descname"><span class="pre">puncts</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.puncts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.puncts" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.use_single_punct">
+<span class="sig-name descname"><span class="pre">use_single_punct</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.use_single_punct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.use_single_punct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.verbose">
+<span class="sig-name descname"><span class="pre">verbose</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.verbose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.verbose" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.nmin">
+<span class="sig-name descname"><span class="pre">nmin</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.nmin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.nmin" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.nmax">
+<span class="sig-name descname"><span class="pre">nmax</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.nmax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.nmax" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.n_extract">
+<span class="sig-name descname"><span class="pre">n_extract</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.n_extract"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.n_extract" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_in_low">
+<span class="sig-name descname"><span class="pre">r_cutoff_in_low</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">25</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.r_cutoff_in_low"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_in_low" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_in_high">
+<span class="sig-name descname"><span class="pre">r_cutoff_in_high</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">80</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.r_cutoff_in_high"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_in_high" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_out_low">
+<span class="sig-name descname"><span class="pre">r_cutoff_out_low</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">25</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.r_cutoff_out_low"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_out_low" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_out_high">
+<span class="sig-name descname"><span class="pre">r_cutoff_out_high</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.r_cutoff_out_high"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_out_high" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.hypfit">
+<span class="sig-name descname"><span class="pre">hypfit</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.hypfit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.hypfit" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ScatteringAngle.nfits">
+<span class="sig-name descname"><span class="pre">nfits</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.nfits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ScatteringAngle.nfits" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">get_xy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.get_xy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the (x, y) coordinates for analysis based on the selected puncture.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x, y</strong> – Computed coordinates for the selected puncture(s).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array-like</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <cite>use_single_punct</cite> has an unknown value.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>If <cite>use_single_punct</cite> is None, returns the difference between (x1, y1) and (x2, y2).</p></li>
+<li><p>If <cite>use_single_punct</cite> is 0, returns (x1, y1).</p></li>
+<li><p>If <cite>use_single_punct</cite> is 1, returns (x2, y2).</p></li>
+<li><p>Otherwise, raises a ValueError for unknown <cite>use_single_punct</cite> values.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">to_commonformat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.to_commonformat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dd><p>Converts input puncture data to a common coordinate format.</p>
+<p>Supports:
+- Numerical Relativity (NR): expects ‘t’, ‘x0’, ‘y0’, ‘x1’, ‘y1’.
+- Effective-One-Body (EOB): expects ‘t’, ‘r’, ‘phi’.</p>
+<p>Sets attributes: t, x, y, r, th, x1, y1, x2, y2 (NR only).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t, x, y, r, th</strong> – Common-format coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array-like</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>RuntimeError</strong> – If input format is invalid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">compute_chi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.compute_chi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the scattering angle (chi) and related quantities using polynomial fits
+to the input and output trajectory data.</p>
+<p>Fits polynomials to the input (<cite>r</cite>, <cite>th</cite>) and output (<cite>r</cite>, <cite>th</cite>) data using the
+specified fit orders and cutoff ranges, then calculates the scattering angle and
+asymptotic angles for each fit order. Fit errors are estimated from the spread
+of polynomial coefficients. If <cite>hypfit</cite> is enabled, also computes the scattering
+angle using a hyperbolic fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints fit details. If None, uses the object’s <cite>verbose</cite> attribute.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Results are stored in object attributes:
+- chi : float
+Scattering angle for the selected fit order.
+- chi_array : ndarray
+Scattering angles for all fit orders.
+- fit_err : float
+Estimated error in the scattering angle.
+- th_inf_in, th_inf_out : float
+Asymptotic angles for incoming and outgoing trajectories.
+- t_in, r_in, u_in, th_in : ndarray
+Masked input trajectory data.
+- t_out, r_out, u_out, th_out : ndarray
+Masked output trajectory data.
+- p_in, b_in : list, ndarray
+Input polynomial fits and coefficients.
+- p_out, b_out : list, ndarray
+Output polynomial fits and coefficients.
+- chi_hypfit : float or None
+Scattering angle from hyperbolic fit (if enabled).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">compute_chi_from_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.compute_chi_from_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the scattering angle chi from fitted input and output angles.
+:param b_in: Array containing the input angles for each order.
+:type b_in: ndarray
+:param b_out: Array containing the output angles for each order.
+:type b_out: ndarray
+:param n: Scattering order for which to compute chi.
+:type n: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>chi</strong> (<em>float</em>) – The computed scattering angle chi for the given order.</p></li>
+<li><p><strong>th_inf_in</strong> (<em>float</em>) – The input angle (in degrees) for the given order.</p></li>
+<li><p><strong>th_inf_out</strong> (<em>float</em>) – The output angle (in degrees) for the given order.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">compute_chi_hypfit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.compute_chi_hypfit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the scattering angle (chi) using a hyperbolic fit to the input and output trajectories.
+:param verbose: If True, prints the computed chi value. If None, uses the instance’s verbose attribute.
+:type verbose: bool, optional</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>chi_deg</strong> (<em>float</em>) – The computed scattering angle in degrees.</p></li>
+<li><p><strong>fits</strong> (<em>dict</em>) – Dictionary containing fit results for the input and output trajectories, including coordinates,
+radii, angles, canonical parameters, and quadratic coefficients.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The function fits quadratic curves to the input and output trajectory points, converts them to canonical
+form, and computes the asymptotic angles. The difference between these angles yields the scattering angle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">plot_hypfit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">swap_ab_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[True,</span> <span class="pre">True]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_hypfit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition">¶</a></dt>
+<dd><p>Plots the hyperbolic fit results for each fit in the computed chi hyperbolic fit.
+:param swap_ab_list: List indicating whether to swap the ‘a’ and ‘b’ axes for each fit. The length</p>
+<blockquote>
+<div><p>of the list should match the number of fits returned by <cite>compute_chi_hypfit</cite>.
+Default is [True, True].</p>
+</div></blockquote>
+<dl class="field-list simple">
+</dl>
+<p class="rubric">Notes</p>
+<p>This function calls <cite>plot_hypfit</cite> for each fit, passing the corresponding
+fit parameters and swap flag. The radial limit (<cite>rlim</cite>) is set to the maximum
+value of the fit’s ‘r’ array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">save_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'plot.png'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.save_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id6" title="Link to this definition">¶</a></dt>
+<dd><p>Displays and/or saves the current plot.
+:param show: If True, displays the plot using plt.show(). Default is True.
+:type show: bool, optional
+:param save: If True, saves the plot to a file specified by <cite>figname</cite>. Default is False.
+:type save: bool, optional
+:param figname: Filename for saving the plot. Default is ‘plot.png’.
+:type figname: str, optional</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">plot_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id7" title="Link to this definition">¶</a></dt>
+<dd><p>Plots a summary of the scattering analysis, including trajectory,
+radial distance, and angle evolution.
+:param show: If True, displays the plot. Default is True.
+:type show: bool, optional
+:param save: If True, saves the plot to a file. Default is False.
+:type save: bool, optional
+:param figname: Filename to save the plot. If None, defaults to ‘plot_summary.png’.
+:type figname: str or None, optional</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">plot_fit_diffs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xvar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_fit_diffs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id8" title="Link to this definition">¶</a></dt>
+<dd><p>Plots the differences between track and fit angles for both “in” and “out” cases.
+:param xvar: Variable to use for the x-axis. Must be either “r” (radius) or “u” (another variable).</p>
+<blockquote>
+<div><p>Default is “r”.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, displays the plot. Default is True.</p></li>
+<li><p><strong>save</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, saves the plot to a file. Default is False.</p></li>
+<li><p><strong>figname</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Filename to save the plot. If None, a default name is used based on <cite>xvar</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – If <cite>xvar</cite> is not “r” or “u”.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">plot_fit_extrapolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xvar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'u'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_fit_extrapolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id9" title="Link to this definition">¶</a></dt>
+<dd><p>Plots the fit extrapolation for the input and output tracks as a function of the specified variable.
+:param xvar: Variable to use for the x-axis. Can be “u” or “r”. Default is “u”.
+:type xvar: str, optional
+:param show: If True, displays the plot. Default is True.
+:type show: bool, optional
+:param save: If True, saves the plot to a file. Default is False.
+:type save: bool, optional
+:param figname: Filename to save the plot. If None, a default name is used. Default is False.
+:type figname: str or bool, optional</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – If <cite>xvar</cite> is not “u” or “r”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">plot_fit_chi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ScatteringAngle.plot_fit_chi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id10" title="Link to this definition">¶</a></dt>
+<dd><p>Plots the fit chi values as a scatter plot against polynomial order.
+:param show: If True, display the plot. Default is True.
+:type show: bool, optional
+:param save: If True, save the plot to file. Default is False.
+:type save: bool, optional
+:param figname: Filename to save the plot. If None, defaults to ‘plot_fit_chi.png’.
+:type figname: str or None, optional</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.analysis.scattering_angle.ComputeChiFrom2Sims">
+<span class="sig-prename descclassname"><span class="pre">PyART.analysis.scattering_angle.</span></span><span class="sig-name descname"><span class="pre">ComputeChiFrom2Sims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_hres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_lres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">puncts_hres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">puncts_lres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vverbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/scattering_angle.html#ComputeChiFrom2Sims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.scattering_angle.ComputeChiFrom2Sims" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the scattering angle (chi) and associated errors from two simulation datasets
+with different resolutions (high and low).</p>
+<p>This function creates two ScatteringAngle objects using the provided file paths and
+puncture points for high-resolution and low-resolution simulations. It then calculates
+the scattering angle from the high-resolution simulation and estimates the total error
+by combining the fit error and the resolution error (difference between high and low
+resolution results).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_hres</strong> (<em>str</em><em> or </em><em>None</em>) – Path to the high-resolution simulation data.</p></li>
+<li><p><strong>path_lres</strong> (<em>str</em><em> or </em><em>None</em>) – Path to the low-resolution simulation data.</p></li>
+<li><p><strong>puncts_hres</strong> (<em>array-like</em><em> or </em><em>None</em>) – Puncture points for the high-resolution simulation.</p></li>
+<li><p><strong>puncts_lres</strong> (<em>array-like</em><em> or </em><em>None</em>) – Puncture points for the low-resolution simulation.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints summary information.</p></li>
+<li><p><strong>vverbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, enables very verbose output (also sets verbose to True).</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments passed to the ScatteringAngle constructor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>out</strong> –</p>
+<dl class="simple">
+<dt>Dictionary containing:</dt><dd><ul class="simple">
+<li><p>’scat_lres’: ScatteringAngle object for low-resolution simulation</p></li>
+<li><p>’scat_hres’: ScatteringAngle object for high-resolution simulation</p></li>
+<li><p>’chi’: Scattering angle from high-resolution simulation</p></li>
+<li><p>’err’: Total estimated error (fit error and resolution error combined)</p></li>
+<li><p>’fit_err’: Fit error from high-resolution simulation</p></li>
+<li><p>’res_err’: Resolution error (absolute difference between high and low resolution chi)</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function is marked as old and not properly tested.</p>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../../analytic/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">PyART.analytic</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../parspace_TEOB/index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">PyART.analysis.parspace_TEOB</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">PyART.analysis.scattering_angle</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle</span></code></a><ul>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.get_xy"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.get_xy()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.to_commonformat"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.to_commonformat()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.compute_chi"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.compute_chi()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.compute_chi_from_fit"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.compute_chi_from_fit()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.compute_chi_hypfit"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.compute_chi_hypfit()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_hypfit"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_hypfit()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.save_plot"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.save_plot()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_summary"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_summary()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_diffs"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_fit_diffs()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_extrapolation"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_fit_extrapolation()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.plot_fit_chi"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_fit_chi()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.puncts"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.puncts</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.use_single_punct"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.use_single_punct</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.verbose"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.verbose</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.nmin"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.nmin</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.nmax"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.nmax</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.n_extract"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.n_extract</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_in_low"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.r_cutoff_in_low</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_in_high"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.r_cutoff_in_high</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_out_low"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.r_cutoff_out_low</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.r_cutoff_out_high"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.r_cutoff_out_high</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.hypfit"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.hypfit</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ScatteringAngle.nfits"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.nfits</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.get_xy()</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.to_commonformat()</span></code></a></li>
+<li><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.compute_chi()</span></code></a></li>
+<li><a class="reference internal" href="#id3"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.compute_chi_from_fit()</span></code></a></li>
+<li><a class="reference internal" href="#id4"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.compute_chi_hypfit()</span></code></a></li>
+<li><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_hypfit()</span></code></a></li>
+<li><a class="reference internal" href="#id6"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.save_plot()</span></code></a></li>
+<li><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_summary()</span></code></a></li>
+<li><a class="reference internal" href="#id8"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_fit_diffs()</span></code></a></li>
+<li><a class="reference internal" href="#id9"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_fit_extrapolation()</span></code></a></li>
+<li><a class="reference internal" href="#id10"><code class="docutils literal notranslate"><span class="pre">ScatteringAngle.plot_fit_chi()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#PyART.analysis.scattering_angle.ComputeChiFrom2Sims"><code class="docutils literal notranslate"><span class="pre">ComputeChiFrom2Sims()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

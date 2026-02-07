@@ -1,0 +1,812 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../../genindex.html"><link rel="search" title="Search" href="../../../../search.html"><link rel="next" title="PyART.analysis.scattering_angle" href="../scattering_angle/index.html"><link rel="prev" title="PyART.analysis.opt_ic" href="../opt_ic/index.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>PyART.analysis.parspace_TEOB - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/intro_to_waveforms.html">1. Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../../index.html">PyART</a><input aria-label="Toggle navigation of PyART" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 current has-children"><a class="reference internal" href="../index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../simulations/index.html">PyART.simulations</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../simulations/index.html">simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tocatalog_icc/index.html">tocatalog_icc</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../../../../_sources/autoapi/PyART/analysis/parspace_TEOB/index.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-PyART.analysis.parspace_TEOB">
+<span id="pyart-analysis-parspace-teob"></span><h1>PyART.analysis.parspace_TEOB<a class="headerlink" href="#module-PyART.analysis.parspace_TEOB" title="Link to this heading">¶</a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.analysis.parspace_TEOB.parser" title="PyART.analysis.parspace_TEOB.parser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parser</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner" title="PyART.analysis.parspace_TEOB.Spanner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Spanner</span></code></a></p></td>
+<td><p>Class to span the (j,E) parameter space using TEOBResumS</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.analysis.parspace_TEOB.build_colormap" title="PyART.analysis.parspace_TEOB.build_colormap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_colormap</span></code></a>(old_cmp_name, clr, peaks_list[, ...])</p></td>
+<td><p>Outputs a colormap similar to old_cmp_name, but with a new specified RGBA color</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.analysis.parspace_TEOB.rmin_given_spins" title="PyART.analysis.parspace_TEOB.rmin_given_spins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rmin_given_spins</span></code></a>(chi1, chi2)</p></td>
+<td><p>Estimate minimum radius to use for V(r) given spins.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.analysis.parspace_TEOB.EnergyLimitsSpin" title="PyART.analysis.parspace_TEOB.EnergyLimitsSpin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnergyLimitsSpin</span></code></a>(rmax, pph, q, chi1, chi2[, N])</p></td>
+<td><p>Compute the maximum energy allowed for a given angular momentum pph_hyp,</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.analysis.parspace_TEOB.RadialPotential_MaxMin" title="PyART.analysis.parspace_TEOB.RadialPotential_MaxMin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RadialPotential_MaxMin</span></code></a>(rmax, pph, q, chi1, chi2[, N])</p></td>
+<td><p>Compute radial effective potential and then extract</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.build_colormap">
+<span class="sig-prename descclassname"><span class="pre">PyART.analysis.parspace_TEOB.</span></span><span class="sig-name descname"><span class="pre">build_colormap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_cmp_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peaks_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#build_colormap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.build_colormap" title="Link to this definition">¶</a></dt>
+<dd><p>Outputs a colormap similar to old_cmp_name, but with a new specified RGBA color
+associated to val.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>old_cmp_name</strong> (<em>str</em>) – Name of the colormap to be used as a base.</p></li>
+<li><p><strong>clr</strong> (<em>list</em>) – RGBA color to be associated to val.</p></li>
+<li><p><strong>peaks_list</strong> (<em>list</em>) – List of values to be represented in the colormap.</p></li>
+<li><p><strong>continuous_cmap</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the colormap will be continuous. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>newcmp</strong> – The modified colormap.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ListedColormap</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.rmin_given_spins">
+<span class="sig-prename descclassname"><span class="pre">PyART.analysis.parspace_TEOB.</span></span><span class="sig-name descname"><span class="pre">rmin_given_spins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#rmin_given_spins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.rmin_given_spins" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate minimum radius to use for V(r) given spins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chi1</strong> (<em>float</em>) – spin of the first BH.</p></li>
+<li><p><strong>chi2</strong> (<em>float</em>) – spin of the second BH.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rmin</strong> – minimum radius.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.EnergyLimitsSpin">
+<span class="sig-prename descclassname"><span class="pre">PyART.analysis.parspace_TEOB.</span></span><span class="sig-name descname"><span class="pre">EnergyLimitsSpin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#EnergyLimitsSpin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.EnergyLimitsSpin" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the maximum energy allowed for a given angular momentum pph_hyp,
+mass ratio q, and spins chi1, chi2 for the orbit to be bound.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rmax</strong> (<em>float</em>) – Maximum radial separation.</p></li>
+<li><p><strong>q</strong> (<em>float</em>) – Mass ratio.</p></li>
+<li><p><strong>pph_hyp</strong> (<em>float</em>) – Angular momentum.</p></li>
+<li><p><strong>chi1</strong> (<em>float</em>) – Dimensionless spin of the primary.</p></li>
+<li><p><strong>chi2</strong> (<em>float</em>) – Dimensionless spin of the secondary.</p></li>
+<li><p><strong>N</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of points in the radial grid. Default is 1000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Emax</strong> – The maximum energy allowed for a bound orbit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.RadialPotential_MaxMin">
+<span class="sig-prename descclassname"><span class="pre">PyART.analysis.parspace_TEOB.</span></span><span class="sig-name descname"><span class="pre">RadialPotential_MaxMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#RadialPotential_MaxMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.RadialPotential_MaxMin" title="Link to this definition">¶</a></dt>
+<dd><p>Compute radial effective potential and then extract
+the local minimum and maximum; also compute radii
+at which these occur.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rmax</strong> (<em>float</em>) – Maximum radial separation.</p></li>
+<li><p><strong>q</strong> (<em>float</em>) – Mass ratio.</p></li>
+<li><p><strong>pph_hyp</strong> (<em>float</em>) – Angular momentum.</p></li>
+<li><p><strong>chi1</strong> (<em>float</em>) – Dimensionless spin of the primary.</p></li>
+<li><p><strong>chi2</strong> (<em>float</em>) – Dimensionless spin of the secondary.</p></li>
+<li><p><strong>N</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of points in the radial grid. Default is 1000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>Vmax</strong> (<em>float</em>) – Maximum of the potential.</p></li>
+<li><p><strong>Vmin</strong> (<em>float</em>) – Minimum of the potential.</p></li>
+<li><p><strong>rmax</strong> (<em>float</em>) – Radius corresponding to Vmax.</p></li>
+<li><p><strong>rmin</strong> (<em>float</em>) – Radius corresponding to Vmin.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">PyART.analysis.parspace_TEOB.</span></span><span class="sig-name descname"><span class="pre">Spanner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pph_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pph_max</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Emin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Emax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dE_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_pph_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r0_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r0_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_infty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vverbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nproc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dump_npz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_input_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to span the (j,E) parameter space using TEOBResumS</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.q">
+<span class="sig-name descname"><span class="pre">q</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.q" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.nu">
+<span class="sig-name descname"><span class="pre">nu</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.nu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.nu" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.chi1">
+<span class="sig-name descname"><span class="pre">chi1</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.chi1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.chi1" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.chi2">
+<span class="sig-name descname"><span class="pre">chi2</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.chi2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.chi2" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.nj">
+<span class="sig-name descname"><span class="pre">nj</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.nj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.nj" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.nproc">
+<span class="sig-name descname"><span class="pre">nproc</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.nproc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.nproc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.r0_type">
+<span class="sig-name descname"><span class="pre">r0_type</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'auto'</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.r0_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.r0_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.r0_val">
+<span class="sig-name descname"><span class="pre">r0_val</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.r0_val"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.r0_val" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.dE_bound">
+<span class="sig-name descname"><span class="pre">dE_bound</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.dE_bound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.dE_bound" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.Emin">
+<span class="sig-name descname"><span class="pre">Emin</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.Emin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.Emin" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.Emax">
+<span class="sig-name descname"><span class="pre">Emax</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.0</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.Emax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.Emax" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.pph_min">
+<span class="sig-name descname"><span class="pre">pph_min</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.pph_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.pph_min" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.pph_max">
+<span class="sig-name descname"><span class="pre">pph_max</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.pph_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.pph_max" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.r_infty">
+<span class="sig-name descname"><span class="pre">r_infty</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5000</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.r_infty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.r_infty" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.input_file">
+<span class="sig-name descname"><span class="pre">input_file</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.input_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.input_file" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.verbose">
+<span class="sig-name descname"><span class="pre">verbose</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.verbose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.verbose" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.vverbose">
+<span class="sig-name descname"><span class="pre">vverbose</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.vverbose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.vverbose" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.outdir">
+<span class="sig-name descname"><span class="pre">outdir</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.outdir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.outdir" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.eobcommonpars">
+<span class="sig-name descname"><span class="pre">eobcommonpars</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.eobcommonpars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.eobcommonpars" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.info_string">
+<span class="sig-name descname"><span class="pre">info_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_prec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi1_prec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi2_prec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r0_prec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.info_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.info_string" title="Link to this definition">¶</a></dt>
+<dd><p>Write an info string based on the parameters of the Spanner instance.
+:param q_prec: Precision for the mass ratio in the info string. Default is 2.
+:type q_prec: int, optional
+:param chi1_prec: Precision for the primary spin in the info string. Default is 2.
+:type chi1_prec: int, optional
+:param chi2_prec: Precision for the secondary spin in the info string. Default is 2.
+:type chi2_prec: int, optional
+:param r0_prec: Precision for the initial separation in the info string. Default is 0.
+:type r0_prec: int, optional</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The info string.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.bracketing">
+<span class="sig-name descname"><span class="pre">bracketing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.bracketing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.bracketing" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.determine_r0_from_pphE">
+<span class="sig-name descname"><span class="pre">determine_r0_from_pphE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apa_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rVmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.determine_r0_from_pphE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.determine_r0_from_pphE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.compute_r0_from_IClist">
+<span class="sig-name descname"><span class="pre">compute_r0_from_IClist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indeces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apa_tol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.compute_r0_from_IClist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.compute_r0_from_IClist" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.parspace_populate">
+<span class="sig-name descname"><span class="pre">parspace_populate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.parspace_populate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.parspace_populate" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.single_run_TEOB">
+<span class="sig-name descname"><span class="pre">single_run_TEOB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.single_run_TEOB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.single_run_TEOB" title="Link to this definition">¶</a></dt>
+<dd><p>Run a single TEOB simulation for given initial conditions.
+:param point: List containing [j_hyp, H_hyp].
+:type point: list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List containing [j_hyp, H_hyp, npeaks, rend].</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.run_TEOB_list">
+<span class="sig-name descname"><span class="pre">run_TEOB_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indeces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eobcommonpars</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.run_TEOB_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.run_TEOB_list" title="Link to this definition">¶</a></dt>
+<dd><p>Run TEOB simulations for a list of points
+:param indeces: List of indices of the points to be simulated.
+:type indeces: list
+:param points: Array of points containing [j_hyp, H_hyp].
+:type points: ndarray
+:param eobcommonpars: Dictionary containing common EOB parameters.
+:type eobcommonpars: dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of points containing [j_hyp, H_hyp, npeaks, rend].</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.__parallel_run">
+<span class="sig-name descname"><span class="pre">__parallel_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">additional_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.__parallel_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.__parallel_run" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.run_TEOB_parallel">
+<span class="sig-name descname"><span class="pre">run_TEOB_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dump_npz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dump_txt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_input_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.run_TEOB_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.run_TEOB_parallel" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.dump_npz">
+<span class="sig-name descname"><span class="pre">dump_npz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.dump_npz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.dump_npz" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.dump_txt">
+<span class="sig-name descname"><span class="pre">dump_txt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.dump_txt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.dump_txt" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.qchi1chi2_list_str">
+<span class="sig-name descname"><span class="pre">qchi1chi2_list_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.qchi1chi2_list_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.qchi1chi2_list_str" title="Link to this definition">¶</a></dt>
+<dd><p>Write a string representation of the (q, chi1, chi2) parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The string representation of (q, chi1, chi2).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.Spanner.plot_parspace">
+<span class="sig-name descname"><span class="pre">plot_parspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marker_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savepng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'on'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_fails</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qc_line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parabolic_line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_kankani</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_gra_fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grey_fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#Spanner.plot_parspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.Spanner.plot_parspace" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the parameter space</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>marker_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Marker size in the plot. Default is 1.</p></li>
+<li><p><strong>savepng</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, save the plot as a PNG file. Default is False.</p></li>
+<li><p><strong>discrete_cmap</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use a discrete color map. Default is False.</p></li>
+<li><p><strong>show</strong> (<em>str</em><em>, </em><em>optional</em>) – If “on”, show the plot. Default is “on”.</p></li>
+<li><p><strong>pph_max_plot</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum value of pph to be considered in the plot. Default is None.</p></li>
+<li><p><strong>show_NR</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, show NR points in the plot. Default is False.</p></li>
+<li><p><strong>dset</strong> (<em>str</em><em>, </em><em>optional</em>) – Dataset name for NR points. Default is “GAUSS_2023”.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="PyART.analysis.parspace_TEOB.parser">
+<span class="sig-prename descclassname"><span class="pre">PyART.analysis.parspace_TEOB.</span></span><span class="sig-name descname"><span class="pre">parser</span></span><a class="reference internal" href="../../../../_modules/PyART/analysis/parspace_TEOB.html#parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analysis.parspace_TEOB.parser" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../scattering_angle/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">PyART.analysis.scattering_angle</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../opt_ic/index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">PyART.analysis.opt_ic</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">PyART.analysis.parspace_TEOB</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.build_colormap"><code class="docutils literal notranslate"><span class="pre">build_colormap()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.rmin_given_spins"><code class="docutils literal notranslate"><span class="pre">rmin_given_spins()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.EnergyLimitsSpin"><code class="docutils literal notranslate"><span class="pre">EnergyLimitsSpin()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.RadialPotential_MaxMin"><code class="docutils literal notranslate"><span class="pre">RadialPotential_MaxMin()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner"><code class="docutils literal notranslate"><span class="pre">Spanner</span></code></a><ul>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.q"><code class="docutils literal notranslate"><span class="pre">Spanner.q</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.nu"><code class="docutils literal notranslate"><span class="pre">Spanner.nu</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.chi1"><code class="docutils literal notranslate"><span class="pre">Spanner.chi1</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.chi2"><code class="docutils literal notranslate"><span class="pre">Spanner.chi2</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.nj"><code class="docutils literal notranslate"><span class="pre">Spanner.nj</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.nproc"><code class="docutils literal notranslate"><span class="pre">Spanner.nproc</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.r0_type"><code class="docutils literal notranslate"><span class="pre">Spanner.r0_type</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.r0_val"><code class="docutils literal notranslate"><span class="pre">Spanner.r0_val</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.dE_bound"><code class="docutils literal notranslate"><span class="pre">Spanner.dE_bound</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.Emin"><code class="docutils literal notranslate"><span class="pre">Spanner.Emin</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.Emax"><code class="docutils literal notranslate"><span class="pre">Spanner.Emax</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.pph_min"><code class="docutils literal notranslate"><span class="pre">Spanner.pph_min</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.pph_max"><code class="docutils literal notranslate"><span class="pre">Spanner.pph_max</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.r_infty"><code class="docutils literal notranslate"><span class="pre">Spanner.r_infty</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.input_file"><code class="docutils literal notranslate"><span class="pre">Spanner.input_file</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.verbose"><code class="docutils literal notranslate"><span class="pre">Spanner.verbose</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.vverbose"><code class="docutils literal notranslate"><span class="pre">Spanner.vverbose</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.outdir"><code class="docutils literal notranslate"><span class="pre">Spanner.outdir</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.eobcommonpars"><code class="docutils literal notranslate"><span class="pre">Spanner.eobcommonpars</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.info_string"><code class="docutils literal notranslate"><span class="pre">Spanner.info_string()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.bracketing"><code class="docutils literal notranslate"><span class="pre">Spanner.bracketing()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.determine_r0_from_pphE"><code class="docutils literal notranslate"><span class="pre">Spanner.determine_r0_from_pphE()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.compute_r0_from_IClist"><code class="docutils literal notranslate"><span class="pre">Spanner.compute_r0_from_IClist()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.parspace_populate"><code class="docutils literal notranslate"><span class="pre">Spanner.parspace_populate()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.single_run_TEOB"><code class="docutils literal notranslate"><span class="pre">Spanner.single_run_TEOB()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.run_TEOB_list"><code class="docutils literal notranslate"><span class="pre">Spanner.run_TEOB_list()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.__parallel_run"><code class="docutils literal notranslate"><span class="pre">Spanner.__parallel_run()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.run_TEOB_parallel"><code class="docutils literal notranslate"><span class="pre">Spanner.run_TEOB_parallel()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.dump_npz"><code class="docutils literal notranslate"><span class="pre">Spanner.dump_npz()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.dump_txt"><code class="docutils literal notranslate"><span class="pre">Spanner.dump_txt()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.qchi1chi2_list_str"><code class="docutils literal notranslate"><span class="pre">Spanner.qchi1chi2_list_str()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.Spanner.plot_parspace"><code class="docutils literal notranslate"><span class="pre">Spanner.plot_parspace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#PyART.analysis.parspace_TEOB.parser"><code class="docutils literal notranslate"><span class="pre">parser</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

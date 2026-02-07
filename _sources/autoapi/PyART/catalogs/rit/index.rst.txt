@@ -1,0 +1,210 @@
+PyART.catalogs.rit
+==================
+
+.. py:module:: PyART.catalogs.rit
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.rit.Waveform_RIT
+   PyART.catalogs.rit.Catalog
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_RIT(path='../dat/RIT/', ID='0001', download=False, psi_load=True, h_load=True, mtdt_load=True, ell_emms='all', nu_rescale=False, shorten_rng=True, urls_json=None)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to load RIT waveforms and metadata.
+
+
+   .. py:attribute:: t_h
+      :value: None
+
+
+
+   .. py:attribute:: ell_emms
+      :value: 'all'
+
+
+
+   .. py:attribute:: metadata
+      :value: None
+
+
+
+   .. py:attribute:: metadata_psi4
+      :value: None
+
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:attribute:: shorten_rng
+      :value: True
+
+
+
+   .. py:attribute:: ID
+      :value: '0001'
+
+
+
+   .. py:attribute:: sim_path
+
+
+   .. py:attribute:: mtdt_path
+
+
+   .. py:attribute:: psi_path
+
+
+   .. py:attribute:: mtdt_psi4
+
+
+   .. py:method:: download_data(ID, path='./', urls_json=None, dump_urls=True)
+
+      Download the RIT simulation with the given ID from the RIT catalog.
+      The data will be stored in the given path.
+
+      :param ID: The ID of the RIT simulation to download. It should be a zero-padded
+                 string of length 4, e.g. "0001".
+      :type ID: str
+      :param path: The path where the RIT data will be stored. Default is "./".
+      :type path: str, optional
+      :param urls_json: Path to a JSON file containing the URLs of the RIT simulations. If None, a default
+                        file will be created in the catalogs directory. Default is None.
+      :type urls_json: str or None, optional
+      :param dump_urls: If True, the URLs will be dumped to the given urls_json file if it does not exist.
+                        Default is True.
+      :type dump_urls: bool, optional
+
+
+
+   .. py:method:: load_psi4lm()
+
+      Load psi4lm modes from the RIT catalog.
+      The modes are stored in self._psi4lm dictionary.
+
+
+
+   .. py:method:: load_hlm()
+
+      Load hlm from RIT data.
+
+
+
+   .. py:method:: load_metadata(path)
+
+      load metadata for RIT catalog.
+      Meta with original keys are stored in ometadata,
+      metadata instead contain useful info with standard
+      naming (see e.g. SXS metadata)
+
+      :param path: Path to the metadata file.
+      :type path: str
+
+      :returns: **meta** -- Dictionary containing the metadata with standard keys.
+      :rtype: dict
+
+
+
+   .. py:method:: compute_initial_data()
+
+      Compute initial data (J0, S0, L0) from the metadata
+      and store them in self._dyn["id"] dictionary.
+
+
+
+   .. py:method:: __interp_qnt__(x, y, x_new)
+
+
+.. py:class:: Catalog(path='./', ell_emms='all', ellmax=4, load_data=False, nonspinning=False, integr_opts=None, load_puncts=False, verbose=False)
+
+   Bases: :py:obj:`object`
+
+
+   Class to load multiple RIT simulations in a given path.
+
+
+   .. py:attribute:: nonspinning
+      :value: False
+
+
+
+   .. py:attribute:: integr_opts
+      :value: None
+
+
+
+   .. py:attribute:: ellmax
+      :value: 4
+
+
+
+   .. py:attribute:: ell_emms
+      :value: 'all'
+
+
+
+   .. py:attribute:: data
+      :value: []
+
+
+
+   .. py:attribute:: catalog_meta
+      :value: []
+
+
+
+   .. py:method:: load_simulations_in_path(path, ell_emms, nonspinning=False, eccentric=True, verbose=False)
+
+      Load all simulations in path into self.data and all metadata into self.catalog_meta
+
+      :param path: The path where the RIT data is stored.
+      :type path: str
+      :param ell_emms: Modes to load. If "all", all modes up to ell=ellmax will be
+                       loaded. If a list of tuples, only the specified modes will be loaded.
+      :type ell_emms: str or list of tuple
+      :param nonspinning: If True, only nonspinning simulations will be loaded. Default is False.
+      :type nonspinning: bool, optional
+      :param eccentric: If True, only eccentric simulations will be loaded. Default is True.
+      :type eccentric: bool, optional
+      :param verbose: If True, verbose output will be printed. Default is False.
+      :type verbose: bool, optional
+
+
+
+   .. py:method:: idx_from_value(value, key='name', single_idx=True)
+
+      Return idx with metadata[idx][key]=value.
+      If single_idx is False, return list of indeces
+      that satisfy the condition
+
+      :param value: The value to search for.
+      :type value: str or float
+      :param key: The key in the metadata to search. Default is "name".
+      :type key: str, optional
+      :param single_idx: If True, return a single index. If False, return a list of indices. Default is True.
+      :type single_idx: bool, optional
+
+      :returns: The index or list of indices that satisfy the condition.
+                If no index is found, return None.
+      :rtype: idx or list of idx or None
+
+
+

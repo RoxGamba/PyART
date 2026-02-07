@@ -1,0 +1,305 @@
+PyART.models.teob
+=================
+
+.. py:module:: PyART.models.teob
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.models.teob.module
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.models.teob.Waveform_EOB
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.models.teob.convert_hlm
+   PyART.models.teob.CreateDict
+   PyART.models.teob.TEOB_info
+   PyART.models.teob.SpinHamiltonian
+   PyART.models.teob.RadialPotential
+   PyART.models.teob.bracketing
+   PyART.models.teob.PotentialMinimum
+   PyART.models.teob.search_radial_turning_points
+   PyART.models.teob.search_apastron
+   PyART.models.teob.PotentialPlot
+   PyART.models.teob.get_pph_lso
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_EOB(pars=None)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle TEOBResumS waveforms
+
+
+   .. py:attribute:: pars
+      :value: None
+
+
+
+   .. py:attribute:: _kind
+      :value: 'EOB'
+
+
+
+   .. py:method:: compute_energetics()
+
+      Compute the binding energy and angular momentum from the dynamics.
+
+
+
+   .. py:method:: _run_py()
+
+      Run the TEOBResumS waveform generation in Python.
+      Uses the EOBRun_module (compiled from TEOBResumS C code).
+      Stores the results in the class attributes.
+
+
+
+   .. py:method:: get_Pr()
+
+      Compute the radial momentum from the EOB dynamics.
+
+
+
+.. py:function:: convert_hlm(hlm)
+
+.. py:function:: CreateDict(M=1.0, q=1, chi1z=0.0, chi2z=0, chi1x=0.0, chi2x=0, chi1y=0.0, chi2y=0, LambdaAl2=0, LambdaBl2=0, iota=0, f0=0.0035, srate=4096.0, df=1.0 / 128.0, phi_ref=0.0, ecc=1e-08, r_hyp=None, H_hyp=0, J_hyp=0, prs_sign_hyp=-1, anomaly=np.pi, interp='yes', arg_out='yes', use_geom='yes', use_tidal=None, use_mode_lm=[1], ode_tmax=10000000.0, cN3LO=None, a6c=None, use_flm_h='LO', use_nqc=True)
+
+   Create the dictionary of parameters for EOBRunPy
+
+   :param M: Total mass (default is 1.0).
+   :type M: float, optional
+   :param q: Mass ratio m1/m2 >= 1 (default is 1).
+   :type q: float, optional
+   :param chi1z: Dimensionless spin of the primary along the orbital angular momentum (default is 0.0).
+   :type chi1z: float, optional
+   :param chi2z: Dimensionless spin of the secondary along the orbital angular momentum (default is 0.0).
+   :type chi2z: float, optional
+   :param chi1x: Dimensionless spin of the primary in the orbital plane (x-component) (default is 0.0).
+   :type chi1x: float, optional
+   :param chi2x: Dimensionless spin of the secondary in the orbital plane (x-component) (default is 0.0).
+   :type chi2x: float, optional
+   :param chi1y: Dimensionless spin of the primary in the orbital plane (y-component) (default is 0.0).
+   :type chi1y: float, optional
+   :param chi2y: Dimensionless spin of the secondary in the orbital plane (y-component) (default is 0.0).
+   :type chi2y: float, optional
+   :param LambdaAl2: Dimensionless quadrupolar tidal parameter of the primary (default is 0).
+   :type LambdaAl2: float, optional
+   :param LambdaBl2: Dimensionless quadrupolar tidal parameter of the secondary (default is 0).
+   :type LambdaBl2: float, optional
+   :param iota: Inclination angle in radians (default is 0).
+   :type iota: float, optional
+   :param f0: Initial frequency in geometric units (default is 0.0035).
+   :type f0: float, optional
+   :param srate: Sampling rate in Hz (default is 4096.0).
+   :type srate: float, optional
+   :param df: Frequency resolution in Hz (default is 1/128).
+   :type df: float, optional
+   :param phi_ref: Reference phase at f0 in radians (default is 0.0).
+   :type phi_ref: float, optional
+   :param ecc: Initial eccentricity at f0 (default is 1e-8).
+   :type ecc: float, optional
+   :param r_hyp: Initial separation (default is None).
+   :type r_hyp: float or None, optional
+   :param H_hyp: Initial energy parameter for hyperbolic orbits (default is None).
+   :type H_hyp: any, optional
+   :param J_hyp: Initial angular momentum parameter for hyperbolic orbits (default is None).
+   :type J_hyp: any, optional
+   :param prs_sign_hyp: Sign of the intial radial momentum
+   :type prs_sign_hyp: {-1,1} optional
+   :param anomaly: Initial relativistic anomaly (default is pi).
+   :type anomaly: float, optional
+   :param interp: Interpolate to uniform time grid ("yes" or "no", default is "yes").
+   :type interp: str, optional
+   :param arg_out: Output dynamics and hlm in addition to h+, hx ("yes" or "no", default is "yes").
+   :type arg_out: str, optional
+   :param use_geom: Use geometric units ("yes" or "no", default is "yes").
+   :type use_geom: str, optional
+   :param use_tidal: Version of tidal effects to use (default is None).
+   :type use_tidal: str, optional
+   :param use_mode_lm: List of (ell, m) modes to use (default is [(1)]).
+   :type use_mode_lm: list of tuples, optional
+   :param ode_tmax: Maximum time for ODE solver (default is 1e7).
+   :type ode_tmax: float, optional
+   :param cN3LO: cN3LO parameter (default is None).
+   :type cN3LO: float, optional
+   :param a6c: a6c parameter (default is None).
+   :type a6c: float, optional
+   :param use_flm_h: Use higher multipoles in the waveform ("LO", "NLO", "NNLO", default is "LO").
+   :type use_flm_h: str, optional
+   :param use_nqc: Whether to use NQC corrections (default is True).
+   :type use_nqc: bool, optional
+
+
+.. py:function:: TEOB_info(input_module, verbose=False)
+
+   Print and return information about the TEOBResumS installation.
+   :param input_module: The imported EOBRun_module.
+   :type input_module: module
+   :param verbose: If True, print the information (default is False).
+   :type verbose: bool, optional
+
+   :returns: **module** -- Dictionary containing information about the TEOBResumS installation.
+   :rtype: dict
+
+
+.. py:function:: SpinHamiltonian(r, pph, q, chi1, chi2, prstar=0.0)
+
+   Compute the EOB Hamiltonian for given parameters.
+
+   :param r: Radial separation.
+   :type r: float
+   :param pph: Angular momentum.
+   :type pph: float
+   :param q: Mass ratio m1/m2 >= 1.
+   :type q: float
+   :param chi1: Dimensionless spin of the primary along the orbital angular momentum.
+   :type chi1: float
+   :param chi2: Dimensionless spin of the secondary along the orbital angular momentum.
+   :type chi2: float
+   :param prstar: Radial momentum in tortoise coordinates (default is 0.0).
+   :type prstar: float, optional
+
+   :returns: **E0** -- The EOB Hamiltonian value.
+   :rtype: float
+
+
+.. py:function:: RadialPotential(r, pph, q, chi1, chi2)
+
+   Compute the EOB radial potential for given parameters.
+   :param r: Radial separation.
+   :type r: array-like
+   :param pph: Angular momentum.
+   :type pph: float
+   :param q: Mass ratio m1/m2 >= 1.
+   :type q: float
+   :param chi1: Dimensionless spin of the primary along the orbital angular momentum.
+   :type chi1: float
+   :param chi2: Dimensionless spin of the secondary along the orbital angular momentum.
+   :type chi2: float
+
+   :returns: **V** -- The EOB radial potential values.
+   :rtype: array-like
+
+
+.. py:function:: bracketing(f, start, end, step_size)
+
+   Bracket the roots of a function f in the interval [start, end] with given step size.
+   :param f: The function for which to bracket the roots.
+   :type f: callable
+   :param start: The start of the interval.
+   :type start: float
+   :param end: The end of the interval.
+   :type end: float
+   :param step_size: The step size for bracketing.
+   :type step_size: float
+
+   :returns: **bracketed_intervals** -- List of intervals [a, b] where f(a) and f(b) have opposite
+             signs, indicating a root in between.
+   :rtype: list of [float, float]
+
+
+.. py:function:: PotentialMinimum(rvec, pph, q, chi1, chi2)
+
+   Compute the minimum of the EOB radial potential for given parameters.
+   :param rvec: Radial separation values.
+   :type rvec: array-like
+   :param pph: Angular momentum.
+   :type pph: float
+   :param q: Mass ratio m1/m2 >= 1.
+   :type q: float
+   :param chi1: Dimensionless spin of the primary along the orbital angular momentum.
+   :type chi1: float
+   :param chi2: Dimensionless spin of the secondary along the orbital angular momentum.
+   :type chi2: float
+
+   :returns: **Vmin** -- The minimum value of the EOB radial potential.
+   :rtype: float
+
+
+.. py:function:: search_radial_turning_points(q, chi1, chi2, pph, E, step_size=0.1)
+
+   Compute the radial turning points (periastron and apastron) for given parameters.
+   :param q: Mass ratio m1/m2 >= 1.
+   :type q: float
+   :param chi1: Dimensionless spin of the primary along the orbital angular momentum.
+   :type chi1: float
+   :param chi2: Dimensionless spin of the secondary along the orbital angular momentum.
+   :type chi2: float
+   :param pph: Angular momentum.
+   :type pph: float
+   :param E: Energy.
+   :type E: float
+   :param step_size: Step size for bracketing (default is 0.1).
+   :type step_size: float, optional
+
+   :returns: * **r_peri** (*float or None*) -- The periastron radius, or None if not found.
+             * **r_apa** (*float or None*) -- The apastron radius, or None if not found.
+
+
+.. py:function:: search_apastron(q, chi1, chi2, pph, E, step_size=0.1)
+
+   Compute the apastron radius for given parameters.
+   Deprecated: use search_radial_turning_points instead.
+
+   :param q: Mass ratio m1/m2 >= 1.
+   :type q: float
+   :param chi1: Dimensionless spin of the primary along the orbital angular momentum.
+   :type chi1: float
+   :param chi2: Dimensionless spin of the secondary along the orbital angular momentum.
+   :type chi2: float
+   :param pph: Angular momentum.
+   :type pph: float
+   :param E: Energy.
+   :type E: float
+   :param step_size: Step size for bracketing (default is 0.1).
+   :type step_size: float, optional
+
+
+.. py:function:: PotentialPlot(E0, pph0, q, chi1, chi2)
+
+   Plot the EOB radial potential for given parameters.
+   :param E0: Energy.
+   :type E0: float
+   :param pph0: Angular momentum.
+   :type pph0: float
+   :param q: Mass ratio m1/m2 >= 1.
+   :type q: float
+   :param chi1: Dimensionless spin of the primary along the orbital angular momentum.
+   :type chi1: float
+   :param chi2: Dimensionless spin of the secondary along the orbital angular momentum.
+   :type chi2: float
+
+
+.. py:function:: get_pph_lso(nu, a0)
+
+   Fit for the angular momentum at the LSO for given symmetric mass ratio and spin.
+   :param nu: Symmetric mass ratio.
+   :type nu: float
+   :param a0: Effective spin.
+   :type a0: float
+
+   :returns: **pph_lso** -- The angular momentum at the LSO.
+   :rtype: float
+
+
+.. py:data:: module
+

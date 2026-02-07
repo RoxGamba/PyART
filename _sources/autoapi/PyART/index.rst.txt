@@ -1,0 +1,121 @@
+PyART
+=====
+
+.. py:module:: PyART
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/PyART/analysis/index
+   /autoapi/PyART/analytic/index
+   /autoapi/PyART/catalogs/index
+   /autoapi/PyART/logging_config/index
+   /autoapi/PyART/models/index
+   /autoapi/PyART/numerical/index
+   /autoapi/PyART/simulations/index
+   /autoapi/PyART/utils/index
+   /autoapi/PyART/waveform/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.ufact
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.geom
+   PyART.cgs
+   PyART.metric
+
+
+Package Contents
+----------------
+
+.. py:data:: ufact
+
+.. py:class:: geom
+
+   Geometric units + Msun = 1
+
+
+   .. py:attribute:: grav_constant
+      :value: 1.0
+
+
+
+   .. py:attribute:: light_speed
+      :value: 1.0
+
+
+
+   .. py:attribute:: solar_mass
+      :value: 1.0
+
+
+
+   .. py:attribute:: MeV
+      :value: 1.0
+
+
+
+.. py:class:: cgs
+
+   CGS units
+
+
+   .. py:attribute:: grav_constant
+      :value: 6.673e-08
+
+
+
+   .. py:attribute:: light_speed
+      :value: 29979245800.0
+
+
+
+   .. py:attribute:: solar_mass
+      :value: 1.9884099021470417e+33
+
+
+
+   .. py:attribute:: MeV
+      :value: 11604505000.0
+
+
+
+.. py:class:: metric
+
+   Standard SI units
+
+
+   .. py:attribute:: grav_constant
+      :value: 6.673e-11
+
+
+
+   .. py:attribute:: light_speed
+      :value: 299792458.0
+
+
+
+   .. py:attribute:: solar_mass
+      :value: 1.9884099021470415e+30
+
+
+
+   .. py:attribute:: MeV
+      :value: 11604505000.0
+
+
+

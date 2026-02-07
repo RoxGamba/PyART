@@ -1,0 +1,1254 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../../genindex.html"><link rel="search" title="Search" href="../../../../search.html"><link rel="next" title="PyART.utils.wf_utils" href="../wf_utils/index.html"><link rel="prev" title="PyART.utils.os_utils" href="../os_utils/index.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>PyART.utils.utils - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/intro_to_waveforms.html">1. Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../../index.html">PyART</a><input aria-label="Toggle navigation of PyART" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../simulations/index.html">PyART.simulations</a></li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="../index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../simulations/index.html">simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tocatalog_icc/index.html">tocatalog_icc</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../../../../_sources/autoapi/PyART/utils/utils/index.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-PyART.utils.utils">
+<span id="pyart-utils-utils"></span><h1>PyART.utils.utils<a class="headerlink" href="#module-PyART.utils.utils" title="Link to this heading">¶</a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.Msun" title="PyART.utils.utils.Msun"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Msun</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.rotate3_axis" title="PyART.utils.utils.rotate3_axis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate3_axis</span></code></a>(vector[, theta, axis])</p></td>
+<td><p>Rotate a 3 vector around a provided axis of an angle theta</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.rotate3" title="PyART.utils.utils.rotate3"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate3</span></code></a>(vector, alpha, beta, gamma[, invert])</p></td>
+<td><p>Rotate a 3 vector using Euler angles under conventions defined at:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.reflect_unwrap" title="PyART.utils.utils.reflect_unwrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reflect_unwrap</span></code></a>(vec)</p></td>
+<td><p>Reflect points in an array</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.minmax_array" title="PyART.utils.utils.minmax_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minmax_array</span></code></a>(x[, tol])</p></td>
+<td><p>Find the maximum and minimum of an array</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.nextpow2" title="PyART.utils.utils.nextpow2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nextpow2</span></code></a>(x)</p></td>
+<td><p>Return the next closest power of 2</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.safe_sigmoid" title="PyART.utils.utils.safe_sigmoid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">safe_sigmoid</span></code></a>(x, alpha[, clip])</p></td>
+<td><p>Sigmoid function with clips on the exponent</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.taper_waveform" title="PyART.utils.utils.taper_waveform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">taper_waveform</span></code></a>(t, h[, t1, t2, alpha, alpha_end, kind, ...])</p></td>
+<td><p>Waveform tapering in Matcher-class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.windowing" title="PyART.utils.utils.windowing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">windowing</span></code></a>(h[, alpha])</p></td>
+<td><p>Windowing with Tukey window on a given strain (time-domain)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.fft" title="PyART.utils.utils.fft"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fft</span></code></a>(h, dt)</p></td>
+<td><p>FFT of a time-domain signal h(t)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.ifft" title="PyART.utils.utils.ifft"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ifft</span></code></a>(u, srate, seglen[, t0])</p></td>
+<td><p>IFFT of a frequency-domain signal u(f)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.find_nearest" title="PyART.utils.utils.find_nearest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_nearest</span></code></a>(array, value)</p></td>
+<td><p>Find the index of the element in array closest to value</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.zero_pad_before" title="PyART.utils.utils.zero_pad_before"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_pad_before</span></code></a>(array, N[, return_column])</p></td>
+<td><p>Pad an array with N zeroes (at the beginning)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.powspace" title="PyART.utils.utils.powspace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">powspace</span></code></a>(start, stop, power, num)</p></td>
+<td><p>Compute equally spaced grid in log-space</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.delta_a_b" title="PyART.utils.utils.delta_a_b"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delta_a_b</span></code></a>(a, xa, b, xb[, N])</p></td>
+<td><p>Given two sets (xa, a=f(xa)) and (xb, b=g(xb)),</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.vec_differences" title="PyART.utils.utils.vec_differences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vec_differences</span></code></a>(x1, y1, x2, y2, a, b, dx[, diff_kind, ...])</p></td>
+<td><p>Compute differences between arrays with different lengths</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.spline" title="PyART.utils.utils.spline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spline</span></code></a>(x, y, xs[, kind, ensure_unique])</p></td>
+<td><p>Compute the spline of y(x), return y(xs)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.spline_diff" title="PyART.utils.utils.spline_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spline_diff</span></code></a>(t, y[, k, n])</p></td>
+<td><p>Wrapper for InterpolatedUnivariateSpline derivative function</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.spline_antidiff" title="PyART.utils.utils.spline_antidiff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spline_antidiff</span></code></a>(t, y[, k, n])</p></td>
+<td><p>Wrapper for InterpolatedUnivariateSpline antiderivative function</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.polyfit_svd" title="PyART.utils.utils.polyfit_svd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polyfit_svd</span></code></a>(x, y, order)</p></td>
+<td><p>Polynomial fit using SVD</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.upoly_fits" title="PyART.utils.utils.upoly_fits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upoly_fits</span></code></a>(r0, y0[, nmin, nmax, n_extract, ...])</p></td>
+<td><p>Perform polynomial fits in 1/r to the data (r0, y0)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.D02" title="PyART.utils.utils.D02"><code class="xref py py-obj docutils literal notranslate"><span class="pre">D02</span></code></a>(xp, yp[, pad])</p></td>
+<td><p>Computes the first derivative of y(x) using centered 2nd order</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.D1" title="PyART.utils.utils.D1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">D1</span></code></a>(f, x, order)</p></td>
+<td><p>Computes the first derivative of function f(x)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.integrate" title="PyART.utils.utils.integrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate</span></code></a>(ff)</p></td>
+<td><p>Computes the anti-derivative of a discrete function using a</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.spinsphericalharm" title="PyART.utils.utils.spinsphericalharm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spinsphericalharm</span></code></a>(s, l, m, phi, i)</p></td>
+<td><p>Compute spin-weighted spherical harmonics</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.wigner_d_function" title="PyART.utils.utils.wigner_d_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wigner_d_function</span></code></a>(l, m, s, i)</p></td>
+<td><p>Compute wigner d functions, following Ref</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.wdelement" title="PyART.utils.utils.wdelement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wdelement</span></code></a>(ll, mp, mm, alpha, beta, gamma)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.save_plot" title="PyART.utils.utils.save_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_plot</span></code></a>(figname[, show, save, verbose])</p></td>
+<td><p>Save or show a plot</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.retarded_time" title="PyART.utils.utils.retarded_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">retarded_time</span></code></a>(t, r[, M])</p></td>
+<td><p>Compute the retarded time in Schwarzschild spacetime</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.are_dictionaries_equal" title="PyART.utils.utils.are_dictionaries_equal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">are_dictionaries_equal</span></code></a>(dict1_in, dict2_in[, ...])</p></td>
+<td><p>Check if two dictionaries are equal,</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.print_dict_comparison" title="PyART.utils.utils.print_dict_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_dict_comparison</span></code></a>(dict1_in, dict2_in[, ...])</p></td>
+<td><p>Print a comparison between two dictionaries,</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.safe_loadtxt" title="PyART.utils.utils.safe_loadtxt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">safe_loadtxt</span></code></a>(fname[, remove_nans, remove_overlaps, ...])</p></td>
+<td><p>Load a text file and optionally remove rows with NaNs</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.utils.utils.extract_value_from_str" title="PyART.utils.utils.extract_value_from_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_value_from_str</span></code></a>(string, key)</p></td>
+<td><p>Extract a numerical value from a string given a key</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.utils.utils.get_radial_turning_points" title="PyART.utils.utils.get_radial_turning_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_radial_turning_points</span></code></a>(t, r[, window])</p></td>
+<td><p>Find apastra/periastra passages given time and radius.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="PyART.utils.utils.Msun">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">Msun</span></span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#Msun"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.Msun" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.rotate3_axis">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">rotate3_axis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">1]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#rotate3_axis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.rotate3_axis" title="Link to this definition">¶</a></dt>
+<dd><p>Rotate a 3 vector around a provided axis of an angle theta</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vector</strong> (<em>array-like</em>) – vector to rotate</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – rotation angle (in radians)</p></li>
+<li><p><strong>axis</strong> (<em>array-like</em>) – rotation axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – rotated vector</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.rotate3">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">rotate3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#rotate3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.rotate3" title="Link to this definition">¶</a></dt>
+<dd><p>Rotate a 3 vector using Euler angles under conventions defined at:
+<a class="reference external" href="https://en.wikipedia.org/wiki/Euler_angles">https://en.wikipedia.org/wiki/Euler_angles</a>
+<a class="reference external" href="https://en.wikipedia.org/wiki/Rotation_matrix">https://en.wikipedia.org/wiki/Rotation_matrix</a></p>
+<p>Science reference: <a class="reference external" href="https://arxiv.org/pdf/1110.2965.pdf">https://arxiv.org/pdf/1110.2965.pdf</a> (Appendix)</p>
+<p>Specifically, the Z1,Y2,Z3 ordering is used: <a class="reference external" href="https://wikimedia.org/api/rest_v1/media/math/render/svg/547e522037de6467d948ecf3f7409975fe849d07">https://wikimedia.org/api/rest_v1/media/math/render/svg/547e522037de6467d948ecf3f7409975fe849d07</a></p>
+<ul class="simple">
+<li><p>alpha represents a rotation around the z axis</p></li>
+<li><p>beta represents a rotation around the x’ axis</p></li>
+<li><p>gamma represents a rotation around the z’’ axis</p></li>
+</ul>
+<p>NOTE that in order to perform the inverse rotation, it is <em>not</em> enough to input different rotation angles. One must use the invert=True keyword.
+This takes the same angle inputs as the forward rotation, but correctly applies the transposed rotation matricies in the reversed order.</p>
+<p>spxll’18</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.reflect_unwrap">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">reflect_unwrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#reflect_unwrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.reflect_unwrap" title="Link to this definition">¶</a></dt>
+<dd><p>Reflect points in an array</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.minmax_array">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">minmax_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#minmax_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.minmax_array" title="Link to this definition">¶</a></dt>
+<dd><p>Find the maximum and minimum of an array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like</em>) – input array</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – tolerance to add/subtract to min/max</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – [min(x)-tol, max(x)+tol]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.nextpow2">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">nextpow2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#nextpow2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.nextpow2" title="Link to this definition">¶</a></dt>
+<dd><p>Return the next closest power of 2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>float</em>) – input number</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – next closest power of 2</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.safe_sigmoid">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">safe_sigmoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#safe_sigmoid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.safe_sigmoid" title="Link to this definition">¶</a></dt>
+<dd><p>Sigmoid function with clips on the exponent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like</em>) – input array</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – slope parameter</p></li>
+<li><p><strong>clip</strong> (<em>float</em><em> or </em><em>None</em>) – if not None, clip the exponent to [-clip, clip]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – sigmoid values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.taper_waveform">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">taper_waveform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#taper_waveform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.taper_waveform" title="Link to this definition">¶</a></dt>
+<dd><p>Waveform tapering in Matcher-class.
+The meaning of t1, t2, and alpha depends on the kind used!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array-like</em>) – time array</p></li>
+<li><p><strong>h</strong> (<em>array-like</em>) – strain array</p></li>
+<li><p><strong>t1</strong> (<em>float</em><em> or </em><em>None</em>) – start time of the tapering</p></li>
+<li><p><strong>t2</strong> (<em>float</em><em> or </em><em>None</em>) – end time of the tapering (if None, tapering is only applied at t1)</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – slope parameter for the tapering</p></li>
+<li><p><strong>alpha_end</strong> (<em>float</em><em> or </em><em>None</em>) – slope parameter for the tapering at t2 (if None, alpha_end=alpha)</p></li>
+<li><p><strong>kind</strong> (<em>str</em>) – tapering method, can be ‘sigmoid’ or ‘tukey’ (default: ‘sigmoid’)</p></li>
+<li><p><strong>debug</strong> (<em>bool</em>) – if True, plot the tapering window</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – tapered strain</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.windowing">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">windowing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#windowing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.windowing" title="Link to this definition">¶</a></dt>
+<dd><p>Windowing with Tukey window on a given strain (time-domain)
+h     : strain to be tapered
+alpha : Tukey filter slope parameter. Suggested value: alpha = 1/4/seglen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<em>array-like</em>) – strain array</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – slope parameter for the tapering</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – tapered strain and wfact = &lt;w^2&gt;</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(array-like, float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.fft">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">fft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#fft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.fft" title="Link to this definition">¶</a></dt>
+<dd><p>FFT of a time-domain signal h(t)
+:param h: time-domain signal
+:type h: ndarray
+:param dt: time spacing (assumed uniform)
+:type dt: float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong> – frequency array and FFT of h</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(<a class="reference internal" href="../../waveform/index.html#PyART.waveform.Waveform.f" title="PyART.waveform.Waveform.f">f</a>, hfft)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.ifft">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">ifft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">srate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seglen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#ifft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.ifft" title="Link to this definition">¶</a></dt>
+<dd><p>IFFT of a frequency-domain signal u(f)
+:param u: frequency-domain signal
+:type u: ndarray
+:param srate: sampling rate
+:type srate: float
+:param seglen: segment length
+:type seglen: float
+:param t0: time shift
+:type t0: float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong> – time array and IFFT of u</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(<a class="reference internal" href="../../analysis/eccentricity_calc/index.html#id2" title="PyART.analysis.eccentricity_calc.EccentricityCalculator.t">t</a>, <a class="reference internal" href="../../simulations/index.html#PyART.simulations.s" title="PyART.simulations.s">s</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.find_nearest">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">find_nearest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#find_nearest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.find_nearest" title="Link to this definition">¶</a></dt>
+<dd><p>Find the index of the element in array closest to value
+:param array: input array
+:type array: array-like
+:param value: target value
+:type value: float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong> – index of the element in array closest to value</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.zero_pad_before">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">zero_pad_before</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#zero_pad_before"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.zero_pad_before" title="Link to this definition">¶</a></dt>
+<dd><p>Pad an array with N zeroes (at the beginning)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>array-like</em>) – input array</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – length of the output array</p></li>
+<li><p><strong>return_column</strong> (<em>bool</em>) – if True, return a column vector, otherwise a row vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – zero-padded array</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.powspace">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">powspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#powspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.powspace" title="Link to this definition">¶</a></dt>
+<dd><p>Compute equally spaced grid in log-space</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>float</em>) – start value</p></li>
+<li><p><strong>stop</strong> (<em>float</em>) – stop value</p></li>
+<li><p><strong>power</strong> (<em>float</em>) – power</p></li>
+<li><p><strong>num</strong> (<em>int</em>) – number of points</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – array of num points between start and stop in log-space</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.delta_a_b">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">delta_a_b</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#delta_a_b"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.delta_a_b" title="Link to this definition">¶</a></dt>
+<dd><p>Given two sets (xa, a=f(xa)) and (xb, b=g(xb)),
+interpolate them to a common grid x and compute their
+difference f(x)-g(x)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>array-like</em>) – first array</p></li>
+<li><p><strong>xa</strong> (<em>array-like</em>) – x values for the first array</p></li>
+<li><p><strong>b</strong> (<em>array-like</em>) – second array</p></li>
+<li><p><strong>xb</strong> (<em>array-like</em>) – x values for the second array</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – number of points in the common grid</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – x: common grid
+delta_ab: a_n - b_n
+a_n: interpolated a on the common grid
+b_n: interpolated b on the common grid</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference internal" href="../load_nr_utils/index.html#PyART.utils.load_nr_utils.x" title="PyART.utils.load_nr_utils.x">x</a>, delta_ab, a_n, b_n)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.vec_differences">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">vec_differences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fabs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#vec_differences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.vec_differences" title="Link to this definition">¶</a></dt>
+<dd><p>Compute differences between arrays with different lengths
+Similar to delta_a_b, but with more options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x1</strong> (<em>array-like</em>) – x values for the first array</p></li>
+<li><p><strong>y1</strong> (<em>array-like</em>) – first array</p></li>
+<li><p><strong>x2</strong> (<em>array-like</em>) – x values for the second array</p></li>
+<li><p><strong>y2</strong> (<em>array-like</em>) – second array</p></li>
+<li><p><strong>a</strong> (<em>float</em>) – start value for the common grid</p></li>
+<li><p><strong>b</strong> (<em>float</em>) – stop value for the common grid</p></li>
+<li><p><strong>dx</strong> (<em>float</em>) – spacing for the common grid</p></li>
+<li><p><strong>diff_kind</strong> (<em>str</em>) – kind of difference, can be ‘abs’ (absolute), ‘rel’ (relative), or ‘phi’ (phase)</p></li>
+<li><p><strong>fabs</strong> (<em>bool</em>) – if True, return the absolute value of the difference</p></li>
+<li><p><strong>interp_kind</strong> (<em>str</em>) – kind of interpolation, passed to spline function</p></li>
+<li><p><strong>ensure_unique</strong> (<em>bool</em>) – if True, ensure that x1 and x2 are unique before interpolation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – x: common grid
+dy: differences on the common grid</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference internal" href="../load_nr_utils/index.html#PyART.utils.load_nr_utils.x" title="PyART.utils.load_nr_utils.x">x</a>, dy)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.spline">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">spline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#spline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.spline" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the spline of y(x), return y(xs)
+:param x: x values
+:type x: array-like
+:param y: y values
+:type y: array-like
+:param xs: x values for the output
+:type xs: array-like
+:param kind: kind of interpolation, passed to interp1d
+:type kind: str
+:param ensure_unique: if True, ensure that x is unique before interpolation
+:type ensure_unique: bool</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong> – interpolated values y(xs)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.spline_diff">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">spline_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#spline_diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.spline_diff" title="Link to this definition">¶</a></dt>
+<dd><p>Wrapper for InterpolatedUnivariateSpline derivative function
+:param t: x values
+:type t: array-like
+:param y: y values
+:type y: array-like
+:param k: spline order
+:type k: int
+:param n: number of derivatives
+:type n: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong> – n-th derivative of y at t</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.spline_antidiff">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">spline_antidiff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#spline_antidiff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.spline_antidiff" title="Link to this definition">¶</a></dt>
+<dd><p>Wrapper for InterpolatedUnivariateSpline antiderivative function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array-like</em>) – x values</p></li>
+<li><p><strong>y</strong> (<em>array-like</em>) – y values</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – spline order</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – number of derivatives</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – n-th anti-derivative of y at t</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.polyfit_svd">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">polyfit_svd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#polyfit_svd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.polyfit_svd" title="Link to this definition">¶</a></dt>
+<dd><p>Polynomial fit using SVD
+:param x: x values
+:type x: array-like
+:param y: y values
+:type y: array-like
+:param order: polynomial order
+:type order: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong> – polynomial coefficients</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.upoly_fits">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">upoly_fits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_extract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_cutoff_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_cutoff_high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'in'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">svd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#upoly_fits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.upoly_fits" title="Link to this definition">¶</a></dt>
+<dd><p>Perform polynomial fits in 1/r to the data (r0, y0)
+:param r0: radial coordinate
+:type r0: array-like
+:param y0: function values at r0
+:type y0: array-like
+:param nmin: minimum polynomial order
+:type nmin: int
+:param nmax: maximum polynomial order
+:type nmax: int
+:param n_extract: if not None, extract the extrapolated value from this fit order
+:type n_extract: int or None
+:param r_cutoff_low: if not None, only use data with r0 &gt;= r_cutoff_low
+:type r_cutoff_low: float or None
+:param r_cutoff_high: if not None, only use data with r0 &lt;= r_cutoff_high
+:type r_cutoff_high: float or None
+:param direction: ‘in’ or ‘out’, whether the data is from an inward or outward</p>
+<blockquote>
+<div><p>moving observer</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>svd</strong> (<em>bool</em>) – if True, use SVD for the polynomial fits</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – dictionary with the following keys
+‘extrap’: extrapolated value (mean over fit orders or from n_extract)
+‘extrap_vec’: extrapolated values for each fit order
+‘fit_orders’: list of fit orders
+‘coeffs’: polynomial coefficients for each fit order
+‘polynomials’: polynomial values at the input r0 for each fit order
+‘mask’: boolean mask used to select the data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.D02">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">D02</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#D02"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.D02" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the first derivative of y(x) using centered 2nd order
+accurate finite-differencing</p>
+<p>This function returns an array of yp.shape[0]-2 elements</p>
+<p>NOTE: the data needs not to be equally spaced</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xp</strong> (<em>array-like</em>) – x values</p></li>
+<li><p><strong>yp</strong> (<em>array-like</em>) – y values</p></li>
+<li><p><strong>pad</strong> (<em>bool</em>) – if True, pad the output with the first and last value to
+return an array of the same length as the input</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – first derivative of y with respect to x</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.D1">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">D1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#D1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.D1" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the first derivative of function f(x)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>float</em><em> (</em><em>list/numpy array of</em><em>)</em>) – uniformly sampled function</p></li>
+<li><p><strong>x</strong> (<em>float</em><em> (</em><em>list/numpy array of</em><em>)</em>) – uniformly sampled function domain or grid spacing</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – finite differencing order</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>df</strong> – finite differences at given order</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list (or numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.integrate">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ff</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#integrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.integrate" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the anti-derivative of a discrete function using a
+2nd order accurate formula</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ff</strong> (<em>array-like</em>) – input function values</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – anti-derivative of ff</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.spinsphericalharm">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">spinsphericalharm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#spinsphericalharm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.spinsphericalharm" title="Link to this definition">¶</a></dt>
+<dd><p>Compute spin-weighted spherical harmonics</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s</strong> (<em>int</em>) – spin, l and m indices</p></li>
+<li><p><strong>l</strong> (<em>int</em>) – spin, l and m indices</p></li>
+<li><p><strong>m</strong> (<em>int</em>) – spin, l and m indices</p></li>
+<li><p><strong>phi</strong> (<em>float</em>) – azimuthal angle</p></li>
+<li><p><strong>i</strong> (<em>float</em>) – inclination angle</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – value of the spin-weighted spherical harmonic</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>complex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.wigner_d_function">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">wigner_d_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#wigner_d_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.wigner_d_function" title="Link to this definition">¶</a></dt>
+<dd><p>Compute wigner d functions, following Ref
+TODO: add reference</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l</strong> (<em>int</em>) – l, m and s indices</p></li>
+<li><p><strong>m</strong> (<em>int</em>) – l, m and s indices</p></li>
+<li><p><strong>s</strong> (<em>int</em>) – l, m and s indices</p></li>
+<li><p><strong>i</strong> (<em>float</em>) – inclination angle</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – value of the wigner d function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.wdelement">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">wdelement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ll</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#wdelement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.wdelement" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.save_plot">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">save_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#save_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.save_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Save or show a plot
+:param figname: name of the figure file
+:type figname: str
+:param show: if True, show the plot
+:type show: bool
+:param save: if True, save the plot
+:type save: bool
+:param verbose: if True, print messages
+:type verbose: bool</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.retarded_time">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">retarded_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#retarded_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.retarded_time" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the retarded time in Schwarzschild spacetime
+:param t: coordinate time
+:type t: float
+:param r: areal radius
+:type r: float
+:param M: mass of the black hole
+:type M: float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong> – retarded time</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.are_dictionaries_equal">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">are_dictionaries_equal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict1_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict2_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excluded_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-14</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#are_dictionaries_equal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.are_dictionaries_equal" title="Link to this definition">¶</a></dt>
+<dd><p>Check if two dictionaries are equal,
+modulo excluded keys</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict1_in</strong> (<em>dict</em>) – first dictionary</p></li>
+<li><p><strong>dict2_in</strong> (<em>dict</em>) – second dictionary</p></li>
+<li><p><strong>excluded_keys</strong> (<em>list</em>) – list of keys to exclude from the comparison</p></li>
+<li><p><strong>float_tol</strong> (<em>float</em>) – tolerance for float comparison</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – if True, print messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – True if the dictionaries are equal, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.print_dict_comparison">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">print_dict_comparison</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict1_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict2_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excluded_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict1_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dict1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict2_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dict2'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#print_dict_comparison"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.print_dict_comparison" title="Link to this definition">¶</a></dt>
+<dd><p>Print a comparison between two dictionaries,
+modulo excluded keys
+:param dict1_in: first dictionary
+:type dict1_in: dict
+:param dict2_in: second dictionary
+:type dict2_in: dict
+:param excluded_keys: list of keys to exclude from the comparison
+:type excluded_keys: list
+:param dict1_name: name of the first dictionary
+:type dict1_name: str
+:param dict2_name: name of the second dictionary
+:type dict2_name: str</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.safe_loadtxt">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">safe_loadtxt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_nans</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_overlaps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#safe_loadtxt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.safe_loadtxt" title="Link to this definition">¶</a></dt>
+<dd><p>Load a text file and optionally remove rows with NaNs
+and rows with overlapping time values
+:param fname: name of the file to load
+:type fname: str
+:param remove_nans: if True, remove rows with NaNs
+:type remove_nans: bool
+:param remove_overlaps: if True, remove rows with overlapping time values
+:type remove_overlaps: bool
+:param time_idx: index of the time column
+:type time_idx: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong> – loaded data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.extract_value_from_str">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">extract_value_from_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#extract_value_from_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.extract_value_from_str" title="Link to this definition">¶</a></dt>
+<dd><p>Extract a numerical value from a string given a key
+:param string: input string
+:type string: str
+:param key: key to search for
+:type key: str</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out</strong> – extracted value, or None if not found</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float or int or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.utils.utils.get_radial_turning_points">
+<span class="sig-prename descclassname"><span class="pre">PyART.utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_radial_turning_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/utils/utils.html#get_radial_turning_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.utils.utils.get_radial_turning_points" title="Link to this definition">¶</a></dt>
+<dd><p>Find apastra/periastra passages given time and radius.
+Local spline interpolation is used near each extremum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>float</em><em> (</em><em>list/numpy array of</em><em>)</em>) – Time array</p></li>
+<li><p><strong>r</strong> (<em>float</em><em> (</em><em>list/numpy array of</em><em>)</em>) – Orbital radius</p></li>
+<li><p><strong>window</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of points on each side of the extremum to
+use for local spline (default: 5)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>tap</strong> (<em>np.ndarray</em>) – Times of apastra (maxima)</p></li>
+<li><p><strong>tpe</strong> (<em>np.ndarray</em>) – Times of periastra (minima)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../wf_utils/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">PyART.utils.wf_utils</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../os_utils/index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">PyART.utils.os_utils</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">PyART.utils.utils</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#PyART.utils.utils.Msun"><code class="docutils literal notranslate"><span class="pre">Msun</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.rotate3_axis"><code class="docutils literal notranslate"><span class="pre">rotate3_axis()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.rotate3"><code class="docutils literal notranslate"><span class="pre">rotate3()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.reflect_unwrap"><code class="docutils literal notranslate"><span class="pre">reflect_unwrap()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.minmax_array"><code class="docutils literal notranslate"><span class="pre">minmax_array()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.nextpow2"><code class="docutils literal notranslate"><span class="pre">nextpow2()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.safe_sigmoid"><code class="docutils literal notranslate"><span class="pre">safe_sigmoid()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.taper_waveform"><code class="docutils literal notranslate"><span class="pre">taper_waveform()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.windowing"><code class="docutils literal notranslate"><span class="pre">windowing()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.fft"><code class="docutils literal notranslate"><span class="pre">fft()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.ifft"><code class="docutils literal notranslate"><span class="pre">ifft()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.find_nearest"><code class="docutils literal notranslate"><span class="pre">find_nearest()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.zero_pad_before"><code class="docutils literal notranslate"><span class="pre">zero_pad_before()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.powspace"><code class="docutils literal notranslate"><span class="pre">powspace()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.delta_a_b"><code class="docutils literal notranslate"><span class="pre">delta_a_b()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.vec_differences"><code class="docutils literal notranslate"><span class="pre">vec_differences()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.spline"><code class="docutils literal notranslate"><span class="pre">spline()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.spline_diff"><code class="docutils literal notranslate"><span class="pre">spline_diff()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.spline_antidiff"><code class="docutils literal notranslate"><span class="pre">spline_antidiff()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.polyfit_svd"><code class="docutils literal notranslate"><span class="pre">polyfit_svd()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.upoly_fits"><code class="docutils literal notranslate"><span class="pre">upoly_fits()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.D02"><code class="docutils literal notranslate"><span class="pre">D02()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.D1"><code class="docutils literal notranslate"><span class="pre">D1()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.integrate"><code class="docutils literal notranslate"><span class="pre">integrate()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.spinsphericalharm"><code class="docutils literal notranslate"><span class="pre">spinsphericalharm()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.wigner_d_function"><code class="docutils literal notranslate"><span class="pre">wigner_d_function()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.wdelement"><code class="docutils literal notranslate"><span class="pre">wdelement()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.save_plot"><code class="docutils literal notranslate"><span class="pre">save_plot()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.retarded_time"><code class="docutils literal notranslate"><span class="pre">retarded_time()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.are_dictionaries_equal"><code class="docutils literal notranslate"><span class="pre">are_dictionaries_equal()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.print_dict_comparison"><code class="docutils literal notranslate"><span class="pre">print_dict_comparison()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.safe_loadtxt"><code class="docutils literal notranslate"><span class="pre">safe_loadtxt()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.extract_value_from_str"><code class="docutils literal notranslate"><span class="pre">extract_value_from_str()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.utils.utils.get_radial_turning_points"><code class="docutils literal notranslate"><span class="pre">get_radial_turning_points()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

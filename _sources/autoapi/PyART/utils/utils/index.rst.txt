@@ -1,0 +1,605 @@
+PyART.utils.utils
+=================
+
+.. py:module:: PyART.utils.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.utils.utils.Msun
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.utils.utils.rotate3_axis
+   PyART.utils.utils.rotate3
+   PyART.utils.utils.reflect_unwrap
+   PyART.utils.utils.minmax_array
+   PyART.utils.utils.nextpow2
+   PyART.utils.utils.safe_sigmoid
+   PyART.utils.utils.taper_waveform
+   PyART.utils.utils.windowing
+   PyART.utils.utils.fft
+   PyART.utils.utils.ifft
+   PyART.utils.utils.find_nearest
+   PyART.utils.utils.zero_pad_before
+   PyART.utils.utils.powspace
+   PyART.utils.utils.delta_a_b
+   PyART.utils.utils.vec_differences
+   PyART.utils.utils.spline
+   PyART.utils.utils.spline_diff
+   PyART.utils.utils.spline_antidiff
+   PyART.utils.utils.polyfit_svd
+   PyART.utils.utils.upoly_fits
+   PyART.utils.utils.D02
+   PyART.utils.utils.D1
+   PyART.utils.utils.integrate
+   PyART.utils.utils.spinsphericalharm
+   PyART.utils.utils.wigner_d_function
+   PyART.utils.utils.wdelement
+   PyART.utils.utils.save_plot
+   PyART.utils.utils.retarded_time
+   PyART.utils.utils.are_dictionaries_equal
+   PyART.utils.utils.print_dict_comparison
+   PyART.utils.utils.safe_loadtxt
+   PyART.utils.utils.extract_value_from_str
+   PyART.utils.utils.get_radial_turning_points
+
+
+Module Contents
+---------------
+
+.. py:data:: Msun
+
+.. py:function:: rotate3_axis(vector, theta=0.0, axis=[0, 0, 1])
+
+   Rotate a 3 vector around a provided axis of an angle theta
+
+   :param vector: vector to rotate
+   :type vector: array-like
+   :param theta: rotation angle (in radians)
+   :type theta: float
+   :param axis: rotation axis
+   :type axis: array-like
+
+   :returns: **out** -- rotated vector
+   :rtype: array-like
+
+
+.. py:function:: rotate3(vector, alpha, beta, gamma, invert=False)
+
+   Rotate a 3 vector using Euler angles under conventions defined at:
+   https://en.wikipedia.org/wiki/Euler_angles
+   https://en.wikipedia.org/wiki/Rotation_matrix
+
+   Science reference: https://arxiv.org/pdf/1110.2965.pdf (Appendix)
+
+   Specifically, the Z1,Y2,Z3 ordering is used: https://wikimedia.org/api/rest_v1/media/math/render/svg/547e522037de6467d948ecf3f7409975fe849d07
+
+   *  alpha represents a rotation around the z axis
+   *  beta represents a rotation around the x' axis
+   *  gamma represents a rotation around the z'' axis
+
+   NOTE that in order to perform the inverse rotation, it is *not* enough to input different rotation angles. One must use the invert=True keyword.
+   This takes the same angle inputs as the forward rotation, but correctly applies the transposed rotation matricies in the reversed order.
+
+   spxll'18
+
+
+.. py:function:: reflect_unwrap(vec)
+
+   Reflect points in an array
+
+
+.. py:function:: minmax_array(x, tol=1e-20)
+
+   Find the maximum and minimum of an array
+
+   :param x: input array
+   :type x: array-like
+   :param tol: tolerance to add/subtract to min/max
+   :type tol: float
+
+   :returns: **out** -- [min(x)-tol, max(x)+tol]
+   :rtype: list
+
+
+.. py:function:: nextpow2(x)
+
+   Return the next closest power of 2
+
+   :param x: input number
+   :type x: float
+
+   :returns: **out** -- next closest power of 2
+   :rtype: int
+
+
+.. py:function:: safe_sigmoid(x, alpha, clip=None)
+
+   Sigmoid function with clips on the exponent
+
+   :param x: input array
+   :type x: array-like
+   :param alpha: slope parameter
+   :type alpha: float
+   :param clip: if not None, clip the exponent to [-clip, clip]
+   :type clip: float or None
+
+   :returns: **out** -- sigmoid values
+   :rtype: array-like
+
+
+.. py:function:: taper_waveform(t, h, t1=None, t2=None, alpha=0.2, alpha_end=None, kind='sigmoid', debug=False)
+
+   Waveform tapering in Matcher-class.
+   The meaning of t1, t2, and alpha depends on the kind used!
+
+   :param t: time array
+   :type t: array-like
+   :param h: strain array
+   :type h: array-like
+   :param t1: start time of the tapering
+   :type t1: float or None
+   :param t2: end time of the tapering (if None, tapering is only applied at t1)
+   :type t2: float or None
+   :param alpha: slope parameter for the tapering
+   :type alpha: float
+   :param alpha_end: slope parameter for the tapering at t2 (if None, alpha_end=alpha)
+   :type alpha_end: float or None
+   :param kind: tapering method, can be 'sigmoid' or 'tukey' (default: 'sigmoid')
+   :type kind: str
+   :param debug: if True, plot the tapering window
+   :type debug: bool
+
+   :returns: **out** -- tapered strain
+   :rtype: array-like
+
+
+.. py:function:: windowing(h, alpha=0.1)
+
+   Windowing with Tukey window on a given strain (time-domain)
+   h     : strain to be tapered
+   alpha : Tukey filter slope parameter. Suggested value: alpha = 1/4/seglen
+
+   :param h: strain array
+   :type h: array-like
+   :param alpha: slope parameter for the tapering
+   :type alpha: float
+
+   :returns: **out** -- tapered strain and wfact = <w^2>
+   :rtype: (array-like, float)
+
+
+.. py:function:: fft(h, dt)
+
+   FFT of a time-domain signal h(t)
+   :param h: time-domain signal
+   :type h: ndarray
+   :param dt: time spacing (assumed uniform)
+   :type dt: float
+
+   :returns: **out** -- frequency array and FFT of h
+   :rtype: (f, hfft)
+
+
+.. py:function:: ifft(u, srate, seglen, t0=0.0)
+
+   IFFT of a frequency-domain signal u(f)
+   :param u: frequency-domain signal
+   :type u: ndarray
+   :param srate: sampling rate
+   :type srate: float
+   :param seglen: segment length
+   :type seglen: float
+   :param t0: time shift
+   :type t0: float
+
+   :returns: **out** -- time array and IFFT of u
+   :rtype: (t, s)
+
+
+.. py:function:: find_nearest(array, value)
+
+   Find the index of the element in array closest to value
+   :param array: input array
+   :type array: array-like
+   :param value: target value
+   :type value: float
+
+   :returns: **out** -- index of the element in array closest to value
+   :rtype: int
+
+
+.. py:function:: zero_pad_before(array, N, return_column=True)
+
+   Pad an array with N zeroes (at the beginning)
+
+   :param array: input array
+   :type array: array-like
+   :param N: length of the output array
+   :type N: int
+   :param return_column: if True, return a column vector, otherwise a row vector
+   :type return_column: bool
+
+   :returns: **out** -- zero-padded array
+   :rtype: array-like
+
+
+.. py:function:: powspace(start, stop, power, num)
+
+   Compute equally spaced grid in log-space
+
+   :param start: start value
+   :type start: float
+   :param stop: stop value
+   :type stop: float
+   :param power: power
+   :type power: float
+   :param num: number of points
+   :type num: int
+
+   :returns: **out** -- array of num points between start and stop in log-space
+   :rtype: array-like
+
+
+.. py:function:: delta_a_b(a, xa, b, xb, N=500)
+
+   Given two sets (xa, a=f(xa)) and (xb, b=g(xb)),
+   interpolate them to a common grid x and compute their
+   difference f(x)-g(x)
+
+   :param a: first array
+   :type a: array-like
+   :param xa: x values for the first array
+   :type xa: array-like
+   :param b: second array
+   :type b: array-like
+   :param xb: x values for the second array
+   :type xb: array-like
+   :param N: number of points in the common grid
+   :type N: int
+
+   :returns: **out** -- x: common grid
+             delta_ab: a_n - b_n
+             a_n: interpolated a on the common grid
+             b_n: interpolated b on the common grid
+   :rtype: (x, delta_ab, a_n, b_n)
+
+
+.. py:function:: vec_differences(x1, y1, x2, y2, a, b, dx, diff_kind='abs', fabs=False, interp_kind='cubic', ensure_unique=False)
+
+   Compute differences between arrays with different lengths
+   Similar to delta_a_b, but with more options
+
+   :param x1: x values for the first array
+   :type x1: array-like
+   :param y1: first array
+   :type y1: array-like
+   :param x2: x values for the second array
+   :type x2: array-like
+   :param y2: second array
+   :type y2: array-like
+   :param a: start value for the common grid
+   :type a: float
+   :param b: stop value for the common grid
+   :type b: float
+   :param dx: spacing for the common grid
+   :type dx: float
+   :param diff_kind: kind of difference, can be 'abs' (absolute), 'rel' (relative), or 'phi' (phase)
+   :type diff_kind: str
+   :param fabs: if True, return the absolute value of the difference
+   :type fabs: bool
+   :param interp_kind: kind of interpolation, passed to spline function
+   :type interp_kind: str
+   :param ensure_unique: if True, ensure that x1 and x2 are unique before interpolation
+   :type ensure_unique: bool
+
+   :returns: **out** -- x: common grid
+             dy: differences on the common grid
+   :rtype: (x, dy)
+
+
+.. py:function:: spline(x, y, xs, kind='cubic', ensure_unique=False)
+
+   Compute the spline of y(x), return y(xs)
+   :param x: x values
+   :type x: array-like
+   :param y: y values
+   :type y: array-like
+   :param xs: x values for the output
+   :type xs: array-like
+   :param kind: kind of interpolation, passed to interp1d
+   :type kind: str
+   :param ensure_unique: if True, ensure that x is unique before interpolation
+   :type ensure_unique: bool
+
+   :returns: **out** -- interpolated values y(xs)
+   :rtype: array-like
+
+
+.. py:function:: spline_diff(t, y, k=3, n=1)
+
+   Wrapper for InterpolatedUnivariateSpline derivative function
+   :param t: x values
+   :type t: array-like
+   :param y: y values
+   :type y: array-like
+   :param k: spline order
+   :type k: int
+   :param n: number of derivatives
+   :type n: int
+
+   :returns: **out** -- n-th derivative of y at t
+   :rtype: array-like
+
+
+.. py:function:: spline_antidiff(t, y, k=3, n=1)
+
+   Wrapper for InterpolatedUnivariateSpline antiderivative function
+
+   :param t: x values
+   :type t: array-like
+   :param y: y values
+   :type y: array-like
+   :param k: spline order
+   :type k: int
+   :param n: number of derivatives
+   :type n: int
+
+   :returns: **out** -- n-th anti-derivative of y at t
+   :rtype: array-like
+
+
+.. py:function:: polyfit_svd(x, y, order)
+
+   Polynomial fit using SVD
+   :param x: x values
+   :type x: array-like
+   :param y: y values
+   :type y: array-like
+   :param order: polynomial order
+   :type order: int
+
+   :returns: **out** -- polynomial coefficients
+   :rtype: array-like
+
+
+.. py:function:: upoly_fits(r0, y0, nmin=1, nmax=10, n_extract=None, r_cutoff_low=None, r_cutoff_high=None, direction='in', svd=True)
+
+   Perform polynomial fits in 1/r to the data (r0, y0)
+   :param r0: radial coordinate
+   :type r0: array-like
+   :param y0: function values at r0
+   :type y0: array-like
+   :param nmin: minimum polynomial order
+   :type nmin: int
+   :param nmax: maximum polynomial order
+   :type nmax: int
+   :param n_extract: if not None, extract the extrapolated value from this fit order
+   :type n_extract: int or None
+   :param r_cutoff_low: if not None, only use data with r0 >= r_cutoff_low
+   :type r_cutoff_low: float or None
+   :param r_cutoff_high: if not None, only use data with r0 <= r_cutoff_high
+   :type r_cutoff_high: float or None
+   :param direction: 'in' or 'out', whether the data is from an inward or outward
+                     moving observer
+   :type direction: str
+   :param svd: if True, use SVD for the polynomial fits
+   :type svd: bool
+
+   :returns: **out** -- dictionary with the following keys
+             'extrap': extrapolated value (mean over fit orders or from n_extract)
+             'extrap_vec': extrapolated values for each fit order
+             'fit_orders': list of fit orders
+             'coeffs': polynomial coefficients for each fit order
+             'polynomials': polynomial values at the input r0 for each fit order
+             'mask': boolean mask used to select the data
+   :rtype: dict
+
+
+.. py:function:: D02(xp, yp, pad=True)
+
+   Computes the first derivative of y(x) using centered 2nd order
+   accurate finite-differencing
+
+   This function returns an array of yp.shape[0]-2 elements
+
+   NOTE: the data needs not to be equally spaced
+
+   :param xp: x values
+   :type xp: array-like
+   :param yp: y values
+   :type yp: array-like
+   :param pad: if True, pad the output with the first and last value to
+               return an array of the same length as the input
+   :type pad: bool
+
+   :returns: **out** -- first derivative of y with respect to x
+   :rtype: array-like
+
+
+.. py:function:: D1(f, x, order)
+
+   Computes the first derivative of function f(x)
+
+   :param f: uniformly sampled function
+   :type f: float (list/numpy array of)
+   :param x: uniformly sampled function domain or grid spacing
+   :type x: float (list/numpy array of)
+   :param order: finite differencing order
+   :type order: int
+
+   :returns: **df** -- finite differences at given order
+   :rtype: list (or numpy array)
+
+
+.. py:function:: integrate(ff)
+
+   Computes the anti-derivative of a discrete function using a
+   2nd order accurate formula
+
+   :param ff: input function values
+   :type ff: array-like
+
+   :returns: **out** -- anti-derivative of ff
+   :rtype: array-like
+
+
+.. py:function:: spinsphericalharm(s, l, m, phi, i)
+
+   Compute spin-weighted spherical harmonics
+
+   :param s: spin, l and m indices
+   :type s: int
+   :param l: spin, l and m indices
+   :type l: int
+   :param m: spin, l and m indices
+   :type m: int
+   :param phi: azimuthal angle
+   :type phi: float
+   :param i: inclination angle
+   :type i: float
+
+   :returns: **out** -- value of the spin-weighted spherical harmonic
+   :rtype: complex
+
+
+.. py:function:: wigner_d_function(l, m, s, i)
+
+   Compute wigner d functions, following Ref
+   TODO: add reference
+
+   :param l: l, m and s indices
+   :type l: int
+   :param m: l, m and s indices
+   :type m: int
+   :param s: l, m and s indices
+   :type s: int
+   :param i: inclination angle
+   :type i: float
+
+   :returns: **out** -- value of the wigner d function
+   :rtype: float
+
+
+.. py:function:: wdelement(ll, mp, mm, alpha, beta, gamma)
+
+.. py:function:: save_plot(figname, show=True, save=False, verbose=False)
+
+   Save or show a plot
+   :param figname: name of the figure file
+   :type figname: str
+   :param show: if True, show the plot
+   :type show: bool
+   :param save: if True, save the plot
+   :type save: bool
+   :param verbose: if True, print messages
+   :type verbose: bool
+
+
+.. py:function:: retarded_time(t, r, M=1)
+
+   Compute the retarded time in Schwarzschild spacetime
+   :param t: coordinate time
+   :type t: float
+   :param r: areal radius
+   :type r: float
+   :param M: mass of the black hole
+   :type M: float
+
+   :returns: **out** -- retarded time
+   :rtype: float
+
+
+.. py:function:: are_dictionaries_equal(dict1_in, dict2_in, excluded_keys=[], float_tol=1e-14, verbose=False)
+
+   Check if two dictionaries are equal,
+   modulo excluded keys
+
+   :param dict1_in: first dictionary
+   :type dict1_in: dict
+   :param dict2_in: second dictionary
+   :type dict2_in: dict
+   :param excluded_keys: list of keys to exclude from the comparison
+   :type excluded_keys: list
+   :param float_tol: tolerance for float comparison
+   :type float_tol: float
+   :param verbose: if True, print messages
+   :type verbose: bool
+
+   :returns: **out** -- True if the dictionaries are equal, False otherwise
+   :rtype: bool
+
+
+.. py:function:: print_dict_comparison(dict1_in, dict2_in, excluded_keys=[], dict1_name='dict1', dict2_name='dict2')
+
+   Print a comparison between two dictionaries,
+   modulo excluded keys
+   :param dict1_in: first dictionary
+   :type dict1_in: dict
+   :param dict2_in: second dictionary
+   :type dict2_in: dict
+   :param excluded_keys: list of keys to exclude from the comparison
+   :type excluded_keys: list
+   :param dict1_name: name of the first dictionary
+   :type dict1_name: str
+   :param dict2_name: name of the second dictionary
+   :type dict2_name: str
+
+   :returns: **out**
+   :rtype: None
+
+
+.. py:function:: safe_loadtxt(fname, remove_nans=True, remove_overlaps=True, time_idx=0)
+
+   Load a text file and optionally remove rows with NaNs
+   and rows with overlapping time values
+   :param fname: name of the file to load
+   :type fname: str
+   :param remove_nans: if True, remove rows with NaNs
+   :type remove_nans: bool
+   :param remove_overlaps: if True, remove rows with overlapping time values
+   :type remove_overlaps: bool
+   :param time_idx: index of the time column
+   :type time_idx: int
+
+   :returns: **out** -- loaded data
+   :rtype: array-like
+
+
+.. py:function:: extract_value_from_str(string, key)
+
+   Extract a numerical value from a string given a key
+   :param string: input string
+   :type string: str
+   :param key: key to search for
+   :type key: str
+
+   :returns: **out** -- extracted value, or None if not found
+   :rtype: float or int or None
+
+
+.. py:function:: get_radial_turning_points(t, r, window=5)
+
+   Find apastra/periastra passages given time and radius.
+   Local spline interpolation is used near each extremum.
+
+   :param t: Time array
+   :type t: float (list/numpy array of)
+   :param r: Orbital radius
+   :type r: float (list/numpy array of)
+   :param window: Number of points on each side of the extremum to
+                  use for local spline (default: 5)
+   :type window: int, optional
+
+   :returns: * **tap** (*np.ndarray*) -- Times of apastra (maxima)
+             * **tpe** (*np.ndarray*) -- Times of periastra (minima)
+
+

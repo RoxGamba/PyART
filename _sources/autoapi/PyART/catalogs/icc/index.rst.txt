@@ -1,0 +1,86 @@
+PyART.catalogs.icc
+==================
+
+.. py:module:: PyART.catalogs.icc
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.icc.Waveform_ICC
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_ICC(path='./', ID='0001', ellmax=8, tmax_after_peak=200.0, integrate=False, integr_opts={}, load_puncts=False, nu_rescale=False)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle ICC waveforms
+   The path to be specified is the one that contains the catalog
+   (catalog not yet public, this might be updated at some point)
+
+
+   .. py:attribute:: path
+      :value: './'
+
+
+
+   .. py:attribute:: ID
+      :value: '0001'
+
+
+
+   .. py:attribute:: sim_path
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:attribute:: _kind
+      :value: 'ICC'
+
+
+
+   .. py:attribute:: ellmax
+      :value: 8
+
+
+
+   .. py:attribute:: tmax_after_peak
+      :value: 200.0
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:method:: load_metadata()
+
+      Load metadata (store in JSON)
+
+
+
+   .. py:method:: load_puncts(fname='puncturetracker-pt_loc..asc')
+
+
+   .. py:method:: load_multipole_txtfile(fname_token, raise_error=True, ellmax=None)
+
+
+   .. py:method:: load_psi4lm(tmax_after_peak=200)
+
+
+   .. py:method:: load_hlm()
+
+      Load hlm and compute dothlm
+
+
+
