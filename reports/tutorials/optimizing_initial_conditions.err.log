@@ -1,0 +1,208 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/nbclient/client.py", line 1323, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+# Create and run optimizer
+opt = Optimizer(
+    ebbh,
+    kind_ic=kind_ic,
+    mm_settings=mm_settings,
+    use_nqc=False,
+    minimizer=minimizer,
+    opt_good_mm=5e-3,
+    opt_bounds=bounds,
+    bounds_iter=bounds_iter,
+    debug=False,
+    json_file=None,
+    overwrite=False
+)
+
+print("\nOptimization Results:")
+print('=' * 50)
+print(f"Optimized E0/M    : {opt.opt_Waveform.metadata.get('E0byM', 'N/A')}")
+print(f"Optimized pph0    : {opt.opt_Waveform.metadata.get('pph0', 'N/A')}")
+print(f"Final mismatch    : {opt.opt_mismatch:.5e}")
+print('=' * 50)
+------------------
+
+----- stdout -----
+###########################################
+###          Running Optimizer          ###
+###########################################
+
+Reference waveform : SXS:BBH:0180
+(q, chi1z, chi2z)  : (1.00, -0.00, -0.00)
+binary type        : nonspinning, equal-mass, quasi-circular
+Variables for ICs  : ['E0byM', 'pph0']
+ 
+
+*********************************************
+Search bounds (eps) iteration  #1
+*********************************************
+---------------------------------------------
+Optimization iteration #1
+---------------------------------------------
+Original  mismatch    : 1.000e+00
+Optimization interval :
+                        E0byM : [9.888e-01,9.987e-01]
+                        pph0  : [4.691e+00,4.786e+00]
+Initial guess         :
+                        E0byM : 0.993735077287272
+                        pph0  : 4.738442984502489
+------------------
+
+[31m---------------------------------------------------------------------------[39m
+[31mNameError[39m                                 Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[4][39m[32m, line 2[39m
+[32m      1[39m [38;5;66;03m# Create and run optimizer[39;00m
+[32m----> [39m[32m2[39m opt = [43mOptimizer[49m[43m([49m
+[32m      3[39m [43m    [49m[43mebbh[49m[43m,[49m
+[32m      4[39m [43m    [49m[43mkind_ic[49m[43m=[49m[43mkind_ic[49m[43m,[49m
+[32m      5[39m [43m    [49m[43mmm_settings[49m[43m=[49m[43mmm_settings[49m[43m,[49m
+[32m      6[39m [43m    [49m[43muse_nqc[49m[43m=[49m[38;5;28;43;01mFalse[39;49;00m[43m,[49m
+[32m      7[39m [43m    [49m[43mminimizer[49m[43m=[49m[43mminimizer[49m[43m,[49m
+[32m      8[39m [43m    [49m[43mopt_good_mm[49m[43m=[49m[32;43m5e-3[39;49m[43m,[49m
+[32m      9[39m [43m    [49m[43mopt_bounds[49m[43m=[49m[43mbounds[49m[43m,[49m
+[32m     10[39m [43m    [49m[43mbounds_iter[49m[43m=[49m[43mbounds_iter[49m[43m,[49m
+[32m     11[39m [43m    [49m[43mdebug[49m[43m=[49m[38;5;28;43;01mFalse[39;49;00m[43m,[49m
+[32m     12[39m [43m    [49m[43mjson_file[49m[43m=[49m[38;5;28;43;01mNone[39;49;00m[43m,[49m
+[32m     13[39m [43m    [49m[43moverwrite[49m[43m=[49m[38;5;28;43;01mFalse[39;49;00m
+[32m     14[39m [43m)[49m
+[32m     16[39m [38;5;28mprint[39m([33m"[39m[38;5;130;01m\n[39;00m[33mOptimization Results:[39m[33m"[39m)
+[32m     17[39m [38;5;28mprint[39m([33m'[39m[33m=[39m[33m'[39m * [32m50[39m)
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:218[39m, in [36mOptimizer.__init__[39m[34m(self, ref_Waveform, kind_ic, vrs, map_function, use_nqc, r0_eob, model_opts, opt_max_iter, opt_good_mm, opt_bounds, bounds_iter, minimizer, use_matcher_cache, json_file, overwrite, json_save_dyn, mm_settings, verbose, debug)[39m
+[32m    214[39m     [38;5;28mprint[39m([33mf[39m[33m"[39m[38;5;132;01m{[39;00mdashes[38;5;132;01m}[39;00m[38;5;130;01m\n[39;00m[33mOptimization iteration #[39m[38;5;132;01m{[39;00mj[38;5;132;01m:[39;00m[33md[39m[38;5;132;01m}[39;00m[38;5;130;01m\n[39;00m[38;5;132;01m{[39;00mdashes[38;5;132;01m}[39;00m[33m"[39m)
+[32m    215[39m [38;5;28;01mif[39;00m (
+[32m    216[39m     i == [32m1[39m [38;5;129;01mand[39;00m j == [32m1[39m [38;5;129;01mand[39;00m opt_data [38;5;129;01mis[39;00m [38;5;28;01mNone[39;00m
+[32m    217[39m ):  [38;5;66;03m# if first iter of both loops[39;00m
+[32m--> [39m[32m218[39m     opt_data = [38;5;28;43mself[39;49m[43m.[49m[43moptimize_mismatch[49m[43m([49m[43muse_ref_guess[49m[43m=[49m[38;5;28;43;01mTrue[39;49;00m[43m)[49m
+[32m    219[39m [38;5;28;01melse[39;00m:
+[32m    220[39m     opt_data_new = [38;5;28mself[39m.optimize_mismatch(use_ref_guess=[38;5;28;01mFalse[39;00m)
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:788[39m, in [36mOptimizer.optimize_mismatch[39m[34m(self, use_ref_guess, verbose)[39m
+[32m    785[39m f = [38;5;28;01mlambda[39;00m x: [38;5;28mself[39m.__func_to_minimize(x, kys, verbose=verbose, cache=cache)
+[32m    787[39m t0_annealing = time.perf_counter()
+[32m--> [39m[32m788[39m opts, mm_opt = [38;5;28;43mself[39;49m[43m.[49m[43mminimize[49m[43m([49m[43mf[49m[43m,[49m[43m [49m[43mx0[49m[43m,[49m[43m [49m[43mbounds_array[49m[43m,[49m[43m [49m[43mkys[49m[43m)[49m
+[32m    790[39m [38;5;28;01mif[39;00m verbose:
+[32m    791[39m     [38;5;28mprint[39m(
+[32m    792[39m         [33m"[39m[33m  >> mismatch - iter  : [39m[38;5;132;01m{:.3e}[39;00m[33m - [39m[38;5;132;01m{:3d}[39;00m[33m"[39m.format(
+[32m    793[39m             mm_opt, [38;5;28mself[39m.annealing_counter
+[32m    794[39m         ),
+[32m    795[39m         end=[33m"[39m[38;5;130;01m\r[39;00m[33m"[39m,
+[32m    796[39m     )
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:911[39m, in [36mOptimizer.__minimize_annealing_[39m[34m(self, f, x0, bounds_array, kys)[39m
+[32m    908[39m seed = [38;5;28mself[39m.minimizer.get([33m"[39m[33mopt_seed[39m[33m"[39m, [32m190521[39m)
+[32m    909[39m x0 = x0
+[32m--> [39m[32m911[39m opt_result = [43moptimize[49m[43m.[49m[43mdual_annealing[49m[43m([49m
+[32m    912[39m [43m    [49m[43mf[49m[43m,[49m
+[32m    913[39m [43m    [49m[43mmaxfun[49m[43m=[49m[43mmaxiter[49m[43m,[49m
+[32m    914[39m [43m    [49m[43mseed[49m[43m=[49m[43mseed[49m[43m,[49m
+[32m    915[39m [43m    [49m[43mx0[49m[43m=[49m[43mx0[49m[43m,[49m
+[32m    916[39m [43m    [49m[43mbounds[49m[43m=[49m[43mbounds_array[49m[43m,[49m
+[32m    917[39m [43m[49m[43m)[49m
+[32m    919[39m opt_pars = opt_result[[33m"[39m[33mx[39m[33m"[39m]
+[32m    920[39m opts = {kys[i]: opt_pars[i] [38;5;28;01mfor[39;00m i [38;5;129;01min[39;00m [38;5;28mrange[39m([38;5;28mlen[39m(kys))}
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/scipy/_lib/_util.py:365[39m, in [36m_transition_to_rng.<locals>.decorator.<locals>.wrapper[39m[34m(*args, **kwargs)[39m
+[32m    358[39m     message = (
+[32m    359[39m         [33m"[39m[33mThe NumPy global RNG was seeded by calling [39m[33m"[39m
+[32m    360[39m         [33mf[39m[33m"[39m[33m`np.random.seed`. Beginning in [39m[38;5;132;01m{[39;00mend_version[38;5;132;01m}[39;00m[33m, this [39m[33m"[39m
+[32m    361[39m         [33m"[39m[33mfunction will no longer use the global RNG.[39m[33m"[39m
+[32m    362[39m     ) + cmn_msg
+[32m    363[39m     warnings.warn(message, [38;5;167;01mFutureWarning[39;00m, stacklevel=[32m2[39m)
+[32m--> [39m[32m365[39m [38;5;28;01mreturn[39;00m [43mfun[49m[43m([49m[43m*[49m[43margs[49m[43m,[49m[43m [49m[43m*[49m[43m*[49m[43mkwargs[49m[43m)[49m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/scipy/optimize/_dual_annealing.py:674[39m, in [36mdual_annealing[39m[34m(func, bounds, args, maxiter, minimizer_kwargs, initial_temp, restart_temp_ratio, visit, accept, maxfun, rng, no_local_search, callback, x0)[39m
+[32m    672[39m [38;5;66;03m# Initialization of the energy state[39;00m
+[32m    673[39m energy_state = EnergyState(lower, upper, callback)
+[32m--> [39m[32m674[39m [43menergy_state[49m[43m.[49m[43mreset[49m[43m([49m[43mfunc_wrapper[49m[43m,[49m[43m [49m[43mrng_gen[49m[43m,[49m[43m [49m[43mx0[49m[43m)[49m
+[32m    675[39m [38;5;66;03m# Minimum value of annealing temperature reached to perform[39;00m
+[32m    676[39m [38;5;66;03m# re-annealing[39;00m
+[32m    677[39m temperature_restart = initial_temp * restart_temp_ratio
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/scipy/optimize/_dual_annealing.py:173[39m, in [36mEnergyState.reset[39m[34m(self, func_wrapper, rng_gen, x0)[39m
+[32m    171[39m reinit_counter = [32m0[39m
+[32m    172[39m [38;5;28;01mwhile[39;00m init_error:
+[32m--> [39m[32m173[39m     [38;5;28mself[39m.current_energy = [43mfunc_wrapper[49m[43m.[49m[43mfun[49m[43m([49m[38;5;28;43mself[39;49m[43m.[49m[43mcurrent_location[49m[43m)[49m
+[32m    174[39m     [38;5;28;01mif[39;00m [38;5;28mself[39m.current_energy [38;5;129;01mis[39;00m [38;5;28;01mNone[39;00m:
+[32m    175[39m         [38;5;28;01mraise[39;00m [38;5;167;01mValueError[39;00m([33m'[39m[33mObjective function is returning None[39m[33m'[39m)
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/scipy/optimize/_dual_annealing.py:381[39m, in [36mObjectiveFunWrapper.fun[39m[34m(self, x)[39m
+[32m    379[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mfun[39m([38;5;28mself[39m, x):
+[32m    380[39m     [38;5;28mself[39m.nfev += [32m1[39m
+[32m--> [39m[32m381[39m     [38;5;28;01mreturn[39;00m [38;5;28;43mself[39;49m[43m.[49m[43mfunc[49m[43m([49m[43mx[49m[43m,[49m[43m [49m[43m*[49m[38;5;28;43mself[39;49m[43m.[49m[43margs[49m[43m)[49m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:785[39m, in [36mOptimizer.optimize_mismatch.<locals>.<lambda>[39m[34m(x)[39m
+[32m    783[39m x0 = [vs0[ky] [38;5;28;01mfor[39;00m ky [38;5;129;01min[39;00m kys]
+[32m    784[39m bounds_array = np.array([[bounds[ky][[32m0[39m], bounds[ky][[32m1[39m]] [38;5;28;01mfor[39;00m ky [38;5;129;01min[39;00m kys])
+[32m--> [39m[32m785[39m f = [38;5;28;01mlambda[39;00m x: [38;5;28;43mself[39;49m[43m.[49m[43m__func_to_minimize[49m[43m([49m[43mx[49m[43m,[49m[43m [49m[43mkys[49m[43m,[49m[43m [49m[43mverbose[49m[43m=[49m[43mverbose[49m[43m,[49m[43m [49m[43mcache[49m[43m=[49m[43mcache[49m[43m)[49m
+[32m    787[39m t0_annealing = time.perf_counter()
+[32m    788[39m opts, mm_opt = [38;5;28mself[39m.minimize(f, x0, bounds_array, kys)
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/analysis/opt_ic.py:704[39m, in [36mOptimizer.__func_to_minimize[39m[34m(self, x, kys, verbose, cache)[39m
+[32m    702[39m     chi2 = ref_meta[[33m"[39m[33mchi2z[39m[33m"[39m]
+[32m    703[39m     rvec = np.linspace([32m2[39m, [32m20[39m, num=[32m200[39m)
+[32m--> [39m[32m704[39m     Vmin = [43mPotentialMinimum[49m[43m([49m[43mrvec[49m[43m,[49m[43m [49m[43mpph0[49m[43m,[49m[43m [49m[43mq[49m[43m,[49m[43m [49m[43mchi1[49m[43m,[49m[43m [49m[43mchi2[49m[43m)[49m
+[32m    705[39m     dV = Vmin - vs[[33m"[39m[33mE0byM[39m[33m"[39m]
+[32m    706[39m [38;5;28;01melse[39;00m:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:440[39m, in [36mPotentialMinimum[39m[34m(rvec, pph, q, chi1, chi2)[39m
+[32m    420[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mPotentialMinimum[39m(rvec, pph, q, chi1, chi2):
+[32m    421[39m [38;5;250m    [39m[33;03m"""[39;00m
+[32m    422[39m [33;03m    Compute the minimum of the EOB radial potential for given parameters.[39;00m
+[32m    423[39m [33;03m    Parameters[39;00m
+[32m   (...)[39m[32m    438[39m [33;03m        The minimum value of the EOB radial potential.[39;00m
+[32m    439[39m [33;03m    """[39;00m
+[32m--> [39m[32m440[39m     V = [43mRadialPotential[49m[43m([49m[43mrvec[49m[43m,[49m[43m [49m[43mpph[49m[43m,[49m[43m [49m[43mq[49m[43m,[49m[43m [49m[43mchi1[49m[43m,[49m[43m [49m[43mchi2[49m[43m)[49m
+[32m    441[39m     peaks, _ = find_peaks(-V, height=-[32m1[39m)
+[32m    442[39m     [38;5;28;01mif[39;00m [38;5;28mlen[39m(peaks) > [32m0[39m:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:383[39m, in [36mRadialPotential[39m[34m(r, pph, q, chi1, chi2)[39m
+[32m    362[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mRadialPotential[39m(r, pph, q, chi1, chi2):
+[32m    363[39m [38;5;250m    [39m[33;03m"""[39;00m
+[32m    364[39m [33;03m    Compute the EOB radial potential for given parameters.[39;00m
+[32m    365[39m [33;03m    Parameters[39;00m
+[32m   (...)[39m[32m    381[39m [33;03m        The EOB radial potential values.[39;00m
+[32m    382[39m [33;03m    """[39;00m
+[32m--> [39m[32m383[39m     [38;5;28;01mreturn[39;00m np.array([43m[[49m[43mSpinHamiltonian[49m[43m([49m[43mri[49m[43m,[49m[43m [49m[43mpph[49m[43m,[49m[43m [49m[43mq[49m[43m,[49m[43m [49m[43mchi1[49m[43m,[49m[43m [49m[43mchi2[49m[43m)[49m[43m [49m[38;5;28;43;01mfor[39;49;00m[43m [49m[43mri[49m[43m [49m[38;5;129;43;01min[39;49;00m[43m [49m[43mr[49m[43m][49m)
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:383[39m, in [36m<listcomp>[39m[34m(.0)[39m
+[32m    362[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mRadialPotential[39m(r, pph, q, chi1, chi2):
+[32m    363[39m [38;5;250m    [39m[33;03m"""[39;00m
+[32m    364[39m [33;03m    Compute the EOB radial potential for given parameters.[39;00m
+[32m    365[39m [33;03m    Parameters[39;00m
+[32m   (...)[39m[32m    381[39m [33;03m        The EOB radial potential values.[39;00m
+[32m    382[39m [33;03m    """[39;00m
+[32m--> [39m[32m383[39m     [38;5;28;01mreturn[39;00m np.array([[43mSpinHamiltonian[49m[43m([49m[43mri[49m[43m,[49m[43m [49m[43mpph[49m[43m,[49m[43m [49m[43mq[49m[43m,[49m[43m [49m[43mchi1[49m[43m,[49m[43m [49m[43mchi2[49m[43m)[49m [38;5;28;01mfor[39;00m ri [38;5;129;01min[39;00m r])
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/PyART/models/teob.py:356[39m, in [36mSpinHamiltonian[39m[34m(r, pph, q, chi1, chi2, prstar)[39m
+[32m    332[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mSpinHamiltonian[39m(r, pph, q, chi1, chi2, prstar=[32m0.0[39m):
+[32m    333[39m [38;5;250m    [39m[33;03m"""[39;00m
+[32m    334[39m [33;03m    Compute the EOB Hamiltonian for given parameters.[39;00m
+[32m    335[39m 
+[32m   (...)[39m[32m    354[39m [33;03m        The EOB Hamiltonian value.[39;00m
+[32m    355[39m [33;03m    """[39;00m
+[32m--> [39m[32m356[39m     hatH = [43mEOB[49m.eob_ham_s_py(r, q, pph, prstar, chi1, chi2)
+[32m    357[39m     nu = q / ([32m1[39m + q) ** [32m2[39m
+[32m    358[39m     E0 = nu * hatH[[32m0[39m]
+
+[31mNameError[39m: name 'EOB' is not defined
+
