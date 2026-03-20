@@ -3,8 +3,33 @@
 setup.py file for GWforge package
 """
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Command
+from setuptools.command.install import install
+from setuptools.command.develop import develop
 import os
+
+PATCH_MESSAGE = """
+============================================================
+  PyART post-install step required
+------------------------------------------------------------
+  pycbc <= 2.10.0 is incompatible with numpy 2.x.
+  Run the following command once to patch pycbc in-place:
+
+      python scripts/patch_pycbc_numpy2.py
+
+  The patch is idempotent and safe to re-run after pycbc
+  upgrades.
+============================================================
+"""
+
+
+def print_patch_notice(command_cls):
+    class Patched(command_cls):
+        def run(self):
+            super().run()
+            print(PATCH_MESSAGE)
+
+    return Patched
 
 
 def find_files(
@@ -52,6 +77,10 @@ ignore_dirs = [
 ignore_files = [".DS_Store", "*.pyc", "Thumbs.db", "*.sqlite", "*.swp", "*.env", ".env"]
 
 setup(
+    cmdclass={
+        "install": print_patch_notice(install),
+        "develop": print_patch_notice(develop),
+    },
     scripts=find_files(
         "bin/", relpath="./", ignore_dirs=ignore_dirs, ignore_files=ignore_files
     ),

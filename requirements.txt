@@ -1,5 +1,8 @@
 # Requirements for most basic library
-numpy>=1.16.0,<2.0,!=1.19.0
+# Note: pycbc>=2.4.0 uses np.array(..., copy=False) which changed semantics in
+# numpy 2.x. After installing, apply the one-time patch:
+#     python scripts/patch_pycbc_numpy2.py
+numpy>=2.0
 scipy>=1.13.0
 rich>=13.7.0
 matplotlib>=3.7.3
@@ -8,11 +11,15 @@ astropy>=5.0.0
 setuptools
 
 # GW package dependencies
-# pycbc>=2.4.0
+pycbc>=2.4.0
 # teobresums>=4.4.0
 # gw-eccentricity>=1.0.4
 # mayawaves>=2024.4.25
-# lalsuite>=7.22
+lalsuite>=7.22
+
+# SXS catalog support (optional; needed for downloading SXS simulations)
+sxs>=2025.0
+romspline
 
 # Documentation
 sphinx>=4.2.0
