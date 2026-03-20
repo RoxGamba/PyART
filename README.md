@@ -25,6 +25,14 @@ Install with
 pip install .
 ```
 
+> **Note:** PyART depends on `pycbc`, which currently has two incompatibilities with numpy 2.x.
+> After installing, apply the one-time patch:
+> ```
+> python scripts/patch_pycbc_numpy2.py
+> ```
+> This patches `pycbc`'s `events/threshold_cpu.py` and `filter/matchedfilter.py`
+> in-place. It is idempotent and safe to re-run after pycbc upgrades.
+
 ## For developers
 
 If you are a developer:

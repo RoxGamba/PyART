@@ -26,8 +26,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install flake8 pytest 'sxs==2025.0.9' romspline pycbc requests bs4
+        pip install -r requirements.txt
+        pip install flake8 pytest
+        pip install -e .
+    - name: Apply pycbc numpy 2.x compatibility patch
+      run: |
+        python scripts/patch_pycbc_numpy2.py
     #- name: Lint with flake8
     #  run: |
         # stop the build if there are Python syntax errors or undefined names

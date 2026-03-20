@@ -1,7 +1,8 @@
 # Requirements for most basic library
-# Note: numpy<2.0 required — pycbc>=2.4.0 uses np.array(..., copy=False) which
-# changed semantics in numpy 2.x and raises ValueError at runtime.
-numpy>=1.16.0,<2.0,!=1.19.0
+# Note: pycbc>=2.4.0 uses np.array(..., copy=False) which changed semantics in
+# numpy 2.x. After installing, apply the one-time patch:
+#     python scripts/patch_pycbc_numpy2.py
+numpy>=2.0
 scipy>=1.13.0
 rich>=13.7.0
 matplotlib>=3.7.3
@@ -17,8 +18,7 @@ pycbc>=2.4.0
 lalsuite>=7.22
 
 # SXS catalog support (optional; needed for downloading SXS simulations)
-# sxs>=2025.0 requires numpy>=2.0 which is incompatible with pycbc; pin <2025
-sxs>=2024.0.0,<2025.0
+sxs>=2025.0
 romspline
 
 # Documentation
