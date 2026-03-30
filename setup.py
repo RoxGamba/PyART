@@ -8,7 +8,6 @@ from setuptools.command.install import install
 from setuptools.command.develop import develop
 import os
 
-
 PATCH_MESSAGE = """
 ============================================================
   PyART post-install step required
