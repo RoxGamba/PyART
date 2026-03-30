@@ -3,7 +3,7 @@ from PyART.analytic import pnpedia
 
 def test_pnpedia_order_truncation():
     """Test that PNPedia returns a callable expression truncated to requested PN order."""
-    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=False)
+    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=True)
 
     # Capture the resulting symbolic expression used to build the numeric function
     captured = {}
@@ -34,7 +34,7 @@ def test_pnpedia_order_truncation():
 
 
 def test_pnpedia_fractional_power_handling():
-    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=False)
+    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=True)
 
     expr = (
         pnpedia.sp.symbols("x") ** pnpedia.sp.Rational(3, 2)
@@ -65,7 +65,7 @@ def test_pnpedia_fractional_power_handling():
 
 
 def test_pnpedia_custom_variable_counting():
-    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=False)
+    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=True)
 
     v = pnpedia.sp.symbols("v")
     expr = v**2 + v ** pnpedia.sp.Rational(5, 2)
@@ -81,7 +81,7 @@ def test_pnpedia_custom_variable_counting():
 
 
 def test_mathematica_to_python_vars_expanded():
-    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=False)
+    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=True)
 
     expr = "x * \\[Nu] + \\[Delta]^2 + \\[Theta] + \\[Lambda]0[e] + \\[Lambda]0'[e] + Sqrt[x] + Log[x]"
     converted = pnpedia_instance.mathematica_to_python_vars(expr)
@@ -98,7 +98,7 @@ def test_mathematica_to_python_vars_expanded():
 
 
 def test_pnpedia_parse_many_files():
-    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=False)
+    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=True)
 
     # Test a reasonable subset to avoid linear full-repo run-time in CI while still covering many expressions.
     candidates = list(pnpedia_instance.pnpedia_structure.items())[:150]
@@ -120,7 +120,7 @@ def test_pnpedia_parse_many_files():
 
 
 def test_pnpedia_noninteger_order_truncation():
-    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=False)
+    pnpedia_instance = pnpedia.PNPedia(path="./PNPedia", dowload=True)
     captured = {}
     original_pn_to_function = pnpedia_instance.pn_to_function
 
