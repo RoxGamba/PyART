@@ -9,6 +9,7 @@ matplotlib>=3.7.3
 pandas>=2.1.4
 astropy>=5.0.0
 setuptools
+sympy
 
 # GW package dependencies
 pycbc>=2.4.0
