@@ -39,5 +39,6 @@ tutorials/nr_eob_mismatch.ipynb
 tutorials/optimizing_initial_conditions.ipynb
 tutorials/iccub_waveform_integration.ipynb
 tutorials/scattering_angles.ipynb
+tutorials/coordinates_and_twopuncture.ipynb
 tutorials/pnpedia.ipynb
 ```
