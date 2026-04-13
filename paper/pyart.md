@@ -1,47 +1,37 @@
----
-
-# PyART: A Python Analytical Relativity Toolkit for gravitational-waveforms 
 
 ---
-
+title: "PyART: A Python Analytical Relativity Toolkit for gravitational-waveforms"
 tags:
-
-* Python
-* gravitational waves
-* compact binaries
-* numerical relativity
-* semi-analytical waveforms
-
+  - gravitational waves
+  - compact binaries
+  - numerical relativity
+  - semi-analytical waveforms
 authors:
-
-* name: Simone Albanessi
- orcid:
- affiliation: "1"
-* name: Rossella Gamba
- orcid:
- affiliation: "2"
-* name: Danilo Chiaramello
- orcid:
- affiliation: "3", "4"
-* name: Koustav Chandra
- orcid:
- affiliation: "5"
-
+  - name: Simone Albanesi
+    orcid: 0000-0000-0000-0000
+    affiliation: 1
+  - name: Rossella Gamba
+    orcid: 0000-0000-0000-0000
+    affiliation: 2
+  - name: Danilo Chiaramello
+    orcid: 0000-0000-0000-0000
+    affiliation: "3, 4"
+  - name: Koustav Chandra
+    orcid: 0000-0000-0000-0000
+    affiliation: 5
 affiliations:
-* name: Friedrich-Schiller-Universit¨at Jena, Theoretisch-Physikalisches Institut, 07743 Jena, Germany
- index: 1
-* name: Department of Physics, University of California, Berkeley, CA 94720, USA
- index: 2
-* name: Department of Physics, Universit´a degli Studi di Torino, Torino, 10125, Italy
- index: 3
-* name: INFN sezione di Torino, Torino, 10125, Italy
- index: 4
-* name: Max Planck Institute for Gravitational Physics (Albert Einstein Institute), Potsdam-14476, Germany
- index: 5
-
+  - name: Friedrich-Schiller-Universität Jena, Theoretisch-Physikalisches Institut, 07743 Jena, Germany
+    index: 1
+  - name: Department of Physics, University of California, Berkeley, CA 94720, USA
+    index: 2
+  - name: Department of Physics, Università degli Studi di Torino, Torino, 10125, Italy
+    index: 3
+  - name: INFN sezione di Torino, Torino, 10125, Italy
+    index: 4
+  - name: Max Planck Institute for Gravitational Physics (Albert Einstein Institute), Potsdam-14476, Germany
+    index: 5
 date: 13 April 2026
 bibliography: references.bib
-
 ---
 
 # Summary
@@ -60,7 +50,7 @@ Modeled gravitational-wave data analysis relies critically on accurate waveform 
 
 In practice, such comparisons are technically involved. Different catalogs adopt distinct coordinate conventions, extraction procedures, etc. Moreover, waveform comparison requires careful handling of signal-processing steps, such as windowing, tapering, interpolation, and zero-padding. These operations are error-prone, and standardizing them, as done in `PyART`, improves reproducibility.
 
-Originally developed to ease model calibration and validation efforts, `PyART` has been employed in \citet{}
+Originally developed to ease model calibration and validation efforts, `PyART` has been employed in ...
 
 ---
 
@@ -91,7 +81,10 @@ Additional tools are provided for time- and phase-aligned waveform alignment, as
 
 Implements routines for analyzing binary dynamics associated with GW signals. It supports both NR-derived quantities and semi-analytical (e.g., EOB) dynamics.
 
-Key quantities, such as the orbital frequency ( \omega(t) ), the gravitational-wave phase ( \Phi_{\mathrm{GW}}(t) ), the binding energy, and the angular momentum, can be extracted and compared. These diagnostics are essential for identifying the physical origin of waveform discrepancies and for calibrating analytical models.
+Key quantities, such as the orbital frequency ($\omega(t)$), 
+the gravitational-wave phase ($\Phi_{\mathrm{GW}}(t)$), 
+the binding energy, and the angular momentum, can be extracted and compared.
+These diagnostics are essential for identifying the physical origin of waveform discrepancies and for calibrating analytical models.
 
 ---
 
