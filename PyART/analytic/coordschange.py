@@ -1,282 +1,319 @@
 import numpy as np
+import sympy as sp
+from .expr import AnalyticExpression
 
 pi = np.pi
 
 
-def Polar2Cartesian(r, phi, pr, pphi):
+def _is_sympy(x):
+    """Recursively check whether an object contains symbolic values."""
+    if isinstance(x, (sp.Basic, sp.Expr, AnalyticExpression)):
+        return True
+    if isinstance(x, (list, tuple, np.ndarray)):
+        return any(_is_sympy(i) for i in x)
+    return False
+
+
+class MathDispatcher:
     """
-    Transform polar coordinates (r, phi) and momenta (pr, pphi)
-    to Cartesian coordinates (x, y) and momenta (px, py).
-
-    Parameters
-    ----------
-    r : array_like
-        Radial coordinate.
-    phi : array_like
-        Angular coordinate.
-    pr : array_like
-        Radial momentum.
-    pphi : array_like
-        Angular momentum.
-
-    Returns
-    -------
-    x : array_like
-        Cartesian x coordinate.
-    y : array_like
-        Cartesian y coordinate.
-    px : array_like
-        Cartesian x momentum.
-    py : array_like
-        Cartesian y momentum.
+    Unifies sympy and numpy calls to prevent code duplication
+    in mathematical transformations.
     """
 
-    x = r * np.cos(phi)
-    y = r * np.sin(phi)
-    px = np.cos(phi) * pr - np.sin(phi) * pphi / r
-    py = np.sin(phi) * pr + np.cos(phi) * pphi / r
+    def __init__(self, use_sympy):
+        self.use_sympy = use_sympy
+        self.sqrt = sp.sqrt if use_sympy else np.sqrt
+        self.log = sp.log if use_sympy else np.log
+        self.cos = sp.cos if use_sympy else np.cos
+        self.sin = sp.sin if use_sympy else np.sin
+        self.arctan2 = sp.atan2 if use_sympy else np.arctan2
 
-    return x, y, px, py
+    def dot(self, a, b):
+        if len(a) != len(b):
+            raise ValueError("Vectors must have the same dimension")
+        if self.use_sympy:
+            return sum(a[i] * b[i] for i in range(len(a)))
+        return np.dot(a, b)
+
+    def norm(self, v):
+        if self.use_sympy:
+            return self.sqrt(sum(x**2 for x in v))
+        return np.linalg.norm(v)
 
 
-def Cartesian2Polar(x, y, px, py):
+class CoordsChange:
     """
-    Transform Cartesian coordinates (x, y) and momenta (px, py)
-    to polar coordinates (r, phi) and momenta (pr, pphi).
+    Collection of coordinate transformations with unified symbolic and
+    numeric interfaces.
 
-    Parameters
-    ----------
-    x : array_like
-        Cartesian x coordinate.
-    y : array_like
-        Cartesian y coordinate.
-    px : array_like
-        Cartesian x momentum.
-    py : array_like
-        Cartesian y momentum.
+    Provides both numerical and symbolic (sympy) APIs for standard
+    coordinate transformations used in Post-Newtonian and EOB/ADM context.
+    Each transformation returns AnalyticExpression objects or plain numeric
+    arrays depending on the calling method.
 
-    Returns
-    -------
-    r : array_like
-        Radial coordinate.
-    phi : array_like
-        Angular coordinate.
-    pr : array_like
-        Radial momentum.
-    pphi : array_like
-        Angular momentum.
+    Supported transformations:
+    - Polar <-> Cartesian  (2D phase-space)
+    - EOB <-> ADM coordinates/momenta
+
+    References for EOB <-> ADM formulas:
+    - Buonanno & Damour (1998) arXiv:gr-qc/9811091 (Appendix E)
+    - Bini & Damour (2012) arXiv:1210.28...
     """
-    r = np.sqrt(x**2 + y**2)
-    phi = np.arctan(y / x) + pi * np.logical_and(x < 0, 1)
-    pr = (x * px + y * py) / r
-    pphi = x * py - y * px
 
-    return r, phi, pr, pphi
+    @staticmethod
+    def _validate_pn_order(PN_order):
+        if PN_order not in (0, 1, 2):
+            raise ValueError("PN_order must be 0, 1, or 2")
 
+    @staticmethod
+    def Eob2Adm(qe_vec, pe_vec, nu, PN_order=2):
+        """
+        Transforms EOB coordinates to ADM coordinates.
+        Works seamlessly for both numeric arrays and sympy symbols.
+        """
+        CoordsChange._validate_pn_order(PN_order)
 
-###########################
-##      EOB <-> ADM      ##
-###########################
-def Eob2Adm(qe_vec, pe_vec, nu, PN_order):
-    """
-    Convert EOB coordinates and momenta to ADM coordinates and momenta
-    up to 2PN order. Use the transformation in
-    Buonanno, Damour:9811091 and Bini, Damour:1210.2834 (Appendix E)
-    Note: momenta are mu-normalized
+        use_sym = _is_sympy(nu) or _is_sympy(qe_vec) or _is_sympy(pe_vec)
+        math = MathDispatcher(use_sym)
 
-    Parameters
-    ----------
-    qe_vec : array_like
-        EOB coordinates (x, y).
-    pe_vec : array_like
-        EOB momenta (px, py), mu-normalized.
-    nu : float
-        Symmetric mass ratio.
-    PN_order : int
-        Post-Newtonian order (0, 1, or 2).
+        qe = math.norm(qe_vec)
+        qe2 = qe * qe
+        qe3 = qe * qe2
 
-    Returns
-    -------
-    qa_vec : array_like
-        ADM coordinates (x, y).
-    pa_vec : array_like
-        ADM momenta (px, py), mu-normalized.
-    """
-    # shorthands
-    qe2 = np.dot(qe_vec, qe_vec)  # x, y
-    qe = np.sqrt(qe2)
-    qe3 = qe * qe2
-    pe2 = np.dot(pe_vec, pe_vec)
-    pe = np.sqrt(pe2)
-    pe3 = pe * pe2
-    pe4 = pe * pe3
-    qedotpe = np.dot(qe_vec, pe_vec)
-    qedotpe2 = qedotpe * qedotpe
-    nu2 = nu * nu
+        pe2 = math.dot(pe_vec, pe_vec)
+        pe4 = pe2 * pe2
 
-    # coefficients for ADM coordinates
-    cqa_1PN_q = nu * pe2 / 2 - (1 + nu / 2) / qe
-    cqa_1PN_p = nu * qedotpe
-    cqa_2PN_q = (
-        -nu / 8 * (1 + nu) * pe4
-        + 3 / 4 * nu * (nu / 2 - 1) * pe2 / qe
-        - nu * (2 + 5 / 8 * nu) * qedotpe2 / qe3
-        + (-nu2 + 7 * nu - 1) / 4 / qe2
-    )
-    cqa_2PN_p = qedotpe * (nu * (nu - 1) / 2 * pe2 + nu / 2 * (-5 + nu / 2) / qe)
+        qedotpe = math.dot(qe_vec, pe_vec)
+        qedotpe2 = qedotpe * qedotpe
+        nu2 = nu * nu
 
-    # coefficients for ADM momenta
-    cpa_1PN_q = -(1 + nu / 2) * qedotpe / qe3
-    cpa_1PN_p = -nu / 2 * pe2 + (1 + nu / 2) / qe
-    cpa_2PN_q = (
-        qedotpe
-        / qe3
-        * (
-            3 / 4 * nu * (nu / 2 - 1) * pe2
-            + 3 / 8 * nu2 * qedotpe2 / qe2
-            + (-3 / 2 + 5 / 2 * nu - 3 / 4 * nu2) / qe
+        cqa_1PN_q = nu * pe2 / 2 - (1 + nu / 2) / qe
+        cqa_1PN_p = nu * qedotpe
+
+        cqa_2PN_q = (
+            -nu / 8 * (1 + nu) * pe4
+            + 3 / 4 * nu * (nu / 2 - 1) * pe2 / qe
+            - nu * (2 + 5 / 8 * nu) * qedotpe2 / qe3
+            + (-nu2 + 7 * nu - 1) / 4 / qe2
         )
-    )
-    cpa_2PN_p = (
-        nu * (1 + 3 * nu) / 8 * pe4
-        - nu / 4 * (1 + 7 / 2 * nu) * pe2 / qe
-        + nu * (1 + nu / 8) * qedotpe2 / qe3
-        + (5 / 4 - 3 / 4 * nu + nu2 / 2) / qe2
-    )
+        cqa_2PN_p = qedotpe * (nu * (nu - 1) / 2 * pe2 + nu / 2 * (-5 + nu / 2) / qe)
 
-    # Put all together
-    qa_vec = qe_vec
-    pa_vec = pe_vec
-    if PN_order > 0:
-        qa_vec = qa_vec + cqa_1PN_q * qe_vec + cqa_1PN_p * pe_vec
-        pa_vec = pa_vec + cpa_1PN_q * qe_vec + cpa_1PN_p * pe_vec
-    if PN_order > 1:
-        qa_vec = qa_vec + cqa_2PN_q * qe_vec + cqa_2PN_p * pe_vec
-        pa_vec = pa_vec + cpa_2PN_q * qe_vec + cpa_2PN_p * pe_vec
-    if PN_order > 2:
-        print("2PN is the max PN order available")
-    return qa_vec, pa_vec
+        cpa_1PN_q = -(1 + nu / 2) * qedotpe / qe3
+        cpa_1PN_p = -nu / 2 * pe2 + (1 + nu / 2) / qe
 
-
-def Adm2Eob(qa_vec, pa_vec, nu, PN_order):
-    """
-    Convert ADM coordinates and momenta to EOB coordinates and momenta
-    up to 2PN order. Use the transformation in
-    Buonanno, Damour:9811091 and Bini, Damour:1210.2834 (Appendix E)
-    Note: momenta are mu-normalized
-
-    Parameters
-    ----------
-    qa_vec : array_like
-        ADM coordinates (x, y).
-    pa_vec : array_like
-        ADM momenta (px, py), mu-normalized.
-    nu : float
-        Symmetric mass ratio.
-    PN_order : int
-        Post-Newtonian order (0, 1, or 2).
-
-    Returns
-    -------
-    qe_vec : array_like
-        EOB coordinates (x, y).
-    pe_vec : array_like
-        EOB momenta (px, py), mu-normalized.
-    """
-
-    # shorthands
-    qa2 = np.dot(qa_vec, qa_vec)  # x, y
-    qa = np.sqrt(qa2)
-    qa3 = qa * qa2
-    pa2 = np.dot(pa_vec, pa_vec)
-    pa = np.sqrt(pa2)
-    pa3 = pa * pa2
-    pa4 = pa * pa3
-    qadotpa = np.dot(qa_vec, pa_vec)
-    qadotpa2 = qadotpa * qadotpa
-    nu2 = nu * nu
-
-    # coefficients for EOB coordinates
-    cqe_1PN_q = -nu / 2 * pa2 + 1 / qa * (1 + nu / 2)
-    cqe_1PN_p = -qadotpa * nu
-    cqe_2PN_q = (
-        nu / 8 * (1 - nu) * pa4
-        + nu / 4 * (5 - nu / 2) * pa2 / qa
-        + nu * (1 + nu / 8) * qadotpa2 / qa3
-        + 1 / 4 * (1 - 7 * nu + nu2) / qa2
-    )
-    cqe_2PN_p = qadotpa * (nu / 2 * (1 + nu) * pa2 + 3 / 2 * nu * (1 - nu / 2) / qa)
-
-    # coefficients for EOB momenta
-    cpe_1PN_q = qadotpa / qa3 * (1 + nu / 2)
-    cpe_1PN_p = nu / 2 * pa2 - 1 / qa * (1 + nu / 2)
-    cpe_2PN_q = (
-        qadotpa
-        / qa3
-        * (
-            nu / 8 * (10 - nu) * pa2
-            + 3 / 8 * nu * (8 + 3 * nu) * qadotpa2 / qa2
-            + 1 / 4 * (-2 - 18 * nu + nu2) / qa
+        cpa_2PN_q = (
+            qedotpe
+            / qe3
+            * (
+                3 / 4 * nu * (nu / 2 - 1) * pe2
+                + 3 / 8 * nu2 * qedotpe2 / qe2
+                + (-3 / 2 + 5 / 2 * nu - 3 / 4 * nu2) / qe
+            )
         )
-    )
-    cpe_2PN_p = (
-        nu / 8 * (-1 + 3 * nu) * pa4
-        - 3 / 4 * nu * (3 + nu / 2) * pa2 / qa
-        - nu / 8 * (16 + 5 * nu) * qadotpa2 / qa3
-        + 1 / 4 * (3 + 11 * nu) / qa2
-    )
+        cpa_2PN_p = (
+            nu * (1 + 3 * nu) / 8 * pe4
+            - nu / 4 * (1 + 7 / 2 * nu) * pe2 / qe
+            + nu * (1 + nu / 8) * qedotpe2 / qe3
+            + (5 / 4 - 3 / 4 * nu + nu2 / 2) / qe2
+        )
 
-    # Put all together
-    qe_vec = qa_vec
-    pe_vec = pa_vec
-    if PN_order > 0:
-        qe_vec = qe_vec + cqe_1PN_q * qa_vec + cqe_1PN_p * pa_vec
-        pe_vec = pe_vec + cpe_1PN_q * qa_vec + cpe_1PN_p * pa_vec
-    if PN_order > 1:
-        qe_vec = qe_vec + cqe_2PN_q * qa_vec + cqe_2PN_p * pa_vec
-        pe_vec = pe_vec + cpe_2PN_q * qa_vec + cpe_2PN_p * pa_vec
-    if PN_order > 2:
-        print("2PN is the max PN order available")
+        q_position_coeff = 1
+        q_momentum_coeff = 0
+        p_position_coeff = 0
+        p_momentum_coeff = 1
 
-    return qe_vec, pe_vec
+        if PN_order > 0:
+            q_position_coeff += cqa_1PN_q
+            q_momentum_coeff += cqa_1PN_p
+            p_position_coeff += cpa_1PN_q
+            p_momentum_coeff += cpa_1PN_p
+        if PN_order > 1:
+            q_position_coeff += cqa_2PN_q
+            q_momentum_coeff += cqa_2PN_p
+            p_position_coeff += cpa_2PN_q
+            p_momentum_coeff += cpa_2PN_p
+
+        Q_ADM = [
+            qe_vec[i] * q_position_coeff + pe_vec[i] * q_momentum_coeff
+            for i in range(len(qe_vec))
+        ]
+
+        P_ADM = [
+            qe_vec[i] * p_position_coeff + pe_vec[i] * p_momentum_coeff
+            for i in range(len(pe_vec))
+        ]
+
+        if use_sym:
+            return (
+                [AnalyticExpression(q) for q in Q_ADM],
+                [AnalyticExpression(p) for p in P_ADM],
+            )
+        return np.array(Q_ADM), np.array(P_ADM)
+
+    @staticmethod
+    def Adm2Eob(qa_vec, pa_vec, nu, PN_order=2):
+        """
+        Transforms ADM coordinates to EOB coordinates.
+        Works seamlessly for both numeric arrays and sympy symbols.
+        """
+        CoordsChange._validate_pn_order(PN_order)
+
+        use_sym = _is_sympy(nu) or _is_sympy(qa_vec) or _is_sympy(pa_vec)
+        math = MathDispatcher(use_sym)
+
+        qa = math.norm(qa_vec)
+        qa2 = qa * qa
+        qa3 = qa * qa2
+
+        pa2 = math.dot(pa_vec, pa_vec)
+        pa4 = pa2 * pa2
+
+        qadotpa = math.dot(qa_vec, pa_vec)
+        qadotpa2 = qadotpa * qadotpa
+        nu2 = nu * nu
+
+        cqe_1PN_q = -nu / 2 * pa2 + 1 / qa * (1 + nu / 2)
+        cqe_1PN_p = -qadotpa * nu
+
+        cqe_2PN_q = (
+            nu / 8 * (1 - nu) * pa4
+            + nu / 4 * (5 - nu / 2) * pa2 / qa
+            + nu * (1 + nu / 8) * qadotpa2 / qa3
+            + 1 / 4 * (1 - 7 * nu + nu2) / qa2
+        )
+        cqe_2PN_p = qadotpa * (nu / 2 * (1 + nu) * pa2 + 3 / 2 * nu * (1 - nu / 2) / qa)
+
+        cpe_1PN_q = qadotpa / qa3 * (1 + nu / 2)
+        cpe_1PN_p = nu / 2 * pa2 - 1 / qa * (1 + nu / 2)
+
+        cpe_2PN_q = (
+            qadotpa
+            / qa3
+            * (
+                nu / 8 * (10 - nu) * pa2
+                + 3 / 8 * nu * (8 + 3 * nu) * qadotpa2 / qa2
+                + 1 / 4 * (-2 - 18 * nu + nu2) / qa
+            )
+        )
+        cpe_2PN_p = (
+            nu / 8 * (-1 + 3 * nu) * pa4
+            - 3 / 4 * nu * (3 + nu / 2) * pa2 / qa
+            - nu / 8 * (16 + 5 * nu) * qadotpa2 / qa3
+            + 1 / 4 * (3 + 11 * nu) / qa2
+        )
+
+        q_position_coeff = 1
+        q_momentum_coeff = 0
+        p_position_coeff = 0
+        p_momentum_coeff = 1
+
+        if PN_order > 0:
+            q_position_coeff += cqe_1PN_q
+            q_momentum_coeff += cqe_1PN_p
+            p_position_coeff += cpe_1PN_q
+            p_momentum_coeff += cpe_1PN_p
+        if PN_order > 1:
+            q_position_coeff += cqe_2PN_q
+            q_momentum_coeff += cqe_2PN_p
+            p_position_coeff += cpe_2PN_q
+            p_momentum_coeff += cpe_2PN_p
+
+        Q_EOB = [
+            qa_vec[i] * q_position_coeff + pa_vec[i] * q_momentum_coeff
+            for i in range(len(qa_vec))
+        ]
+
+        P_EOB = [
+            qa_vec[i] * p_position_coeff + pa_vec[i] * p_momentum_coeff
+            for i in range(len(pa_vec))
+        ]
+
+        if use_sym:
+            return (
+                [AnalyticExpression(q) for q in Q_EOB],
+                [AnalyticExpression(p) for p in P_EOB],
+            )
+        return np.array(Q_EOB), np.array(P_EOB)
+
+    @staticmethod
+    def Polar2Cartesian(r, phi, pr, pphi):
+        """
+        Transforms 2D Polar coordinates to Cartesian coordinates.
+        Inputs: r, phi, p_r, p_phi
+        Outputs: x, y, p_x, p_y
+        """
+        use_sym = _is_sympy([r, phi, pr, pphi])
+        math = MathDispatcher(use_sym)
+
+        cos_phi = math.cos(phi)
+        sin_phi = math.sin(phi)
+
+        x = r * cos_phi
+        y = r * sin_phi
+
+        px = pr * cos_phi - (pphi / r) * sin_phi
+        py = pr * sin_phi + (pphi / r) * cos_phi
+
+        if use_sym:
+            return (
+                AnalyticExpression(x),
+                AnalyticExpression(y),
+                AnalyticExpression(px),
+                AnalyticExpression(py),
+            )
+        return x, y, px, py
+
+    @staticmethod
+    def Cartesian2Polar(x, y, px, py):
+        """
+        Transforms 2D Cartesian coordinates to Polar coordinates.
+        Inputs: x, y, p_x, p_y
+        Outputs: r, phi, p_r, p_phi
+        """
+        use_sym = _is_sympy([x, y, px, py])
+        math = MathDispatcher(use_sym)
+
+        r = math.sqrt(x**2 + y**2)
+        phi = math.arctan2(y, x)
+
+        pr = (x * px + y * py) / r
+        pphi = x * py - y * px
+
+        if use_sym:
+            return (
+                AnalyticExpression(r),
+                AnalyticExpression(phi),
+                AnalyticExpression(pr),
+                AnalyticExpression(pphi),
+            )
+        return r, phi, pr, pphi
 
 
 def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
-    """
-    Generate initial ID for NR simulations with initial
-    data from TwoPuncturesC
+    """Convert EOB initial data into ADM initial data.
+
 
     Parameters
     ----------
     eob_Wave : object
-        EOB waveform, instance of PyART.models.teob.Waveform_EOB
-    verbose : bool, optional
-        If True, print out info for testing. Default is False.
-    PN_order : int, optional
-        Post-Newtonian order for EOB <-> ADM transformation.
-        Default is 2 (max available).
-    rotate_on_x_axis : bool, optional
-        If True, rotate system so that punctures are on x-axis at t=0.
-        Default is True.
+        Object with attributes pars and dyn and method get_Pr().
+        Must provide:
+        - pars["q"]
+        - dyn["r"][0], dyn["phi"][0], dyn["Pphi"][0]
+        - get_Pr()[0]
+    verbose : bool
+        Print diagnostics if True.
+    PN_order : int
+        EOB->ADM conversion order (0,1,2).
+    rotate_on_x_axis : bool
+        If True, rotate output to x-axis.
 
     Returns
     -------
-    out : dict
-        Dictionary with the following keys:
-        'q_cart' : ADM coordinates (x, y)
-        'p_cart' : ADM momenta (px, py), mu-normalized
-        'px' : ADM momentum px, M-normalized
-        'py' : ADM momentum py, M-normalized
-        'x1' : x coordinate of puncture 1
-        'x2' : x coordinate of puncture 2
-        'D' : coordinate separation between punctures
-        'x_offset' : offset to be added to x coordinates
-        'qe' : EOB coordinates (x,y)
-        'pe' : EOB momenta (px, py), mu-normalized
-        'qe_chk' : EOB coordinates (x,y), EOB->ADM->EOB
-        'pe_chk' : EOB momenta (px, py), mu-normalized, EOB->ADM->EOB
+    dict
+        Contains keys: q_cart, p_cart, px, py, x1, x2, D,
+        x_offset, qe, pe, qe_chk, pe_chk.
     """
-    # Get info from EOB dynamics
     q = eob_Wave.pars["q"]
     nu = q / (1 + q) ** 2
     r0 = eob_Wave.dyn["r"][0]
@@ -285,17 +322,18 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
     pr = eob_Wave.get_Pr()
     pr0 = pr[0]
 
-    # Convert to EOB Cartesian
-    x, y, px, py = Polar2Cartesian(r0, phi0, pr0, pph0)
+    x, y, px, py = CoordsChange.Polar2Cartesian(r0, phi0, pr0, pph0)
     qe = np.array([x, y])
-    pe = np.array([px, py])  # already divided by nu
+    pe = np.array([px, py])
 
-    # Convert to ADM Cartesian
-    qa, pa = Eob2Adm(qe, pe, nu, PN_order=PN_order)
-    d_ADM = np.sqrt(np.dot(qa, qa))
+    qa, pa = CoordsChange.Eob2Adm(qe, pe, nu, PN_order=PN_order)
+
+    d_adm = np.sqrt(np.dot(qa, qa))
+    if d_adm == 0:
+        raise ValueError("ADM separation is zero")
 
     halfx = qa[0] / 2
-    b_par = d_ADM / 2
+    b_par = d_adm / 2
     if rotate_on_x_axis:
         # Rotate so that the punctures will be on the x-axis at t=0
         cosa = halfx / b_par
@@ -308,13 +346,12 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
     pxbynu = cosa * pa[0] - sina * pa[1]
     pybynu = sina * pa[0] + cosa * pa[1]
 
-    x1 = d_ADM / (q + 1)
-    x2 = -d_ADM * q / (q + 1)
-    x_offset = -b_par + d_ADM / (q + 1)
+    x1 = d_adm / (q + 1)
+    x2 = -d_adm * q / (q + 1)
+    x_offset = -b_par + d_adm / (q + 1)
 
-    qe_check, pe_check = Adm2Eob(qa, pa, nu, PN_order=PN_order)
+    qe_chk, pe_chk = CoordsChange.Adm2Eob(qa, pa, nu, PN_order=PN_order)
 
-    # wrap output
     out = {
         "q_cart": qa,
         "p_cart": pa,
@@ -322,14 +359,13 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
         "py": pybynu * nu,
         "x1": x1,
         "x2": x2,
-        "D": d_ADM,
+        "D": d_adm,
         "x_offset": x_offset,
         "qe": qe,
         "pe": pe,
-        "qe_chk": qe_check,  # EOB->ADM->EOB
-        "pe_chk": pe_check,  # EOB->ADM->EOB
+        "qe_chk": qe_chk,
+        "pe_chk": pe_chk,
     }
-
     if verbose:
         dashes = "-" * 50
         print("{}\nPunctures\n{}".format(dashes, dashes))
@@ -342,10 +378,9 @@ def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
         print("{}\nEOB-ADM 2PN transformation\n{}".format(dashes, dashes))
         print("q EOB      : {:.5e}, {:.5e}".format(qe[0], qe[1]))
         print("q EOB->ADM : {:.5e}, {:.5e}".format(qa[0], qa[1]))
-        print("q ADM->EOB : {:.5e}, {:.5e}\n".format(qe_check[0], qe_check[1]))
+        print("q ADM->EOB : {:.5e}, {:.5e}\n".format(qe_chk[0], qe_chk[1]))
 
         print("p EOB      : {:.5e}, {:.5e}".format(pe[0], pe[1]))
         print("p EOB->ADM : {:.5e}, {:.5e}".format(pa[0], pa[1]))
-        print("p ADM->EOB : {:.5e}, {:.5e}\n".format(pe_check[0], pe_check[1]))
-
+        print("p ADM->EOB : {:.5e}, {:.5e}\n".format(pe_chk[0], pe_chk[1]))
     return out

@@ -3,17 +3,19 @@ import sympy as sp
 import os
 import logging
 from sympy.parsing.mathematica import parse_mathematica
+from .expr import AnalyticExpression, _get_x_exponent, _get_x_power_range
 
 x = sp.symbols("x")
 
 
-class PNPedia(object):
+class PNPedia:
     """
-    Class to interact with the PNPedia repository, which contains a collection of PN quantities relevant for
-    GW modeling etc.
-        https://github.com/davidtrestini/PNpedia
+    Collection of PN quantities loaded from the PNPedia repository.
 
-    The class provides methods to retrieve and evaluate PN quantities based on their names and the desired PN order.
+    Acts as a dictionary-backed store of :class:`~PyART.analytic.expr.AnalyticExpression`
+    objects, one per PN quantity file.  Quantities are parsed on demand from
+    the Mathematica-format text files distributed with PNPedia:
+        https://github.com/davidtrestini/PNpedia
     """
 
     def __init__(self, path, dowload=False):
@@ -86,6 +88,16 @@ class PNPedia(object):
 
         self.pnpedia_structure = pnpedia_structure
         logging.info("PNPedia structure parsed successfully.")
+
+    # ------------------------------------------------------------------
+    # Power-range utilities (delegate to module-level functions from expr)
+    # ------------------------------------------------------------------
+
+    def _get_x_power_range(self, expr, x_symbol=None):
+        return _get_x_power_range(expr, x_symbol)
+
+    def _get_x_exponent(self, term, x_symbol=None):
+        return _get_x_exponent(term, x_symbol)
 
     def get_pn_quantity(self, name, order, path=None, variable="x"):
         """
@@ -202,87 +214,7 @@ class PNPedia(object):
 
         # sub the dummy log function back to log
         result = pn_quantity.replace(sp.symbols("logx0"), sp.log(x_symbol))
-        return self.pn_to_function(result)
-
-    def _get_x_power_range(self, expr, x_symbol=x):
-        """
-        Determine the minimum and maximum powers of the selected PN symbol in an expression.
-
-        This handles expressions that include factors like log(x) and non-polynomial terms,
-        by capturing only pure x-power factors for the order truncation logic.
-
-        Parameters
-        ----------
-        expr : sympy.Expr
-            Expression to analyze.
-        x_symbol : sympy.Symbol, optional
-            Symbol used for PN counting (default is x).
-
-        Returns
-        -------
-        tuple
-            (min_exponent, max_exponent) where exponent may be int or Rational.
-        """
-        expr = sp.expand(expr)
-
-        if expr == 0:
-            return sp.Integer(0), sp.Integer(0)
-
-        min_exp = None
-        max_exp = None
-
-        for term in expr.as_ordered_terms():
-            exponent = self._get_x_exponent(term, x_symbol)
-
-            if min_exp is None or exponent < min_exp:
-                min_exp = exponent
-            if max_exp is None or exponent > max_exp:
-                max_exp = exponent
-
-        return min_exp, max_exp
-
-    def _get_x_exponent(self, term, x_symbol=x):
-        """Return the total power of the selected PN symbol appearing in a term."""
-        if term == 0:
-            return sp.Integer(0)
-
-        def walk(expr):
-            if expr == x_symbol:
-                return sp.Integer(1)
-            if expr.is_Pow and expr.base == x_symbol:
-                return sp.simplify(expr.exp)
-            if expr.is_Mul:
-                total = sp.Rational(0)
-                for arg in expr.args:
-                    total += walk(arg)
-                return total
-            if expr.is_Add:
-                # For sums, the power of x in the (sub)expression is the maximum
-                # power among the terms (not their sum). This is crucial to avoid
-                # over-counting when an expression is factored, e.g., x*(1 + x + x**2).
-                powers = [walk(arg) for arg in expr.args]
-                return max(powers)
-            return sp.Integer(0)
-
-        return walk(term)
-
-    def pn_to_function(self, expr):
-        """
-        Convert a SymPy PN expression into a Python function.
-
-        Automatically detects all free symbols in the expression.
-
-        Returns:
-            f(*args) -> numeric evaluation
-            symbols -> tuple of symbols in order
-        """
-        # Detect all free symbols in a consistent order
-        symbols = tuple(sorted(expr.free_symbols, key=lambda s: s.name))
-
-        # Create the callable function
-        f = sp.lambdify(symbols, expr, modules="numpy")
-
-        return f, symbols
+        return AnalyticExpression(result)
 
     def mathematica_to_python_vars(self, expr):
         """
@@ -334,7 +266,7 @@ class PNPedia(object):
             r"\[Zeta]$tilde[Sqrt[1-\[Iota]]]": "zetaTildeSqrt1miota",
             r"\[Zeta]$tilde'[Sqrt[1-\[Iota]]]": "zetaTildePrimeSqrt1miota",
             r"\[Psi]$tilde[e]": "psiTildeE",
-            r"\[Psi]$tilde[e]": "psiTildeEt",
+            r"\[Psi]$tilde[et]": "psiTildeEt",
             r"\[Psi]$tilde[Sqrt[1-j]]": "psiTildeSqrt1mj",
             r"\[Kappa]$tilde[e]": "kappaTildeE",
             r"\[Kappa]$tilde'[et]": "kappaTildePrimeEt",
