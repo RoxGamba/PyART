@@ -6,6 +6,7 @@ import json
 import logging
 import re
 import time
+import tarfile
 
 # libraries for downloading
 try:
@@ -110,11 +111,11 @@ class Waveform_GRA(Waveform):
             logging.info(f"Found .tar: {filename}")
             logging.info(f"Downloading from: {tar_url}")
             download_safe(session, tar_url, filename)
-            # untar, execute via os.system for the moment
             extract_path = os.path.join(path, f"GRA_BHBH_{ID}")
             os.makedirs(extract_path, exist_ok=True)
             logging.info(f"Extracting to: {extract_path}")
-            os.system(f"tar -xf {filename} -C {extract_path}")
+            with tarfile.open(filename) as tar:
+                tar.extractall(path=extract_path)
             os.remove(filename)
 
         if "metadata" in downloads:
@@ -428,9 +429,11 @@ def make_session():
 
     retries = Retry(
         total=5,
+        connect=5,
+        read=5,
         backoff_factor=1.5,
         status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["GET"],
+        allowed_methods=["GET", "HEAD"],
     )
 
     adapter = HTTPAdapter(max_retries=retries)
@@ -452,6 +455,25 @@ def make_session():
     )
 
     return session
+
+
+def make_download_session(base_session=None):
+    """Create a fresh session for a single asset download.
+
+    Large tar downloads can leave the previous connection in a reset state.
+    Using a dedicated session per asset avoids reusing that stale connection
+    when the next file, such as metadata, is fetched.
+    """
+
+    download_session = make_session()
+
+    if base_session is not None:
+        if hasattr(base_session, "headers"):
+            download_session.headers.update(base_session.headers)
+        if hasattr(base_session, "cookies"):
+            download_session.cookies.update(base_session.cookies)
+
+    return download_session
 
 
 def get_id_to_item_url(session):
@@ -487,10 +509,11 @@ def find_tar_for_resolution(item_soup, resolution):
         text = a.get_text(strip=True).lower()
         if (
             "/downloads/" in href
+            and "download:" in text
             and text.endswith(".tar")
             and resolution in (href + text)
         ):
-            filename = os.path.basename(href)
+            filename = text.split("download:", 1)[1].strip()
             return filename, urljoin(BASE_URL, a["href"])
 
     raise RuntimeError(f"No .tar found for resolution '{resolution}'")
@@ -500,57 +523,117 @@ def find_metadata_file(item_soup):
     for a in item_soup.find_all("a", href=True):
         href = a["href"].lower()
         text = a.get_text(strip=True).lower()
-        if "/downloads/" in href and text.endswith(".json"):
-            filename = os.path.basename(href)
+        if "/downloads/" in href and "download:" in text and text.endswith(".json"):
+            filename = text.split("download:", 1)[1].strip()
             return filename, urljoin(BASE_URL, a["href"])
 
-    raise RuntimeError(f"No metadata.json file found")
+    raise RuntimeError("No metadata.json file found")
+
+
+def resolve_download_url(session, url, timeout=30):
+    """Resolve a ScholarSphere download URL to the signed asset URL.
+
+    ScholarSphere serves an HTML shell for direct GET requests to the
+    `/downloads/...` endpoint, but exposes the real object location in the
+    response to a HEAD request via a short-lived redirect to S3.
+    """
+
+    response = session.head(url, allow_redirects=False, timeout=timeout)
+    response.raise_for_status()
+
+    if response.is_redirect:
+        location = response.headers.get("Location")
+        if not location:
+            raise RuntimeError(f"Download redirect missing Location header for {url}")
+        return location
+
+    return url
 
 
 def download_safe(session, url, filename, chunk_size=1024 * 1024):
     tmp_file = filename + ".part"
-    downloaded = 0
+    max_attempts = 3
+    last_error = None
 
-    if os.path.exists(tmp_file):
-        downloaded = os.path.getsize(tmp_file)
-        logging.info(f"Resuming download from byte {downloaded}")
+    for attempt in range(1, max_attempts + 1):
+        downloaded = 0
+        if os.path.exists(tmp_file):
+            downloaded = os.path.getsize(tmp_file)
+            logging.info(f"Resuming download from byte {downloaded}")
 
-    headers = {}
-    if downloaded > 0:
-        headers["Range"] = f"bytes={downloaded}-"
-
-    with session.get(url, stream=True, headers=headers, timeout=60) as r:
-        r.raise_for_status()
-
-        # Decide whether we can safely resume or must restart from scratch.
-        resume_supported = False
+        headers = {}
         if downloaded > 0:
-            if r.status_code == 206:
-                content_range = r.headers.get("Content-Range", "")
-                # Expect the content range to start at our downloaded offset.
-                expected = f"bytes {downloaded}-"
-                if content_range.startswith(expected) or expected in content_range:
-                    resume_supported = True
-            else:
-                logging.info(
-                    "Server did not honor Range header (status %s); "
-                    "restarting full download",
-                    r.status_code,
-                )
+            headers["Range"] = f"bytes={downloaded}-"
 
-        if not resume_supported:
-            # If we had a partial file, overwrite it rather than append, to avoid
-            # corrupting the file when the server sends the full content.
-            if downloaded > 0:
-                logging.info("Discarding existing partial download and restarting")
-                downloaded = 0
-            mode = "wb"
-        else:
-            mode = "ab"
-        with open(tmp_file, mode) as f:
-            for chunk in r.iter_content(chunk_size=chunk_size):
-                if chunk:
-                    f.write(chunk)
+        download_session = make_download_session(session)
 
-    os.rename(tmp_file, filename)
-    logging.info(f"Download completed")
+        try:
+            download_url = resolve_download_url(download_session, url)
+
+            with download_session.get(
+                download_url, stream=True, headers=headers, timeout=60
+            ) as r:
+                r.raise_for_status()
+
+                content_type = (r.headers.get("Content-Type") or "").lower()
+                if content_type.startswith("text/html"):
+                    raise RuntimeError(
+                        f"Expected file download for {filename}, got HTML from "
+                        f"{download_url}"
+                    )
+
+                # Decide whether we can safely resume or must restart from scratch.
+                resume_supported = False
+                if downloaded > 0:
+                    if r.status_code == 206:
+                        content_range = r.headers.get("Content-Range", "")
+                        # Expect the content range to start at our downloaded offset.
+                        expected = f"bytes {downloaded}-"
+                        if (
+                            content_range.startswith(expected)
+                            or expected in content_range
+                        ):
+                            resume_supported = True
+                    else:
+                        logging.info(
+                            "Server did not honor Range header (status %s); "
+                            "restarting full download",
+                            r.status_code,
+                        )
+
+                if not resume_supported:
+                    # If we had a partial file, overwrite it rather than append,
+                    # to avoid corrupting the file when the server sends the full
+                    # content.
+                    if downloaded > 0:
+                        logging.info(
+                            "Discarding existing partial download and restarting"
+                        )
+                    mode = "wb"
+                else:
+                    mode = "ab"
+
+                with open(tmp_file, mode) as f:
+                    for chunk in r.iter_content(chunk_size=chunk_size):
+                        if chunk:
+                            f.write(chunk)
+
+            os.rename(tmp_file, filename)
+            logging.info("Download completed")
+            return
+        except (requests.RequestException, RuntimeError) as exc:
+            last_error = exc
+            if attempt == max_attempts:
+                raise
+            logging.warning(
+                "Download attempt %s/%s for %s failed: %s. Retrying with a "
+                "fresh session.",
+                attempt,
+                max_attempts,
+                filename,
+                exc,
+            )
+        finally:
+            download_session.close()
+
+    raise last_error
