@@ -140,7 +140,7 @@ developers of new models are encouraged to contribute their wrappers to the pack
 ### `numerical`
 
 The `numerical` module closes the loop between analytical and numerical relativity by providing tools for the setup of NR simulations.
-It includes routines for the construction of initial twopunctures [] data based on semi-analytical models. 
+It includes routines for the construction of initial twopunctures data based on semi-analytical models. 
 Future developments will include support for the construction of initial data of binary neutron star simulations, as well as black hole
 neutron star systems and test-mass configurations.
 
