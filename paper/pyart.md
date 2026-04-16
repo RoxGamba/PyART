@@ -30,6 +30,7 @@ affiliations:
     index: 4
   - name: Max Planck Institute for Gravitational Physics (Albert Einstein Institute), Potsdam-14476, Germany
     index: 5
+
 date: 13 April 2026
 bibliography: references.bib
 ---
@@ -50,12 +51,14 @@ and tests of general relativity. The construction and validation of these templa
 quantities derived from multiple sources, including NR catalogs (e.g., SXS [@Scheel:2025jct], RIT [@Healy:2022wdn], GRA [@Rashti:2024yoc],
 Maya [@Ferguson:2023vta], CoRe [@Gonzalez:2022mgo]) and analytical calculations.
 
-In practice, such comparisons are technically involved. Different catalogs adopt distinct conventions and extraction procedures, and waveform
-comparison requires careful handling of signal-processing steps such as windowing, tapering, interpolation, and zero-padding.
+In practice, such comparisons are technically involved:
+- on the NR side, different catalogs adopt distinct conventions and extraction procedures, and waveform comparison requires careful handling of signal-processing steps such as windowing, tapering, interpolation, and zero-padding.
 These operations are error-prone and are typically not discussed in detail in the literature, making it difficult to reproduce results and to compare findings across studies.
+- on the analytical side, post-Newtonian and post-Minkowskian calculations are scattered across a considerable body of works, and their numerical implmentation often left to the single researcher.
+Beyond the risk of transcription errors, this approach causes significant effort duplication and time waste.
 
-`PyART` addresses these challenges by providing a unified, publicly available toolkit for handling data from simulations and models,
-and for performing systematic comparisons between them. In doing so, it aims to facilitate the development of accurate waveform templates
+`PyART` addresses these challenges by providing a unified, publicly available toolkit for handling data from simulations, models and analytical calculations,
+and for performing systematic comparisons among them. In doing so, it aims to facilitate the development of accurate waveform templates
 and to promote transparency and reproducibility in GW astronomy.
 
 ---
@@ -79,11 +82,11 @@ libraries — including `pycbc`, `gwpy`, `lalsuite`, `sxs`, `maya`, and `watpy` 
 # Software Design
 
 `PyART` is designed to be **modular** and **extensible**, in keeping with its goal of streamlining the waveform modeling workflow for compact binaries.
-New models, catalogs, and analysis tools can be incorporated without requiring changes to the underlying data handling and processing infrastructure.
+New models, catalogs, anaytical expressions and analysis tools can be incorporated without requiring changes to the underlying data handling and processing infrastructure.
 
 User-friendliness is a core design principle: the package is structured to be intuitive and accessible to researchers who are not (yet) specialists
 in waveform modeling. Documentation and worked examples are provided in the online repository via Jupyter notebooks and a comprehensive API reference,
-and contributions of additional examples are encouraged.
+and contributions are encouraged.
 
 ## Modules and classes
 `PyART` is organized into N principal modules, each targeting a distinct aspect simulation or modeling workflows.
@@ -94,10 +97,9 @@ The `waveform` module provides the package's core abstraction through the `Wavef
 handling gravitational waveforms, independent of their origin. By encapsulating waveform data, metadata and dynamics within a consistent structure,
 the module enables comparison between NR simulations and analytical models, while abstracting away catalog-specific conventions.
 Core methods include standard signal-processing operations, such as interpolation and cutting, as well as waveform-specific tools, such as rotations
-(TO BE IMPLEMENTED) and the calculation of instantaneous fluxes of energy and angular momentum, kick velocity estimates (TO BE IMPLEMENTED) and the
+(TO BE IMPLEMENTED), the calculation of instantaneous fluxes of energy and angular momentum, kick velocity estimates (TO BE IMPLEMENTED) and the
 extraction of dynamical quantities.
 This class also allows for basic visualization of modes, dynamics and polarisations (TO BE IMPLEMENTED).
----
 
 ### `analysis`
 
@@ -106,7 +108,7 @@ following the standard conventions used in the waveform modeling literature. It 
 enabling robustness studies of waveform agreement.
 
 Additional tools are provided for time- and phase-aligned waveform alignment, eccentricity estimation (TO BE IMPLEMENTED) via `gweccentricity` [@Shaikh:2023ypz]
-and PN formulae, and calculation of scattering
+and PN formulae  (see below), and calculation of scattering
 angles from NR [@Albanesi:2024xus]. These capabilities are essential for diagnosing discrepancies between models and simulations and for assessing modeling accuracy.
 
 ---
@@ -117,10 +119,10 @@ The basic parent class, `AnalyticalExpression`, provides a lightweight wrapper a
 The class methods include standard operations, such as differentiation, as well as more specialized tools, such as PN order counting and expansion, and conversion to `numpy`-compatible functions.
 
 We also provide:
-- an interface with the `PNPedia` project, which offers a comprehensive database of PN expressions for various quantities relevant to compact binary dynamics and waveforms;
 - coordinate transformation tools, necessary to map ADM to EOB coordinates and vice versa;
+- a collection of PN quantities (fluxes and Hamiltonians) currently natively implemented in the package, with plans to expand this collection in the future;
+- an interface with the `PNPedia` project, which offers a growing database of PN expressions for various quantities relevant to compact binary dynamics and waveforms;
 - an interface with [PostNewtonianSelfForce](https://github.com/BlackHolePerturbationToolkit/PostNewtonianSelfForce) from the Black Hole Perturbation Toolkit (TO BE IMPLEMENTED).
-These features allow users to easily access and manipulate PN results within the `PyART` framework, facilitating comparisons between analytical predictions and numerical data.
 
 ---
 
