@@ -14,7 +14,19 @@ from sympy.parsing.mathematica import parse_mathematica
 
 @dataclass(slots=True)
 class ParsedMathematicaSource:
-    """Structured representation of a Mathematica source fragment."""
+    """Structured representation of a parsed Mathematica source fragment.
+
+    Parameters
+    ----------
+    assignments : dict[str, str], optional
+        Top-level immediate assignments extracted from the source.
+    definitions : dict[str, str], optional
+        Top-level delayed definitions extracted from the source.
+    metadata : dict[str, Any], optional
+        Metadata association extracted from the source.
+    last_expression : str or None, optional
+        Final top-level expression encountered while parsing.
+    """
 
     assignments: dict[str, str] = field(default_factory=dict)
     definitions: dict[str, str] = field(default_factory=dict)
@@ -22,7 +34,19 @@ class ParsedMathematicaSource:
     last_expression: str | None = None
 
     def resolve_expression(self, name: str | None = None) -> str | None:
-        """Return the raw expression associated with a symbol or fallback."""
+        """Return the raw expression associated with a symbol or fallback.
+
+        Parameters
+        ----------
+        name : str or None, optional
+            Symbol name to resolve inside the assignment table.
+
+        Returns
+        -------
+        str or None
+            Expression string associated with ``name`` or the last parsed
+            expression when ``name`` is not provided.
+        """
         if isinstance(name, str):
             return self.assignments.get(name, name)
 
@@ -36,17 +60,50 @@ class ParsedMathematicaSource:
 
 
 class MathematicaParser:
-    """Parse Mathematica source text and convert symbolic forms to SymPy."""
+    """Parse Mathematica source text and convert symbolic forms to SymPy.
+
+    The parser handles common source normalization steps, extracts metadata
+    and assignments from Mathematica files, and converts special symbolic
+    constructs such as ``SeriesData`` into explicit SymPy expressions.
+    """
 
     def normalize_source(self, text: str) -> str:
-        """Normalize raw Mathematica source before structural parsing."""
+        """Normalize raw Mathematica source before structural parsing.
+
+        Parameters
+        ----------
+        text : str
+            Raw Mathematica source text.
+
+        Returns
+        -------
+        str
+            Source with comments removed, box expressions replaced, and common
+            escaped identifiers simplified.
+        """
         text = self._strip_comments(text)
         text = self._replace_box_expressions(text)
         text = re.sub(r"\\\[([A-Za-z]+)\]", lambda match: match.group(1), text)
         return text.strip()
 
     def _strip_comments(self, text: str) -> str:
-        """Strip Mathematica comments, including nested comment blocks."""
+        """Strip Mathematica comments, including nested comment blocks.
+
+        Parameters
+        ----------
+        text : str
+            Raw Mathematica source text.
+
+        Returns
+        -------
+        str
+            Source text with comment blocks removed.
+
+        Raises
+        ------
+        ValueError
+            If the source contains an unmatched Mathematica comment block.
+        """
         pieces = []
         comment_depth = 0
         in_string = False
@@ -90,7 +147,20 @@ class MathematicaParser:
         text: Any,
         replacements: Mapping[str, str],
     ) -> str:
-        """Apply ordered textual identifier replacements to source."""
+        """Apply ordered textual identifier replacements to source.
+
+        Parameters
+        ----------
+        text : Any
+            Source object to convert to text before replacement.
+        replacements : Mapping[str, str]
+            Mapping from source identifiers to replacement identifiers.
+
+        Returns
+        -------
+        str
+            Updated text after all replacements have been applied.
+        """
         updated_text = str(text)
         for source, target in sorted(
             replacements.items(),
@@ -103,6 +173,16 @@ class MathematicaParser:
         """
         Extract assignments, delayed definitions, metadata, and the tail
         expression.
+
+        Parameters
+        ----------
+        text : str
+            Raw Mathematica source fragment.
+
+        Returns
+        -------
+        ParsedMathematicaSource
+            Structured representation of the parsed source.
         """
         normalized_source = self.normalize_source(text)
 
@@ -118,7 +198,23 @@ class MathematicaParser:
         return self._parse_source_items([normalized_source])
 
     def parse_expression(self, expression_source: str):
-        """Parse Mathematica syntax into a normalized SymPy expression."""
+        """Parse Mathematica syntax into a normalized SymPy expression.
+
+        Parameters
+        ----------
+        expression_source : str
+            Mathematica expression source to parse.
+
+        Returns
+        -------
+        sympy.Basic
+            Parsed expression after special-form normalization.
+
+        Raises
+        ------
+        ValueError
+            If the expression cannot be parsed by the Mathematica parser.
+        """
         expression_source = self._replace_empty_series_data(expression_source)
         try:
             parsed = parse_mathematica(expression_source)
@@ -134,8 +230,22 @@ class MathematicaParser:
         return self._convert_special_forms(parsed)
 
     def extract_module_items(self, source: str) -> list[str]:
-        """
-        Return the ordered expressions stored inside a Mathematica Module.
+        """Return the ordered expressions stored inside a Mathematica module.
+
+        Parameters
+        ----------
+        source : str
+            Mathematica source string, optionally beginning with ``Module[``.
+
+        Returns
+        -------
+        list[str]
+            Top-level module arguments and body items.
+
+        Raises
+        ------
+        ValueError
+            If a ``Module`` form does not have the expected two arguments.
         """
         source = source.strip()
         if not source.startswith("Module["):
@@ -152,12 +262,41 @@ class MathematicaParser:
         return [module_args[0], *body_items]
 
     def is_top_level_association(self, text: str) -> bool:
-        """Return True when `text` is a complete Mathematica association."""
+        """Return whether a string is a complete top-level association.
+
+        Parameters
+        ----------
+        text : str
+            Source text to inspect.
+
+        Returns
+        -------
+        bool
+            ``True`` when ``text`` begins with ``<|`` and ends with ``|>``.
+        """
         text = text.strip()
         return text.startswith("<|") and text.endswith("|>")
 
     def find_matching_bracket(self, text: str, start_index: int) -> int:
-        """Return the index of the closing bracket matching `start_index`."""
+        """Return the index of the closing bracket matching ``start_index``.
+
+        Parameters
+        ----------
+        text : str
+            Source text containing bracketed Mathematica syntax.
+        start_index : int
+            Index of the opening ``[`` to match.
+
+        Returns
+        -------
+        int
+            Index of the matching closing ``]``.
+
+        Raises
+        ------
+        ValueError
+            If no matching closing bracket is found.
+        """
         depth = 0
         in_string = False
         index = start_index
@@ -183,6 +322,17 @@ class MathematicaParser:
 
         Multi-character tokens ``<|`` and ``|>`` advance the index by 2 and
         yield a single entry with ``char`` set to the two-character token.
+
+        Parameters
+        ----------
+        text : str
+            Source text to scan.
+
+        Returns
+        -------
+        iterator
+            Iterator over ``(index, token, at_top)`` tuples describing the
+            top-level scanning state.
         """
         square_depth = 0
         curly_depth = 0
@@ -232,7 +382,20 @@ class MathematicaParser:
             index += 1
 
     def split_top_level(self, text: str, separator: str = ",") -> list[str]:
-        """Split `text` on separators that appear only at top level."""
+        """Split text on separators that appear only at top level.
+
+        Parameters
+        ----------
+        text : str
+            Source text to split.
+        separator : str, optional
+            Separator token to honor only at top level.
+
+        Returns
+        -------
+        list[str]
+            Top-level segments with surrounding whitespace removed.
+        """
         parts = []
         start = 0
 
@@ -247,14 +410,38 @@ class MathematicaParser:
         return parts
 
     def find_top_level(self, text: str, token: str) -> int:
-        """Find the first top-level occurrence of `token` in `text`."""
+        """Find the first top-level occurrence of a token in text.
+
+        Parameters
+        ----------
+        text : str
+            Source text to search.
+        token : str
+            Token to locate.
+
+        Returns
+        -------
+        int
+            Index of the first top-level occurrence, or ``-1`` when absent.
+        """
         for index, _char, at_top in self._iter_top_level(text):
             if at_top and text.startswith(token, index):
                 return index
         return -1
 
     def find_top_level_assignment(self, text: str) -> int:
-        """Locate a plain top-level assignment operator in Mathematica code."""
+        """Locate a plain top-level assignment operator in Mathematica code.
+
+        Parameters
+        ----------
+        text : str
+            Source text to search.
+
+        Returns
+        -------
+        int
+            Index of the assignment operator, or ``-1`` when none is found.
+        """
         for index, char, at_top in self._iter_top_level(text):
             if at_top and char == "=":
                 prev_char = text[index - 1] if index > 0 else ""
@@ -264,7 +451,18 @@ class MathematicaParser:
         return -1
 
     def parse_association(self, text: str) -> dict[str, Any]:
-        """Parse a Mathematica association `<| ... |>` into Python data."""
+        """Parse a Mathematica association into Python metadata.
+
+        Parameters
+        ----------
+        text : str
+            Mathematica association of the form ``<| ... |>``.
+
+        Returns
+        -------
+        dict[str, Any]
+            Parsed association values converted recursively into Python types.
+        """
         inner = text.strip()[2:-2].strip()
         metadata = {}
         for item in self.split_top_level(inner):
@@ -277,7 +475,19 @@ class MathematicaParser:
         return metadata
 
     def parse_metadata_value(self, value: str) -> Any:
-        """Parse a metadata value from a Mathematica association."""
+        """Parse a metadata value from a Mathematica association.
+
+        Parameters
+        ----------
+        value : str
+            Raw association value.
+
+        Returns
+        -------
+        Any
+            Parsed Python value, preserving strings, lists, and nested
+            associations.
+        """
         value = value.strip()
         if value.startswith('"') and value.endswith('"'):
             return self.strip_quotes(value)
@@ -303,12 +513,35 @@ class MathematicaParser:
         return value
 
     def strip_quotes(self, text: str) -> str:
-        """Remove a single surrounding pair of double quotes, if present."""
+        """Remove one surrounding pair of double quotes when present.
+
+        Parameters
+        ----------
+        text : str
+            Text to normalize.
+
+        Returns
+        -------
+        str
+            Unquoted text when the input was wrapped in double quotes.
+        """
         if text.startswith('"') and text.endswith('"'):
             return text[1:-1]
         return text
 
     def _parse_source_items(self, items: list[str]) -> ParsedMathematicaSource:
+        """Parse a sequence of top-level Mathematica source items.
+
+        Parameters
+        ----------
+        items : list[str]
+            Top-level source items extracted from a file or module body.
+
+        Returns
+        -------
+        ParsedMathematicaSource
+            Structured representation built from the supplied items.
+        """
         parsed = ParsedMathematicaSource()
         for item in items:
             if self.is_top_level_association(item):
@@ -335,6 +568,18 @@ class MathematicaParser:
         return parsed
 
     def _replace_box_expressions(self, text: str) -> str:
+        """Replace notebook box expressions with placeholder tokens.
+
+        Parameters
+        ----------
+        text : str
+            Raw Mathematica source text.
+
+        Returns
+        -------
+        str
+            Source text with box expressions replaced by ``BoxExpr`` tokens.
+        """
         pattern = re.compile(r"\\!\\\(\\\*.*?\\\)", re.DOTALL)
         counter = 0
         while True:
@@ -347,6 +592,19 @@ class MathematicaParser:
             counter += 1
 
     def _replace_empty_series_data(self, text: str) -> str:
+        """Replace empty ``SeriesData`` constructs with explicit zeros.
+
+        Parameters
+        ----------
+        text : str
+            Mathematica expression source.
+
+        Returns
+        -------
+        str
+            Updated source string with empty ``SeriesData`` blocks replaced by
+            ``0``.
+        """
         search_start = 0
         while True:
             series_index = text.find("SeriesData[", search_start)
@@ -366,6 +624,18 @@ class MathematicaParser:
             search_start = series_index + len("SeriesData[")
 
     def _convert_special_forms(self, expr):
+        """Normalize parser-specific symbolic forms into standard SymPy.
+
+        Parameters
+        ----------
+        expr : object
+            Parsed expression tree or literal value.
+
+        Returns
+        -------
+        object
+            Expression with special Mathematica forms converted when needed.
+        """
         if not isinstance(expr, sp.Basic):
             return expr
 
@@ -387,6 +657,19 @@ class MathematicaParser:
         return self._convert_log_symbol(expr.func(*converted_args))
 
     def _convert_log_symbol(self, expr):
+        """Convert placeholder ``LogX`` symbols back into explicit logarithms.
+
+        Parameters
+        ----------
+        expr : object
+            Symbolic object to normalize.
+
+        Returns
+        -------
+        object
+            Converted SymPy logarithm when the symbol matches the placeholder
+            pattern, otherwise the input expression.
+        """
         if (
             isinstance(expr, sp.Symbol)
             and expr.name.startswith("Log")
@@ -396,6 +679,18 @@ class MathematicaParser:
         return expr
 
     def _convert_series_data(self, expr):
+        """Convert a Mathematica ``SeriesData`` object into a SymPy series sum.
+
+        Parameters
+        ----------
+        expr : sympy.Basic
+            Parsed ``SeriesData`` expression.
+
+        Returns
+        -------
+        sympy.Expr
+            Explicit SymPy expression equivalent to the series data.
+        """
         variable = self._convert_special_forms(expr.args[0])
         point = self._convert_special_forms(expr.args[1])
         coefficients = self._series_coefficients(expr.args[2])
@@ -418,6 +713,18 @@ class MathematicaParser:
         return result
 
     def _series_coefficients(self, coefficient_data):
+        """Return the coefficient list encoded inside ``SeriesData``.
+
+        Parameters
+        ----------
+        coefficient_data : sympy.Basic
+            Parsed coefficient payload from a ``SeriesData`` expression.
+
+        Returns
+        -------
+        list[sympy.Basic]
+            Coefficients expanded into a plain Python list.
+        """
         if isinstance(coefficient_data, sp.Tuple):
             return list(coefficient_data)
 
@@ -435,6 +742,22 @@ class MathematicaParser:
         return [coefficient_data]
 
     def _series_basis(self, variable, point, exponent):
+        """Return the basis monomial associated with a series coefficient.
+
+        Parameters
+        ----------
+        variable : sympy.Symbol
+            Series expansion variable.
+        point : sympy.Expr
+            Expansion point.
+        exponent : sympy.Expr
+            Exponent associated with the current coefficient.
+
+        Returns
+        -------
+        sympy.Expr
+            Basis term for the requested series coefficient.
+        """
         if point in {sp.Symbol("Infinity"), sp.oo}:
             return variable ** (-exponent)
 

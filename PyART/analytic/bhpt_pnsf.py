@@ -12,7 +12,25 @@ from .analytic_catalog import AnalyticCatalog
 
 @dataclass(slots=True)
 class BHPTEntry:
-    """Parsed representation of a single BHPT series file."""
+    """Parsed representation of a single BHPT series file.
+
+    Parameters
+    ----------
+    key : str
+        Canonical catalog key for the entry.
+    path : str
+        Absolute path to the Mathematica source file.
+    metadata : dict[str, Any]
+        Metadata association extracted from the file.
+    assignments : dict[str, str]
+        Top-level Mathematica assignments found in the source.
+    definitions : dict[str, str]
+        Delayed Mathematica definitions found in the source.
+    expr : sympy.Basic
+        Parsed SymPy expression for the selected series.
+    quantity : AnalyticExpression
+        Wrapped analytic expression corresponding to ``expr``.
+    """
 
     key: str
     path: str
@@ -23,6 +41,23 @@ class BHPTEntry:
     quantity: AnalyticExpression
 
     def __getitem__(self, field_name: str) -> Any:
+        """Return an entry attribute using mapping-style access.
+
+        Parameters
+        ----------
+        field_name : str
+            Name of the dataclass field to retrieve.
+
+        Returns
+        -------
+        Any
+            Value stored in the requested field.
+
+        Raises
+        ------
+        KeyError
+            If ``field_name`` is not a valid attribute name.
+        """
         try:
             return getattr(self, field_name)
         except AttributeError as exc:
@@ -31,25 +66,38 @@ class BHPTEntry:
 
 class BHPTPN(AnalyticCatalog):
     """
-    Interface with the BlackHolePerturbationToolkit (BHPT)
-    post-Newtonian self force expressions.
-    See:
-    https://github.com/BlackHolePerturbationToolkit/PostNewtonianSelfForce
+    Interface to BlackHolePerturbationToolkit self-force series data.
+
+    Parameters
+    ----------
+    path : str
+        Path to the local BHPT repository or extracted data directory.
+    download : bool, optional
+        If ``True``, clone the repository when it is not already present.
+
+    Notes
+    -----
+    The expected repository layout follows the
+    BlackHolePerturbationToolkit PostNewtonianSelfForce project.
     """
 
     structure_name = "BHPTPN"
 
     def __init__(self, path, download=False):
-        """
-        Initialize the BHPTPN class.
+        """Initialize the BHPT catalog wrapper.
 
         Parameters
         ----------
         path : str
-            The path to the directory where the BHPTPN expressions are stored.
+            Path to the directory where BHPT expression files are stored.
         download : bool, optional
-            Whether to download the BHPTPN expressions if they are
-            not found in the specified path.
+            If ``True``, clone the upstream repository before indexing.
+
+        Returns
+        -------
+        None
+            The catalog index and parser cache are initialized on the
+            instance.
         """
         super().__init__(path)
         if download:
@@ -59,8 +107,12 @@ class BHPTPN(AnalyticCatalog):
         self.__parse_bhptpn()
 
     def download_bhptpn(self):
-        """
-        Clone the BHPTPN repository from GitHub to the specified path.
+        """Clone the BHPT repository into the configured catalog path.
+
+        Returns
+        -------
+        None
+            The repository is cloned when it is not already available.
         """
         import subprocess
 
@@ -89,9 +141,17 @@ class BHPTPN(AnalyticCatalog):
         logging.info("BHPT repository cloned to %s.", self.path)
 
     def __parse_bhptpn(self):
-        """
-        Internal method to parse the BHPTPN expressions from the
-        files in the specified path.
+        """Index the BHPT Mathematica files available on disk.
+
+        Returns
+        -------
+        None
+            The indexed path mapping is stored on the instance.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the configured BHPT path does not exist.
         """
 
         if not os.path.isdir(self.path):
@@ -108,11 +168,37 @@ class BHPTPN(AnalyticCatalog):
         logging.info("BHPT structure parsed successfully.")
 
     def get_metadata(self, name=None, path=None):
-        """Return the metadata association for a resolved BHPT entry."""
+        """Return metadata for a resolved BHPT entry.
+
+        Parameters
+        ----------
+        name : str or None, optional
+            Indexed quantity name used for lookup.
+        path : str or None, optional
+            Direct path to the Mathematica file.
+
+        Returns
+        -------
+        dict[str, Any]
+            Metadata association extracted from the selected entry.
+        """
         return self.get_entry(name=name, path=path)["metadata"]
 
     def get_pn_quantity(self, name=None, path=None):
-        """Return the parsed BHPT series wrapped as an AnalyticExpression."""
+        """Return a BHPT series as an analytic expression wrapper.
+
+        Parameters
+        ----------
+        name : str or None, optional
+            Indexed quantity name used for lookup.
+        path : str or None, optional
+            Direct path to the Mathematica file.
+
+        Returns
+        -------
+        AnalyticExpression
+            Parsed BHPT series wrapped for symbolic and numerical use.
+        """
         return self.get_entry(name=name, path=path)["quantity"]
 
     def get_entry(self, name=None, path=None):
@@ -124,6 +210,23 @@ class BHPTPN(AnalyticCatalog):
         metadata, raw assignment tables extracted from the Mathematica
         source, the SymPy expression, and the corresponding
         `AnalyticExpression` wrapper.
+
+        Parameters
+        ----------
+        name : str or None, optional
+            Indexed quantity name used for lookup.
+        path : str or None, optional
+            Direct path to a Mathematica file inside the indexed tree.
+
+        Returns
+        -------
+        BHPTEntry
+            Parsed and cached representation of the requested series file.
+
+        Raises
+        ------
+        ValueError
+            If the source or selected expression cannot be parsed.
         """
         key, resolved_path = self._resolve_entry(name=name, path=path)
         if resolved_path in self._entry_cache:
@@ -174,6 +277,18 @@ class BHPTPN(AnalyticCatalog):
         A direct path lookup wins when `path` is provided, but the resolved
         file must still live inside the configured BHPT tree. Otherwise the
         method performs a normalized token match on the indexed quantity keys.
+
+        Parameters
+        ----------
+        name : str or None, optional
+            Indexed quantity name used for lookup.
+        path : str or None, optional
+            Direct path to a Mathematica file inside the indexed tree.
+
+        Returns
+        -------
+        tuple[str, str]
+            Canonical quantity key and absolute file path.
         """
         if path is not None:
             key, resolved_path = self._resolve_indexed_path(

@@ -106,6 +106,24 @@ _PNPEDIA_CAPITAL_IDENTIFIER_REPLACEMENTS = (
 
 
 def _build_identifier_replacements(*groups):
+    """Combine identifier replacement tables into one validated mapping.
+
+    Parameters
+    ----------
+    *groups : tuple[tuple[str, str], ...]
+        Replacement groups containing ``(source, target)`` pairs.
+
+    Returns
+    -------
+    dict[str, str]
+        Combined mapping from Mathematica identifiers to Python-friendly
+        replacements.
+
+    Raises
+    ------
+    ValueError
+        If the same source identifier appears in more than one group.
+    """
     replacements = {}
     for group in groups:
         for source, target in group:
@@ -167,11 +185,12 @@ class PNPedia(AnalyticCatalog):
         self.__parse_pnpedia()
 
     def download_pnpedia(self):
-        """
-        Clone the PNPedia repository from GitHub using git.
+        """Clone the PNPedia repository into the configured path.
 
-        This method requires git to be installed on the system and accessible
-        via the command line.
+        Returns
+        -------
+        None
+            The repository is cloned when it is not already available.
         """
         import subprocess
 
@@ -196,8 +215,12 @@ class PNPedia(AnalyticCatalog):
         logging.info("PNPedia repository cloned to %s", self.path)
 
     def __parse_pnpedia(self):
-        """
-        Build the indexed PNPedia quantity structure for later lookup.
+        """Index the available PNPedia quantity files.
+
+        Returns
+        -------
+        None
+            The quantity index is stored on the instance.
         """
 
         self._set_index(self.path, (".txt",))
@@ -205,6 +228,20 @@ class PNPedia(AnalyticCatalog):
         logging.info("PNPedia structure parsed successfully.")
 
     def _resolve_quantity_path(self, name, path=None):
+        """Resolve a quantity request to a concrete file path.
+
+        Parameters
+        ----------
+        name : str
+            Indexed quantity name or tokenized query.
+        path : str or None, optional
+            Direct path to a quantity file.
+
+        Returns
+        -------
+        str
+            Absolute path to the selected PNPedia file.
+        """
         if path is not None:
             resolved_path = self._resolve_existing_path(path, self.path)
             logging.info("Loading PN quantity from %s...", resolved_path)
@@ -220,16 +257,55 @@ class PNPedia(AnalyticCatalog):
         return resolved_path
 
     def _prepare_quantity_expression(self, content):
+        """Normalize a raw PNPedia file before symbolic parsing.
+
+        Parameters
+        ----------
+        content : str
+            Raw Mathematica-formatted file content.
+
+        Returns
+        -------
+        str
+            Normalized source string ready for SymPy parsing.
+        """
         converted_content = self.mathematica_to_python_vars(content)
         return self._mathematica_parser.normalize_source(converted_content)
 
     def _sympify_quantity_expression(self, prepared_content):
+        """Parse normalized content through a direct ``sympify`` fallback.
+
+        Parameters
+        ----------
+        prepared_content : str
+            Normalized expression source.
+
+        Returns
+        -------
+        sympy.Expr
+            Expression parsed with bracket and power syntax converted to Python
+            equivalents.
+        """
         content_py = (
             prepared_content.replace("[", "(").replace("]", ")").replace("^", "**")
         )
         return sp.sympify(content_py)
 
     def _parse_quantity_expression(self, content, path):
+        """Parse a PNPedia quantity with a ``sympify`` fallback path.
+
+        Parameters
+        ----------
+        content : str
+            Raw quantity file content.
+        path : str
+            Path used for logging and error context.
+
+        Returns
+        -------
+        sympy.Expr
+            Parsed symbolic expression.
+        """
         prepared_content = self._prepare_quantity_expression(content)
         try:
             return parse_mathematica(prepared_content)
@@ -245,6 +321,23 @@ class PNPedia(AnalyticCatalog):
             return self._sympify_quantity_expression(prepared_content)
 
     def _resolve_variable_symbol(self, variable):
+        """Resolve the truncation variable to a SymPy symbol.
+
+        Parameters
+        ----------
+        variable : str or sympy.Symbol
+            Variable used to truncate the PN expansion.
+
+        Returns
+        -------
+        sympy.Symbol
+            Symbol corresponding to ``variable``.
+
+        Raises
+        ------
+        TypeError
+            If ``variable`` is neither a string nor a SymPy symbol.
+        """
         if isinstance(variable, str):
             return sp.symbols(variable)
         if isinstance(variable, sp.Symbol):
@@ -252,6 +345,22 @@ class PNPedia(AnalyticCatalog):
         raise TypeError("variable must be a string or a sympy.Symbol")
 
     def _truncate_expression(self, pn_quantity, order, x_symbol):
+        """Truncate a PN expression at a requested order in one variable.
+
+        Parameters
+        ----------
+        pn_quantity : sympy.Expr
+            Parsed PN quantity before truncation.
+        order : object
+            Requested PN order relative to the leading term.
+        x_symbol : sympy.Symbol
+            Variable used to measure the PN order.
+
+        Returns
+        -------
+        sympy.Expr
+            Truncated symbolic expression.
+        """
         # Replace x-dependent logs with a placeholder so expansion and power
         # counting do not discard their multiplicative x dependence.
         pn_quantity = pn_quantity.replace(sp.log(x_symbol), _LOG_X_PLACEHOLDER)

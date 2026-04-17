@@ -6,7 +6,18 @@ import sympy as sp
 # Module-level utilities
 # ---------------------------------------------------------------------------
 def _is_sympy(x):
-    """Recursively check whether an object contains symbolic values."""
+    """Return whether an object contains SymPy-compatible symbolic values.
+
+    Parameters
+    ----------
+    x : object
+        Object or nested container to inspect.
+
+    Returns
+    -------
+    bool
+        ``True`` when ``x`` or one of its elements is symbolic.
+    """
     if isinstance(x, (sp.Basic, sp.Expr, AnalyticExpression)):
         return True
     if isinstance(x, (list, tuple, np.ndarray)):
@@ -15,7 +26,25 @@ def _is_sympy(x):
 
 
 def _get_x_exponent(term, x_symbol=None):
-    """Return the exponent of *x_symbol* in a single expanded term."""
+    """Return the exponent of a variable within a single expression term.
+
+    Parameters
+    ----------
+    term : sympy.Expr
+        Expression term whose power of ``x_symbol`` should be measured.
+    x_symbol : str or sympy.Symbol, optional
+        Variable whose exponent should be extracted. Defaults to ``x``.
+
+    Returns
+    -------
+    sympy.Expr
+        Exponent of ``x_symbol`` in ``term``.
+
+    Raises
+    ------
+    TypeError
+        If ``x_symbol`` is neither a string nor a SymPy symbol.
+    """
     if x_symbol is None:
         x_symbol = sp.symbols("x")
     elif isinstance(x_symbol, str):
@@ -45,7 +74,21 @@ def _get_x_exponent(term, x_symbol=None):
 
 
 def _get_x_power_range(expr, x_symbol=None):
-    """Return (min_exponent, max_exponent) of *x_symbol* across all terms."""
+    """Return the minimum and maximum powers of a variable in an expression.
+
+    Parameters
+    ----------
+    expr : sympy.Expr
+        Expression to inspect.
+    x_symbol : str or sympy.Symbol, optional
+        Variable whose exponents should be measured. Defaults to ``x``.
+
+    Returns
+    -------
+    tuple[sympy.Expr, sympy.Expr]
+        Minimum and maximum exponents of ``x_symbol`` across the expanded
+        additive terms of ``expr``.
+    """
     if x_symbol is None:
         x_symbol = sp.symbols("x")
     elif isinstance(x_symbol, str):
@@ -61,12 +104,28 @@ def _get_x_power_range(expr, x_symbol=None):
 
 
 class MathDispatcher:
-    """
-    Unifies sympy and numpy calls to prevent code duplication
-    in mathematical transformations.
+    """Dispatch basic math operations to SymPy or NumPy.
+
+    Parameters
+    ----------
+    use_sympy : bool
+        If ``True``, symbolic SymPy operations are used. Otherwise NumPy
+        numeric operations are used.
     """
 
     def __init__(self, use_sympy):
+        """Initialize the dispatcher for symbolic or numeric evaluation.
+
+        Parameters
+        ----------
+        use_sympy : bool
+            Whether to route operations through SymPy.
+
+        Returns
+        -------
+        None
+            The dispatcher stores the selected backend functions.
+        """
         self.use_sympy = use_sympy
         self.sqrt = sp.sqrt if use_sympy else np.sqrt
         self.log = sp.log if use_sympy else np.log
@@ -75,6 +134,25 @@ class MathDispatcher:
         self.arctan2 = sp.atan2 if use_sympy else np.arctan2
 
     def dot(self, a, b):
+        """Return the dot product of two vectors.
+
+        Parameters
+        ----------
+        a : sequence
+            First vector.
+        b : sequence
+            Second vector.
+
+        Returns
+        -------
+        sympy.Expr or float
+            Dot product computed with the configured backend.
+
+        Raises
+        ------
+        ValueError
+            If the input vectors do not have the same length.
+        """
         if len(a) != len(b):
             raise ValueError("Vectors must have the same dimension")
         if self.use_sympy:
@@ -82,18 +160,51 @@ class MathDispatcher:
         return np.dot(a, b)
 
     def norm(self, v):
+        """Return the Euclidean norm of a vector.
+
+        Parameters
+        ----------
+        v : sequence
+            Vector whose norm should be computed.
+
+        Returns
+        -------
+        sympy.Expr or float
+            Euclidean norm computed with the configured backend.
+        """
         if self.use_sympy:
             return self.sqrt(sum(x**2 for x in v))
         return np.linalg.norm(v)
 
 
 class AnalyticExpression(object):
-    """
-    Parent class for analytic expressions, wrapping sympy for symbolic manipulation
-    while offering high-performance, cached numerical evaluation via lazy lambdification.
+    """Wrap a SymPy expression with helpers for analysis and evaluation.
+
+    Parameters
+    ----------
+    expr : object, optional
+        Expression that can be converted to a SymPy object.
+    var : str, sympy.Symbol, sequence, or None, optional
+        Variables used for numerical evaluation. When omitted, free symbols are
+        inferred from ``expr``.
     """
 
     def __init__(self, expr=None, var=None):
+        """Create an analytic expression wrapper.
+
+        Parameters
+        ----------
+        expr : object, optional
+            Expression that can be converted to a SymPy object.
+        var : str, sympy.Symbol, sequence, or None, optional
+            Evaluation variables. Free symbols are inferred when omitted.
+
+        Returns
+        -------
+        None
+            The expression, variables, and internal caches are stored on the
+            instance.
+        """
         self.expr = None if expr is None else sp.sympify(expr)
 
         # Auto-infer variables if none are provided
@@ -114,6 +225,28 @@ class AnalyticExpression(object):
         self._truncate_term_cache = {}
 
     def __call__(self, *args, **kwds):
+        """Evaluate the expression numerically using cached lambdification.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional values corresponding to ``self.var`` in order.
+        **kwds : dict
+            Keyword values keyed by variable name.
+
+        Returns
+        -------
+        object
+            Numerical result returned by the compiled backend function.
+
+        Raises
+        ------
+        ValueError
+            If the expression has no variables or the wrong number of
+            positional arguments is supplied.
+        KeyError
+            If a required keyword argument is missing.
+        """
         if self.expr is None or not self.var:
             raise ValueError("No expression and/or variables set for evaluation")
 
@@ -134,12 +267,47 @@ class AnalyticExpression(object):
         return self._compiled_func(*eval_args)
 
     def derivative(self, var):
+        """Differentiate the expression with respect to one variable.
+
+        Parameters
+        ----------
+        var : str or sympy.Symbol
+            Variable of differentiation.
+
+        Returns
+        -------
+        AnalyticExpression
+            Wrapped derivative of the stored expression.
+
+        Raises
+        ------
+        ValueError
+            If no expression is stored.
+        """
         if self.expr is None:
             raise ValueError("No expression set")
         v = sp.symbols(var) if isinstance(var, str) else var
         return AnalyticExpression(self.expr.diff(v), var=self.var)
 
     def pn_order(self, var):
+        """Return the highest power and PN span of an expansion variable.
+
+        Parameters
+        ----------
+        var : str or sympy.Symbol
+            Expansion variable to inspect.
+
+        Returns
+        -------
+        tuple[sympy.Expr, sympy.Expr]
+            Highest exponent of ``var`` and the range between maximum and
+            minimum exponents.
+
+        Raises
+        ------
+        ValueError
+            If no expression is stored.
+        """
         if self.expr is None:
             raise ValueError("No expression set")
         v = sp.symbols(var) if isinstance(var, str) else var
@@ -151,6 +319,13 @@ class AnalyticExpression(object):
     @staticmethod
     def _extract_truncation_terms(expr, variable):
         """Return termwise powers of ``variable`` for fast truncation.
+
+        Parameters
+        ----------
+        expr : sympy.Expr
+            Expression to decompose into additive terms.
+        variable : sympy.Symbol
+            Expansion variable whose termwise exponent should be tracked.
 
         The fast truncation path only works when ``expr`` can be treated as a
         sum of terms whose dependence on ``variable`` is a single
@@ -187,6 +362,11 @@ class AnalyticExpression(object):
 
     def _build_truncation_terms(self, variable):
         """Prepare and cache the term data used by ``truncate``.
+
+        Parameters
+        ----------
+        variable : sympy.Symbol
+            Expansion variable used for truncation.
 
         This helper first protects ``log(variable)`` factors with a temporary
         placeholder so logarithms are preserved while powers of
@@ -239,6 +419,23 @@ class AnalyticExpression(object):
         ``2`` and ``3`` respectively. More complicated logarithmic dependence,
         such as ``log(1 + x)`` or ``log(x**2)``, is not normalized this way and
         will typically force the slower series-based fallback.
+
+        Parameters
+        ----------
+        var : str or sympy.Symbol
+            Variable used to define the truncation order.
+        max_order : object
+            Maximum power of ``var`` to retain.
+
+        Returns
+        -------
+        AnalyticExpression
+            Truncated analytic expression.
+
+        Raises
+        ------
+        ValueError
+            If no expression is stored.
         """
         if self.expr is None:
             raise ValueError("No expression set")
@@ -302,11 +499,40 @@ class AnalyticExpression(object):
         return result
 
     def to_latex(self):
+        """Render the stored expression as a LaTeX string.
+
+        Returns
+        -------
+        str
+            LaTeX representation of the stored expression.
+
+        Raises
+        ------
+        ValueError
+            If no expression is stored.
+        """
         if self.expr is None:
             raise ValueError("No expression set")
         return sp.latex(self.expr)
 
     def to_function(self, modules="numpy"):
+        """Compile the expression into a callable numerical function.
+
+        Parameters
+        ----------
+        modules : str or sequence, optional
+            Backend passed to :func:`sympy.lambdify`.
+
+        Returns
+        -------
+        tuple[callable, tuple[sympy.Symbol, ...]]
+            Compiled callable and the variable ordering it expects.
+
+        Raises
+        ------
+        ValueError
+            If no expression is stored.
+        """
         if self.expr is None:
             raise ValueError("No expression set")
         if self._compiled_func is None:
@@ -318,7 +544,13 @@ class AnalyticExpression(object):
     # -------------
 
     def _sympy_(self):
-        """Allows sympy functions (sp.sin, sp.expand) to interact natively."""
+        """Expose the wrapped SymPy expression to SymPy internals.
+
+        Returns
+        -------
+        sympy.Expr
+            Stored SymPy expression.
+        """
         return self.expr
 
     def __getattr__(self, name):
