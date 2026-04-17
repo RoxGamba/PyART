@@ -1,13 +1,18 @@
 from pathlib import Path
 
+import pytest
 import sympy as sp
 
 from PyART.analytic import BHPTEntry, BHPTPN
 from PyART.analytic.expr import AnalyticExpression
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-BHPT_ROOT = REPO_ROOT / "PyART" / "analytic" / "PostNewtonianSelfForce"
+@pytest.fixture(scope="session")
+def bhptpn_instance(tmp_path_factory):
+    download_path = (
+        tmp_path_factory.mktemp("bhptpn-runtime-download") / "PostNewtonianSelfForce"
+    )
+    return BHPTPN(path=str(download_path), download=True)
 
 
 def test_bhpt_parses_seriesdata_module_body(tmp_path):
@@ -117,14 +122,14 @@ def test_bhpt_parses_empty_nested_seriesdata_as_zero(tmp_path):
     assert quantity.var == (y,)
 
 
-def test_bhpt_parses_real_redshift_file():
+def test_bhpt_parses_real_redshift_file(bhptpn_instance):
+    bhpt_root = Path(bhptpn_instance.path)
     redshift_path = (
-        BHPT_ROOT / "SeriesData" / "Schwarzschild" / "Circular" / "Local" / "Redshift.m"
+        bhpt_root / "SeriesData" / "Schwarzschild" / "Circular" / "Local" / "Redshift.m"
     )
 
-    loader = BHPTPN(str(BHPT_ROOT))
-    entry = loader.get_entry(path=str(redshift_path))
-    cached_entry = loader.get_entry(path=str(redshift_path))
+    entry = bhptpn_instance.get_entry(path=str(redshift_path))
+    cached_entry = bhptpn_instance.get_entry(path=str(redshift_path))
     y = sp.symbols("y")
 
     assert isinstance(entry, BHPTEntry)
@@ -139,9 +144,10 @@ def test_bhpt_parses_real_redshift_file():
     assert cached_entry is entry
 
 
-def test_bhpt_parses_real_eccentric_redshift_y_file():
+def test_bhpt_parses_real_eccentric_redshift_y_file(bhptpn_instance):
+    bhpt_root = Path(bhptpn_instance.path)
     redshift_path = (
-        BHPT_ROOT
+        bhpt_root
         / "SeriesData"
         / "Schwarzschild"
         / "Eccentric"
@@ -149,8 +155,7 @@ def test_bhpt_parses_real_eccentric_redshift_y_file():
         / "Redshift-y.m"
     )
 
-    loader = BHPTPN(str(BHPT_ROOT))
-    entry = loader.get_entry(path=str(redshift_path))
+    entry = bhptpn_instance.get_entry(path=str(redshift_path))
     e, y = sp.symbols("e y")
 
     assert isinstance(entry, BHPTEntry)
@@ -171,11 +176,11 @@ def test_bhpt_parses_real_eccentric_redshift_y_file():
     assert pure_y_terms[0] == -y
 
 
-def test_bhpt_parses_real_kerr_spherical_orbit_energy_file():
-    energy_path = BHPT_ROOT / "SeriesData" / "Kerr" / "Spherical" / "Orbit" / "Energy.m"
+def test_bhpt_parses_real_kerr_spherical_orbit_energy_file(bhptpn_instance):
+    bhpt_root = Path(bhptpn_instance.path)
+    energy_path = bhpt_root / "SeriesData" / "Kerr" / "Spherical" / "Orbit" / "Energy.m"
 
-    loader = BHPTPN(str(BHPT_ROOT))
-    entry = loader.get_entry(path=str(energy_path))
+    entry = bhptpn_instance.get_entry(path=str(energy_path))
     p, a, x = sp.symbols("p a x")
 
     assert isinstance(entry, BHPTEntry)

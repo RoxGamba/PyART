@@ -34,6 +34,34 @@ def test_analytic_expression_basic():
     assert float(func(3, 2)) == 11.0
 
 
+def test_analytic_expression_truncate_preserves_logs_and_fractional_terms():
+    x = sp.symbols("x")
+    expr = AnalyticExpression(
+        x**-1
+        + sp.sqrt(x)
+        + x * sp.log(x)
+        + x**2
+        + x ** sp.Rational(5, 2)
+        + x ** sp.Rational(7, 2),
+        var=x,
+    )
+
+    truncated = expr.truncate("x", 2)
+    expected = x**-1 + sp.sqrt(x) + x * sp.log(x) + x**2
+
+    assert sp.simplify(truncated.expr - expected) == 0
+
+
+def test_analytic_expression_truncate_falls_back_for_series_expansion():
+    x = sp.symbols("x")
+    expr = AnalyticExpression(1 / (1 - x), var=x)
+
+    truncated = expr.truncate("x", 3)
+    expected = 1 + x + x**2 + x**3
+
+    assert sp.expand(truncated.expr) == sp.expand(expected)
+
+
 def test_coordschange_polar_cartesian_round_trip_numeric():
     x, y, px, py = CoordsChange.Polar2Cartesian(1.0, np.pi / 2, 0.1, 0.2)
     assert np.allclose([x, y], [0.0, 1.0], atol=1e-12)

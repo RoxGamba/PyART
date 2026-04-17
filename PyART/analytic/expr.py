@@ -108,6 +108,10 @@ class AnalyticExpression(object):
             self.var = tuple()
 
         self._compiled_func = None
+        # Cache completed truncation results keyed by variable and order.
+        self._truncate_result_cache = {}
+        # Cache the reusable term decomposition for the fast truncation path.
+        self._truncate_term_cache = {}
 
     def __call__(self, *args, **kwds):
         if self.expr is None or not self.var:
@@ -144,25 +148,158 @@ class AnalyticExpression(object):
         min_exp, max_exp = _get_x_power_range(tmp, x_symbol=v)
         return max_exp, max_exp - min_exp
 
+    @staticmethod
+    def _extract_truncation_terms(expr, variable):
+        """Return termwise powers of ``variable`` for fast truncation.
+
+        The fast truncation path only works when ``expr`` can be treated as a
+        sum of terms whose dependence on ``variable`` is a single
+        overall power.
+        For each additive term, this helper computes that exponent and verifies
+        that dividing the term by ``variable**exponent`` removes all remaining
+        dependence on ``variable``.
+
+        Returns
+        -------
+        list[tuple[sympy.Expr, sympy.Expr]] | None
+            A list of ``(term, exponent)`` pairs when the expression is safe to
+            truncate by exponent filtering, or ``None`` when a term has a
+            symbolic exponent or retains non-factorable dependence on
+            ``variable``.
+        """
+        terms = []
+        for term in sp.Add.make_args(expr):
+            exponent = _get_x_exponent(term, variable)
+            if getattr(exponent, "free_symbols", None):
+                return None
+
+            try:
+                remainder = term / (variable**exponent) if exponent != 0 else term
+            except TypeError:
+                return None
+
+            if remainder.has(variable):
+                return None
+
+            terms.append((term, exponent))
+
+        return terms
+
+    def _build_truncation_terms(self, variable):
+        """Prepare and cache the term data used by ``truncate``.
+
+        This helper first protects ``log(variable)`` factors with a temporary
+        placeholder so logarithms are preserved while powers of
+        ``variable`` are analyzed. It then tries to extract termwise
+        exponents directly from the stored expression and, if needed,
+        from an ``expand_mul`` view that only expands multiplicative
+        structure.
+
+        Returns
+        -------
+        tuple[list[tuple[sympy.Expr, sympy.Expr]], sympy.Symbol] | None
+            Cached ``(terms, log_placeholder)`` data for the fast truncation
+            path, or ``None`` if the expression must fall back to the slower
+            series-based path.
+        """
+        if variable in self._truncate_term_cache:
+            return self._truncate_term_cache[variable]
+
+        # Protect exact log(variable) factors so they survive truncation but
+        # do not interfere with power counting.
+        log_v = sp.Dummy(f"log_{variable.name}_tmp")
+        protected_expr = self.expr.replace(sp.log(variable), log_v)
+
+        terms = self._extract_truncation_terms(protected_expr, variable)
+        if terms is None:
+            # expand_mul exposes products of sums without the blow-up of a
+            # full symbolic expand, which is usually enough for term filtering.
+            expanded_expr = sp.expand_mul(protected_expr)
+            if expanded_expr != protected_expr:
+                terms = self._extract_truncation_terms(expanded_expr, variable)
+
+        cache_entry = None if terms is None else (terms, log_v)
+        self._truncate_term_cache[variable] = cache_entry
+        return cache_entry
+
     def truncate(self, var, max_order):
         """
-        Truncates the expression up to the target PN order using SymPy's series expansion.
-        This is significantly faster and more robust than manual tree-walking.
+        Truncate the expression by removing terms whose exponent in ``var``
+        is strictly greater than ``max_order``.
+
+        When the expression is already a sum of termwise powers in the target
+        variable, use cached exponent filtering. Fall back to SymPy series
+        expansion plus the same exponent filtering for non-termwise
+        expressions.
+
+        In the fast path, exact ``log(var)`` factors are temporarily replaced
+        by a placeholder symbol before exponent extraction. This makes
+        logarithms behave like coefficients for power counting, so terms such
+        as ``x**2 * log(x)`` and ``x**3 * log(x)**2`` are treated as orders
+        ``2`` and ``3`` respectively. More complicated logarithmic dependence,
+        such as ``log(1 + x)`` or ``log(x**2)``, is not normalized this way and
+        will typically force the slower series-based fallback.
         """
         if self.expr is None:
             raise ValueError("No expression set")
         v = sp.symbols(var) if isinstance(var, str) else var
+        requested_order = sp.sympify(max_order)
+        cache_key = (v, requested_order)
 
-        # Temporarily protect logs from series expansion
-        log_v = sp.symbols("log_v_tmp")
-        tmp = self.expr.replace(sp.log(v), log_v)
+        # Repeated truncations at the same order are common in plotting and
+        # benchmarking workflows, so memoize the wrapped result directly.
+        if cache_key in self._truncate_result_cache:
+            return self._truncate_result_cache[cache_key]
 
-        # Perform algebraic truncation
-        truncated = tmp.series(v, 0, max_order + 1).removeO()
+        term_cache = self._build_truncation_terms(v)
+        if term_cache is not None:
+            terms, log_v = term_cache
+            try:
+                # Fast path: keep only the terms whose overall power of v stays
+                # within the requested cutoff.
+                truncated_terms = [
+                    term for term, exponent in terms if exponent <= requested_order
+                ]
+                truncated = (
+                    sp.Add(*truncated_terms) if truncated_terms else sp.Integer(0)
+                )
+            except TypeError:
+                term_cache = None
 
-        # Restore logs
+        if term_cache is None:
+            # Protect logs before calling series so exact log(v) factors are
+            # preserved in the reconstructed expression.
+            log_v = sp.Dummy(f"log_{v.name}_tmp")
+            tmp = self.expr.replace(sp.log(v), log_v)
+
+            # SymPy's series truncation uses integer order, so request the
+            # smallest integer order that can still contain the target terms.
+            series_order = int(sp.floor(requested_order)) + 1
+            truncated_series = tmp.series(v, 0, series_order).removeO()
+
+            expanded_terms = self._extract_truncation_terms(
+                sp.expand_mul(truncated_series),
+                v,
+            )
+            if expanded_terms is None:
+                truncated = truncated_series
+            else:
+                # Filter once more after the series call so fractional powers
+                # above the requested cutoff are removed exactly.
+                truncated_terms = [
+                    term
+                    for term, exponent in expanded_terms
+                    if exponent <= requested_order
+                ]
+                truncated = (
+                    sp.Add(*truncated_terms) if truncated_terms else sp.Integer(0)
+                )
+
+        # Restore the protected logarithms before wrapping the result.
         final_expr = truncated.replace(log_v, sp.log(v))
-        return AnalyticExpression(final_expr, var=self.var)
+        result = AnalyticExpression(final_expr, var=self.var)
+        self._truncate_result_cache[cache_key] = result
+        return result
 
     def to_latex(self):
         if self.expr is None:
