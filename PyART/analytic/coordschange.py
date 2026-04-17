@@ -1,44 +1,8 @@
 import numpy as np
 import sympy as sp
-from .expr import AnalyticExpression
+from .expr import AnalyticExpression, MathDispatcher, _is_sympy
 
 pi = np.pi
-
-
-def _is_sympy(x):
-    """Recursively check whether an object contains symbolic values."""
-    if isinstance(x, (sp.Basic, sp.Expr, AnalyticExpression)):
-        return True
-    if isinstance(x, (list, tuple, np.ndarray)):
-        return any(_is_sympy(i) for i in x)
-    return False
-
-
-class MathDispatcher:
-    """
-    Unifies sympy and numpy calls to prevent code duplication
-    in mathematical transformations.
-    """
-
-    def __init__(self, use_sympy):
-        self.use_sympy = use_sympy
-        self.sqrt = sp.sqrt if use_sympy else np.sqrt
-        self.log = sp.log if use_sympy else np.log
-        self.cos = sp.cos if use_sympy else np.cos
-        self.sin = sp.sin if use_sympy else np.sin
-        self.arctan2 = sp.atan2 if use_sympy else np.arctan2
-
-    def dot(self, a, b):
-        if len(a) != len(b):
-            raise ValueError("Vectors must have the same dimension")
-        if self.use_sympy:
-            return sum(a[i] * b[i] for i in range(len(a)))
-        return np.dot(a, b)
-
-    def norm(self, v):
-        if self.use_sympy:
-            return self.sqrt(sum(x**2 for x in v))
-        return np.linalg.norm(v)
 
 
 class CoordsChange:
