@@ -1,3 +1,10 @@
+"""PNPedia catalog access with PNPedia-specific identifier normalization.
+
+The shared Mathematica parser remains library-agnostic. PNPedia-specific
+identifier rewrites are defined here and applied before delegating generic
+normalization and parsing to ``MathematicaParser``.
+"""
+
 import logging
 import os
 from tokenize import TokenError
@@ -6,12 +13,12 @@ import sympy as sp
 from sympy.core.sympify import SympifyError
 from sympy.parsing.mathematica import parse_mathematica
 
-from .expr import AnalyticExpression, _get_x_exponent, _get_x_power_range
+from .expr import AnalyticExpression
 from .mathematica_parser import MathematicaParser
 from .analytic_catalog import AnalyticCatalog
 
-
-_LOG_X_PLACEHOLDER = sp.Dummy("pnpedia_log_x")
+# These replacements encode PNPedia naming conventions only. They stay here so
+# the shared Mathematica parser remains generic across analytic sources.
 
 _PNPEDIA_SPECIAL_IDENTIFIER_REPLACEMENTS = (
     # Must come before shorter \[Lambda] etc to avoid partial match.
@@ -159,7 +166,13 @@ class PNPedia(AnalyticCatalog):
     Acts as a dictionary-backed store of
     :class:`~PyART.analytic.expr.AnalyticExpression` objects, one per PN
     quantity file. Quantities are parsed on demand from the Mathematica-format
-    text files distributed with PNPedia:
+    text files distributed with PNPedia.
+
+    PNPedia-specific identifier rewriting is handled in this module before
+    the source is passed to the shared
+    :class:`~PyART.analytic.mathematica_parser.MathematicaParser`.
+
+    Source files are distributed with PNPedia:
         https://github.com/davidtrestini/PNpedia
     """
 
@@ -259,6 +272,10 @@ class PNPedia(AnalyticCatalog):
     def _prepare_quantity_expression(self, content):
         """Normalize a raw PNPedia file before symbolic parsing.
 
+        PNPedia-specific identifier substitutions are applied locally first,
+        then the shared Mathematica parser performs generic source
+        normalization.
+
         Parameters
         ----------
         content : str
@@ -286,9 +303,8 @@ class PNPedia(AnalyticCatalog):
             Expression parsed with bracket and power syntax converted to Python
             equivalents.
         """
-        content_py = (
-            prepared_content.replace("[", "(").replace("]", ")").replace("^", "**")
-        )
+        content_py = prepared_content.replace("[", "(")
+        content_py = content_py.replace("]", ")").replace("^", "**")
         return sp.sympify(content_py)
 
     def _parse_quantity_expression(self, content, path):
@@ -344,62 +360,6 @@ class PNPedia(AnalyticCatalog):
             return variable
         raise TypeError("variable must be a string or a sympy.Symbol")
 
-    def _truncate_expression(self, pn_quantity, order, x_symbol):
-        """Truncate a PN expression at a requested order in one variable.
-
-        Parameters
-        ----------
-        pn_quantity : sympy.Expr
-            Parsed PN quantity before truncation.
-        order : object
-            Requested PN order relative to the leading term.
-        x_symbol : sympy.Symbol
-            Variable used to measure the PN order.
-
-        Returns
-        -------
-        sympy.Expr
-            Truncated symbolic expression.
-        """
-        # Replace x-dependent logs with a placeholder so expansion and power
-        # counting do not discard their multiplicative x dependence.
-        pn_quantity = pn_quantity.replace(sp.log(x_symbol), _LOG_X_PLACEHOLDER)
-
-        # Expand multiplicative structure to expose separate x powers in each
-        # term for correct truncation without a full symbolic expand.
-        pn_quantity = sp.expand_mul(pn_quantity)
-
-        terms = pn_quantity.args if pn_quantity.is_Add else (pn_quantity,)
-        term_powers = [_get_x_exponent(term, x_symbol) for term in terms]
-        min_order, max_order = _get_x_power_range(pn_quantity, x_symbol)
-        max_pn_order = max_order - min_order
-
-        requested_pn_order = sp.Rational(order)
-        if requested_pn_order > max_pn_order:
-            logging.warning(
-                "Requested PN order %s is higher than the maximum available "
-                "order %s for this quantity. Returning up to available order "
-                "%s.",
-                order,
-                max_pn_order,
-                max_pn_order,
-            )
-            return pn_quantity.replace(_LOG_X_PLACEHOLDER, sp.log(x_symbol))
-
-        target_order_power = min_order + requested_pn_order
-        if target_order_power >= max_order:
-            return pn_quantity.replace(_LOG_X_PLACEHOLDER, sp.log(x_symbol))
-
-        truncated_terms = [
-            term
-            for term, term_power in zip(terms, term_powers)
-            if term_power <= target_order_power
-        ]
-        truncated_quantity = (
-            sp.Add(*truncated_terms) if truncated_terms else sp.Integer(0)
-        )
-        return truncated_quantity.replace(_LOG_X_PLACEHOLDER, sp.log(x_symbol))
-
     def get_pn_quantity(self, name, order, path=None, variable="x"):
         """
         Retrieve a PN quantity from PNPedia at the requested PN order.
@@ -446,18 +406,23 @@ class PNPedia(AnalyticCatalog):
 
         pn_quantity = self._parse_quantity_expression(content, resolved_path)
         x_symbol = self._resolve_variable_symbol(variable)
-        truncated_quantity = self._truncate_expression(
-            pn_quantity,
-            order,
-            x_symbol,
-        )
-        result = AnalyticExpression(truncated_quantity)
+        quantity = AnalyticExpression(pn_quantity)
+        max_order, pn_span = quantity.pn_order(x_symbol)
+        target_order = max_order - pn_span + sp.sympify(order)
+
+        # PNPedia exposes PN order relative to the leading term, while the
+        # shared AnalyticExpression truncator expects an absolute power cutoff.
+        result = quantity.truncate(x_symbol, target_order)
         self._quantity_cache[cache_key] = result
         return result
 
     def mathematica_to_python_vars(self, expr):
         """
         Convert Mathematica identifiers to Python-friendly names.
+
+        This translation intentionally stays local to PNPedia because the
+        shared Mathematica parser should not embed catalog-specific naming
+        policy.
 
         Parameters
         ----------

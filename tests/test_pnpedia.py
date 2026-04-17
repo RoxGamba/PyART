@@ -1,6 +1,7 @@
 import pytest
 
 from PyART.analytic import MathematicaParser, pnpedia
+from PyART.analytic.expr import _get_x_exponent, _get_x_power_range
 
 
 @pytest.fixture
@@ -33,10 +34,7 @@ def test_pnpedia_order_truncation(pnpedia_instance):
     expr = quantity.expr
     x_symbol = pnpedia.sp.symbols("x")
 
-    powers = [
-        term.as_coeff_exponent(x_symbol)[1]
-        for term in expr.as_ordered_terms()
-    ]
+    powers = [term.as_coeff_exponent(x_symbol)[1] for term in expr.as_ordered_terms()]
     assert float(min(powers)) >= 0
     assert float(max(powers)) <= 4
 
@@ -48,14 +46,11 @@ def test_pnpedia_fractional_power_handling():
         + pnpedia.sp.symbols("x") ** pnpedia.sp.Rational(5, 2)
     )
 
-    min_order, max_order = pnpedia._get_x_power_range(expr)
+    min_order, max_order = _get_x_power_range(expr)
     assert min_order == pnpedia.sp.Rational(3, 2)
     assert max_order == pnpedia.sp.Rational(5, 2)
 
-    term_powers = [
-        pnpedia._get_x_exponent(term)
-        for term in expr.as_ordered_terms()
-    ]
+    term_powers = [_get_x_exponent(term) for term in expr.as_ordered_terms()]
     assert sorted(term_powers) == [
         pnpedia.sp.Rational(3, 2),
         pnpedia.sp.Rational(2),
@@ -66,7 +61,7 @@ def test_pnpedia_fractional_power_handling():
     selected = sum(
         term
         for term in expr.as_ordered_terms()
-        if pnpedia._get_x_exponent(term) <= target_power
+        if _get_x_exponent(term) <= target_power
     )
     assert selected == expr
 
@@ -75,14 +70,11 @@ def test_pnpedia_custom_variable_counting():
     v = pnpedia.sp.symbols("v")
     expr = v**2 + v ** pnpedia.sp.Rational(5, 2)
 
-    min_order, max_order = pnpedia._get_x_power_range(expr, v)
+    min_order, max_order = _get_x_power_range(expr, v)
     assert min_order == pnpedia.sp.Rational(2)
     assert max_order == pnpedia.sp.Rational(5, 2)
 
-    term_powers = [
-        pnpedia._get_x_exponent(term, v)
-        for term in expr.as_ordered_terms()
-    ]
+    term_powers = [_get_x_exponent(term, v) for term in expr.as_ordered_terms()]
     assert sorted(term_powers) == [
         pnpedia.sp.Rational(2),
         pnpedia.sp.Rational(5, 2),
@@ -171,9 +163,6 @@ def test_pnpedia_noninteger_order_truncation(pnpedia_instance):
 
     expr = quantity.expr
     x_symbol = pnpedia.sp.symbols("x")
-    powers = [
-        term.as_coeff_exponent(x_symbol)[1]
-        for term in expr.as_ordered_terms()
-    ]
+    powers = [term.as_coeff_exponent(x_symbol)[1] for term in expr.as_ordered_terms()]
 
     assert float(max(powers)) <= 1 + 2.5

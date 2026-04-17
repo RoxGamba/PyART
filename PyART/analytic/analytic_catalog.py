@@ -192,7 +192,7 @@ class AnalyticCatalog:
         Parameters
         ----------
         path : str
-            Path to the catalog path on disk.
+            Path to the catalog on disk.
 
         Returns
         -------

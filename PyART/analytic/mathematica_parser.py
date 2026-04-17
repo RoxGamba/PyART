@@ -1,4 +1,10 @@
-"""Reusable helpers for parsing Mathematica source into SymPy expressions."""
+"""Generic helpers for parsing Mathematica source into SymPy expressions.
+
+This module owns Mathematica syntax normalization, structural parsing, and
+special-form conversion shared across analytic data sources. Caller-specific
+identifier remappings are intentionally supplied by the caller rather than
+hard-coded here so the parser stays library-agnostic.
+"""
 
 from __future__ import annotations
 
@@ -65,6 +71,10 @@ class MathematicaParser:
     The parser handles common source normalization steps, extracts metadata
     and assignments from Mathematica files, and converts special symbolic
     constructs such as ``SeriesData`` into explicit SymPy expressions.
+
+    The class is intentionally generic. Library-specific naming conventions
+    and identifier rewrites should stay with the caller and be applied through
+    the helper methods exposed here.
     """
 
     def normalize_source(self, text: str) -> str:
@@ -155,6 +165,8 @@ class MathematicaParser:
             Source object to convert to text before replacement.
         replacements : Mapping[str, str]
             Mapping from source identifiers to replacement identifiers.
+            This table is caller-owned so source-specific naming policies stay
+            outside the shared parser core.
 
         Returns
         -------

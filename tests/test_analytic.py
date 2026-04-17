@@ -18,6 +18,7 @@ def test_analytic_expression_basic():
 
     dx = expr.derivative("x")
     assert isinstance(dx, AnalyticExpression)
+    assert dx.var == (x,)
     assert sp.simplify(dx.expr - 2 * x) == 0
 
     order = AnalyticExpression("x**3 + x**2", var="x").pn_order("x")
@@ -32,6 +33,49 @@ def test_analytic_expression_basic():
     func, variables = expr.to_function()
     assert variables == (x, y)
     assert float(func(3, 2)) == 11.0
+
+
+def test_analytic_expression_common_sympy_transforms_preserve_wrapper():
+    x, y, z = sp.symbols("x y z")
+    expr = AnalyticExpression((x + y) ** 2, var=(y, x))
+
+    expanded = expr.expand()
+    assert isinstance(expanded, AnalyticExpression)
+    assert expanded.var == (y, x)
+    assert sp.expand(expanded.expr - (x + y) ** 2) == 0
+
+    collected = expanded.collect(x)
+    assert isinstance(collected, AnalyticExpression)
+    assert collected.var == (y, x)
+    assert sp.expand(collected.expr - expanded.expr) == 0
+
+    factored = expanded.factor()
+    assert isinstance(factored, AnalyticExpression)
+    assert factored.var == (y, x)
+    assert sp.expand(factored.expr - (x + y) ** 2) == 0
+
+    substituted = expr.subs(x, z)
+    assert isinstance(substituted, AnalyticExpression)
+    assert substituted.var == (y, z)
+    assert sp.expand(substituted.expr - (y + z) ** 2) == 0
+
+    substituted_numeric = expr.subs(x, 1)
+    assert isinstance(substituted_numeric, AnalyticExpression)
+    assert substituted_numeric.var == (y,)
+    assert float(substituted_numeric(y=2)) == 9.0
+
+    diffed = expr.diff(x)
+    assert isinstance(diffed, AnalyticExpression)
+    assert diffed.var == (y, x)
+    assert sp.simplify(diffed.expr - 2 * (x + y)) == 0
+
+    simplified = AnalyticExpression(
+        sp.sin(x) ** 2 + sp.cos(x) ** 2,
+        var=x,
+    ).simplify()
+    assert isinstance(simplified, AnalyticExpression)
+    assert simplified.expr == 1
+    assert simplified.var == tuple()
 
 
 def test_analytic_expression_truncate_preserves_logs_and_fractional_terms():

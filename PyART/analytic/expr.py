@@ -266,6 +266,85 @@ class AnalyticExpression(object):
 
         return self._compiled_func(*eval_args)
 
+    def _result_variables(self, expr):
+        """Return an ordered variable tuple for a transformed expression.
+
+        Parameters
+        ----------
+        expr : object
+            Result of a symbolic transformation.
+
+        Returns
+        -------
+        tuple[sympy.Symbol, ...] or None
+            Variables aligned with the transformed expression, or ``None`` to
+            trigger automatic inference.
+        """
+        if not isinstance(expr, sp.Basic):
+            return None
+
+        free_symbols = getattr(expr, "free_symbols", None)
+        if free_symbols is None:
+            return None
+
+        if not self.var:
+            return None
+
+        current_vars = tuple(symbol for symbol in self.var if symbol in free_symbols)
+        remaining_vars = tuple(
+            sorted(
+                free_symbols - set(current_vars),
+                key=lambda symbol: symbol.name,
+            )
+        )
+        return current_vars + remaining_vars
+
+    def _wrap_result(self, result):
+        """Wrap a SymPy result back into ``AnalyticExpression`` when possible.
+
+        Parameters
+        ----------
+        result : object
+            Result returned by a symbolic operation.
+
+        Returns
+        -------
+        object
+            Wrapped analytic expression for SymPy results, otherwise the raw
+            result.
+        """
+        if not isinstance(result, sp.Basic):
+            return result
+        return AnalyticExpression(result, var=self._result_variables(result))
+
+    def _apply_sympy_method(self, name, *args, **kwargs):
+        """Call a SymPy expression method and preserve the wrapper.
+
+        Parameters
+        ----------
+        name : str
+            Name of the SymPy expression method to invoke.
+        *args : tuple
+            Positional arguments forwarded to the SymPy method.
+        **kwargs : dict
+            Keyword arguments forwarded to the SymPy method.
+
+        Returns
+        -------
+        object
+            Wrapped analytic expression when the SymPy method returns a
+            symbolic expression, otherwise the raw method result.
+
+        Raises
+        ------
+        ValueError
+            If no expression is stored.
+        """
+        if self.expr is None:
+            raise ValueError("No expression set")
+        result = getattr(self.expr, name)(*args, **kwargs)
+        return self._wrap_result(result)
+
     def derivative(self, var):
         """Differentiate the expression with respect to one variable.
 
@@ -287,7 +366,7 @@ class AnalyticExpression(object):
         if self.expr is None:
             raise ValueError("No expression set")
         v = sp.symbols(var) if isinstance(var, str) else var
-        return AnalyticExpression(self.expr.diff(v), var=self.var)
+        return self._wrap_result(self.expr.diff(v))
 
     def pn_order(self, var):
         """Return the highest power and PN span of an expansion variable.
@@ -469,9 +548,10 @@ class AnalyticExpression(object):
             log_v = sp.Dummy(f"log_{v.name}_tmp")
             tmp = self.expr.replace(sp.log(v), log_v)
 
-            # SymPy's series truncation uses integer order, so request the
-            # smallest integer order that can still contain the target terms.
-            series_order = int(sp.floor(requested_order)) + 1
+            # SymPy's series truncation uses an integer order and rejects
+            # negative values. Clamp at zero so Laurent-like negative-power
+            # terms can still be generated and filtered below.
+            series_order = max(0, int(sp.floor(requested_order)) + 1)
             truncated_series = tmp.series(v, 0, series_order).removeO()
 
             expanded_terms = self._extract_truncation_terms(
@@ -494,9 +574,120 @@ class AnalyticExpression(object):
 
         # Restore the protected logarithms before wrapping the result.
         final_expr = truncated.replace(log_v, sp.log(v))
-        result = AnalyticExpression(final_expr, var=self.var)
+        result = self._wrap_result(final_expr)
         self._truncate_result_cache[cache_key] = result
         return result
+
+    def subs(self, *args, **kwargs):
+        """Apply SymPy substitution and preserve the wrapper when possible.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments forwarded to :meth:`sympy.Expr.subs`.
+        **kwargs : dict
+            Keyword arguments forwarded to :meth:`sympy.Expr.subs`.
+
+        Returns
+        -------
+        object
+            Wrapped analytic expression for symbolic results, otherwise the
+            raw substitution result.
+        """
+        return self._apply_sympy_method("subs", *args, **kwargs)
+
+    def simplify(self, **kwargs):
+        """Simplify the stored expression and preserve the wrapper.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Keyword arguments forwarded to :meth:`sympy.Expr.simplify`.
+
+        Returns
+        -------
+        object
+            Wrapped analytic expression for symbolic results, otherwise the
+            raw simplification result.
+        """
+        return self._apply_sympy_method("simplify", **kwargs)
+
+    def expand(self, *args, **kwargs):
+        """Expand the stored expression and preserve the wrapper.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments forwarded to :meth:`sympy.Expr.expand`.
+        **kwargs : dict
+            Keyword arguments forwarded to :meth:`sympy.Expr.expand`.
+
+        Returns
+        -------
+        object
+            Wrapped analytic expression for symbolic results, otherwise the
+            raw expansion result.
+        """
+        return self._apply_sympy_method("expand", *args, **kwargs)
+
+    def factor(self, *args, **kwargs):
+        """Factor the stored expression and preserve the wrapper.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments forwarded to :meth:`sympy.Expr.factor`.
+        **kwargs : dict
+            Keyword arguments forwarded to :meth:`sympy.Expr.factor`.
+
+        Returns
+        -------
+        object
+            Wrapped analytic expression for symbolic results, otherwise the
+            raw factorization result.
+        """
+        return self._apply_sympy_method("factor", *args, **kwargs)
+
+    def collect(self, *args, **kwargs):
+        """Collect like terms in the stored expression.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments forwarded to :meth:`sympy.Expr.collect`.
+        **kwargs : dict
+            Keyword arguments forwarded to :meth:`sympy.Expr.collect`.
+
+        Returns
+        -------
+        object
+            Wrapped analytic expression for symbolic results, otherwise the raw
+            collect result.
+        """
+        return self._apply_sympy_method("collect", *args, **kwargs)
+
+    def diff(self, *symbols, **kwargs):
+        """Differentiate the stored expression and preserve the wrapper.
+
+        Parameters
+        ----------
+        *symbols : tuple
+            Differentiation variables and optional orders, as accepted by
+            :meth:`sympy.Expr.diff`.
+        **kwargs : dict
+            Keyword arguments forwarded to :meth:`sympy.Expr.diff`.
+
+        Returns
+        -------
+        object
+            Wrapped analytic expression for symbolic results, otherwise the
+            raw differentiation result.
+        """
+        normalized_symbols = tuple(
+            sp.symbols(symbol) if isinstance(symbol, str) else symbol
+            for symbol in symbols
+        )
+        return self._apply_sympy_method("diff", *normalized_symbols, **kwargs)
 
     def to_latex(self):
         """Render the stored expression as a LaTeX string.
