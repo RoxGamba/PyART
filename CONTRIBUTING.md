@@ -29,7 +29,4 @@ PyART and work on a dedicated branch. Once you are done:
 - We will only merge well-documented, commented code
 - We will only merge code for which all automatic [tests](https://github.com/RoxGamba/PyART/tree/main/tests) pass
 - If significant feaures are added or the logic of the code is modified, we will only merge code that is covered by tests.
-- We try to format our code according to `black`. In order for this to be automatically done, we have a pre-commit hook that can be added via
-  ```bash
-  git config --local core.hooksPath hooks
-  ```
+- We try to format our code according to `black`.
