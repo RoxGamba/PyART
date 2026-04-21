@@ -122,6 +122,38 @@ def test_bhpt_parses_empty_nested_seriesdata_as_zero(tmp_path):
     assert quantity.var == (y,)
 
 
+def test_bhpt_truncation_infers_single_variable_when_default_missing(tmp_path):
+    bhpt_file = tmp_path / "InferVar.m"
+    bhpt_file.write_text(
+        (
+            "Module[{Toy}, "
+            "Toy = SeriesData[y, 0, {1, 2, 3, 4}, 0, 4, 1]; "
+            '<|"Series" -> Toy|>]'
+        ),
+        encoding="utf-8",
+    )
+
+    loader = BHPTPN(str(tmp_path))
+    quantity = loader.get_pn_quantity(path=str(bhpt_file), order="1")
+    y = sp.symbols("y")
+
+    assert isinstance(quantity, AnalyticExpression)
+    assert sp.simplify(quantity.expr - (1 + 2 * y)) == 0
+    assert quantity.var == (y,)
+
+
+def test_bhpt_truncation_requires_explicit_variable_for_multivariate(tmp_path):
+    bhpt_file = tmp_path / "AmbiguousVar.m"
+    bhpt_file.write_text(
+        '<|"Series" -> a + p|>',
+        encoding="utf-8",
+    )
+
+    loader = BHPTPN(str(tmp_path))
+    with pytest.raises(ValueError, match="Please pass `variable` explicitly"):
+        loader.get_pn_quantity(path=str(bhpt_file), order="1")
+
+
 def test_bhpt_parses_real_redshift_file(bhptpn_instance):
     bhpt_root = Path(bhptpn_instance.path)
     redshift_path = (

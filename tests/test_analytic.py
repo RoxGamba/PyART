@@ -78,6 +78,21 @@ def test_analytic_expression_common_sympy_transforms_preserve_wrapper():
     assert simplified.var == tuple()
 
 
+def test_analytic_expression_to_function_caches_per_backend():
+    x = sp.symbols("x")
+    expr = AnalyticExpression(sp.sin(x), var=x)
+
+    numpy_func, numpy_variables = expr.to_function(modules="numpy")
+    custom_func, custom_variables = expr.to_function(
+        modules=[{"sin": lambda value: value + 10}]
+    )
+
+    assert numpy_variables == (x,)
+    assert custom_variables == (x,)
+    assert np.isclose(numpy_func(np.pi / 2), 1.0)
+    assert custom_func(2) == 12
+
+
 def test_analytic_expression_truncate_preserves_logs_and_fractional_terms():
     x = sp.symbols("x")
     expr = AnalyticExpression(
@@ -93,7 +108,12 @@ def test_analytic_expression_truncate_preserves_logs_and_fractional_terms():
     truncated = expr.truncate("x", 2)
     expected = x**-1 + sp.sqrt(x) + x * sp.log(x) + x**2
 
+    rational_truncated = expr.truncate("x", sp.Rational(5, 2))
+    expected_rational = (
+        x**-1 + sp.sqrt(x) + x * sp.log(x) + x**2 + x ** sp.Rational(5, 2)
+    )
     assert sp.simplify(truncated.expr - expected) == 0
+    assert sp.simplify(rational_truncated.expr - expected_rational) == 0
 
 
 def test_analytic_expression_truncate_falls_back_for_series_expansion():

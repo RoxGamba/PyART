@@ -218,11 +218,72 @@ class AnalyticExpression(object):
         else:
             self.var = tuple()
 
-        self._compiled_func = None
+        self._compiled_func_cache = {}
         # Cache completed truncation results keyed by variable and order.
         self._truncate_result_cache = {}
         # Cache the reusable term decomposition for the fast truncation path.
         self._truncate_term_cache = {}
+
+    @staticmethod
+    def _modules_cache_key(modules):
+        """Return a hashable cache key for a lambdify backend selection.
+
+        Parameters
+        ----------
+        modules : object
+            Backend specification forwarded to :func:`sympy.lambdify`.
+
+        Returns
+        -------
+        object
+            Hashable representation of ``modules`` suitable for caching.
+        """
+        if isinstance(modules, list):
+            return (
+                "list",
+                tuple(AnalyticExpression._modules_cache_key(m) for m in modules),
+            )
+        if isinstance(modules, tuple):
+            return (
+                "tuple",
+                tuple(AnalyticExpression._modules_cache_key(m) for m in modules),
+            )
+        if isinstance(modules, dict):
+            return (
+                "dict",
+                tuple(
+                    sorted(
+                        (key, AnalyticExpression._modules_cache_key(value))
+                        for key, value in modules.items()
+                    )
+                ),
+            )
+
+        try:
+            hash(modules)
+        except TypeError:
+            return ("repr", repr(modules))
+        return modules
+
+    def _get_compiled_function(self, modules="numpy"):
+        """Return a cached lambdified function for the requested backend.
+
+        Parameters
+        ----------
+        modules : str or sequence, optional
+            Backend passed to :func:`sympy.lambdify`.
+
+        Returns
+        -------
+        callable
+            Cached compiled function for the requested backend.
+        """
+        cache_key = self._modules_cache_key(modules)
+        compiled_func = self._compiled_func_cache.get(cache_key)
+        if compiled_func is None:
+            compiled_func = sp.lambdify(self.var, self.expr, modules=modules)
+            self._compiled_func_cache[cache_key] = compiled_func
+        return compiled_func
 
     def __call__(self, *args, **kwds):
         """Evaluate the expression numerically using cached lambdification.
@@ -260,11 +321,8 @@ class AnalyticExpression(object):
             except KeyError as e:
                 raise KeyError(f"Missing required variable: {e}")
 
-        # Lazy lambdification: compile once, hit NumPy backend every time after
-        if self._compiled_func is None:
-            self._compiled_func = sp.lambdify(self.var, self.expr, modules="numpy")
-
-        return self._compiled_func(*eval_args)
+        compiled_func = self._get_compiled_function(modules="numpy")
+        return compiled_func(*eval_args)
 
     def _result_variables(self, expr):
         """Return an ordered variable tuple for a transformed expression.
@@ -726,9 +784,7 @@ class AnalyticExpression(object):
         """
         if self.expr is None:
             raise ValueError("No expression set")
-        if self._compiled_func is None:
-            self._compiled_func = sp.lambdify(self.var, self.expr, modules=modules)
-        return self._compiled_func, self.var
+        return self._get_compiled_function(modules=modules), self.var
 
     # -------------
     # SymPy Methods

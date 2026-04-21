@@ -167,40 +167,6 @@ class BHPTPN(AnalyticCatalog):
         self.bhptpn_structure = self.indexed_paths
         logging.info("BHPT structure parsed successfully.")
 
-    def get_metadata(self, name=None, path=None):
-        """Return metadata for a resolved BHPT entry.
-
-        Parameters
-        ----------
-        name : str or None, optional
-            Indexed quantity name used for lookup.
-        path : str or None, optional
-            Direct path to the Mathematica file.
-
-        Returns
-        -------
-        dict[str, Any]
-            Metadata association extracted from the selected entry.
-        """
-        return self.get_entry(name=name, path=path)["metadata"]
-
-    def get_pn_quantity(self, name=None, path=None):
-        """Return a BHPT series as an analytic expression wrapper.
-
-        Parameters
-        ----------
-        name : str or None, optional
-            Indexed quantity name used for lookup.
-        path : str or None, optional
-            Direct path to the Mathematica file.
-
-        Returns
-        -------
-        AnalyticExpression
-            Parsed BHPT series wrapped for symbolic and numerical use.
-        """
-        return self.get_entry(name=name, path=path)["quantity"]
-
     def get_entry(self, name=None, path=None):
         """
         Resolve, parse, and cache a BHPT Mathematica file.

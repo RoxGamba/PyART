@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 from types import MappingProxyType
+import sympy as sp
 
 
 def build_quantity_key(root: str, file_name: str, base_root: str) -> str:
@@ -253,6 +254,87 @@ class AnalyticCatalog:
             Sorted canonical keys currently stored in the catalog index.
         """
         return sorted(self._indexed_paths)
+
+    def get_metadata(self, name=None, path=None):
+        """Return metadata for a resolved catalog entry.
+
+        Parameters
+        ----------
+        name : str or None, optional
+            Indexed quantity name used for lookup.
+        path : str or None, optional
+            Direct path to the Mathematica file.
+
+        Returns
+        -------
+        dict[str, Any]
+            Metadata association extracted from the selected entry.
+        """
+        return self.get_entry(name=name, path=path)["metadata"]
+
+    def get_pn_quantity(self, name=None, path=None, order=None, variable="x"):
+        """Return a catalog quantity as an analytic expression wrapper.
+
+        When ``order`` is provided, the returned quantity is truncated
+        relative to the leading power of ``variable``.
+
+        Parameters
+        ----------
+        name : str or None, optional
+            Indexed quantity name used for lookup.
+        path : str or None, optional
+            Direct path to the Mathematica file.
+        order : object, optional
+            PN order relative to the leading power of ``variable``.
+        variable : str or sympy.Symbol, optional
+            Variable used for PN order counting. When the selected variable
+            is not present and the quantity has exactly one variable, that
+            variable is inferred automatically.
+
+        Returns
+        -------
+        AnalyticExpression
+            Parsed BHPT series wrapped for symbolic and numerical use.
+        """
+        if isinstance(variable, str):
+            x_symbol = sp.symbols(variable)
+        elif isinstance(variable, sp.Symbol):
+            x_symbol = variable
+        else:
+            raise ValueError("Variable must be a string or a SymPy symbol.")
+
+        quantity = self.get_entry(name=name, path=path)["quantity"]
+        if order is None:
+            return quantity
+
+        quantity_vars = tuple(getattr(quantity, "var", tuple()))
+        truncate_var = x_symbol
+        if truncate_var not in quantity_vars:
+            if len(quantity_vars) == 1:
+                truncate_var = quantity_vars[0]
+            elif len(quantity_vars) == 0:
+                raise ValueError(
+                    "Cannot truncate a quantity with no symbolic variables."
+                )
+            else:
+                available = ", ".join(str(symbol) for symbol in quantity_vars)
+                raise ValueError(
+                    f"Variable '{truncate_var}' not found in quantity "
+                    f"variables ({available}). "
+                    "Please pass `variable` explicitly."
+                )
+
+        max_order, pn_span = quantity.pn_order(truncate_var)
+        target_order = max_order - pn_span + sp.sympify(order)
+        return quantity.truncate(truncate_var, target_order)
+
+    def get_entry(self, name=None, path=None):
+        """
+        Resolve, parse and cache a catalog quantity file.
+        This method should be implemented by subclasses to perform the actual
+        file parsing and return a structured representation of the quantity entry.
+        """
+        raise NotImplementedError("Subclasses must implement the 'get_entry' method.")
 
     def _resolve_name(
         self,

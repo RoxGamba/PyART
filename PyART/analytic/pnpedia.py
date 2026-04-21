@@ -7,7 +7,10 @@ normalization and parsing to ``MathematicaParser``.
 
 import logging
 import os
+import re
+from dataclasses import dataclass
 from tokenize import TokenError
+from typing import Any
 
 import sympy as sp
 from sympy.core.sympify import SympifyError
@@ -159,6 +162,55 @@ _PNPEDIA_PARSE_FALLBACK_EXCEPTIONS = (
 )
 
 
+@dataclass(slots=True)
+class PNPediaEntry:
+    """
+    Parsed representation of a PNPedia quantity file and README.md
+
+    Parameters
+    ----------
+    key: str
+        The resolved key corresponding to the selected quantity.
+    path: str
+        The absolute path to the selected quantity file.
+    metadata: dict
+        Metadata extracted from the quantity file and associated README.md.
+    expr : sympy.Basic
+        The parsed symbolic expression for the quantity.
+    quantity: AnalyticExpression
+        The AnalyticExpression for the quantity corresponding to `expr`.
+    """
+
+    key: str
+    path: str
+    metadata: dict[str, Any]
+    expr: sp.Basic
+    quantity: AnalyticExpression
+
+    def __getitem__(self, field_name: str) -> Any:
+        """Return an entry attribute using mapping-style access.
+
+        Parameters
+        ----------
+        field_name : str
+            Name of the dataclass field to retrieve.
+
+        Returns
+        -------
+        Any
+            Value stored in the requested field.
+
+        Raises
+        ------
+        KeyError
+            If ``field_name`` is not a valid attribute name.
+        """
+        try:
+            return getattr(self, field_name)
+        except AttributeError as exc:
+            raise KeyError(f"Invalid field name '{field_name}'") from exc
+
+
 class PNPedia(AnalyticCatalog):
     """
     Collection of PN quantities loaded from the PNPedia repository.
@@ -192,7 +244,7 @@ class PNPedia(AnalyticCatalog):
         """
         super().__init__(path)
         self._mathematica_parser = MathematicaParser()
-        self._quantity_cache: dict = {}
+        self._entry_cache: dict[str, PNPediaEntry] = {}
         if download:
             self.download_pnpedia()
         self.__parse_pnpedia()
@@ -240,34 +292,37 @@ class PNPedia(AnalyticCatalog):
         self.pnpedia_structure = self.indexed_paths
         logging.info("PNPedia structure parsed successfully.")
 
-    def _resolve_quantity_path(self, name, path=None):
-        """Resolve a quantity request to a concrete file path.
+    def _resolve_entry(self, name=None, path=None):
+        """Resolve a quantity request to a canonical key and file path.
 
         Parameters
         ----------
-        name : str
+        name : str or None, optional
             Indexed quantity name or tokenized query.
         path : str or None, optional
             Direct path to a quantity file.
 
         Returns
         -------
-        str
-            Absolute path to the selected PNPedia file.
+        tuple[str, str]
+            Canonical quantity key and absolute file path.
         """
         if path is not None:
             resolved_path = self._resolve_existing_path(path, self.path)
+            key = self._path_to_key.get(resolved_path)
+            if key is None:
+                key = os.path.splitext(os.path.basename(resolved_path))[0].lower()
             logging.info("Loading PN quantity from %s...", resolved_path)
-            return resolved_path
+            return key, resolved_path
 
-        _, resolved_path = self._resolve_name(
+        key, resolved_path = self._resolve_name(
             name,
             ambiguous_hint=(
                 "Please specify more details "
                 "(e.g., orbit type, spin, precession, tides)."
             ),
         )
-        return resolved_path
+        return key, resolved_path
 
     def _prepare_quantity_expression(self, content):
         """Normalize a raw PNPedia file before symbolic parsing.
@@ -336,33 +391,74 @@ class PNPedia(AnalyticCatalog):
             )
             return self._sympify_quantity_expression(prepared_content)
 
-    def _resolve_variable_symbol(self, variable):
-        """Resolve the truncation variable to a SymPy symbol.
+    def __parse_quantity_readme(self, readme_content, path):
+        """
+        Parse the README.md associated with a PNPedia quantity file to extract
+        metadata such as arXiv references, notation, and endorser information.
+
+        Notation is usually under a "Notations" section, with
+        quantities itemized via "*" bullets, as e.g.:
+        * ``quantity`` is the ...
 
         Parameters
         ----------
-        variable : str or sympy.Symbol
-            Variable used to truncate the PN expansion.
+        readme_content : str
+            The content of the README.md file as a string.
+        path : str
+            The path to the README.md file, used for logging context.
 
         Returns
-        -------
-        sympy.Symbol
-            Symbol corresponding to ``variable``.
-
-        Raises
-        ------
-        TypeError
-            If ``variable`` is neither a string nor a SymPy symbol.
+        dict
+            A dictionary containing extracted metadata fields. Possible keys include
+            'arXiv_references', 'notation', and 'endorser'.
         """
-        if isinstance(variable, str):
-            return sp.symbols(variable)
-        if isinstance(variable, sp.Symbol):
-            return variable
-        raise TypeError("variable must be a string or a sympy.Symbol")
+        # arXiv references in the form arXiv:xxxx.xxxxx or arXiv:xxxx.xxxxxvN
+        arxiv_refs = list(
+            dict.fromkeys(re.findall(r"arXiv:\d{4}\.\d{4,5}(?:v\d+)?", readme_content))
+        )
+        if not arxiv_refs:
+            logging.warning("No arXiv references found in README.md at %s", path)
 
-    def get_pn_quantity(self, name, order, path=None, variable="x"):
+        # Look for notation, in the section starting with "Notations"
+        notation = {}
+        if "Notations" in readme_content:
+            notations_section = readme_content.split("Notations", 1)[1]
+            for line in notations_section.splitlines():
+                if line.lstrip().startswith("#"):
+                    break  # stop at the next section
+                stripped_line = line.strip()
+                if stripped_line.startswith("*"):
+                    bullet = stripped_line.lstrip("*").strip()
+                    if " is " in bullet:
+                        quantity_name, description = bullet.split(" is ", 1)
+                        quantity_name = quantity_name.strip().strip("`")
+                        notation[quantity_name] = description.strip()
+
+        # look for endorser, in the section starting with "Endorsers".
+        # they are in the form [Endorser Name](website) [[ORCID](orcid_link)]
+        # separated by a line break. We just extract the name
+        endorsers = []
+        if "Endorsers" in readme_content:
+            endorsers_section = readme_content.split("Endorsers", 1)[1]
+            for line in endorsers_section.splitlines():
+                if line.lstrip().startswith("#"):
+                    break  # stop at the next section
+                # isolate first [Endorser Name](link) match
+                match = re.search(r"\[([^\]]+)\]\(", line)
+                if match:
+                    endorsers.append(match.group(1).strip())
+        if not endorsers:
+            logging.warning("No endorsers found in README.md at %s", path)
+
+        return {
+            "arxiv_references": arxiv_refs,
+            "notation": notation,
+            "endorsers": endorsers,
+        }
+
+    def get_entry(self, name=None, path=None):
         """
-        Retrieve a PN quantity from PNPedia at the requested PN order.
+        Retrieve a PN quantity from PNPedia.
 
         The PNPedia structure (inside Core post-Newtonian quantities) is:
         - orbit type (Circular, Elliptic, Hyperbolic)
@@ -378,43 +474,52 @@ class PNPedia(AnalyticCatalog):
         Quantities are stored as Mathematica-readable text files.
         They are converted into SymPy expressions on demand.
 
+        Inside each folder is also a README.md providing:
+        - arXiv references/sources
+        - Notation & definitions
+        - Endorser
+
         Parameters
         ----------
         name : str
             The name of the PN quantity to retrieve,
-        order : str
-            The desired PN order (e.g., "1", "2", "3", etc.)
         path : str, optional
             The path to the PNPedia file to be loaded. If None, it is resolved
             from the indexed quantity name.
 
         Returns
         -------
-        sympy expression
-            The requested PN quantity as a sympy expression.
+        PNPediaEntry
+            Parsed and cached representation of the requested quantity.
         """
+        key, resolved_path = self._resolve_entry(name=name, path=path)
+        if resolved_path in self._entry_cache:
+            return self._entry_cache[resolved_path]
 
-        resolved_path = self._resolve_quantity_path(name=name, path=path)
-
-        variable_key = variable if isinstance(variable, str) else variable.name
-        cache_key = (resolved_path, str(order), variable_key)
-        if cache_key in self._quantity_cache:
-            return self._quantity_cache[cache_key]
-
+        # quantity files
         with open(resolved_path, "r", encoding="utf-8") as file:
             content = file.read()
+        # readme file
+        readme_path = os.path.join(os.path.dirname(resolved_path), "README.md")
+        if os.path.isfile(readme_path):
+            with open(readme_path, "r", encoding="utf-8") as readme_file:
+                readme_content = readme_file.read()
+        else:
+            logging.warning("README.md not found for %s", resolved_path)
+            readme_content = ""
 
         pn_quantity = self._parse_quantity_expression(content, resolved_path)
-        x_symbol = self._resolve_variable_symbol(variable)
+        metadata = self.__parse_quantity_readme(readme_content, readme_path)
         quantity = AnalyticExpression(pn_quantity)
-        max_order, pn_span = quantity.pn_order(x_symbol)
-        target_order = max_order - pn_span + sp.sympify(order)
-
-        # PNPedia exposes PN order relative to the leading term, while the
-        # shared AnalyticExpression truncator expects an absolute power cutoff.
-        result = quantity.truncate(x_symbol, target_order)
-        self._quantity_cache[cache_key] = result
-        return result
+        entry = PNPediaEntry(
+            key=key,
+            path=resolved_path,
+            metadata=metadata,
+            expr=pn_quantity,
+            quantity=quantity,
+        )
+        self._entry_cache[resolved_path] = entry
+        return entry
 
     def mathematica_to_python_vars(self, expr):
         """

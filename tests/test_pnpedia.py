@@ -14,12 +14,50 @@ def test_pnpedia_get_dummy__quantity(tmp_path):
     pnpedia_file.write_text("x^2")
 
     quantity = pnpedia.PNPedia(str(tmp_path)).get_pn_quantity(
-        "dummy_energy", "2", path=str(pnpedia_file), variable="x"
+        name="dummy_energy",
+        order="2",
+        path=str(pnpedia_file),
+        variable="x",
     )
 
     assert isinstance(quantity, pnpedia.AnalyticExpression)
     assert quantity.var == (pnpedia.sp.symbols("x"),)
     assert float(quantity(2.0)) == 4.0
+
+
+def test_pnpedia_entry_dataclass_and_readme_metadata(tmp_path):
+    pnpedia_file = tmp_path / "dummy_entry.txt"
+    pnpedia_file.write_text("x^2 + x")
+
+    readme_file = tmp_path / "README.md"
+    readme_file.write_text(
+        "\n".join(
+            [
+                "# Dummy quantity",
+                "Reference arXiv:1234.56789v2",
+                "## Notations",
+                "* `x` is the expansion variable",
+                "## Endorsers",
+                "[Jane Doe](https://example.com)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    loader = pnpedia.PNPedia(str(tmp_path))
+    entry = loader.get_entry(name="dummy_entry")
+    cached_entry = loader.get_entry(path=str(pnpedia_file))
+
+    assert isinstance(entry, pnpedia.PNPediaEntry)
+    assert entry["key"] == "dummy_entry"
+    assert entry["path"] == str(pnpedia_file)
+    x_symbol = pnpedia.sp.Symbol("x")
+    assert pnpedia.sp.simplify(entry["expr"] - (x_symbol**2 + x_symbol)) == 0
+    assert entry["metadata"]["arxiv_references"] == ["arXiv:1234.56789v2"]
+    assert entry["metadata"]["notation"]["x"] == "the expansion variable"
+    assert entry["metadata"]["endorsers"] == ["Jane Doe"]
+    assert loader.get_metadata(name="dummy_entry") == entry["metadata"]
+    assert cached_entry is entry
 
 
 def test_pnpedia_order_truncation(pnpedia_instance):
@@ -104,7 +142,10 @@ def test_pnpedia_preserves_x_logs_during_truncation(tmp_path):
     pnpedia_file.write_text("Log[x] + x*Log[x] + x^2 + x^3")
 
     quantity = pnpedia.PNPedia(str(tmp_path)).get_pn_quantity(
-        "dummy_log_series", "1", path=str(pnpedia_file), variable="x"
+        name="dummy_log_series",
+        order="1",
+        path=str(pnpedia_file),
+        variable="x",
     )
     x_symbol = pnpedia.sp.symbols("x")
     expected = pnpedia.sp.log(x_symbol) + x_symbol * pnpedia.sp.log(x_symbol)
@@ -118,7 +159,10 @@ def test_pnpedia_high_order_truncation_returns_full_expression(tmp_path):
     pnpedia_file.write_text("Log[x] + x*Log[x] + x^2 + x^3")
 
     quantity = pnpedia.PNPedia(str(tmp_path)).get_pn_quantity(
-        "dummy_full_log_series", "99", path=str(pnpedia_file), variable="x"
+        name="dummy_full_log_series",
+        order="99",
+        path=str(pnpedia_file),
+        variable="x",
     )
     x_symbol = pnpedia.sp.symbols("x")
     expected = (
@@ -138,11 +182,11 @@ def test_pnpedia_parse_many_files(pnpedia_instance):
     failures = []
     for key, path in candidates:
         try:
-            quantity = pnpedia_instance.get_pn_quantity(
+            entry = pnpedia_instance.get_entry(
                 name=key,
-                order="1",
                 path=path,
             )
+            quantity = entry["quantity"]
             assert isinstance(quantity, pnpedia.AnalyticExpression)
             assert isinstance(quantity.var, tuple)
         except Exception as exc:
