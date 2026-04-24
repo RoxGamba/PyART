@@ -2,7 +2,6 @@ import sympy as sp
 
 from PyART.analytic import MathematicaParser, ParsedMathematicaSource
 
-
 PARSER = MathematicaParser()
 
 
@@ -41,8 +40,7 @@ def test_parser_extracts_top_level_association():
 
 def test_parser_converts_resummed_series_and_holdform():
     expr = PARSER.parse_expression(
-        "HoldForm[ResummedSeriesData[1 + Logy, "
-        "SeriesData[y, 0, {1, 2}, 0, 2, 1]]]"
+        "HoldForm[ResummedSeriesData[1 + Logy, " "SeriesData[y, 0, {1, 2}, 0, 2, 1]]]"
     )
     y = sp.symbols("y")
 
