@@ -96,6 +96,19 @@ class MathematicaParser:
         text = re.sub(r"\\\[([A-Za-z]+)\]", lambda match: match.group(1), text)
         return text.strip()
 
+    def _is_escaped_by_backslash(self, text: str, index: int) -> bool:
+        """Return whether ``text[index]`` is escaped by backslashes.
+
+        Mathematica strings use backslash escapes, so a quote is escaped when
+        it is preceded by an odd-length run of backslashes.
+        """
+        backslash_count = 0
+        lookback = index - 1
+        while lookback >= 0 and text[lookback] == "\\":
+            backslash_count += 1
+            lookback -= 1
+        return backslash_count % 2 == 1
+
     def _strip_comments(self, text: str) -> str:
         """Strip Mathematica comments, including nested comment blocks.
 
@@ -121,7 +134,7 @@ class MathematicaParser:
 
         while index < len(text):
             if comment_depth == 0 and text[index] == '"':
-                if not (in_string and index > 0 and text[index - 1] == "\\"):
+                if not self._is_escaped_by_backslash(text, index):
                     in_string = not in_string
                 pieces.append(text[index])
                 index += 1
@@ -314,7 +327,7 @@ class MathematicaParser:
         index = start_index
         while index < len(text):
             char = text[index]
-            if char == '"':
+            if char == '"' and not self._is_escaped_by_backslash(text, index):
                 in_string = not in_string
             elif not in_string:
                 if char == "[":
@@ -355,19 +368,32 @@ class MathematicaParser:
 
         while index < len(text):
             if not in_string and text.startswith("<|", index):
+                at_top = (
+                    square_depth == 0
+                    and curly_depth == 0
+                    and paren_depth == 0
+                    and assoc_depth == 0
+                )
                 assoc_depth += 1
-                yield index, "<|", assoc_depth == 0
+                yield index, "<|", at_top
                 index += 2
                 continue
             if not in_string and text.startswith("|>", index):
+                at_top = (
+                    square_depth == 0
+                    and curly_depth == 0
+                    and paren_depth == 0
+                    and assoc_depth == 0
+                )
                 assoc_depth -= 1
-                yield index, "|>", assoc_depth == 0
+                yield index, "|>", at_top
                 index += 2
                 continue
 
             char = text[index]
             if char == '"':
-                in_string = not in_string
+                if not self._is_escaped_by_backslash(text, index):
+                    in_string = not in_string
                 yield index, char, False
             else:
                 at_top = (
