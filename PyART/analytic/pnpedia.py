@@ -410,7 +410,7 @@ class PNPedia(AnalyticCatalog):
         Returns
         dict
             A dictionary containing extracted metadata fields. Possible keys include
-            'arXiv_references', 'notation', and 'endorser'.
+            'arxiv_references', 'notation', and 'endorsers'.
         """
         # arXiv references in the form arXiv:xxxx.xxxxx or arXiv:xxxx.xxxxxvN
         arxiv_refs = list(
