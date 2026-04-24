@@ -60,6 +60,18 @@ def test_pnpedia_entry_dataclass_and_readme_metadata(tmp_path):
     assert cached_entry is entry
 
 
+def test_pnpedia_repeated_numeric_tokens_resolve_exact_mode(tmp_path):
+    (tmp_path / "h_2_1.txt").write_text("x")
+    target_path = tmp_path / "h_2_2.txt"
+    target_path.write_text("x^2")
+
+    loader = pnpedia.PNPedia(str(tmp_path))
+    entry = loader.get_entry(name="h_2_2")
+
+    assert entry["key"] == "h_2_2"
+    assert entry["path"] == str(target_path)
+
+
 def test_pnpedia_order_truncation(pnpedia_instance):
     """Test that PNPedia returns a truncated analytic expression."""
     quantity = pnpedia_instance.get_pn_quantity(

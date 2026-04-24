@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 import os
 from collections.abc import Mapping
 from types import MappingProxyType
@@ -146,10 +147,14 @@ def resolve_query_match(
         raise ValueError("Either 'name' or 'path' must be provided")
 
     name_pieces = [piece for piece in normalize_query(name).split("_") if piece]
+    required_terms = Counter(name_pieces)
     matches = []
     for key, path in indexed_paths.items():
-        key_terms = normalize_query(key).split("_")
-        if all(piece in key_terms for piece in name_pieces):
+        key_terms = [piece for piece in normalize_query(key).split("_") if piece]
+        available_terms = Counter(key_terms)
+        if all(
+            available_terms[piece] >= count for piece, count in required_terms.items()
+        ):
             matches.append((key, path))
 
     if not matches:
