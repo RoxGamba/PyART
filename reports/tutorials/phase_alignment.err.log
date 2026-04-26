@@ -1,0 +1,100 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1323, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+# Waveforms
+wf_sxs = sxs.Waveform_SXS(ID='0305', path='./', download=True, downloads=['hlm', 'metadata'], nu_rescale=False)
+wf_rit = rit.Waveform_RIT(ID='0062', path='./', download=True, nu_rescale=False)
+
+# pre-shift SXS to RIT merger time
+wf_sxs._u -= wf_sxs.u[0]
+wf_rit._u -= wf_rit.u[0]
+t_mrg_rit, *_ = wf_rit.find_max()
+t_mrg_sxs, *_ = wf_sxs.find_max()
+wf_sxs._u += (t_mrg_rit - t_mrg_sxs)
+
+# window for alignment
+time_window = [500, 1000]
+
+# plot the waveforms before alignment
+fig, ax = plt.subplots()
+ax.plot(wf_sxs.u, wf_sxs.hlm[(2,2)]['real'], label='SXS:0305', lw=2)
+ax.plot(wf_rit.u, wf_rit.hlm[(2,2)]['real'], label='RIT:0062', lw=2)
+ax.set_xlabel('Time (M)')
+ax.set_ylabel(r'Amplitude $|h_{22}|$')
+ax.legend()
+ax.set_title('Before alignment')
+plt.show()
+
+# Align the two waveforms
+tau, dphi = align_wfs(wf_rit, wf_sxs, time_window=time_window)
+wf_rit._u += tau
+print(f"Time shift (M): {tau:.2f}")
+print(f"Phase shift (rad): {dphi:.2f}")
+
+------------------
+
+----- stderr -----
+2026-04-26 17:41:31 The path ./SXS_BBH_0305 does not exist or contains no 'Lev*' directory.
+----- stderr -----
+2026-04-26 17:41:31 Downloading the simulation from the SXS catalog.
+----- stderr -----
+2026-04-26 17:41:31 Setting the download (cache) directory to ./
+----- stderr -----
+2026-04-26 17:41:39 Loaded SXS simulation SXS:BBH:0305.
+----- stderr -----
+2026-04-26 17:41:42 Saved hlm data.
+----- stderr -----
+2026-04-26 17:41:42 Saved metadata.
+----- stderr -----
+2026-04-26 17:41:42 The path ./RIT_BBH_0062 does not exist.
+----- stderr -----
+2026-04-26 17:41:42 Downloading the simulation from the RIT catalog.
+----- stderr -----
+2026-04-26 17:41:42 JSON file with RIT urls not found, fetching and parsing catalog webpage: https://ccrgpages.rit.edu/~RITCatalog/
+------------------
+
+[31m---------------------------------------------------------------------------[39m
+[31mFileNotFoundError[39m                         Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[3][39m[32m, line 3[39m
+[32m      1[39m [38;5;66;03m# Waveforms[39;00m
+[32m      2[39m wf_sxs = sxs.Waveform_SXS(ID=[33m'0305'[39m, path=[33m'./'[39m, download=[38;5;28;01mTrue[39;00m, downloads=[[33m'hlm'[39m, [33m'metadata'[39m], nu_rescale=[38;5;28;01mFalse[39;00m)
+[32m----> [39m[32m3[39m wf_rit = rit.Waveform_RIT(ID=[33m'0062'[39m, path=[33m'./'[39m, download=[38;5;28;01mTrue[39;00m, nu_rescale=[38;5;28;01mFalse[39;00m)
+[32m      4[39m 
+[32m      5[39m [38;5;66;03m# pre-shift SXS to RIT merger time[39;00m
+[32m      6[39m wf_sxs._u -= wf_sxs.u[[32m0[39m]
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/PyART/catalogs/rit.py:87[39m, in [36mWaveform_RIT.__init__[39m[34m(self, path, ID, download, psi_load, h_load, mtdt_load, ell_emms, nu_rescale, shorten_rng, urls_json)[39m
+[32m     85[39m     logging.info([33mf[39m[33m"[39m[33mThe path [39m[38;5;132;01m{[39;00msim_path[38;5;132;01m}[39;00m[33m does not exist.[39m[33m"[39m)
+[32m     86[39m     logging.info([33m"[39m[33mDownloading the simulation from the RIT catalog.[39m[33m"[39m)
+[32m---> [39m[32m87[39m     [30;43mself[39;49m[30;43m.[39;49m[30;43mdownload_data[39;49m[30;43m([39;49m[30;43mID[39;49m[30;43m=[39;49m[30;43mID[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mpath[39;49m[30;43m=[39;49m[30;43msim_path[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43murls_json[39;49m[30;43m=[39;49m[30;43murls_json[39;49m[30;43m)[39;49m
+[32m     88[39m [38;5;28;01melse[39;00m:
+[32m     89[39m     logging.warning(
+[32m     90[39m         [33m"[39m[33mUse download=True to download the simulation from the SXS catalog.[39m[33m"[39m
+[32m     91[39m     )
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/PyART/catalogs/rit.py:191[39m, in [36mWaveform_RIT.download_data[39m[34m(self, ID, path, urls_json, dump_urls)[39m
+[32m    189[39m             urls_dict[key].append(sim_url)
+[32m    190[39m [38;5;28;01mif[39;00m dump_urls:
+[32m--> [39m[32m191[39m     [38;5;28;01mwith[39;00m [38;5;28mopen[39m(urls_json, [33m"[39m[33mw[39m[33m"[39m) [38;5;28;01mas[39;00m json_file:
+[32m    192[39m         json.dump(urls_dict, json_file, indent=[32m4[39m)
+[32m    193[39m     logging.info([33mf[39m[33m"[39m[33mCreated JSON file with RIT urls: [39m[38;5;132;01m{[39;00murls_json[38;5;132;01m}[39;00m[33m"[39m)
+
+[31mFileNotFoundError[39m: [Errno 2] No such file or directory: '/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/PyART/PyART/catalogs/rit_urls.json'
+

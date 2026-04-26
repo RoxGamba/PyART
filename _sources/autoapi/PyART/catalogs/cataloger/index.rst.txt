@@ -1,0 +1,114 @@
+PyART.catalogs.cataloger
+========================
+
+.. py:module:: PyART.catalogs.cataloger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.cataloger.Cataloger
+
+
+Module Contents
+---------------
+
+.. py:class:: Cataloger(path='./', sim_list=[], catalog='rit', verbose=True, json_file=None, add_opts={})
+
+   Bases: :py:obj:`object`
+
+
+   Class for catalogs
+
+
+   .. py:attribute:: path
+      :value: './'
+
+
+
+   .. py:attribute:: catalog
+      :value: 'rit'
+
+
+
+   .. py:attribute:: sim_list
+      :value: []
+
+
+
+   .. py:attribute:: verbose
+      :value: True
+
+
+
+   .. py:attribute:: json_file
+      :value: None
+
+
+
+   .. py:attribute:: data
+
+
+   .. py:attribute:: nsims
+      :value: 0
+
+
+
+   .. py:method:: get_Waveform(ID, add_opts={}, verbose=None)
+
+
+   .. py:method:: get_model_waveform(name, add_opts={}, verbose=None)
+
+      Compute the waveform with the model corresponding to a catalog ID
+
+
+
+   .. py:method:: plot_waves(cmap='rainbow', legend=False)
+
+
+   .. py:method:: optimize_mismatches_batch(batch, optimizer_opts={}, verbose=None)
+
+
+   .. py:method:: process_with_redirect(process_id, nproc, opts={})
+
+      If we are running in parallel, use log files.
+      Otherwise, use stdout
+
+
+
+   .. py:method:: optimize_mismatches(optimizer_opts={}, verbose=None, ranges={'pph0': [1, 10]}, nproc=1)
+
+
+   .. py:method:: __is_in_valid_range(name, ranges)
+
+      Check if a certain waveform is in the specified
+      ranges (for example: ranges={'pph0':[1,10]})
+      Ranges can also contain 'check_pph_lso'.
+      If check_pph_lso is True, then check also if the pph of
+      the simulation is above the LSO value
+
+
+
+   .. py:method:: find_subset(ranges)
+
+
+   .. py:method:: quantity_from_dataset(name, variable)
+
+
+   .. py:method:: tex_label_from_key(key)
+
+
+   .. py:method:: get_colors_for_subset(subset, cmap_var, cmap_name='jet')
+
+
+   .. py:method:: plot_colorbar(xvar='pph0', yvar='mm_opt', cvar='E0byM', ranges={'pph0': [1, 10]}, cmap='jet', hlines=[], yscale=True)
+
+
+   .. py:method:: mm_at_M(name, M, mm_settings=None)
+
+
+   .. py:method:: mm_vs_M(mass_min=100, mass_max=200, N=20, cmap='jet', json_load=None, json_save=None, mm_settings=None, ranges={'pph0': [1, 10]}, cmap_var='E0byM', hlines=[], figname=None)
+
+

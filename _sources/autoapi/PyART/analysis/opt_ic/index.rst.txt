@@ -1,0 +1,320 @@
+PyART.analysis.opt_ic
+=====================
+
+.. py:module:: PyART.analysis.opt_ic
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.opt_ic.Optimizer
+
+
+Module Contents
+---------------
+
+.. py:class:: Optimizer(ref_Waveform, kind_ic='E0pph0', vrs=['H_hyp', 'j_hyp'], map_function=None, use_nqc=True, r0_eob=None, model_opts={}, opt_max_iter=1, opt_good_mm=0.005, opt_bounds=None, bounds_iter={}, minimizer={'kind': 'dual_annealing'}, use_matcher_cache=False, json_file=None, overwrite=False, json_save_dyn=False, mm_settings=None, verbose=True, debug=False)
+
+   Bases: :py:obj:`object`
+
+
+   Class to compute EOB initial data that minimize mismatch
+   with reference waveform.
+
+
+   .. py:attribute:: ref_Waveform
+
+
+   .. py:attribute:: opt_Waveform
+      :value: None
+
+
+
+   .. py:attribute:: kind_ic
+      :value: 'E0pph0'
+
+
+
+   .. py:attribute:: use_nqc
+      :value: True
+
+
+
+   .. py:attribute:: r0_eob
+      :value: None
+
+
+
+   .. py:attribute:: model_opts
+
+
+   .. py:attribute:: opt_max_iter
+      :value: 1
+
+
+
+   .. py:attribute:: opt_good_mm
+      :value: 0.005
+
+
+
+   .. py:attribute:: opt_data
+      :value: None
+
+
+
+   .. py:attribute:: opt_bounds
+      :value: None
+
+
+
+   .. py:attribute:: use_matcher_cache
+      :value: False
+
+
+
+   .. py:attribute:: json_file
+      :value: None
+
+
+
+   .. py:attribute:: json_save_dyn
+      :value: False
+
+
+
+   .. py:attribute:: overwrite
+      :value: False
+
+
+
+   .. py:attribute:: verbose
+      :value: True
+
+
+
+   .. py:attribute:: debug
+      :value: False
+
+
+
+   .. py:attribute:: mm_settings
+
+
+   .. py:attribute:: bounds_iter
+
+
+   .. py:attribute:: minimizer
+
+
+   .. py:attribute:: annealing_counter
+      :value: 0
+
+
+
+   .. py:method:: __set_variables(vrs)
+
+      Set the variables to optimize over depending on the kind of ICs
+      selected.
+
+      :param vrs: List of variables to optimize over if kind_ic is "choose".
+                  Otherwise, set automatically based on kind_ic.
+      :type vrs: list of str
+
+      :raises ValueError: If kind_ic is unknown.
+
+      .. rubric:: Notes
+
+      - Supported kinds of ICs:
+          - "choose": user-defined variables in `vrs`.
+          - "e0f0": optimizes over eccentricity `e0` and frequency `f0`.
+          - "E0pph0": optimizes over energy `E0byM` and angular momentum `pph0`.
+          - "phi0theta0": optimizes over in-plane spin rotation angle `theta` and reference phase `phi_ref`.
+
+
+
+   .. py:method:: __update_bounds(eps=None)
+
+      Set the bounds for the optimization; if the bounds are not specified,
+      set them to the reference value (read from metadata) +/- eps
+
+      :param eps: Dictionary with the epsilon values for each variable.
+                  If None, use self.bounds_iter["eps_initial"].
+      :type eps: dict, optional
+
+      .. rubric:: Notes
+
+      - If a bound is already specified (not None), it is not updated.
+      - Epsilon values define the relative range around the reference value.
+      - If a variable is not found in the reference metadata, a warning is printed and its value is set to 1.
+
+
+
+   .. py:method:: load_or_create_mismatches()
+
+      Load mismatches data if the options of the
+      json file stored is consistent with current ones.
+      Otherwise, create a new dictionary (NOT a new json file)
+
+      :returns: **data** -- Dictionary containing the options and mismatches data.
+      :rtype: dict
+
+      :raises RuntimeError: If the options in the JSON file differ from the current ones.
+
+      .. rubric:: Notes
+
+      - Compares current options with those in the JSON file to ensure consistency.
+      - If the JSON file does not exist, initializes a new data structure.
+
+
+
+   .. py:method:: save_mismatches(data, verbose=None, json_file=None, overwrite=None)
+
+      Save the mismatches data to a JSON file.
+
+      :param data: Dictionary containing the options and mismatches data.
+      :type data: dict
+      :param verbose: Whether to print verbose output (default: self.verbose).
+      :type verbose: bool, optional
+      :param json_file: Path to JSON file for saving mismatch results (default: self.json_file).
+      :type json_file: str or None, optional
+      :param overwrite: Whether to overwrite existing JSON mismatch data (default: self.overwrite).
+      :type overwrite: bool, optional
+
+      .. rubric:: Notes
+
+      - If the JSON file already exists and contains data for the current simulation,
+          it will not be overwritten unless `overwrite` is set to True.
+      - If the JSON file does not exist, it will be created.
+
+
+
+   .. py:method:: generate_EOB(ICs={'f0': None, 'e0': None})
+
+      Generate an EOB waveform with given initial conditions (ICs).
+      TODO: generalise this to any model
+
+      :param ICs: Dictionary containing the initial conditions to set in the EOB model.
+                  The keys depend on the kind of ICs selected (default: {"f0": None, "e0": None}).
+      :type ICs: dict, optional
+
+      :returns: **eob_wave** -- Generated EOB waveform object, or None if generation failed.
+      :rtype: Waveform_EOB or None
+
+      .. rubric:: Notes
+
+      - Maps the provided ICs to EOB parameters using the specified mapping function.
+      - Sets additional intrinsic parameters from the reference waveform metadata.
+      - Handles special cases for certain ICs (e.g., "H_hyp", "J_hyp") and r0_eob.
+      - Catches exceptions during EOB waveform generation and returns None if an error occurs.
+
+
+
+   .. py:method:: match_against_ref(eob_Waveform, verbose=None, iter_loop=False, return_matcher=False, cache={}, mm_settings=None)
+
+      Compute the mismatch between the reference waveform and the
+      provided EOB waveform.
+      :param eob_Waveform: EOB waveform object to compare against the reference.
+      :type eob_Waveform: Waveform_EOB
+      :param verbose: Whether to print verbose output (default: self.verbose).
+      :type verbose: bool, optional
+      :param iter_loop: Whether this is called inside an optimization loop (default: False).
+      :type iter_loop: bool, optional
+      :param return_matcher: Whether to return the Matcher object along with the mismatch (default: False).
+      :type return_matcher: bool, optional
+      :param cache: Cache dictionary for storing intermediate results (default: {}).
+      :type cache: dict, optional
+      :param mm_settings: Options for the Matcher class (default: self.mm_settings).
+      :type mm_settings: dict or None, optional
+
+      :returns: * **mm** (*float*) -- Computed mismatch value.
+                * **matcher** (*Matcher or None*) -- Matcher object if return_matcher is True, otherwise None.
+
+
+
+   .. py:method:: __func_to_minimize(x, kys, verbose=None, cache={})
+
+
+   .. py:method:: optimize_mismatch(use_ref_guess=True, verbose=None)
+
+      Optimize the mismatch between the reference waveform and the other model waveform.
+
+      :param use_ref_guess: Whether to use the reference values as the initial guess for the optimization (default: True).
+      :type use_ref_guess: bool, optional
+      :param verbose: Whether to print verbose output during optimization (default: self.verbose).
+      :type verbose: bool, optional
+
+      :returns: **opt_data** -- Dictionary containing the optimization results and metadata.
+      :rtype: dict
+
+
+
+   .. py:method:: __bounds_iter_defaults__()
+
+      Set the default options for the bounds iteration.
+
+
+
+   .. py:method:: __minimizer__defaults__()
+
+      Set the default minimizer options.
+
+
+
+   .. py:method:: __minimize_annealing_(f, x0, bounds_array, kys)
+
+      Minimize with dual annealing.
+
+      :param f: The objective function to minimize.
+      :type f: callable
+      :param x0: Initial guess for the parameters.
+      :type x0: array-like
+      :param bounds_array: Bounds for each parameter as an array of shape (n, 2).
+      :type bounds_array: array-like
+      :param kys: List of parameter names corresponding to the elements in x0.
+      :type kys: list of str
+
+      :returns: * **opts** (*dict*) -- Dictionary of optimized parameters.
+                * **mm_opt** (*float*) -- The minimum value of the objective function found.
+
+
+
+   .. py:method:: __minimize_differential_evo_(f, x0, bounds_array, kys)
+
+      Minimize with differential evolution.
+
+      :param f: The objective function to minimize.
+      :type f: callable
+      :param x0: Initial guess for the parameters.
+      :type x0: array-like
+      :param bounds_array: Bounds for each parameter as an array of shape (n, 2).
+      :type bounds_array: array-like
+      :param kys: List of parameter names corresponding to the elements in x0.
+      :type kys: list of str
+
+      :returns: * **opts** (*dict*) -- Dictionary of optimized parameters.
+                * **mm_opt** (*float*) -- The minimum value of the objective function found.
+
+
+
+   .. py:method:: __minimize__dynesty__(f, x0, bounds_array, kys)
+
+      Minimize with dynesty.
+      NOTE: largely untested!
+
+      :param f: The objective function to minimize.
+      :type f: callable
+      :param x0: Initial guess for the parameters. UNUSED.
+      :type x0: array-like
+      :param bounds_array: Bounds for each parameter as an array of shape (n, 2).
+      :type bounds_array: array-like
+      :param kys: List of parameter names corresponding to the elements in x0.
+      :type kys: list of str
+
+      :returns: * **opts** (*dict*) -- Dictionary of optimized parameters.
+                * **mm_opt** (*float*) -- The minimum value of the objective function found.
+
+
+

@@ -1,0 +1,1143 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../../genindex.html"><link rel="search" title="Search" href="../../../../search.html"><link rel="next" title="PyART.analytic.mathematica_parser" href="../mathematica_parser/index.html"><link rel="prev" title="PyART.analytic.coordschange" href="../coordschange/index.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>PyART.analytic.expr - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/intro_to_waveforms.html">Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/coordinates_and_twopuncture.html">Coordinates and TwoPunctures from EOB IDs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pnpedia.html">PNPedia interface</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../../index.html">PyART</a><input aria-label="Toggle navigation of PyART" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="../index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../analytic_catalog/index.html">PyART.analytic.analytic_catalog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../bhpt_pnsf/index.html">PyART.analytic.bhpt_pnsf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../coordschange/index.html">PyART.analytic.coordschange</a></li>
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">PyART.analytic.expr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mathematica_parser/index.html">PyART.analytic.mathematica_parser</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pnpedia/index.html">PyART.analytic.pnpedia</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/tocatalog_icc/index.html">PyART.utils.tocatalog_icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../../../../_sources/autoapi/PyART/analytic/expr/index.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-PyART.analytic.expr">
+<span id="pyart-analytic-expr"></span><h1>PyART.analytic.expr<a class="headerlink" href="#module-PyART.analytic.expr" title="Link to this heading">¶</a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher" title="PyART.analytic.expr.MathDispatcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MathDispatcher</span></code></a></p></td>
+<td><p>Dispatch basic math operations to SymPy or NumPy.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression" title="PyART.analytic.expr.AnalyticExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnalyticExpression</span></code></a></p></td>
+<td><p>Wrap a SymPy expression with helpers for analysis and evaluation.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.analytic.expr._is_sympy" title="PyART.analytic.expr._is_sympy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_is_sympy</span></code></a>(x)</p></td>
+<td><p>Return whether an object contains SymPy-compatible symbolic values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#PyART.analytic.expr._get_x_exponent" title="PyART.analytic.expr._get_x_exponent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_x_exponent</span></code></a>(term[, x_symbol])</p></td>
+<td><p>Return the exponent of a variable within a single expression term.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#PyART.analytic.expr._get_x_power_range" title="PyART.analytic.expr._get_x_power_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_x_power_range</span></code></a>(expr[, x_symbol])</p></td>
+<td><p>Return the minimum and maximum powers of a variable in an expression.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.analytic.expr._is_sympy">
+<span class="sig-prename descclassname"><span class="pre">PyART.analytic.expr.</span></span><span class="sig-name descname"><span class="pre">_is_sympy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#_is_sympy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr._is_sympy" title="Link to this definition">¶</a></dt>
+<dd><p>Return whether an object contains SymPy-compatible symbolic values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>object</em>) – Object or nested container to inspect.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when <code class="docutils literal notranslate"><span class="pre">x</span></code> or one of its elements is symbolic.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.analytic.expr._get_x_exponent">
+<span class="sig-prename descclassname"><span class="pre">PyART.analytic.expr.</span></span><span class="sig-name descname"><span class="pre">_get_x_exponent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#_get_x_exponent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr._get_x_exponent" title="Link to this definition">¶</a></dt>
+<dd><p>Return the exponent of a variable within a single expression term.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>term</strong> (<em>sympy.Expr</em>) – Expression term whose power of <code class="docutils literal notranslate"><span class="pre">x_symbol</span></code> should be measured.</p></li>
+<li><p><strong>x_symbol</strong> (<em>str</em><em> or </em><em>sympy.Symbol</em><em>, </em><em>optional</em>) – Variable whose exponent should be extracted. Defaults to <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Exponent of <code class="docutils literal notranslate"><span class="pre">x_symbol</span></code> in <code class="docutils literal notranslate"><span class="pre">term</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sympy.Expr</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">x_symbol</span></code> is neither a string nor a SymPy symbol.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyART.analytic.expr._get_x_power_range">
+<span class="sig-prename descclassname"><span class="pre">PyART.analytic.expr.</span></span><span class="sig-name descname"><span class="pre">_get_x_power_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_symbol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#_get_x_power_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr._get_x_power_range" title="Link to this definition">¶</a></dt>
+<dd><p>Return the minimum and maximum powers of a variable in an expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expr</strong> (<em>sympy.Expr</em>) – Expression to inspect.</p></li>
+<li><p><strong>x_symbol</strong> (<em>str</em><em> or </em><em>sympy.Symbol</em><em>, </em><em>optional</em>) – Variable whose exponents should be measured. Defaults to <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Minimum and maximum exponents of <code class="docutils literal notranslate"><span class="pre">x_symbol</span></code> across the expanded
+additive terms of <code class="docutils literal notranslate"><span class="pre">expr</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[sympy.Expr, sympy.Expr]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyART.analytic.expr.MathDispatcher">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">PyART.analytic.expr.</span></span><span class="sig-name descname"><span class="pre">MathDispatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_sympy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#MathDispatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.MathDispatcher" title="Link to this definition">¶</a></dt>
+<dd><p>Dispatch basic math operations to SymPy or NumPy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>use_sympy</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, symbolic SymPy operations are used. Otherwise NumPy
+numeric operations are used.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.MathDispatcher.use_sympy">
+<span class="sig-name descname"><span class="pre">use_sympy</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#MathDispatcher.use_sympy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.MathDispatcher.use_sympy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.MathDispatcher.sqrt">
+<span class="sig-name descname"><span class="pre">sqrt</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#MathDispatcher.sqrt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.MathDispatcher.sqrt" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.MathDispatcher.log">
+<span class="sig-name descname"><span class="pre">log</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#MathDispatcher.log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.MathDispatcher.log" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.MathDispatcher.cos">
+<span class="sig-name descname"><span class="pre">cos</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#MathDispatcher.cos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.MathDispatcher.cos" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.MathDispatcher.sin">
+<span class="sig-name descname"><span class="pre">sin</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#MathDispatcher.sin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.MathDispatcher.sin" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.MathDispatcher.arctan2">
+<span class="sig-name descname"><span class="pre">arctan2</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#MathDispatcher.arctan2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.MathDispatcher.arctan2" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.MathDispatcher.dot">
+<span class="sig-name descname"><span class="pre">dot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#MathDispatcher.dot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.MathDispatcher.dot" title="Link to this definition">¶</a></dt>
+<dd><p>Return the dot product of two vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>sequence</em>) – First vector.</p></li>
+<li><p><strong>b</strong> (<em>sequence</em>) – Second vector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dot product computed with the configured backend.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sympy.Expr or float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the input vectors do not have the same length.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.MathDispatcher.norm">
+<span class="sig-name descname"><span class="pre">norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#MathDispatcher.norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.MathDispatcher.norm" title="Link to this definition">¶</a></dt>
+<dd><p>Return the Euclidean norm of a vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>v</strong> (<em>sequence</em>) – Vector whose norm should be computed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Euclidean norm computed with the configured backend.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sympy.Expr or float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">PyART.analytic.expr.</span></span><span class="sig-name descname"><span class="pre">AnalyticExpression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Wrap a SymPy expression with helpers for analysis and evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expr</strong> (<em>object</em><em>, </em><em>optional</em>) – Expression that can be converted to a SymPy object.</p></li>
+<li><p><strong>var</strong> (<em>str</em><em>, </em><em>sympy.Symbol</em><em>, </em><em>sequence</em><em>, or </em><em>None</em><em>, </em><em>optional</em>) – Variables used for numerical evaluation. When omitted, free symbols are
+inferred from <code class="docutils literal notranslate"><span class="pre">expr</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.expr">
+<span class="sig-name descname"><span class="pre">expr</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.expr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.expr" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._compiled_func_cache">
+<span class="sig-name descname"><span class="pre">_compiled_func_cache</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._compiled_func_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._compiled_func_cache" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._truncate_result_cache">
+<span class="sig-name descname"><span class="pre">_truncate_result_cache</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._truncate_result_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._truncate_result_cache" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._truncate_term_cache">
+<span class="sig-name descname"><span class="pre">_truncate_term_cache</span></span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._truncate_term_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._truncate_term_cache" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._modules_cache_key">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_modules_cache_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modules</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._modules_cache_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._modules_cache_key" title="Link to this definition">¶</a></dt>
+<dd><p>Return a hashable cache key for a lambdify backend selection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modules</strong> (<em>object</em>) – Backend specification forwarded to <code class="xref py py-func docutils literal notranslate"><span class="pre">sympy.lambdify()</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Hashable representation of <code class="docutils literal notranslate"><span class="pre">modules</span></code> suitable for caching.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._get_compiled_function">
+<span class="sig-name descname"><span class="pre">_get_compiled_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'numpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._get_compiled_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._get_compiled_function" title="Link to this definition">¶</a></dt>
+<dd><p>Return a cached lambdified function for the requested backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modules</strong> (<em>str</em><em> or </em><em>sequence</em><em>, </em><em>optional</em>) – Backend passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">sympy.lambdify()</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Cached compiled function for the requested backend.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the expression numerically using cached lambdification.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> (<em>tuple</em>) – Positional values corresponding to <code class="docutils literal notranslate"><span class="pre">self.var</span></code> in order.</p></li>
+<li><p><strong>**kwds</strong> (<em>dict</em>) – Keyword values keyed by variable name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Numerical result returned by the compiled backend function.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the expression has no variables or the wrong number of
+positional arguments is supplied.</p></li>
+<li><p><strong>KeyError</strong> – If a required keyword argument is missing.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._result_variables">
+<span class="sig-name descname"><span class="pre">_result_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._result_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._result_variables" title="Link to this definition">¶</a></dt>
+<dd><p>Return an ordered variable tuple for a transformed expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>expr</strong> (<em>object</em>) – Result of a symbolic transformation.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Variables aligned with the transformed expression, or <code class="docutils literal notranslate"><span class="pre">None</span></code> to
+trigger automatic inference.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[sympy.Symbol, …] or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._wrap_result">
+<span class="sig-name descname"><span class="pre">_wrap_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._wrap_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._wrap_result" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap a SymPy result back into <code class="docutils literal notranslate"><span class="pre">AnalyticExpression</span></code> when possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>result</strong> (<em>object</em>) – Result returned by a symbolic operation.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped analytic expression for SymPy results, otherwise the raw
+result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._apply_sympy_method">
+<span class="sig-name descname"><span class="pre">_apply_sympy_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._apply_sympy_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._apply_sympy_method" title="Link to this definition">¶</a></dt>
+<dd><p>Call a SymPy expression method and preserve the wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the SymPy expression method to invoke.</p></li>
+<li><p><strong>*args</strong> (<em>tuple</em>) – Positional arguments forwarded to the SymPy method.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments forwarded to the SymPy method.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped analytic expression when the SymPy method returns a
+symbolic expression, otherwise the raw method result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If no expression is stored.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.derivative">
+<span class="sig-name descname"><span class="pre">derivative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.derivative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.derivative" title="Link to this definition">¶</a></dt>
+<dd><p>Differentiate the expression with respect to one variable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>var</strong> (<em>str</em><em> or </em><em>sympy.Symbol</em>) – Variable of differentiation.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped derivative of the stored expression.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression" title="PyART.analytic.expr.AnalyticExpression">AnalyticExpression</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If no expression is stored.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.pn_order">
+<span class="sig-name descname"><span class="pre">pn_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.pn_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.pn_order" title="Link to this definition">¶</a></dt>
+<dd><p>Return the highest power and PN span of an expansion variable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>var</strong> (<em>str</em><em> or </em><em>sympy.Symbol</em>) – Expansion variable to inspect.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Highest exponent of <code class="docutils literal notranslate"><span class="pre">var</span></code> and the range between maximum and
+minimum exponents.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[sympy.Expr, sympy.Expr]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If no expression is stored.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._extract_truncation_terms">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_extract_truncation_terms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._extract_truncation_terms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._extract_truncation_terms" title="Link to this definition">¶</a></dt>
+<dd><p>Return termwise powers of <code class="docutils literal notranslate"><span class="pre">variable</span></code> for fast truncation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expr</strong> (<em>sympy.Expr</em>) – Expression to decompose into additive terms.</p></li>
+<li><p><strong>variable</strong> (<em>sympy.Symbol</em>) – Expansion variable whose termwise exponent should be tracked.</p></li>
+<li><p><strong>a</strong> (<em>The fast truncation path only works when expr can be treated as</em>)</p></li>
+<li><p><strong>single</strong> (<em>sum</em><em> of </em><em>terms whose dependence on variable is a</em>)</p></li>
+<li><p><strong>power.</strong> (<em>overall</em>)</p></li>
+<li><p><strong>term</strong> (<em>For each additive</em>)</p></li>
+<li><p><strong>verifies</strong> (<em>this helper computes that exponent and</em>)</p></li>
+<li><p><strong>remaining</strong> (<em>that dividing the term by variable**exponent removes all</em>)</p></li>
+<li><p><strong>variable.</strong> (<em>dependence on</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of <code class="docutils literal notranslate"><span class="pre">(term,</span> <span class="pre">exponent)</span></code> pairs when the expression is safe to
+truncate by exponent filtering, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when a term has a
+symbolic exponent or retains non-factorable dependence on
+<code class="docutils literal notranslate"><span class="pre">variable</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[tuple[sympy.Expr, sympy.Expr]] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._build_truncation_terms">
+<span class="sig-name descname"><span class="pre">_build_truncation_terms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._build_truncation_terms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._build_truncation_terms" title="Link to this definition">¶</a></dt>
+<dd><p>Prepare and cache the term data used by <code class="docutils literal notranslate"><span class="pre">truncate</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variable</strong> (<em>sympy.Symbol</em>) – Expansion variable used for truncation.</p></li>
+<li><p><strong>temporary</strong> (<em>This helper first protects log</em><em>(</em><em>variable</em><em>) </em><em>factors with a</em>)</p></li>
+<li><p><strong>of</strong> (<em>placeholder so logarithms are preserved while powers</em>)</p></li>
+<li><p><strong>termwise</strong> (<em>variable are analyzed. It then tries to extract</em>)</p></li>
+<li><p><strong>and</strong> (<em>exponents directly from the stored expression</em>)</p></li>
+<li><p><strong>needed</strong> (<em>if</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<p>:param :
+:param from an <code class="docutils literal notranslate"><span class="pre">expand_mul</span></code> view that only expands multiplicative:
+:param structure.:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cached <code class="docutils literal notranslate"><span class="pre">(terms,</span> <span class="pre">log_placeholder)</span></code> data for the fast truncation
+path, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if the expression must fall back to the slower
+series-based path.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[list[tuple[sympy.Expr, sympy.Expr]], sympy.Symbol] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.truncate">
+<span class="sig-name descname"><span class="pre">truncate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.truncate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.truncate" title="Link to this definition">¶</a></dt>
+<dd><p>Truncate the expression by removing terms whose exponent in <code class="docutils literal notranslate"><span class="pre">var</span></code>
+is strictly greater than <code class="docutils literal notranslate"><span class="pre">max_order</span></code>.</p>
+<p>When the expression is already a sum of termwise powers in the target
+variable, use cached exponent filtering. Fall back to SymPy series
+expansion plus the same exponent filtering for non-termwise
+expressions.</p>
+<p>In the fast path, exact <code class="docutils literal notranslate"><span class="pre">log(var)</span></code> factors are temporarily replaced
+by a placeholder symbol before exponent extraction. This makes
+logarithms behave like coefficients for power counting, so terms such
+as <code class="docutils literal notranslate"><span class="pre">x**2</span> <span class="pre">*</span> <span class="pre">log(x)</span></code> and <code class="docutils literal notranslate"><span class="pre">x**3</span> <span class="pre">*</span> <span class="pre">log(x)**2</span></code> are treated as orders
+<code class="docutils literal notranslate"><span class="pre">2</span></code> and <code class="docutils literal notranslate"><span class="pre">3</span></code> respectively. More complicated logarithmic dependence,
+such as <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">+</span> <span class="pre">x)</span></code> or <code class="docutils literal notranslate"><span class="pre">log(x**2)</span></code>, is not normalized this way and
+will typically force the slower series-based fallback.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>var</strong> (<em>str</em><em> or </em><em>sympy.Symbol</em>) – Variable used to define the truncation order.</p></li>
+<li><p><strong>max_order</strong> (<em>object</em>) – Maximum power of <code class="docutils literal notranslate"><span class="pre">var</span></code> to retain.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Truncated analytic expression.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression" title="PyART.analytic.expr.AnalyticExpression">AnalyticExpression</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If no expression is stored.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.subs">
+<span class="sig-name descname"><span class="pre">subs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.subs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.subs" title="Link to this definition">¶</a></dt>
+<dd><p>Apply SymPy substitution and preserve the wrapper when possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> (<em>tuple</em>) – Positional arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.subs()</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.subs()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped analytic expression for symbolic results, otherwise the
+raw substitution result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.simplify">
+<span class="sig-name descname"><span class="pre">simplify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.simplify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.simplify" title="Link to this definition">¶</a></dt>
+<dd><p>Simplify the stored expression and preserve the wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.simplify()</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped analytic expression for symbolic results, otherwise the
+raw simplification result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.expand">
+<span class="sig-name descname"><span class="pre">expand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.expand"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.expand" title="Link to this definition">¶</a></dt>
+<dd><p>Expand the stored expression and preserve the wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> (<em>tuple</em>) – Positional arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.expand()</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.expand()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped analytic expression for symbolic results, otherwise the
+raw expansion result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.factor">
+<span class="sig-name descname"><span class="pre">factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.factor" title="Link to this definition">¶</a></dt>
+<dd><p>Factor the stored expression and preserve the wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> (<em>tuple</em>) – Positional arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.factor()</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.factor()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped analytic expression for symbolic results, otherwise the
+raw factorization result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.collect">
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.collect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.collect" title="Link to this definition">¶</a></dt>
+<dd><p>Collect like terms in the stored expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> (<em>tuple</em>) – Positional arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.collect()</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.collect()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped analytic expression for symbolic results, otherwise the raw
+collect result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.diff">
+<span class="sig-name descname"><span class="pre">diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">symbols</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.diff" title="Link to this definition">¶</a></dt>
+<dd><p>Differentiate the stored expression and preserve the wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*symbols</strong> (<em>tuple</em>) – Differentiation variables and optional orders, as accepted by
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.diff()</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments forwarded to <code class="xref py py-meth docutils literal notranslate"><span class="pre">sympy.Expr.diff()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped analytic expression for symbolic results, otherwise the
+raw differentiation result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.to_latex">
+<span class="sig-name descname"><span class="pre">to_latex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.to_latex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.to_latex" title="Link to this definition">¶</a></dt>
+<dd><p>Render the stored expression as a LaTeX string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>LaTeX representation of the stored expression.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If no expression is stored.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.to_function">
+<span class="sig-name descname"><span class="pre">to_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'numpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.to_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.to_function" title="Link to this definition">¶</a></dt>
+<dd><p>Compile the expression into a callable numerical function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modules</strong> (<em>str</em><em> or </em><em>sequence</em><em>, </em><em>optional</em>) – Backend passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">sympy.lambdify()</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Compiled callable and the variable ordering it expects.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[callable, tuple[sympy.Symbol, …]]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If no expression is stored.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression._sympy_">
+<span class="sig-name descname"><span class="pre">_sympy_</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression._sympy_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression._sympy_" title="Link to this definition">¶</a></dt>
+<dd><p>Expose the wrapped SymPy expression to SymPy internals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Stored SymPy expression.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__getattr__">
+<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__getattr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__getattr__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__add__">
+<span class="sig-name descname"><span class="pre">__add__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__add__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__add__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__radd__">
+<span class="sig-name descname"><span class="pre">__radd__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__radd__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__radd__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__sub__">
+<span class="sig-name descname"><span class="pre">__sub__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__sub__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__sub__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__rsub__">
+<span class="sig-name descname"><span class="pre">__rsub__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__rsub__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__rsub__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__mul__">
+<span class="sig-name descname"><span class="pre">__mul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__mul__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__mul__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__rmul__">
+<span class="sig-name descname"><span class="pre">__rmul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__rmul__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__rmul__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__truediv__">
+<span class="sig-name descname"><span class="pre">__truediv__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__truediv__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__truediv__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__rtruediv__">
+<span class="sig-name descname"><span class="pre">__rtruediv__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__rtruediv__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__rtruediv__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyART.analytic.expr.AnalyticExpression.__pow__">
+<span class="sig-name descname"><span class="pre">__pow__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/PyART/analytic/expr.html#AnalyticExpression.__pow__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyART.analytic.expr.AnalyticExpression.__pow__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../mathematica_parser/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">PyART.analytic.mathematica_parser</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../coordschange/index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">PyART.analytic.coordschange</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">PyART.analytic.expr</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#PyART.analytic.expr._is_sympy"><code class="docutils literal notranslate"><span class="pre">_is_sympy()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr._get_x_exponent"><code class="docutils literal notranslate"><span class="pre">_get_x_exponent()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr._get_x_power_range"><code class="docutils literal notranslate"><span class="pre">_get_x_power_range()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher"><code class="docutils literal notranslate"><span class="pre">MathDispatcher</span></code></a><ul>
+<li><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher.use_sympy"><code class="docutils literal notranslate"><span class="pre">MathDispatcher.use_sympy</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher.sqrt"><code class="docutils literal notranslate"><span class="pre">MathDispatcher.sqrt</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher.log"><code class="docutils literal notranslate"><span class="pre">MathDispatcher.log</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher.cos"><code class="docutils literal notranslate"><span class="pre">MathDispatcher.cos</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher.sin"><code class="docutils literal notranslate"><span class="pre">MathDispatcher.sin</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher.arctan2"><code class="docutils literal notranslate"><span class="pre">MathDispatcher.arctan2</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher.dot"><code class="docutils literal notranslate"><span class="pre">MathDispatcher.dot()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.MathDispatcher.norm"><code class="docutils literal notranslate"><span class="pre">MathDispatcher.norm()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression</span></code></a><ul>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.expr"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.expr</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._compiled_func_cache"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._compiled_func_cache</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._truncate_result_cache"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._truncate_result_cache</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._truncate_term_cache"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._truncate_term_cache</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._modules_cache_key"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._modules_cache_key()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._get_compiled_function"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._get_compiled_function()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__call__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__call__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._result_variables"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._result_variables()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._wrap_result"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._wrap_result()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._apply_sympy_method"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._apply_sympy_method()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.derivative"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.derivative()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.pn_order"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.pn_order()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._extract_truncation_terms"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._extract_truncation_terms()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._build_truncation_terms"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._build_truncation_terms()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.truncate"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.truncate()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.subs"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.subs()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.simplify"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.simplify()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.expand"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.expand()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.factor"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.factor()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.collect"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.collect()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.diff"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.diff()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.to_latex"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.to_latex()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.to_function"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.to_function()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression._sympy_"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression._sympy_()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__getattr__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__getattr__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__add__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__add__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__radd__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__radd__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__sub__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__sub__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__rsub__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__rsub__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__mul__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__mul__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__rmul__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__rmul__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__truediv__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__truediv__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__rtruediv__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__rtruediv__()</span></code></a></li>
+<li><a class="reference internal" href="#PyART.analytic.expr.AnalyticExpression.__pow__"><code class="docutils literal notranslate"><span class="pre">AnalyticExpression.__pow__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

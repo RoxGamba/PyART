@@ -1,0 +1,403 @@
+PyART.analytic.mathematica_parser
+=================================
+
+.. py:module:: PyART.analytic.mathematica_parser
+
+.. autoapi-nested-parse::
+
+   Generic helpers for parsing Mathematica source into SymPy expressions.
+
+   This module owns Mathematica syntax normalization, structural parsing, and
+   special-form conversion shared across analytic data sources. Caller-specific
+   identifier remappings are intentionally supplied by the caller rather than
+   hard-coded here so the parser stays library-agnostic.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analytic.mathematica_parser.ParsedMathematicaSource
+   PyART.analytic.mathematica_parser.MathematicaParser
+
+
+Module Contents
+---------------
+
+.. py:class:: ParsedMathematicaSource
+
+   Structured representation of a parsed Mathematica source fragment.
+
+   :param assignments: Top-level immediate assignments extracted from the source.
+   :type assignments: dict[str, str], optional
+   :param definitions: Top-level delayed definitions extracted from the source.
+   :type definitions: dict[str, str], optional
+   :param metadata: Metadata association extracted from the source.
+   :type metadata: dict[str, Any], optional
+   :param last_expression: Final top-level expression encountered while parsing.
+   :type last_expression: str or None, optional
+
+
+   .. py:attribute:: assignments
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: definitions
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: metadata
+      :type:  dict[str, Any]
+
+
+   .. py:attribute:: last_expression
+      :type:  str | None
+      :value: None
+
+
+
+   .. py:method:: resolve_expression(name: str | None = None) -> str | None
+
+      Return the raw expression associated with a symbol or fallback.
+
+      :param name: Symbol name to resolve inside the assignment table.
+      :type name: str or None, optional
+
+      :returns: Expression string associated with ``name`` or the last parsed
+                expression when ``name`` is not provided.
+      :rtype: str or None
+
+
+
+.. py:class:: MathematicaParser
+
+   Parse Mathematica source text and convert symbolic forms to SymPy.
+
+   The parser handles common source normalization steps, extracts metadata
+   and assignments from Mathematica files, and converts special symbolic
+   constructs such as ``SeriesData`` into explicit SymPy expressions.
+
+   The class is intentionally generic. Library-specific naming conventions
+   and identifier rewrites should stay with the caller and be applied through
+   the helper methods exposed here.
+
+
+   .. py:method:: normalize_source(text: str) -> str
+
+      Normalize raw Mathematica source before structural parsing.
+
+      :param text: Raw Mathematica source text.
+      :type text: str
+
+      :returns: Source with comments removed, box expressions replaced, and common
+                escaped identifiers simplified.
+      :rtype: str
+
+
+
+   .. py:method:: _is_escaped_by_backslash(text: str, index: int) -> bool
+
+      Return whether ``text[index]`` is escaped by backslashes.
+
+      Mathematica strings use backslash escapes, so a quote is escaped when
+      it is preceded by an odd-length run of backslashes.
+
+
+
+   .. py:method:: _strip_comments(text: str) -> str
+
+      Strip Mathematica comments, including nested comment blocks.
+
+      :param text: Raw Mathematica source text.
+      :type text: str
+
+      :returns: Source text with comment blocks removed.
+      :rtype: str
+
+      :raises ValueError: If the source contains an unmatched Mathematica comment block.
+
+
+
+   .. py:method:: replace_identifiers(text: Any, replacements: Mapping[str, str]) -> str
+
+      Apply ordered textual identifier replacements to source.
+
+      :param text: Source object to convert to text before replacement.
+      :type text: Any
+      :param replacements: Mapping from source identifiers to replacement identifiers.
+                           This table is caller-owned so source-specific naming policies stay
+                           outside the shared parser core.
+      :type replacements: Mapping[str, str]
+
+      :returns: Updated text after all replacements have been applied.
+      :rtype: str
+
+
+
+   .. py:method:: parse_source(text: str) -> ParsedMathematicaSource
+
+      Extract assignments, delayed definitions, metadata, and the tail
+      expression.
+
+      :param text: Raw Mathematica source fragment.
+      :type text: str
+
+      :returns: Structured representation of the parsed source.
+      :rtype: ParsedMathematicaSource
+
+
+
+   .. py:method:: parse_expression(expression_source: str)
+
+      Parse Mathematica syntax into a normalized SymPy expression.
+
+      :param expression_source: Mathematica expression source to parse.
+      :type expression_source: str
+
+      :returns: Parsed expression after special-form normalization.
+      :rtype: sympy.Basic
+
+      :raises ValueError: If the expression cannot be parsed by the Mathematica parser.
+
+
+
+   .. py:method:: extract_module_items(source: str) -> list[str]
+
+      Return the ordered expressions stored inside a Mathematica module.
+
+      :param source: Mathematica source string, optionally beginning with ``Module[``.
+      :type source: str
+
+      :returns: Top-level module arguments and body items.
+      :rtype: list[str]
+
+      :raises ValueError: If a ``Module`` form does not have the expected two arguments.
+
+
+
+   .. py:method:: is_top_level_association(text: str) -> bool
+
+      Return whether a string is a complete top-level association.
+
+      :param text: Source text to inspect.
+      :type text: str
+
+      :returns: ``True`` when ``text`` begins with ``<|`` and ends with ``|>``.
+      :rtype: bool
+
+
+
+   .. py:method:: find_matching_bracket(text: str, start_index: int) -> int
+
+      Return the index of the closing bracket matching ``start_index``.
+
+      :param text: Source text containing bracketed Mathematica syntax.
+      :type text: str
+      :param start_index: Index of the opening ``[`` to match.
+      :type start_index: int
+
+      :returns: Index of the matching closing ``]``.
+      :rtype: int
+
+      :raises ValueError: If no matching closing bracket is found.
+
+
+
+   .. py:method:: _iter_top_level(text: str)
+
+      Yield ``(index, char, at_top)`` for every character in *text*,
+      where *at_top* is ``True`` when all bracket/string depths are zero.
+
+      Multi-character tokens ``<|`` and ``|>`` advance the index by 2 and
+      yield a single entry with ``char`` set to the two-character token.
+
+      :param text: Source text to scan.
+      :type text: str
+
+      :returns: Iterator over ``(index, token, at_top)`` tuples describing the
+                top-level scanning state.
+      :rtype: iterator
+
+
+
+   .. py:method:: split_top_level(text: str, separator: str = ',') -> list[str]
+
+      Split text on separators that appear only at top level.
+
+      :param text: Source text to split.
+      :type text: str
+      :param separator: Separator token to honor only at top level.
+      :type separator: str, optional
+
+      :returns: Top-level segments with surrounding whitespace removed.
+      :rtype: list[str]
+
+
+
+   .. py:method:: find_top_level(text: str, token: str) -> int
+
+      Find the first top-level occurrence of a token in text.
+
+      :param text: Source text to search.
+      :type text: str
+      :param token: Token to locate.
+      :type token: str
+
+      :returns: Index of the first top-level occurrence, or ``-1`` when absent.
+      :rtype: int
+
+
+
+   .. py:method:: find_top_level_assignment(text: str) -> int
+
+      Locate a plain top-level assignment operator in Mathematica code.
+
+      :param text: Source text to search.
+      :type text: str
+
+      :returns: Index of the assignment operator, or ``-1`` when none is found.
+      :rtype: int
+
+
+
+   .. py:method:: parse_association(text: str) -> dict[str, Any]
+
+      Parse a Mathematica association into Python metadata.
+
+      :param text: Mathematica association of the form ``<| ... |>``.
+      :type text: str
+
+      :returns: Parsed association values converted recursively into Python types.
+      :rtype: dict[str, Any]
+
+
+
+   .. py:method:: parse_metadata_value(value: str) -> Any
+
+      Parse a metadata value from a Mathematica association.
+
+      :param value: Raw association value.
+      :type value: str
+
+      :returns: Parsed Python value, preserving strings, lists, and nested
+                associations.
+      :rtype: Any
+
+
+
+   .. py:method:: strip_quotes(text: str) -> str
+
+      Remove one surrounding pair of double quotes when present.
+
+      :param text: Text to normalize.
+      :type text: str
+
+      :returns: Unquoted text when the input was wrapped in double quotes.
+      :rtype: str
+
+
+
+   .. py:method:: _parse_source_items(items: list[str]) -> ParsedMathematicaSource
+
+      Parse a sequence of top-level Mathematica source items.
+
+      :param items: Top-level source items extracted from a file or module body.
+      :type items: list[str]
+
+      :returns: Structured representation built from the supplied items.
+      :rtype: ParsedMathematicaSource
+
+
+
+   .. py:method:: _replace_box_expressions(text: str) -> str
+
+      Replace notebook box expressions with placeholder tokens.
+
+      :param text: Raw Mathematica source text.
+      :type text: str
+
+      :returns: Source text with box expressions replaced by ``BoxExpr`` tokens.
+      :rtype: str
+
+
+
+   .. py:method:: _replace_empty_series_data(text: str) -> str
+
+      Replace empty ``SeriesData`` constructs with explicit zeros.
+
+      :param text: Mathematica expression source.
+      :type text: str
+
+      :returns: Updated source string with empty ``SeriesData`` blocks replaced by
+                ``0``.
+      :rtype: str
+
+
+
+   .. py:method:: _convert_special_forms(expr)
+
+      Normalize parser-specific symbolic forms into standard SymPy.
+
+      :param expr: Parsed expression tree or literal value.
+      :type expr: object
+
+      :returns: Expression with special Mathematica forms converted when needed.
+      :rtype: object
+
+
+
+   .. py:method:: _convert_log_symbol(expr)
+
+      Convert placeholder ``LogX`` symbols back into explicit logarithms.
+
+      :param expr: Symbolic object to normalize.
+      :type expr: object
+
+      :returns: Converted SymPy logarithm when the symbol matches the placeholder
+                pattern, otherwise the input expression.
+      :rtype: object
+
+
+
+   .. py:method:: _convert_series_data(expr)
+
+      Convert a Mathematica ``SeriesData`` object into a SymPy series sum.
+
+      :param expr: Parsed ``SeriesData`` expression.
+      :type expr: sympy.Basic
+
+      :returns: Explicit SymPy expression equivalent to the series data.
+      :rtype: sympy.Expr
+
+
+
+   .. py:method:: _series_coefficients(coefficient_data)
+
+      Return the coefficient list encoded inside ``SeriesData``.
+
+      :param coefficient_data: Parsed coefficient payload from a ``SeriesData`` expression.
+      :type coefficient_data: sympy.Basic
+
+      :returns: Coefficients expanded into a plain Python list.
+      :rtype: list[sympy.Basic]
+
+
+
+   .. py:method:: _series_basis(variable, point, exponent)
+
+      Return the basis monomial associated with a series coefficient.
+
+      :param variable: Series expansion variable.
+      :type variable: sympy.Symbol
+      :param point: Expansion point.
+      :type point: sympy.Expr
+      :param exponent: Exponent associated with the current coefficient.
+      :type exponent: sympy.Expr
+
+      :returns: Basis term for the requested series coefficient.
+      :rtype: sympy.Expr
+
+
+
