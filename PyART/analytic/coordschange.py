@@ -1,44 +1,8 @@
 import numpy as np
 import sympy as sp
-from .expr import AnalyticExpression
+from .expr import AnalyticExpression, MathDispatcher, _is_sympy
 
 pi = np.pi
-
-
-def _is_sympy(x):
-    """Recursively check whether an object contains symbolic values."""
-    if isinstance(x, (sp.Basic, sp.Expr, AnalyticExpression)):
-        return True
-    if isinstance(x, (list, tuple, np.ndarray)):
-        return any(_is_sympy(i) for i in x)
-    return False
-
-
-class MathDispatcher:
-    """
-    Unifies sympy and numpy calls to prevent code duplication
-    in mathematical transformations.
-    """
-
-    def __init__(self, use_sympy):
-        self.use_sympy = use_sympy
-        self.sqrt = sp.sqrt if use_sympy else np.sqrt
-        self.log = sp.log if use_sympy else np.log
-        self.cos = sp.cos if use_sympy else np.cos
-        self.sin = sp.sin if use_sympy else np.sin
-        self.arctan2 = sp.atan2 if use_sympy else np.arctan2
-
-    def dot(self, a, b):
-        if len(a) != len(b):
-            raise ValueError("Vectors must have the same dimension")
-        if self.use_sympy:
-            return sum(a[i] * b[i] for i in range(len(a)))
-        return np.dot(a, b)
-
-    def norm(self, v):
-        if self.use_sympy:
-            return self.sqrt(sum(x**2 for x in v))
-        return np.linalg.norm(v)
 
 
 class CoordsChange:
@@ -62,14 +26,52 @@ class CoordsChange:
 
     @staticmethod
     def _validate_pn_order(PN_order):
+        """Validate the PN order supported by the coordinate maps.
+
+        Parameters
+        ----------
+        PN_order : int
+            Requested post-Newtonian truncation order.
+
+        Returns
+        -------
+        None
+            Validation succeeds silently when the order is supported.
+
+        Raises
+        ------
+        ValueError
+            If ``PN_order`` is not one of ``0``, ``1``, or ``2``.
+        """
         if PN_order not in (0, 1, 2):
             raise ValueError("PN_order must be 0, 1, or 2")
 
     @staticmethod
     def Eob2Adm(qe_vec, pe_vec, nu, PN_order=2):
-        """
-        Transforms EOB coordinates to ADM coordinates.
-        Works seamlessly for both numeric arrays and sympy symbols.
+        """Transform EOB phase-space coordinates into ADM coordinates.
+
+        Parameters
+        ----------
+        qe_vec : sequence
+            EOB position vector.
+        pe_vec : sequence
+            EOB momentum vector.
+        nu : float or sympy.Expr
+            Symmetric mass ratio.
+        PN_order : int, optional
+            Post-Newtonian order retained in the transformation. Supported
+            values are ``0``, ``1``, and ``2``.
+
+        Returns
+        -------
+        tuple
+            Pair ``(Q_ADM, P_ADM)`` as NumPy arrays for numeric input or lists
+            of :class:`AnalyticExpression` objects for symbolic input.
+
+        Raises
+        ------
+        ValueError
+            If ``PN_order`` is not supported.
         """
         CoordsChange._validate_pn_order(PN_order)
 
@@ -152,9 +154,30 @@ class CoordsChange:
 
     @staticmethod
     def Adm2Eob(qa_vec, pa_vec, nu, PN_order=2):
-        """
-        Transforms ADM coordinates to EOB coordinates.
-        Works seamlessly for both numeric arrays and sympy symbols.
+        """Transform ADM phase-space coordinates into EOB coordinates.
+
+        Parameters
+        ----------
+        qa_vec : sequence
+            ADM position vector.
+        pa_vec : sequence
+            ADM momentum vector.
+        nu : float or sympy.Expr
+            Symmetric mass ratio.
+        PN_order : int, optional
+            Post-Newtonian order retained in the transformation. Supported
+            values are ``0``, ``1``, and ``2``.
+
+        Returns
+        -------
+        tuple
+            Pair ``(Q_EOB, P_EOB)`` as NumPy arrays for numeric input or lists
+            of :class:`AnalyticExpression` objects for symbolic input.
+
+        Raises
+        ------
+        ValueError
+            If ``PN_order`` is not supported.
         """
         CoordsChange._validate_pn_order(PN_order)
 
@@ -237,10 +260,25 @@ class CoordsChange:
 
     @staticmethod
     def Polar2Cartesian(r, phi, pr, pphi):
-        """
-        Transforms 2D Polar coordinates to Cartesian coordinates.
-        Inputs: r, phi, p_r, p_phi
-        Outputs: x, y, p_x, p_y
+        """Transform planar polar canonical variables into Cartesian form.
+
+        Parameters
+        ----------
+        r : float or sympy.Expr
+            Radial coordinate.
+        phi : float or sympy.Expr
+            Azimuthal angle.
+        pr : float or sympy.Expr
+            Canonical radial momentum.
+        pphi : float or sympy.Expr
+            Canonical angular momentum.
+
+        Returns
+        -------
+        tuple
+            Cartesian coordinates and momenta ``(x, y, p_x, p_y)``. Numeric
+            inputs return numeric values; symbolic inputs return
+            :class:`AnalyticExpression` wrappers.
         """
         use_sym = _is_sympy([r, phi, pr, pphi])
         math = MathDispatcher(use_sym)
@@ -265,10 +303,25 @@ class CoordsChange:
 
     @staticmethod
     def Cartesian2Polar(x, y, px, py):
-        """
-        Transforms 2D Cartesian coordinates to Polar coordinates.
-        Inputs: x, y, p_x, p_y
-        Outputs: r, phi, p_r, p_phi
+        """Transform planar Cartesian canonical variables into polar form.
+
+        Parameters
+        ----------
+        x : float or sympy.Expr
+            Cartesian ``x`` coordinate.
+        y : float or sympy.Expr
+            Cartesian ``y`` coordinate.
+        px : float or sympy.Expr
+            Canonical momentum conjugate to ``x``.
+        py : float or sympy.Expr
+            Canonical momentum conjugate to ``y``.
+
+        Returns
+        -------
+        tuple
+            Polar coordinates and momenta ``(r, phi, p_r, p_phi)``. Numeric
+            inputs return numeric values; symbolic inputs return
+            :class:`AnalyticExpression` wrappers.
         """
         use_sym = _is_sympy([x, y, px, py])
         math = MathDispatcher(use_sym)
@@ -290,29 +343,33 @@ class CoordsChange:
 
 
 def eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True):
-    """Convert EOB initial data into ADM initial data.
-
+    """Convert EOB initial data into ADM puncture-style initial data.
 
     Parameters
     ----------
     eob_Wave : object
-        Object with attributes pars and dyn and method get_Pr().
-        Must provide:
-        - pars["q"]
-        - dyn["r"][0], dyn["phi"][0], dyn["Pphi"][0]
-        - get_Pr()[0]
-    verbose : bool
-        Print diagnostics if True.
-    PN_order : int
-        EOB->ADM conversion order (0,1,2).
-    rotate_on_x_axis : bool
-        If True, rotate output to x-axis.
+        Waveform-like object with ``pars`` and ``dyn`` mappings and a
+        ``get_Pr()`` method. The object must provide ``pars["q"]``, the first
+        entries of ``dyn["r"]``, ``dyn["phi"]``, ``dyn["Pphi"]``, and the
+        first radial momentum from ``get_Pr()``.
+    verbose : bool, optional
+        If ``True``, print a diagnostic summary of the transformed data.
+    PN_order : int, optional
+        Post-Newtonian order retained in the EOB-to-ADM transformation.
+    rotate_on_x_axis : bool, optional
+        If ``True``, rotate the ADM coordinates so the punctures lie on the
+        ``x`` axis at the initial time.
 
     Returns
     -------
-    dict
-        Contains keys: q_cart, p_cart, px, py, x1, x2, D,
-        x_offset, qe, pe, qe_chk, pe_chk.
+    dict[str, object]
+        Dictionary containing Cartesian coordinates and momenta in both EOB
+        and ADM frames, plus puncture placement information.
+
+    Raises
+    ------
+    ValueError
+        If the transformed ADM separation is zero or the PN order is invalid.
     """
     q = eob_Wave.pars["q"]
     nu = q / (1 + q) ** 2
