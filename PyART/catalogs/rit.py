@@ -150,9 +150,11 @@ class Waveform_RIT(Waveform):
         file_path = os.path.dirname(__file__)  # this is in the build/lib
         repo_path = file_path.split("PyART/")[0]
         if urls_json is None:  # use default name
-            script_paths = [os.path.join(repo_path, "PyART/catalogs/"), 
-                            os.path.join(repo_path, "PyART/PyART/catalogs/")]
-            script_path = next((p for p in script_paths if os.path.isdir(p)), './')
+            script_paths = [
+                os.path.join(repo_path, "PyART/catalogs/"),
+                os.path.join(repo_path, "PyART/PyART/catalogs/"),
+            ]
+            script_path = next((p for p in script_paths if os.path.isdir(p)), "./")
             urls_json = os.path.join(script_path, "rit_urls.json")
         elif not isinstance(urls_json, str):
             raise RuntimeError("Invalid value for urls_json: {urls_json}")
