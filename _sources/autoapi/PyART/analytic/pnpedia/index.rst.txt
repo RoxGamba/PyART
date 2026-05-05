@@ -1,0 +1,310 @@
+PyART.analytic.pnpedia
+======================
+
+.. py:module:: PyART.analytic.pnpedia
+
+.. autoapi-nested-parse::
+
+   PNPedia catalog access with PNPedia-specific identifier normalization.
+
+   The shared Mathematica parser remains library-agnostic. PNPedia-specific
+   identifier rewrites are defined here and applied before delegating generic
+   normalization and parsing to ``MathematicaParser``.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.analytic.pnpedia._PNPEDIA_SPECIAL_IDENTIFIER_REPLACEMENTS
+   PyART.analytic.pnpedia._PNPEDIA_GREEK_IDENTIFIER_REPLACEMENTS
+   PyART.analytic.pnpedia._PNPEDIA_CURLY_IDENTIFIER_REPLACEMENTS
+   PyART.analytic.pnpedia._PNPEDIA_CAPITAL_IDENTIFIER_REPLACEMENTS
+   PyART.analytic.pnpedia._PNPEDIA_IDENTIFIER_REPLACEMENTS
+   PyART.analytic.pnpedia._PNPEDIA_PARSE_FALLBACK_EXCEPTIONS
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analytic.pnpedia.PNPediaEntry
+   PyART.analytic.pnpedia.PNPedia
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analytic.pnpedia._build_identifier_replacements
+
+
+Module Contents
+---------------
+
+.. py:data:: _PNPEDIA_SPECIAL_IDENTIFIER_REPLACEMENTS
+   :value: (("\\[Lambda]0'[e]", 'lambda0eprime'), ('\\[Lambda]0[e]', 'lambda0e'), ("\\[Lambda]0'[et]",...
+
+
+.. py:data:: _PNPEDIA_GREEK_IDENTIFIER_REPLACEMENTS
+   :value: (('\\[Nu]', 'nu'), ('\\[Delta]', 'delta'), ('\\[Epsilon]', 'epsilon'), ('\\[Gamma]', 'gamma'),...
+
+
+.. py:data:: _PNPEDIA_CURLY_IDENTIFIER_REPLACEMENTS
+   :value: (('\\[CurlyEpsilon]', 'curlyepsilon'), ('\\[CurlyPhi]', 'curlyphi'), ('\\[CurlyTheta]',...
+
+
+.. py:data:: _PNPEDIA_CAPITAL_IDENTIFIER_REPLACEMENTS
+   :value: (('\\[CapitalPsi]', 'CapitalPsi'), ('\\[CapitalPhi]', 'CapitalPhi'), ('\\[CapitalDelta]',...
+
+
+.. py:function:: _build_identifier_replacements(*groups)
+
+   Combine identifier replacement tables into one validated mapping.
+
+   :param \*groups: Replacement groups containing ``(source, target)`` pairs.
+   :type \*groups: tuple[tuple[str, str], ...]
+
+   :returns: Combined mapping from Mathematica identifiers to Python-friendly
+             replacements.
+   :rtype: dict[str, str]
+
+   :raises ValueError: If the same source identifier appears in more than one group.
+
+
+.. py:data:: _PNPEDIA_IDENTIFIER_REPLACEMENTS
+
+.. py:data:: _PNPEDIA_PARSE_FALLBACK_EXCEPTIONS
+
+.. py:class:: PNPediaEntry
+
+   Parsed representation of a PNPedia quantity file and README.md
+
+   :param key: The resolved key corresponding to the selected quantity.
+   :type key: str
+   :param path: The absolute path to the selected quantity file.
+   :type path: str
+   :param metadata: Metadata extracted from the quantity file and associated README.md.
+   :type metadata: dict
+   :param expr: The parsed symbolic expression for the quantity.
+   :type expr: sympy.Basic
+   :param quantity: The AnalyticExpression for the quantity corresponding to `expr`.
+   :type quantity: AnalyticExpression
+
+
+   .. py:attribute:: key
+      :type:  str
+
+
+   .. py:attribute:: path
+      :type:  str
+
+
+   .. py:attribute:: metadata
+      :type:  dict[str, Any]
+
+
+   .. py:attribute:: expr
+      :type:  sympy.Basic
+
+
+   .. py:attribute:: quantity
+      :type:  PyART.analytic.expr.AnalyticExpression
+
+
+   .. py:method:: __getitem__(field_name: str) -> Any
+
+      Return an entry attribute using mapping-style access.
+
+      :param field_name: Name of the dataclass field to retrieve.
+      :type field_name: str
+
+      :returns: Value stored in the requested field.
+      :rtype: Any
+
+      :raises KeyError: If ``field_name`` is not a valid attribute name.
+
+
+
+.. py:class:: PNPedia(path, download=False)
+
+   Bases: :py:obj:`PyART.analytic.analytic_catalog.AnalyticCatalog`
+
+
+   Collection of PN quantities loaded from the PNPedia repository.
+
+   Acts as a dictionary-backed store of
+   :class:`~PyART.analytic.expr.AnalyticExpression` objects, one per PN
+   quantity file. Quantities are parsed on demand from the Mathematica-format
+   text files distributed with PNPedia.
+
+   PNPedia-specific identifier rewriting is handled in this module before
+   the source is passed to the shared
+   :class:`~PyART.analytic.mathematica_parser.MathematicaParser`.
+
+   Source files are distributed with PNPedia:
+       https://github.com/davidtrestini/PNpedia
+
+
+   .. py:attribute:: structure_name
+      :value: 'PNPedia'
+
+
+
+   .. py:attribute:: _mathematica_parser
+
+
+   .. py:attribute:: _entry_cache
+      :type:  dict[str, PNPediaEntry]
+
+
+   .. py:method:: download_pnpedia()
+
+      Clone the PNPedia repository into the configured path.
+
+      :returns: The repository is cloned when it is not already available.
+      :rtype: None
+
+
+
+   .. py:method:: __parse_pnpedia()
+
+      Index the available PNPedia quantity files.
+
+      :returns: The quantity index is stored on the instance.
+      :rtype: None
+
+
+
+   .. py:method:: _resolve_entry(name=None, path=None)
+
+      Resolve a quantity request to a canonical key and file path.
+
+      :param name: Indexed quantity name or tokenized query.
+      :type name: str or None, optional
+      :param path: Direct path to a quantity file.
+      :type path: str or None, optional
+
+      :returns: Canonical quantity key and absolute file path.
+      :rtype: tuple[str, str]
+
+
+
+   .. py:method:: _prepare_quantity_expression(content)
+
+      Normalize a raw PNPedia file before symbolic parsing.
+
+      PNPedia-specific identifier substitutions are applied locally first,
+      then the shared Mathematica parser performs generic source
+      normalization.
+
+      :param content: Raw Mathematica-formatted file content.
+      :type content: str
+
+      :returns: Normalized source string ready for SymPy parsing.
+      :rtype: str
+
+
+
+   .. py:method:: _sympify_quantity_expression(prepared_content)
+
+      Parse normalized content through a direct ``sympify`` fallback.
+
+      :param prepared_content: Normalized expression source.
+      :type prepared_content: str
+
+      :returns: Expression parsed with bracket and power syntax converted to Python
+                equivalents.
+      :rtype: sympy.Expr
+
+
+
+   .. py:method:: _parse_quantity_expression(content, path)
+
+      Parse a PNPedia quantity with a ``sympify`` fallback path.
+
+      :param content: Raw quantity file content.
+      :type content: str
+      :param path: Path used for logging and error context.
+      :type path: str
+
+      :returns: Parsed symbolic expression.
+      :rtype: sympy.Expr
+
+
+
+   .. py:method:: __parse_quantity_readme(readme_content, path)
+
+      Parse the README.md associated with a PNPedia quantity file to extract
+      metadata such as arXiv references, notation, and endorser information.
+
+      Notation is usually under a "Notations" section, with
+      quantities itemized via "*" bullets, as e.g.:
+      * ``quantity`` is the ...
+
+      :param readme_content: The content of the README.md file as a string.
+      :type readme_content: str
+      :param path: The path to the README.md file, used for logging context.
+      :type path: str
+      :param Returns:
+      :param dict: A dictionary containing extracted metadata fields. Possible keys include
+                   'arxiv_references', 'notation', and 'endorsers'.
+
+
+
+   .. py:method:: get_entry(name=None, path=None)
+
+      Retrieve a PN quantity from PNPedia.
+
+      The PNPedia structure (inside Core post-Newtonian quantities) is:
+      - orbit type (Circular, Elliptic, Hyperbolic)
+      - Spin (NonSpinning, Spinning)
+      - Precession (Precessing, Nonprecessing)
+      - Tides (With tidal effects, Without tidal effects)
+      - Quantity (
+        Waveform, Fluxes, Constants of motion, Waveform frequencies):
+          - Constants of motion (Energy, Angular momentum)
+          - Fluxes (Angular momentum flux, Energy flux)
+          - Waveform (h_l_m.txt)
+
+      Quantities are stored as Mathematica-readable text files.
+      They are converted into SymPy expressions on demand.
+
+      Inside each folder is also a README.md providing:
+      - arXiv references/sources
+      - Notation & definitions
+      - Endorser
+
+      :param name: The name of the PN quantity to retrieve,
+      :type name: str
+      :param path: The path to the PNPedia file to be loaded. If None, it is resolved
+                   from the indexed quantity name.
+      :type path: str, optional
+
+      :returns: Parsed and cached representation of the requested quantity.
+      :rtype: PNPediaEntry
+
+
+
+   .. py:method:: mathematica_to_python_vars(expr)
+
+      Convert Mathematica identifiers to Python-friendly names.
+
+      This translation intentionally stays local to PNPedia because the
+      shared Mathematica parser should not embed catalog-specific naming
+      policy.
+
+      :param expr: The sympy expression or raw Mathematica string containing
+                   Mathematica variables.
+      :type expr: sympy expression or str
+
+      :returns: The expression string with Mathematica identifiers converted to
+                Python-friendly names.
+      :rtype: str
+
+
+

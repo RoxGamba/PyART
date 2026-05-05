@@ -1,0 +1,302 @@
+PyART.analysis.parspace_TEOB
+============================
+
+.. py:module:: PyART.analysis.parspace_TEOB
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.analysis.parspace_TEOB.parser
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.parspace_TEOB.Spanner
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analysis.parspace_TEOB.build_colormap
+   PyART.analysis.parspace_TEOB.rmin_given_spins
+   PyART.analysis.parspace_TEOB.EnergyLimitsSpin
+   PyART.analysis.parspace_TEOB.RadialPotential_MaxMin
+
+
+Module Contents
+---------------
+
+.. py:function:: build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False)
+
+   Outputs a colormap similar to old_cmp_name, but with a new specified RGBA color
+   associated to val.
+
+   :param old_cmp_name: Name of the colormap to be used as a base.
+   :type old_cmp_name: str
+   :param clr: RGBA color to be associated to val.
+   :type clr: list
+   :param peaks_list: List of values to be represented in the colormap.
+   :type peaks_list: list
+   :param continuous_cmap: If True, the colormap will be continuous. Default is False.
+   :type continuous_cmap: bool, optional
+
+   :returns: **newcmp** -- The modified colormap.
+   :rtype: ListedColormap
+
+
+.. py:function:: rmin_given_spins(chi1, chi2)
+
+   Estimate minimum radius to use for V(r) given spins.
+
+   :param chi1: spin of the first BH.
+   :type chi1: float
+   :param chi2: spin of the second BH.
+   :type chi2: float
+
+   :returns: **rmin** -- minimum radius.
+   :rtype: float
+
+
+.. py:function:: EnergyLimitsSpin(rmax, pph, q, chi1, chi2, N=1000)
+
+   Compute the maximum energy allowed for a given angular momentum pph_hyp,
+   mass ratio q, and spins chi1, chi2 for the orbit to be bound.
+
+   :param rmax: Maximum radial separation.
+   :type rmax: float
+   :param q: Mass ratio.
+   :type q: float
+   :param pph_hyp: Angular momentum.
+   :type pph_hyp: float
+   :param chi1: Dimensionless spin of the primary.
+   :type chi1: float
+   :param chi2: Dimensionless spin of the secondary.
+   :type chi2: float
+   :param N: Number of points in the radial grid. Default is 1000.
+   :type N: int, optional
+
+   :returns: **Emax** -- The maximum energy allowed for a bound orbit.
+   :rtype: float
+
+
+.. py:function:: RadialPotential_MaxMin(rmax, pph, q, chi1, chi2, N=1000)
+
+   Compute radial effective potential and then extract
+   the local minimum and maximum; also compute radii
+   at which these occur.
+
+   :param rmax: Maximum radial separation.
+   :type rmax: float
+   :param q: Mass ratio.
+   :type q: float
+   :param pph_hyp: Angular momentum.
+   :type pph_hyp: float
+   :param chi1: Dimensionless spin of the primary.
+   :type chi1: float
+   :param chi2: Dimensionless spin of the secondary.
+   :type chi2: float
+   :param N: Number of points in the radial grid. Default is 1000.
+   :type N: int, optional
+
+   :returns: * **Vmax** (*float*) -- Maximum of the potential.
+             * **Vmin** (*float*) -- Minimum of the potential.
+             * **rmax** (*float*) -- Radius corresponding to Vmax.
+             * **rmin** (*float*) -- Radius corresponding to Vmin.
+
+
+.. py:class:: Spanner(q, chi1, chi2, pph_min, pph_max, Emin=1.0, Emax=2.0, dE_bound=None, nj=100, update_pph_min=True, r0=1000, r0_type='auto', r0_val=None, r_infty=5000, input_file=None, verbose=False, vverbose=False, nproc=1, dump_npz=False, ignore_input_file=False, outdir=None)
+
+   Bases: :py:obj:`object`
+
+
+   Class to span the (j,E) parameter space using TEOBResumS
+
+
+   .. py:attribute:: q
+
+
+   .. py:attribute:: nu
+
+
+   .. py:attribute:: chi1
+
+
+   .. py:attribute:: chi2
+
+
+   .. py:attribute:: nj
+      :value: 100
+
+
+
+   .. py:attribute:: nproc
+      :value: 1
+
+
+
+   .. py:attribute:: r0_type
+      :value: 'auto'
+
+
+
+   .. py:attribute:: r0_val
+      :value: None
+
+
+
+   .. py:attribute:: dE_bound
+      :value: None
+
+
+
+   .. py:attribute:: Emin
+      :value: 1.0
+
+
+
+   .. py:attribute:: Emax
+      :value: 2.0
+
+
+
+   .. py:attribute:: pph_min
+
+
+   .. py:attribute:: pph_max
+
+
+   .. py:attribute:: r_infty
+      :value: 5000
+
+
+
+   .. py:attribute:: input_file
+      :value: None
+
+
+
+   .. py:attribute:: verbose
+      :value: False
+
+
+
+   .. py:attribute:: vverbose
+      :value: False
+
+
+
+   .. py:attribute:: outdir
+      :value: None
+
+
+
+   .. py:attribute:: eobcommonpars
+
+
+   .. py:method:: info_string(q_prec=2, chi1_prec=2, chi2_prec=2, r0_prec=0)
+
+      Write an info string based on the parameters of the Spanner instance.
+      :param q_prec: Precision for the mass ratio in the info string. Default is 2.
+      :type q_prec: int, optional
+      :param chi1_prec: Precision for the primary spin in the info string. Default is 2.
+      :type chi1_prec: int, optional
+      :param chi2_prec: Precision for the secondary spin in the info string. Default is 2.
+      :type chi2_prec: int, optional
+      :param r0_prec: Precision for the initial separation in the info string. Default is 0.
+      :type r0_prec: int, optional
+
+      :returns: The info string.
+      :rtype: str
+
+
+
+   .. py:method:: bracketing(f, start, end, step_size)
+
+
+   .. py:method:: determine_r0_from_pphE(pph, E, apa_tol=None, rVmin=None, debug_plot=False)
+
+
+   .. py:method:: compute_r0_from_IClist(indeces, X, apa_tol)
+
+
+   .. py:method:: parspace_populate()
+
+
+   .. py:method:: single_run_TEOB(point)
+
+      Run a single TEOB simulation for given initial conditions.
+      :param point: List containing [j_hyp, H_hyp].
+      :type point: list
+
+      :returns: List containing [j_hyp, H_hyp, npeaks, rend].
+      :rtype: list
+
+
+
+   .. py:method:: run_TEOB_list(indeces, points, eobcommonpars)
+
+      Run TEOB simulations for a list of points
+      :param indeces: List of indices of the points to be simulated.
+      :type indeces: list
+      :param points: Array of points containing [j_hyp, H_hyp].
+      :type points: ndarray
+      :param eobcommonpars: Dictionary containing common EOB parameters.
+      :type eobcommonpars: dict
+
+      :returns: Array of points containing [j_hyp, H_hyp, npeaks, rend].
+      :rtype: ndarray
+
+
+
+   .. py:method:: __parallel_run(function, X, *additional_args)
+
+
+   .. py:method:: run_TEOB_parallel(dump_npz=False, dump_txt=False, ignore_input_file=False)
+
+
+   .. py:method:: dump_npz()
+
+
+   .. py:method:: dump_txt()
+
+
+   .. py:method:: qchi1chi2_list_str()
+
+      Write a string representation of the (q, chi1, chi2) parameters.
+
+      :returns: The string representation of (q, chi1, chi2).
+      :rtype: str
+
+
+
+   .. py:method:: plot_parspace(marker_size=1, savepng=False, figname=None, continuous_cmap=False, show='on', show_fails=True, Nmax=None, qc_line=False, parabolic_line=False, show_kankani=False, show_gra_fit=False, grey_fill=False)
+
+      Plot the parameter space
+
+      :param marker_size: Marker size in the plot. Default is 1.
+      :type marker_size: int, optional
+      :param savepng: If True, save the plot as a PNG file. Default is False.
+      :type savepng: bool, optional
+      :param discrete_cmap: If True, use a discrete color map. Default is False.
+      :type discrete_cmap: bool, optional
+      :param show: If "on", show the plot. Default is "on".
+      :type show: str, optional
+      :param pph_max_plot: Maximum value of pph to be considered in the plot. Default is None.
+      :type pph_max_plot: float, optional
+      :param show_NR: If True, show NR points in the plot. Default is False.
+      :type show_NR: bool, optional
+      :param dset: Dataset name for NR points. Default is "GAUSS_2023".
+      :type dset: str, optional
+
+
+
+.. py:data:: parser
+

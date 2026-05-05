@@ -1,0 +1,180 @@
+PyART.catalogs.gra
+==================
+
+.. py:module:: PyART.catalogs.gra
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.catalogs.gra.CATALOG_URL
+   PyART.catalogs.gra.BASE_URL
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.catalogs.gra.Waveform_GRA
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.catalogs.gra.make_session
+   PyART.catalogs.gra.make_download_session
+   PyART.catalogs.gra.get_id_to_item_url
+   PyART.catalogs.gra.get_item_soup
+   PyART.catalogs.gra.find_tar_for_resolution
+   PyART.catalogs.gra.find_metadata_file
+   PyART.catalogs.gra.resolve_download_url
+   PyART.catalogs.gra.download_safe
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_GRA(ID='0001', path='../dat/GRA', ellmax=8, ext='ext', res='128', r_ext=None, cut_N=None, cut_U=None, nu_rescale=False, modes=[(2, 2)], download=False, downloads=['hlm', 'metadata'])
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle GRAthena++ waveforms.
+   This is still under development, depending on the
+   final format of the data, and as such still quite rough.
+   For now, it assumes that the data is in the format
+   of Alireza's simulations.
+
+
+   .. py:attribute:: ID
+      :value: '0001'
+
+
+
+   .. py:attribute:: path
+      :value: '../dat/GRA'
+
+
+
+   .. py:attribute:: cut_N
+      :value: None
+
+
+
+   .. py:attribute:: cut_U
+      :value: None
+
+
+
+   .. py:attribute:: modes
+      :value: [(2, 2)]
+
+
+
+   .. py:attribute:: ellmax
+      :value: 8
+
+
+
+   .. py:attribute:: extrap
+      :value: 'ext'
+
+
+
+   .. py:attribute:: domain
+      :value: 'Time'
+
+
+
+   .. py:attribute:: r_ext
+      :value: None
+
+
+
+   .. py:attribute:: nu_rescale
+      :value: False
+
+
+
+   .. py:attribute:: res
+      :value: '128'
+
+
+
+   .. py:method:: download_simulation(ID='0001', path=None, downloads=['hlm', 'metadata'], res=None)
+
+      Automatically download and unpack a GRAthena++
+      simulation from scholarsphere.
+
+
+
+   .. py:method:: load_metadata()
+
+      Load the metadata from the json file and store it in self.metadata
+
+
+
+   .. py:method:: load_hlm(extrap='ext', ellmax=None, load_m0=False, r_ext=None)
+
+      Load the data from the h5 file
+
+
+
+   .. py:method:: check_cut_consistency()
+
+
+   .. py:method:: get_indices_dict()
+
+      Get the indices of the various cols in the data
+
+
+
+   .. py:method:: load_psi4lm(ellmax=None, r_ext=None, extrap='ext', load_m0=False)
+
+      Load the data from the h5 file, but for psi4 instead of h.
+
+
+
+.. py:data:: CATALOG_URL
+   :value: 'https://scholarsphere.psu.edu/resources/610744ac-80b9-4689-8119-320dfd2e2b9a'
+
+
+.. py:data:: BASE_URL
+   :value: 'https://scholarsphere.psu.edu'
+
+
+.. py:function:: make_session()
+
+.. py:function:: make_download_session(base_session=None)
+
+   Create a fresh session for a single asset download.
+
+   Large tar downloads can leave the previous connection in a reset state.
+   Using a dedicated session per asset avoids reusing that stale connection
+   when the next file, such as metadata, is fetched.
+
+
+.. py:function:: get_id_to_item_url(session)
+
+.. py:function:: get_item_soup(session, item_url)
+
+.. py:function:: find_tar_for_resolution(item_soup, resolution)
+
+.. py:function:: find_metadata_file(item_soup)
+
+.. py:function:: resolve_download_url(session, url, timeout=30)
+
+   Resolve a ScholarSphere download URL to the signed asset URL.
+
+   ScholarSphere serves an HTML shell for direct GET requests to the
+   `/downloads/...` endpoint, but exposes the real object location in the
+   response to a HEAD request via a short-lived redirect to S3.
+
+
+.. py:function:: download_safe(session, url, filename, chunk_size=1024 * 1024)
+

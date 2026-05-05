@@ -1,0 +1,86 @@
+PyART.utils.os_utils
+====================
+
+.. py:module:: PyART.utils.os_utils
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.utils.os_utils.runcmd
+   PyART.utils.os_utils.find_dirs_with_subdirs
+   PyART.utils.os_utils.is_subdir
+   PyART.utils.os_utils.find_fnames_with_token
+   PyART.utils.os_utils.find_dirs_with_token
+
+
+Module Contents
+---------------
+
+.. py:function:: runcmd(cmd, workdir, out=None)
+
+   Execute cmd in workdir
+
+   :param cmd: command to execute
+   :type cmd: str
+   :param workdir: directory in which to execute the command
+   :type workdir: str
+   :param out: if not None, redirect stdout and stderr to this file
+   :type out: str or None
+
+
+.. py:function:: find_dirs_with_subdirs(basedir, token)
+
+   Find directories that contain subdires
+   whose names contain the specified token
+   Return list
+
+   :param basedir: base directory to search
+   :type basedir: str
+   :param token: token to search for in subdirectory names
+   :type token: str
+
+
+.. py:function:: is_subdir(basedir, sdir)
+
+   Check if sdir is a subdir of basedir
+
+   :param basedir: base directory
+   :type basedir: str
+   :param sdir: directory to check
+   :type sdir: str
+
+   :returns: **out** -- True if sdir is a subdir of basedir
+   :rtype: bool
+
+
+.. py:function:: find_fnames_with_token(basedir, token)
+
+   Find files in basedir that contains specified token.
+   Return list.
+
+   :param basedir: base directory to search
+   :type basedir: str
+   :param token: token to search for in filenames
+   :type token: str
+
+   :returns: **out** -- list of matching file paths
+   :rtype: list
+
+
+.. py:function:: find_dirs_with_token(basedir, token)
+
+   Find subdirs in basedir that contains specified token.
+   Return list.
+
+   :param basedir: base directory to search
+   :type basedir: str
+   :param token: token to search for in directory names
+   :type token: str
+
+   :returns: **out** -- list of matching directory paths
+   :rtype: list
+
+

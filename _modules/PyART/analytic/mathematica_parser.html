@@ -1,0 +1,1243 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>PyART.analytic.mathematica_parser - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/intro_to_waveforms.html">Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/coordinates_and_twopuncture.html">Coordinates and TwoPunctures from EOB IDs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/pnpedia.html">PNPedia interface</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../autoapi/PyART/index.html">PyART</a><input aria-label="Toggle navigation of PyART" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analytic/analytic_catalog/index.html">PyART.analytic.analytic_catalog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analytic/bhpt_pnsf/index.html">PyART.analytic.bhpt_pnsf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analytic/expr/index.html">PyART.analytic.expr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html">PyART.analytic.mathematica_parser</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/analytic/pnpedia/index.html">PyART.analytic.pnpedia</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../autoapi/PyART/utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/tocatalog_icc/index.html">PyART.utils.tocatalog_icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/PyART/utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../autoapi/PyART/waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for PyART.analytic.mathematica_parser</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Generic helpers for parsing Mathematica source into SymPy expressions.</span>
+
+<span class="sd">This module owns Mathematica syntax normalization, structural parsing, and</span>
+<span class="sd">special-form conversion shared across analytic data sources. Caller-specific</span>
+<span class="sd">identifier remappings are intentionally supplied by the caller rather than</span>
+<span class="sd">hard-coded here so the parser stays library-agnostic.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tokenize</span><span class="w"> </span><span class="kn">import</span> <span class="n">TokenError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sympy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sympy.core.sympify</span><span class="w"> </span><span class="kn">import</span> <span class="n">SympifyError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sympy.parsing.mathematica</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_mathematica</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="ParsedMathematicaSource">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.ParsedMathematicaSource">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ParsedMathematicaSource</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structured representation of a parsed Mathematica source fragment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    assignments : dict[str, str], optional</span>
+<span class="sd">        Top-level immediate assignments extracted from the source.</span>
+<span class="sd">    definitions : dict[str, str], optional</span>
+<span class="sd">        Top-level delayed definitions extracted from the source.</span>
+<span class="sd">    metadata : dict[str, Any], optional</span>
+<span class="sd">        Metadata association extracted from the source.</span>
+<span class="sd">    last_expression : str or None, optional</span>
+<span class="sd">        Final top-level expression encountered while parsing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ParsedMathematicaSource.assignments">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.ParsedMathematicaSource.assignments">[docs]</a>
+    <span class="n">assignments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParsedMathematicaSource.definitions">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.ParsedMathematicaSource.definitions">[docs]</a>
+    <span class="n">definitions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParsedMathematicaSource.metadata">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.ParsedMathematicaSource.metadata">[docs]</a>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParsedMathematicaSource.last_expression">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.ParsedMathematicaSource.last_expression">[docs]</a>
+    <span class="n">last_expression</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ParsedMathematicaSource.resolve_expression">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.ParsedMathematicaSource.resolve_expression">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the raw expression associated with a symbol or fallback.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str or None, optional</span>
+<span class="sd">            Symbol name to resolve inside the assignment table.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str or None</span>
+<span class="sd">            Expression string associated with ``name`` or the last parsed</span>
+<span class="sd">            expression when ``name`` is not provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_expression</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">assignments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_expression</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_expression</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MathematicaParser">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MathematicaParser</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse Mathematica source text and convert symbolic forms to SymPy.</span>
+
+<span class="sd">    The parser handles common source normalization steps, extracts metadata</span>
+<span class="sd">    and assignments from Mathematica files, and converts special symbolic</span>
+<span class="sd">    constructs such as ``SeriesData`` into explicit SymPy expressions.</span>
+
+<span class="sd">    The class is intentionally generic. Library-specific naming conventions</span>
+<span class="sd">    and identifier rewrites should stay with the caller and be applied through</span>
+<span class="sd">    the helper methods exposed here.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MathematicaParser.normalize_source">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.normalize_source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">normalize_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize raw Mathematica source before structural parsing.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Raw Mathematica source text.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Source with comments removed, box expressions replaced, and common</span>
+<span class="sd">            escaped identifiers simplified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strip_comments</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace_box_expressions</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">\[([A-Za-z]+)\]&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">match</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._is_escaped_by_backslash">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._is_escaped_by_backslash">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_escaped_by_backslash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether ``text[index]`` is escaped by backslashes.</span>
+
+<span class="sd">        Mathematica strings use backslash escapes, so a quote is escaped when</span>
+<span class="sd">        it is preceded by an odd-length run of backslashes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">backslash_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">lookback</span> <span class="o">=</span> <span class="n">index</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="n">lookback</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">text</span><span class="p">[</span><span class="n">lookback</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">:</span>
+            <span class="n">backslash_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lookback</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">backslash_count</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._strip_comments">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._strip_comments">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_strip_comments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Strip Mathematica comments, including nested comment blocks.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Raw Mathematica source text.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Source text with comment blocks removed.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the source contains an unmatched Mathematica comment block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pieces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">comment_depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">in_string</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">comment_depth</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">text</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_escaped_by_backslash</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                    <span class="n">in_string</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">in_string</span>
+                <span class="n">pieces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">in_string</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;(*&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                <span class="n">comment_depth</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">2</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">comment_depth</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;(*&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                    <span class="n">comment_depth</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">index</span> <span class="o">+=</span> <span class="mi">2</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;*)&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                    <span class="n">comment_depth</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="n">index</span> <span class="o">+=</span> <span class="mi">2</span>
+                    <span class="k">continue</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+
+            <span class="n">pieces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">comment_depth</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unmatched Mathematica comment while parsing source&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pieces</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.replace_identifiers">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.replace_identifiers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">replace_identifiers</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">text</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">replacements</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply ordered textual identifier replacements to source.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : Any</span>
+<span class="sd">            Source object to convert to text before replacement.</span>
+<span class="sd">        replacements : Mapping[str, str]</span>
+<span class="sd">            Mapping from source identifiers to replacement identifiers.</span>
+<span class="sd">            This table is caller-owned so source-specific naming policies stay</span>
+<span class="sd">            outside the shared parser core.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Updated text after all replacements have been applied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">updated_text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">replacements</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+        <span class="p">):</span>
+            <span class="n">updated_text</span> <span class="o">=</span> <span class="n">updated_text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">updated_text</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.parse_source">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.parse_source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParsedMathematicaSource</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract assignments, delayed definitions, metadata, and the tail</span>
+<span class="sd">        expression.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Raw Mathematica source fragment.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ParsedMathematicaSource</span>
+<span class="sd">            Structured representation of the parsed source.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">normalized_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_source</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_top_level_association</span><span class="p">(</span><span class="n">normalized_source</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ParsedMathematicaSource</span><span class="p">(</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parse_association</span><span class="p">(</span><span class="n">normalized_source</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">normalized_source</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Module[&quot;</span><span class="p">):</span>
+            <span class="n">module_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_module_items</span><span class="p">(</span><span class="n">normalized_source</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_source_items</span><span class="p">(</span><span class="n">module_items</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_source_items</span><span class="p">([</span><span class="n">normalized_source</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.parse_expression">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.parse_expression">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse Mathematica syntax into a normalized SymPy expression.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        expression_source : str</span>
+<span class="sd">            Mathematica expression source to parse.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sympy.Basic</span>
+<span class="sd">            Parsed expression after special-form normalization.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the expression cannot be parsed by the Mathematica parser.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">expression_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace_empty_series_data</span><span class="p">(</span><span class="n">expression_source</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">parsed</span> <span class="o">=</span> <span class="n">parse_mathematica</span><span class="p">(</span><span class="n">expression_source</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span>
+            <span class="n">SympifyError</span><span class="p">,</span>
+            <span class="ne">SyntaxError</span><span class="p">,</span>
+            <span class="n">TokenError</span><span class="p">,</span>
+            <span class="ne">TypeError</span><span class="p">,</span>
+            <span class="ne">ValueError</span><span class="p">,</span>
+            <span class="ne">NotImplementedError</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to parse Mathematica expression&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_special_forms</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.extract_module_items">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.extract_module_items">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_module_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the ordered expressions stored inside a Mathematica module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        source : str</span>
+<span class="sd">            Mathematica source string, optionally beginning with ``Module[``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list[str]</span>
+<span class="sd">            Top-level module arguments and body items.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If a ``Module`` form does not have the expected two arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">source</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Module[&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">source</span><span class="p">]</span>
+
+        <span class="n">bracket_start</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">)</span>
+        <span class="n">bracket_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_matching_bracket</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">bracket_start</span><span class="p">)</span>
+        <span class="n">inner</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">bracket_start</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">bracket_end</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">module_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_top_level</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">module_args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unexpected Mathematica module structure&quot;</span><span class="p">)</span>
+
+        <span class="n">body_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_top_level</span><span class="p">(</span><span class="n">module_args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">separator</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">module_args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">*</span><span class="n">body_items</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.is_top_level_association">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.is_top_level_association">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_top_level_association</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether a string is a complete top-level association.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Source text to inspect.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            ``True`` when ``text`` begins with ``&lt;|`` and ends with ``|&gt;``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;|&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;|&gt;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.find_matching_bracket">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.find_matching_bracket">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_matching_bracket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the index of the closing bracket matching ``start_index``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Source text containing bracketed Mathematica syntax.</span>
+<span class="sd">        start_index : int</span>
+<span class="sd">            Index of the opening ``[`` to match.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Index of the matching closing ``]``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no matching closing bracket is found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">in_string</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">start_index</span>
+        <span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="n">char</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s1">&#39;&quot;&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_escaped_by_backslash</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                <span class="n">in_string</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">in_string</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">in_string</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;[&quot;</span><span class="p">:</span>
+                    <span class="n">depth</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;]&quot;</span><span class="p">:</span>
+                    <span class="n">depth</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">index</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unmatched &#39;[&#39; while parsing Mathematica source&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._iter_top_level">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._iter_top_level">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_iter_top_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yield ``(index, char, at_top)`` for every character in *text*,</span>
+<span class="sd">        where *at_top* is ``True`` when all bracket/string depths are zero.</span>
+
+<span class="sd">        Multi-character tokens ``&lt;|`` and ``|&gt;`` advance the index by 2 and</span>
+<span class="sd">        yield a single entry with ``char`` set to the two-character token.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Source text to scan.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        iterator</span>
+<span class="sd">            Iterator over ``(index, token, at_top)`` tuples describing the</span>
+<span class="sd">            top-level scanning state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">square_depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">curly_depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">paren_depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">assoc_depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">in_string</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">in_string</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;|&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                <span class="n">at_top</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">square_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">curly_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">paren_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">assoc_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                <span class="p">)</span>
+                <span class="n">assoc_depth</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">yield</span> <span class="n">index</span><span class="p">,</span> <span class="s2">&quot;&lt;|&quot;</span><span class="p">,</span> <span class="n">at_top</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">2</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">in_string</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;|&gt;&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                <span class="n">at_top</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">square_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">curly_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">paren_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">assoc_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                <span class="p">)</span>
+                <span class="n">assoc_depth</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">yield</span> <span class="n">index</span><span class="p">,</span> <span class="s2">&quot;|&gt;&quot;</span><span class="p">,</span> <span class="n">at_top</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">2</span>
+                <span class="k">continue</span>
+
+            <span class="n">char</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_escaped_by_backslash</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                    <span class="n">in_string</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">in_string</span>
+                <span class="k">yield</span> <span class="n">index</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">at_top</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="ow">not</span> <span class="n">in_string</span>
+                    <span class="ow">and</span> <span class="n">square_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">curly_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">paren_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">assoc_depth</span> <span class="o">==</span> <span class="mi">0</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">in_string</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;[&quot;</span><span class="p">:</span>
+                        <span class="n">square_depth</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;]&quot;</span><span class="p">:</span>
+                        <span class="n">square_depth</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;{&quot;</span><span class="p">:</span>
+                        <span class="n">curly_depth</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;}&quot;</span><span class="p">:</span>
+                        <span class="n">curly_depth</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;(&quot;</span><span class="p">:</span>
+                        <span class="n">paren_depth</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;)&quot;</span><span class="p">:</span>
+                        <span class="n">paren_depth</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">yield</span> <span class="n">index</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">at_top</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.split_top_level">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.split_top_level">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">split_top_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split text on separators that appear only at top level.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Source text to split.</span>
+<span class="sd">        separator : str, optional</span>
+<span class="sd">            Separator token to honor only at top level.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list[str]</span>
+<span class="sd">            Top-level segments with surrounding whitespace removed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">_char</span><span class="p">,</span> <span class="n">at_top</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_top_level</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">at_top</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">separator</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span>
+
+        <span class="n">final_part</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="n">start</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">final_part</span><span class="p">:</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">final_part</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parts</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.find_top_level">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.find_top_level">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_top_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the first top-level occurrence of a token in text.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Source text to search.</span>
+<span class="sd">        token : str</span>
+<span class="sd">            Token to locate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Index of the first top-level occurrence, or ``-1`` when absent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">_char</span><span class="p">,</span> <span class="n">at_top</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_top_level</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">at_top</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">index</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.find_top_level_assignment">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.find_top_level_assignment">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_top_level_assignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Locate a plain top-level assignment operator in Mathematica code.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Source text to search.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Index of the assignment operator, or ``-1`` when none is found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">at_top</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_top_level</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">at_top</span> <span class="ow">and</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;=&quot;</span><span class="p">:</span>
+                <span class="n">prev_char</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">next_char</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">if</span> <span class="n">prev_char</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;=&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">next_char</span> <span class="o">!=</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">index</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.parse_association">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.parse_association">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_association</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a Mathematica association into Python metadata.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Mathematica association of the form ``&lt;| ... |&gt;``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, Any]</span>
+<span class="sd">            Parsed association values converted recursively into Python types.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inner</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_top_level</span><span class="p">(</span><span class="n">inner</span><span class="p">):</span>
+            <span class="n">rule_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_top_level</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;-&gt;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rule_index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip_quotes</span><span class="p">(</span><span class="n">item</span><span class="p">[:</span><span class="n">rule_index</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="n">rule_index</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_metadata_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">metadata</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.parse_metadata_value">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.parse_metadata_value">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_metadata_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a metadata value from a Mathematica association.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : str</span>
+<span class="sd">            Raw association value.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Any</span>
+<span class="sd">            Parsed Python value, preserving strings, lists, and nested</span>
+<span class="sd">            associations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip_quotes</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;}&quot;</span><span class="p">):</span>
+            <span class="n">inner</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">inner</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_top_level</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">find_top_level</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;-&gt;&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">):</span>
+                <span class="n">parsed</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                    <span class="n">rule_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_top_level</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;-&gt;&quot;</span><span class="p">)</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip_quotes</span><span class="p">(</span><span class="n">item</span><span class="p">[:</span><span class="n">rule_index</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                    <span class="n">parsed</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_metadata_value</span><span class="p">(</span>
+                        <span class="n">item</span><span class="p">[</span><span class="n">rule_index</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="p">)</span>
+                <span class="k">return</span> <span class="n">parsed</span>
+
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parse_metadata_value</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser.strip_quotes">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser.strip_quotes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">strip_quotes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove one surrounding pair of double quotes when present.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Text to normalize.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Unquoted text when the input was wrapped in double quotes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">text</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._parse_source_items">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._parse_source_items">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_source_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ParsedMathematicaSource</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a sequence of top-level Mathematica source items.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        items : list[str]</span>
+<span class="sd">            Top-level source items extracted from a file or module body.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ParsedMathematicaSource</span>
+<span class="sd">            Structured representation built from the supplied items.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">ParsedMathematicaSource</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_top_level_association</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+                <span class="n">parsed</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parse_association</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+                <span class="k">continue</span>
+
+            <span class="n">delayed_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_top_level</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;:=&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">delayed_index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">lhs</span> <span class="o">=</span> <span class="n">item</span><span class="p">[:</span><span class="n">delayed_index</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">rhs</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="n">delayed_index</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">parsed</span><span class="o">.</span><span class="n">definitions</span><span class="p">[</span><span class="n">lhs</span><span class="p">]</span> <span class="o">=</span> <span class="n">rhs</span>
+                <span class="k">continue</span>
+
+            <span class="n">assign_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_top_level_assignment</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">assign_index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">lhs</span> <span class="o">=</span> <span class="n">item</span><span class="p">[:</span><span class="n">assign_index</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">rhs</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="n">assign_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">parsed</span><span class="o">.</span><span class="n">assignments</span><span class="p">[</span><span class="n">lhs</span><span class="p">]</span> <span class="o">=</span> <span class="n">rhs</span>
+                <span class="n">parsed</span><span class="o">.</span><span class="n">last_expression</span> <span class="o">=</span> <span class="n">lhs</span>
+                <span class="k">continue</span>
+
+            <span class="n">parsed</span><span class="o">.</span><span class="n">last_expression</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">parsed</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._replace_box_expressions">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._replace_box_expressions">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_replace_box_expressions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace notebook box expressions with placeholder tokens.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Raw Mathematica source text.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Source text with box expressions replaced by ``BoxExpr`` tokens.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">!</span><span class="se">\\</span><span class="s2">\(</span><span class="se">\\</span><span class="s2">\*.*?</span><span class="se">\\</span><span class="s2">\)&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">text</span>
+
+            <span class="n">placeholder</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;BoxExpr</span><span class="si">{</span><span class="n">counter</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span> <span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()]</span> <span class="o">+</span> <span class="n">placeholder</span> <span class="o">+</span> <span class="n">text</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="p">:]</span>
+            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._replace_empty_series_data">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._replace_empty_series_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_replace_empty_series_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace empty ``SeriesData`` constructs with explicit zeros.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            Mathematica expression source.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Updated source string with empty ``SeriesData`` blocks replaced by</span>
+<span class="sd">            ``0``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">search_start</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">series_index</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;SeriesData[&quot;</span><span class="p">,</span> <span class="n">search_start</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">series_index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">text</span>
+
+            <span class="n">bracket_start</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="n">series_index</span><span class="p">)</span>
+            <span class="n">bracket_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_matching_bracket</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">bracket_start</span><span class="p">)</span>
+            <span class="n">inner</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="n">bracket_start</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">bracket_end</span><span class="p">]</span>
+            <span class="n">series_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_top_level</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">series_args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span> <span class="ow">and</span> <span class="n">series_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="n">series_index</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;0&quot;</span> <span class="o">+</span> <span class="n">text</span><span class="p">[</span><span class="n">bracket_end</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
+                <span class="n">search_start</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">series_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">search_start</span> <span class="o">=</span> <span class="n">series_index</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="s2">&quot;SeriesData[&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._convert_special_forms">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._convert_special_forms">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_special_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize parser-specific symbolic forms into standard SymPy.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        expr : object</span>
+<span class="sd">            Parsed expression tree or literal value.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        object</span>
+<span class="sd">            Expression with special Mathematica forms converted when needed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Basic</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">expr</span>
+
+        <span class="n">func_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">func</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">func_name</span> <span class="o">==</span> <span class="s2">&quot;SeriesData&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_series_data</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">func_name</span> <span class="o">==</span> <span class="s2">&quot;ResummedSeriesData&quot;</span><span class="p">:</span>
+            <span class="n">prefactor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_special_forms</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">series_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_special_forms</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">prefactor</span> <span class="o">*</span> <span class="n">series_expr</span>
+
+        <span class="k">if</span> <span class="n">func_name</span> <span class="o">==</span> <span class="s2">&quot;HoldForm&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_special_forms</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">converted_args</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_special_forms</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">converted_args</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_log_symbol</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_log_symbol</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">converted_args</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._convert_log_symbol">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._convert_log_symbol">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_log_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert placeholder ``LogX`` symbols back into explicit logarithms.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        expr : object</span>
+<span class="sd">            Symbolic object to normalize.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        object</span>
+<span class="sd">            Converted SymPy logarithm when the symbol matches the placeholder</span>
+<span class="sd">            pattern, otherwise the input expression.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">expr</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Log&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">3</span><span class="p">:]))</span>
+        <span class="k">return</span> <span class="n">expr</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._convert_series_data">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._convert_series_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_series_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a Mathematica ``SeriesData`` object into a SymPy series sum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        expr : sympy.Basic</span>
+<span class="sd">            Parsed ``SeriesData`` expression.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sympy.Expr</span>
+<span class="sd">            Explicit SymPy expression equivalent to the series data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_special_forms</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_special_forms</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">coefficients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_series_coefficients</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">n_min</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">offset</span><span class="p">,</span> <span class="n">coefficient</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">coefficients</span><span class="p">):</span>
+            <span class="n">coefficient_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_special_forms</span><span class="p">(</span><span class="n">coefficient</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">coefficient_expr</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">exponent</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Rational</span><span class="p">(</span><span class="n">n_min</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span> <span class="n">denominator</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">coefficient_expr</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_series_basis</span><span class="p">(</span>
+                <span class="n">variable</span><span class="p">,</span>
+                <span class="n">point</span><span class="p">,</span>
+                <span class="n">exponent</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._series_coefficients">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._series_coefficients">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_series_coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coefficient_data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the coefficient list encoded inside ``SeriesData``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coefficient_data : sympy.Basic</span>
+<span class="sd">            Parsed coefficient payload from a ``SeriesData`` expression.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list[sympy.Basic]</span>
+<span class="sd">            Coefficients expanded into a plain Python list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">coefficient_data</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Tuple</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">coefficient_data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">coefficient_data</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Mul</span><span class="p">):</span>
+            <span class="n">tuple_arguments</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">coefficient_data</span><span class="o">.</span><span class="n">args</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Tuple</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tuple_arguments</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">tuple_argument</span> <span class="o">=</span> <span class="n">tuple_arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">multiplier</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Mul</span><span class="p">(</span>
+                    <span class="o">*</span><span class="p">[</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">coefficient_data</span><span class="o">.</span><span class="n">args</span> <span class="k">if</span> <span class="n">arg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">tuple_argument</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">multiplier</span> <span class="o">*</span> <span class="n">term</span> <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">tuple_argument</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">coefficient_data</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MathematicaParser._series_basis">
+<a class="viewcode-back" href="../../../autoapi/PyART/analytic/mathematica_parser/index.html#PyART.analytic.MathematicaParser._series_basis">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_series_basis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">exponent</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the basis monomial associated with a series coefficient.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variable : sympy.Symbol</span>
+<span class="sd">            Series expansion variable.</span>
+<span class="sd">        point : sympy.Expr</span>
+<span class="sd">            Expansion point.</span>
+<span class="sd">        exponent : sympy.Expr</span>
+<span class="sd">            Exponent associated with the current coefficient.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sympy.Expr</span>
+<span class="sd">            Basis term for the requested series coefficient.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">point</span> <span class="ow">in</span> <span class="p">{</span><span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s2">&quot;Infinity&quot;</span><span class="p">),</span> <span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">}:</span>
+            <span class="k">return</span> <span class="n">variable</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">exponent</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">point</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">variable</span><span class="o">**</span><span class="n">exponent</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">variable</span> <span class="o">-</span> <span class="n">point</span><span class="p">)</span> <span class="o">**</span> <span class="n">exponent</span></div>
+</div>
+
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;MathematicaParser&quot;</span><span class="p">,</span> <span class="s2">&quot;ParsedMathematicaSource&quot;</span><span class="p">]</span>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

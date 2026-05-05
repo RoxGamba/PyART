@@ -1,0 +1,1495 @@
+PyART.analytic
+==============
+
+.. py:module:: PyART.analytic
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/PyART/analytic/analytic_catalog/index
+   /autoapi/PyART/analytic/bhpt_pnsf/index
+   /autoapi/PyART/analytic/coordschange/index
+   /autoapi/PyART/analytic/expr/index
+   /autoapi/PyART/analytic/mathematica_parser/index
+   /autoapi/PyART/analytic/pnpedia/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analytic.AnalyticExpression
+   PyART.analytic.AnalyticCatalog
+   PyART.analytic.BHPTEntry
+   PyART.analytic.BHPTPN
+   PyART.analytic.MathematicaParser
+   PyART.analytic.ParsedMathematicaSource
+   PyART.analytic.PNPedia
+   PyART.analytic.PNPediaEntry
+   PyART.analytic.CoordsChange
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analytic.eob_ID_to_ADM
+
+
+Package Contents
+----------------
+
+.. py:class:: AnalyticExpression(expr=None, var=None)
+
+   Bases: :py:obj:`object`
+
+
+   Wrap a SymPy expression with helpers for analysis and evaluation.
+
+   :param expr: Expression that can be converted to a SymPy object.
+   :type expr: object, optional
+   :param var: Variables used for numerical evaluation. When omitted, free symbols are
+               inferred from ``expr``.
+   :type var: str, sympy.Symbol, sequence, or None, optional
+
+
+   .. py:attribute:: expr
+      :value: None
+
+
+
+   .. py:attribute:: _compiled_func_cache
+
+
+   .. py:attribute:: _truncate_result_cache
+
+
+   .. py:attribute:: _truncate_term_cache
+
+
+   .. py:method:: _modules_cache_key(modules)
+      :staticmethod:
+
+
+      Return a hashable cache key for a lambdify backend selection.
+
+      :param modules: Backend specification forwarded to :func:`sympy.lambdify`.
+      :type modules: object
+
+      :returns: Hashable representation of ``modules`` suitable for caching.
+      :rtype: object
+
+
+
+   .. py:method:: _get_compiled_function(modules='numpy')
+
+      Return a cached lambdified function for the requested backend.
+
+      :param modules: Backend passed to :func:`sympy.lambdify`.
+      :type modules: str or sequence, optional
+
+      :returns: Cached compiled function for the requested backend.
+      :rtype: callable
+
+
+
+   .. py:method:: __call__(*args, **kwds)
+
+      Evaluate the expression numerically using cached lambdification.
+
+      :param \*args: Positional values corresponding to ``self.var`` in order.
+      :type \*args: tuple
+      :param \*\*kwds: Keyword values keyed by variable name.
+      :type \*\*kwds: dict
+
+      :returns: Numerical result returned by the compiled backend function.
+      :rtype: object
+
+      :raises ValueError: If the expression has no variables or the wrong number of
+          positional arguments is supplied.
+      :raises KeyError: If a required keyword argument is missing.
+
+
+
+   .. py:method:: _result_variables(expr)
+
+      Return an ordered variable tuple for a transformed expression.
+
+      :param expr: Result of a symbolic transformation.
+      :type expr: object
+
+      :returns: Variables aligned with the transformed expression, or ``None`` to
+                trigger automatic inference.
+      :rtype: tuple[sympy.Symbol, ...] or None
+
+
+
+   .. py:method:: _wrap_result(result)
+
+      Wrap a SymPy result back into ``AnalyticExpression`` when possible.
+
+      :param result: Result returned by a symbolic operation.
+      :type result: object
+
+      :returns: Wrapped analytic expression for SymPy results, otherwise the raw
+                result.
+      :rtype: object
+
+
+
+   .. py:method:: _apply_sympy_method(name, *args, **kwargs)
+
+      Call a SymPy expression method and preserve the wrapper.
+
+      :param name: Name of the SymPy expression method to invoke.
+      :type name: str
+      :param \*args: Positional arguments forwarded to the SymPy method.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to the SymPy method.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression when the SymPy method returns a
+                symbolic expression, otherwise the raw method result.
+      :rtype: object
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: derivative(var)
+
+      Differentiate the expression with respect to one variable.
+
+      :param var: Variable of differentiation.
+      :type var: str or sympy.Symbol
+
+      :returns: Wrapped derivative of the stored expression.
+      :rtype: AnalyticExpression
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: pn_order(var)
+
+      Return the highest power and PN span of an expansion variable.
+
+      :param var: Expansion variable to inspect.
+      :type var: str or sympy.Symbol
+
+      :returns: Highest exponent of ``var`` and the range between maximum and
+                minimum exponents.
+      :rtype: tuple[sympy.Expr, sympy.Expr]
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: _extract_truncation_terms(expr, variable)
+      :staticmethod:
+
+
+      Return termwise powers of ``variable`` for fast truncation.
+
+      :param expr: Expression to decompose into additive terms.
+      :type expr: sympy.Expr
+      :param variable: Expansion variable whose termwise exponent should be tracked.
+      :type variable: sympy.Symbol
+      :param The fast truncation path only works when ``expr`` can be treated as a:
+      :param sum of terms whose dependence on ``variable`` is a single:
+      :param overall power.:
+      :param For each additive term:
+      :param this helper computes that exponent and verifies:
+      :param that dividing the term by ``variable**exponent`` removes all remaining:
+      :param dependence on ``variable``.:
+
+      :returns: A list of ``(term, exponent)`` pairs when the expression is safe to
+                truncate by exponent filtering, or ``None`` when a term has a
+                symbolic exponent or retains non-factorable dependence on
+                ``variable``.
+      :rtype: list[tuple[sympy.Expr, sympy.Expr]] | None
+
+
+
+   .. py:method:: _build_truncation_terms(variable)
+
+      Prepare and cache the term data used by ``truncate``.
+
+      :param variable: Expansion variable used for truncation.
+      :type variable: sympy.Symbol
+      :param This helper first protects ``log(variable)`` factors with a temporary:
+      :param placeholder so logarithms are preserved while powers of:
+      :param ``variable`` are analyzed. It then tries to extract termwise:
+      :param exponents directly from the stored expression and:
+      :param if needed:
+      :param :
+      :param from an ``expand_mul`` view that only expands multiplicative:
+      :param structure.:
+
+      :returns: Cached ``(terms, log_placeholder)`` data for the fast truncation
+                path, or ``None`` if the expression must fall back to the slower
+                series-based path.
+      :rtype: tuple[list[tuple[sympy.Expr, sympy.Expr]], sympy.Symbol] | None
+
+
+
+   .. py:method:: truncate(var, max_order)
+
+      Truncate the expression by removing terms whose exponent in ``var``
+      is strictly greater than ``max_order``.
+
+      When the expression is already a sum of termwise powers in the target
+      variable, use cached exponent filtering. Fall back to SymPy series
+      expansion plus the same exponent filtering for non-termwise
+      expressions.
+
+      In the fast path, exact ``log(var)`` factors are temporarily replaced
+      by a placeholder symbol before exponent extraction. This makes
+      logarithms behave like coefficients for power counting, so terms such
+      as ``x**2 * log(x)`` and ``x**3 * log(x)**2`` are treated as orders
+      ``2`` and ``3`` respectively. More complicated logarithmic dependence,
+      such as ``log(1 + x)`` or ``log(x**2)``, is not normalized this way and
+      will typically force the slower series-based fallback.
+
+      :param var: Variable used to define the truncation order.
+      :type var: str or sympy.Symbol
+      :param max_order: Maximum power of ``var`` to retain.
+      :type max_order: object
+
+      :returns: Truncated analytic expression.
+      :rtype: AnalyticExpression
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: subs(*args, **kwargs)
+
+      Apply SymPy substitution and preserve the wrapper when possible.
+
+      :param \*args: Positional arguments forwarded to :meth:`sympy.Expr.subs`.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.subs`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw substitution result.
+      :rtype: object
+
+
+
+   .. py:method:: simplify(**kwargs)
+
+      Simplify the stored expression and preserve the wrapper.
+
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.simplify`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw simplification result.
+      :rtype: object
+
+
+
+   .. py:method:: expand(*args, **kwargs)
+
+      Expand the stored expression and preserve the wrapper.
+
+      :param \*args: Positional arguments forwarded to :meth:`sympy.Expr.expand`.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.expand`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw expansion result.
+      :rtype: object
+
+
+
+   .. py:method:: factor(*args, **kwargs)
+
+      Factor the stored expression and preserve the wrapper.
+
+      :param \*args: Positional arguments forwarded to :meth:`sympy.Expr.factor`.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.factor`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw factorization result.
+      :rtype: object
+
+
+
+   .. py:method:: collect(*args, **kwargs)
+
+      Collect like terms in the stored expression.
+
+      :param \*args: Positional arguments forwarded to :meth:`sympy.Expr.collect`.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.collect`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the raw
+                collect result.
+      :rtype: object
+
+
+
+   .. py:method:: diff(*symbols, **kwargs)
+
+      Differentiate the stored expression and preserve the wrapper.
+
+      :param \*symbols: Differentiation variables and optional orders, as accepted by
+                        :meth:`sympy.Expr.diff`.
+      :type \*symbols: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.diff`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw differentiation result.
+      :rtype: object
+
+
+
+   .. py:method:: to_latex()
+
+      Render the stored expression as a LaTeX string.
+
+      :returns: LaTeX representation of the stored expression.
+      :rtype: str
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: to_function(modules='numpy')
+
+      Compile the expression into a callable numerical function.
+
+      :param modules: Backend passed to :func:`sympy.lambdify`.
+      :type modules: str or sequence, optional
+
+      :returns: Compiled callable and the variable ordering it expects.
+      :rtype: tuple[callable, tuple[sympy.Symbol, ...]]
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: _sympy_()
+
+      Expose the wrapped SymPy expression to SymPy internals.
+
+      :returns: Stored SymPy expression.
+      :rtype: sympy.Expr
+
+
+
+   .. py:method:: __getattr__(name)
+
+
+   .. py:method:: __add__(other)
+
+
+   .. py:method:: __radd__(other)
+
+
+   .. py:method:: __sub__(other)
+
+
+   .. py:method:: __rsub__(other)
+
+
+   .. py:method:: __mul__(other)
+
+
+   .. py:method:: __rmul__(other)
+
+
+   .. py:method:: __truediv__(other)
+
+
+   .. py:method:: __rtruediv__(other)
+
+
+   .. py:method:: __pow__(other)
+
+
+.. py:class:: AnalyticCatalog(path: str)
+
+   Parent base class for analytic catalogs.
+
+   :param path: Path to the catalog
+   :type path: str
+
+   .. attribute:: path
+
+      Absolute path to the catalog.
+
+      :type: str
+
+
+   .. py:attribute:: structure_name
+      :value: 'analytic catalog'
+
+
+
+   .. py:attribute:: path
+      :value: b'.'
+
+
+
+   .. py:attribute:: _index_root
+      :value: b'.'
+
+
+
+   .. py:attribute:: _indexed_paths
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: _path_to_key
+      :type:  dict[str, str]
+
+
+   .. py:method:: _set_index(base_root: str, suffixes: tuple[str, Ellipsis]) -> None
+
+      Populate the catalog index from the given root directory.
+
+      :param base_root: Directory to scan for quantity files.
+      :type base_root: str
+      :param suffixes: File suffixes to include in the index.
+      :type suffixes: tuple[str, ...]
+
+      :returns: The catalog index is stored on the instance.
+      :rtype: None
+
+      :raises FileNotFoundError: If ``base_root`` does not exist or is not a directory.
+
+
+
+   .. py:property:: indexed_paths
+      :type: types.MappingProxyType[str, str]
+
+
+      Expose the indexed catalog paths as a read-only mapping.
+
+      :returns: Immutable view of the canonical key to path mapping.
+      :rtype: types.MappingProxyType[str, str]
+
+
+   .. py:method:: list_quantities() -> list[str]
+
+      Return the sorted list of indexed quantity keys.
+
+      :returns: Sorted canonical keys currently stored in the catalog index.
+      :rtype: list[str]
+
+
+
+   .. py:method:: get_metadata(name=None, path=None)
+
+      Return metadata for a resolved catalog entry.
+
+      :param name: Indexed quantity name used for lookup.
+      :type name: str or None, optional
+      :param path: Direct path to the Mathematica file.
+      :type path: str or None, optional
+
+      :returns: Metadata association extracted from the selected entry.
+      :rtype: dict[str, Any]
+
+
+
+   .. py:method:: get_pn_quantity(name=None, path=None, order=None, variable='x')
+
+      Return a catalog quantity as an analytic expression wrapper.
+
+      When ``order`` is provided, the returned quantity is truncated
+      relative to the leading power of ``variable``.
+
+      :param name: Indexed quantity name used for lookup.
+      :type name: str or None, optional
+      :param path: Direct path to the Mathematica file.
+      :type path: str or None, optional
+      :param order: PN order relative to the leading power of ``variable``.
+      :type order: object, optional
+      :param variable: Variable used for PN order counting. When the selected variable
+                       is not present and the quantity has exactly one variable, that
+                       variable is inferred automatically.
+      :type variable: str or sympy.Symbol, optional
+
+      :returns: Parsed BHPT series wrapped for symbolic and numerical use.
+      :rtype: AnalyticExpression
+
+
+
+   .. py:method:: get_entry(name=None, path=None)
+      :abstractmethod:
+
+
+      Resolve, parse and cache a catalog quantity file.
+      This method should be implemented by subclasses to perform the actual
+      file parsing and return a structured representation of the quantity entry.
+
+
+
+   .. py:method:: _resolve_name(name: str, ambiguous_hint: str | None = None) -> tuple[str, str]
+
+      Resolve a quantity name against the catalog index.
+
+      :param name: User-facing quantity name or partial key.
+      :type name: str
+      :param ambiguous_hint: Additional guidance appended when multiple matches are found.
+      :type ambiguous_hint: str or None, optional
+
+      :returns: Canonical key and resolved file path.
+      :rtype: tuple[str, str]
+
+
+
+   .. py:method:: _resolve_existing_path(path: str, *roots: str) -> str
+
+      Resolve a file path and ensure the target exists.
+
+      :param path: Absolute or relative file path.
+      :type path: str
+      :param \*roots: Candidate roots used when ``path`` is relative.
+      :type \*roots: str
+
+      :returns: Absolute path to an existing file.
+      :rtype: str
+
+      :raises FileNotFoundError: If the resolved path does not exist.
+
+
+
+   .. py:method:: _resolve_indexed_path(path: str, *roots: str) -> tuple[str, str]
+
+      Resolve a path and verify that it belongs to the catalog index.
+
+      :param path: Absolute or relative file path.
+      :type path: str
+      :param \*roots: Candidate roots used when ``path`` is relative.
+      :type \*roots: str
+
+      :returns: Canonical quantity key and absolute file path.
+      :rtype: tuple[str, str]
+
+      :raises ValueError: If the resolved path exists outside the indexed tree or does not
+          correspond to an indexed quantity.
+
+
+
+.. py:class:: BHPTEntry
+
+   Parsed representation of a single BHPT series file.
+
+   :param key: Canonical catalog key for the entry.
+   :type key: str
+   :param path: Absolute path to the Mathematica source file.
+   :type path: str
+   :param metadata: Metadata association extracted from the file.
+   :type metadata: dict[str, Any]
+   :param assignments: Top-level Mathematica assignments found in the source.
+   :type assignments: dict[str, str]
+   :param definitions: Delayed Mathematica definitions found in the source.
+   :type definitions: dict[str, str]
+   :param expr: Parsed SymPy expression for the selected series.
+   :type expr: sympy.Basic
+   :param quantity: Wrapped analytic expression corresponding to ``expr``.
+   :type quantity: AnalyticExpression
+
+
+   .. py:attribute:: key
+      :type:  str
+
+
+   .. py:attribute:: path
+      :type:  str
+
+
+   .. py:attribute:: metadata
+      :type:  dict[str, Any]
+
+
+   .. py:attribute:: assignments
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: definitions
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: expr
+      :type:  sympy.Basic
+
+
+   .. py:attribute:: quantity
+      :type:  PyART.analytic.expr.AnalyticExpression
+
+
+   .. py:method:: __getitem__(field_name: str) -> Any
+
+      Return an entry attribute using mapping-style access.
+
+      :param field_name: Name of the dataclass field to retrieve.
+      :type field_name: str
+
+      :returns: Value stored in the requested field.
+      :rtype: Any
+
+      :raises KeyError: If ``field_name`` is not a valid attribute name.
+
+
+
+.. py:class:: BHPTPN(path, download=False)
+
+   Bases: :py:obj:`PyART.analytic.analytic_catalog.AnalyticCatalog`
+
+
+   Interface to BlackHolePerturbationToolkit self-force series data.
+
+   :param path: Path to the local BHPT repository or extracted data directory.
+   :type path: str
+   :param download: If ``True``, clone the repository when it is not already present.
+   :type download: bool, optional
+
+   .. rubric:: Notes
+
+   The expected repository layout follows the
+   BlackHolePerturbationToolkit PostNewtonianSelfForce project.
+
+
+   .. py:attribute:: structure_name
+      :value: 'BHPTPN'
+
+
+
+   .. py:attribute:: _entry_cache
+
+
+   .. py:attribute:: _mathematica_parser
+
+
+   .. py:method:: download_bhptpn()
+
+      Clone the BHPT repository into the configured catalog path.
+
+      :returns: The repository is cloned when it is not already available.
+      :rtype: None
+
+
+
+   .. py:method:: __parse_bhptpn()
+
+      Index the BHPT Mathematica files available on disk.
+
+      :returns: The indexed path mapping is stored on the instance.
+      :rtype: None
+
+      :raises FileNotFoundError: If the configured BHPT path does not exist.
+
+
+
+   .. py:method:: get_entry(name=None, path=None)
+
+      Resolve, parse, and cache a BHPT Mathematica file.
+
+      The returned :class:`BHPTEntry` contains the resolved key and path,
+      parsed
+      metadata, raw assignment tables extracted from the Mathematica
+      source, the SymPy expression, and the corresponding
+      `AnalyticExpression` wrapper.
+
+      :param name: Indexed quantity name used for lookup.
+      :type name: str or None, optional
+      :param path: Direct path to a Mathematica file inside the indexed tree.
+      :type path: str or None, optional
+
+      :returns: Parsed and cached representation of the requested series file.
+      :rtype: BHPTEntry
+
+      :raises ValueError: If the source or selected expression cannot be parsed.
+
+
+
+   .. py:method:: _resolve_entry(name=None, path=None)
+
+      Resolve a user query to an indexed BHPT file path and canonical key.
+
+      A direct path lookup wins when `path` is provided, but the resolved
+      file must still live inside the configured BHPT tree. Otherwise the
+      method performs a normalized token match on the indexed quantity keys.
+
+      :param name: Indexed quantity name used for lookup.
+      :type name: str or None, optional
+      :param path: Direct path to a Mathematica file inside the indexed tree.
+      :type path: str or None, optional
+
+      :returns: Canonical quantity key and absolute file path.
+      :rtype: tuple[str, str]
+
+
+
+.. py:class:: MathematicaParser
+
+   Parse Mathematica source text and convert symbolic forms to SymPy.
+
+   The parser handles common source normalization steps, extracts metadata
+   and assignments from Mathematica files, and converts special symbolic
+   constructs such as ``SeriesData`` into explicit SymPy expressions.
+
+   The class is intentionally generic. Library-specific naming conventions
+   and identifier rewrites should stay with the caller and be applied through
+   the helper methods exposed here.
+
+
+   .. py:method:: normalize_source(text: str) -> str
+
+      Normalize raw Mathematica source before structural parsing.
+
+      :param text: Raw Mathematica source text.
+      :type text: str
+
+      :returns: Source with comments removed, box expressions replaced, and common
+                escaped identifiers simplified.
+      :rtype: str
+
+
+
+   .. py:method:: _is_escaped_by_backslash(text: str, index: int) -> bool
+
+      Return whether ``text[index]`` is escaped by backslashes.
+
+      Mathematica strings use backslash escapes, so a quote is escaped when
+      it is preceded by an odd-length run of backslashes.
+
+
+
+   .. py:method:: _strip_comments(text: str) -> str
+
+      Strip Mathematica comments, including nested comment blocks.
+
+      :param text: Raw Mathematica source text.
+      :type text: str
+
+      :returns: Source text with comment blocks removed.
+      :rtype: str
+
+      :raises ValueError: If the source contains an unmatched Mathematica comment block.
+
+
+
+   .. py:method:: replace_identifiers(text: Any, replacements: Mapping[str, str]) -> str
+
+      Apply ordered textual identifier replacements to source.
+
+      :param text: Source object to convert to text before replacement.
+      :type text: Any
+      :param replacements: Mapping from source identifiers to replacement identifiers.
+                           This table is caller-owned so source-specific naming policies stay
+                           outside the shared parser core.
+      :type replacements: Mapping[str, str]
+
+      :returns: Updated text after all replacements have been applied.
+      :rtype: str
+
+
+
+   .. py:method:: parse_source(text: str) -> ParsedMathematicaSource
+
+      Extract assignments, delayed definitions, metadata, and the tail
+      expression.
+
+      :param text: Raw Mathematica source fragment.
+      :type text: str
+
+      :returns: Structured representation of the parsed source.
+      :rtype: ParsedMathematicaSource
+
+
+
+   .. py:method:: parse_expression(expression_source: str)
+
+      Parse Mathematica syntax into a normalized SymPy expression.
+
+      :param expression_source: Mathematica expression source to parse.
+      :type expression_source: str
+
+      :returns: Parsed expression after special-form normalization.
+      :rtype: sympy.Basic
+
+      :raises ValueError: If the expression cannot be parsed by the Mathematica parser.
+
+
+
+   .. py:method:: extract_module_items(source: str) -> list[str]
+
+      Return the ordered expressions stored inside a Mathematica module.
+
+      :param source: Mathematica source string, optionally beginning with ``Module[``.
+      :type source: str
+
+      :returns: Top-level module arguments and body items.
+      :rtype: list[str]
+
+      :raises ValueError: If a ``Module`` form does not have the expected two arguments.
+
+
+
+   .. py:method:: is_top_level_association(text: str) -> bool
+
+      Return whether a string is a complete top-level association.
+
+      :param text: Source text to inspect.
+      :type text: str
+
+      :returns: ``True`` when ``text`` begins with ``<|`` and ends with ``|>``.
+      :rtype: bool
+
+
+
+   .. py:method:: find_matching_bracket(text: str, start_index: int) -> int
+
+      Return the index of the closing bracket matching ``start_index``.
+
+      :param text: Source text containing bracketed Mathematica syntax.
+      :type text: str
+      :param start_index: Index of the opening ``[`` to match.
+      :type start_index: int
+
+      :returns: Index of the matching closing ``]``.
+      :rtype: int
+
+      :raises ValueError: If no matching closing bracket is found.
+
+
+
+   .. py:method:: _iter_top_level(text: str)
+
+      Yield ``(index, char, at_top)`` for every character in *text*,
+      where *at_top* is ``True`` when all bracket/string depths are zero.
+
+      Multi-character tokens ``<|`` and ``|>`` advance the index by 2 and
+      yield a single entry with ``char`` set to the two-character token.
+
+      :param text: Source text to scan.
+      :type text: str
+
+      :returns: Iterator over ``(index, token, at_top)`` tuples describing the
+                top-level scanning state.
+      :rtype: iterator
+
+
+
+   .. py:method:: split_top_level(text: str, separator: str = ',') -> list[str]
+
+      Split text on separators that appear only at top level.
+
+      :param text: Source text to split.
+      :type text: str
+      :param separator: Separator token to honor only at top level.
+      :type separator: str, optional
+
+      :returns: Top-level segments with surrounding whitespace removed.
+      :rtype: list[str]
+
+
+
+   .. py:method:: find_top_level(text: str, token: str) -> int
+
+      Find the first top-level occurrence of a token in text.
+
+      :param text: Source text to search.
+      :type text: str
+      :param token: Token to locate.
+      :type token: str
+
+      :returns: Index of the first top-level occurrence, or ``-1`` when absent.
+      :rtype: int
+
+
+
+   .. py:method:: find_top_level_assignment(text: str) -> int
+
+      Locate a plain top-level assignment operator in Mathematica code.
+
+      :param text: Source text to search.
+      :type text: str
+
+      :returns: Index of the assignment operator, or ``-1`` when none is found.
+      :rtype: int
+
+
+
+   .. py:method:: parse_association(text: str) -> dict[str, Any]
+
+      Parse a Mathematica association into Python metadata.
+
+      :param text: Mathematica association of the form ``<| ... |>``.
+      :type text: str
+
+      :returns: Parsed association values converted recursively into Python types.
+      :rtype: dict[str, Any]
+
+
+
+   .. py:method:: parse_metadata_value(value: str) -> Any
+
+      Parse a metadata value from a Mathematica association.
+
+      :param value: Raw association value.
+      :type value: str
+
+      :returns: Parsed Python value, preserving strings, lists, and nested
+                associations.
+      :rtype: Any
+
+
+
+   .. py:method:: strip_quotes(text: str) -> str
+
+      Remove one surrounding pair of double quotes when present.
+
+      :param text: Text to normalize.
+      :type text: str
+
+      :returns: Unquoted text when the input was wrapped in double quotes.
+      :rtype: str
+
+
+
+   .. py:method:: _parse_source_items(items: list[str]) -> ParsedMathematicaSource
+
+      Parse a sequence of top-level Mathematica source items.
+
+      :param items: Top-level source items extracted from a file or module body.
+      :type items: list[str]
+
+      :returns: Structured representation built from the supplied items.
+      :rtype: ParsedMathematicaSource
+
+
+
+   .. py:method:: _replace_box_expressions(text: str) -> str
+
+      Replace notebook box expressions with placeholder tokens.
+
+      :param text: Raw Mathematica source text.
+      :type text: str
+
+      :returns: Source text with box expressions replaced by ``BoxExpr`` tokens.
+      :rtype: str
+
+
+
+   .. py:method:: _replace_empty_series_data(text: str) -> str
+
+      Replace empty ``SeriesData`` constructs with explicit zeros.
+
+      :param text: Mathematica expression source.
+      :type text: str
+
+      :returns: Updated source string with empty ``SeriesData`` blocks replaced by
+                ``0``.
+      :rtype: str
+
+
+
+   .. py:method:: _convert_special_forms(expr)
+
+      Normalize parser-specific symbolic forms into standard SymPy.
+
+      :param expr: Parsed expression tree or literal value.
+      :type expr: object
+
+      :returns: Expression with special Mathematica forms converted when needed.
+      :rtype: object
+
+
+
+   .. py:method:: _convert_log_symbol(expr)
+
+      Convert placeholder ``LogX`` symbols back into explicit logarithms.
+
+      :param expr: Symbolic object to normalize.
+      :type expr: object
+
+      :returns: Converted SymPy logarithm when the symbol matches the placeholder
+                pattern, otherwise the input expression.
+      :rtype: object
+
+
+
+   .. py:method:: _convert_series_data(expr)
+
+      Convert a Mathematica ``SeriesData`` object into a SymPy series sum.
+
+      :param expr: Parsed ``SeriesData`` expression.
+      :type expr: sympy.Basic
+
+      :returns: Explicit SymPy expression equivalent to the series data.
+      :rtype: sympy.Expr
+
+
+
+   .. py:method:: _series_coefficients(coefficient_data)
+
+      Return the coefficient list encoded inside ``SeriesData``.
+
+      :param coefficient_data: Parsed coefficient payload from a ``SeriesData`` expression.
+      :type coefficient_data: sympy.Basic
+
+      :returns: Coefficients expanded into a plain Python list.
+      :rtype: list[sympy.Basic]
+
+
+
+   .. py:method:: _series_basis(variable, point, exponent)
+
+      Return the basis monomial associated with a series coefficient.
+
+      :param variable: Series expansion variable.
+      :type variable: sympy.Symbol
+      :param point: Expansion point.
+      :type point: sympy.Expr
+      :param exponent: Exponent associated with the current coefficient.
+      :type exponent: sympy.Expr
+
+      :returns: Basis term for the requested series coefficient.
+      :rtype: sympy.Expr
+
+
+
+.. py:class:: ParsedMathematicaSource
+
+   Structured representation of a parsed Mathematica source fragment.
+
+   :param assignments: Top-level immediate assignments extracted from the source.
+   :type assignments: dict[str, str], optional
+   :param definitions: Top-level delayed definitions extracted from the source.
+   :type definitions: dict[str, str], optional
+   :param metadata: Metadata association extracted from the source.
+   :type metadata: dict[str, Any], optional
+   :param last_expression: Final top-level expression encountered while parsing.
+   :type last_expression: str or None, optional
+
+
+   .. py:attribute:: assignments
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: definitions
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: metadata
+      :type:  dict[str, Any]
+
+
+   .. py:attribute:: last_expression
+      :type:  str | None
+      :value: None
+
+
+
+   .. py:method:: resolve_expression(name: str | None = None) -> str | None
+
+      Return the raw expression associated with a symbol or fallback.
+
+      :param name: Symbol name to resolve inside the assignment table.
+      :type name: str or None, optional
+
+      :returns: Expression string associated with ``name`` or the last parsed
+                expression when ``name`` is not provided.
+      :rtype: str or None
+
+
+
+.. py:class:: PNPedia(path, download=False)
+
+   Bases: :py:obj:`PyART.analytic.analytic_catalog.AnalyticCatalog`
+
+
+   Collection of PN quantities loaded from the PNPedia repository.
+
+   Acts as a dictionary-backed store of
+   :class:`~PyART.analytic.expr.AnalyticExpression` objects, one per PN
+   quantity file. Quantities are parsed on demand from the Mathematica-format
+   text files distributed with PNPedia.
+
+   PNPedia-specific identifier rewriting is handled in this module before
+   the source is passed to the shared
+   :class:`~PyART.analytic.mathematica_parser.MathematicaParser`.
+
+   Source files are distributed with PNPedia:
+       https://github.com/davidtrestini/PNpedia
+
+
+   .. py:attribute:: structure_name
+      :value: 'PNPedia'
+
+
+
+   .. py:attribute:: _mathematica_parser
+
+
+   .. py:attribute:: _entry_cache
+      :type:  dict[str, PNPediaEntry]
+
+
+   .. py:method:: download_pnpedia()
+
+      Clone the PNPedia repository into the configured path.
+
+      :returns: The repository is cloned when it is not already available.
+      :rtype: None
+
+
+
+   .. py:method:: __parse_pnpedia()
+
+      Index the available PNPedia quantity files.
+
+      :returns: The quantity index is stored on the instance.
+      :rtype: None
+
+
+
+   .. py:method:: _resolve_entry(name=None, path=None)
+
+      Resolve a quantity request to a canonical key and file path.
+
+      :param name: Indexed quantity name or tokenized query.
+      :type name: str or None, optional
+      :param path: Direct path to a quantity file.
+      :type path: str or None, optional
+
+      :returns: Canonical quantity key and absolute file path.
+      :rtype: tuple[str, str]
+
+
+
+   .. py:method:: _prepare_quantity_expression(content)
+
+      Normalize a raw PNPedia file before symbolic parsing.
+
+      PNPedia-specific identifier substitutions are applied locally first,
+      then the shared Mathematica parser performs generic source
+      normalization.
+
+      :param content: Raw Mathematica-formatted file content.
+      :type content: str
+
+      :returns: Normalized source string ready for SymPy parsing.
+      :rtype: str
+
+
+
+   .. py:method:: _sympify_quantity_expression(prepared_content)
+
+      Parse normalized content through a direct ``sympify`` fallback.
+
+      :param prepared_content: Normalized expression source.
+      :type prepared_content: str
+
+      :returns: Expression parsed with bracket and power syntax converted to Python
+                equivalents.
+      :rtype: sympy.Expr
+
+
+
+   .. py:method:: _parse_quantity_expression(content, path)
+
+      Parse a PNPedia quantity with a ``sympify`` fallback path.
+
+      :param content: Raw quantity file content.
+      :type content: str
+      :param path: Path used for logging and error context.
+      :type path: str
+
+      :returns: Parsed symbolic expression.
+      :rtype: sympy.Expr
+
+
+
+   .. py:method:: __parse_quantity_readme(readme_content, path)
+
+      Parse the README.md associated with a PNPedia quantity file to extract
+      metadata such as arXiv references, notation, and endorser information.
+
+      Notation is usually under a "Notations" section, with
+      quantities itemized via "*" bullets, as e.g.:
+      * ``quantity`` is the ...
+
+      :param readme_content: The content of the README.md file as a string.
+      :type readme_content: str
+      :param path: The path to the README.md file, used for logging context.
+      :type path: str
+      :param Returns:
+      :param dict: A dictionary containing extracted metadata fields. Possible keys include
+                   'arxiv_references', 'notation', and 'endorsers'.
+
+
+
+   .. py:method:: get_entry(name=None, path=None)
+
+      Retrieve a PN quantity from PNPedia.
+
+      The PNPedia structure (inside Core post-Newtonian quantities) is:
+      - orbit type (Circular, Elliptic, Hyperbolic)
+      - Spin (NonSpinning, Spinning)
+      - Precession (Precessing, Nonprecessing)
+      - Tides (With tidal effects, Without tidal effects)
+      - Quantity (
+        Waveform, Fluxes, Constants of motion, Waveform frequencies):
+          - Constants of motion (Energy, Angular momentum)
+          - Fluxes (Angular momentum flux, Energy flux)
+          - Waveform (h_l_m.txt)
+
+      Quantities are stored as Mathematica-readable text files.
+      They are converted into SymPy expressions on demand.
+
+      Inside each folder is also a README.md providing:
+      - arXiv references/sources
+      - Notation & definitions
+      - Endorser
+
+      :param name: The name of the PN quantity to retrieve,
+      :type name: str
+      :param path: The path to the PNPedia file to be loaded. If None, it is resolved
+                   from the indexed quantity name.
+      :type path: str, optional
+
+      :returns: Parsed and cached representation of the requested quantity.
+      :rtype: PNPediaEntry
+
+
+
+   .. py:method:: mathematica_to_python_vars(expr)
+
+      Convert Mathematica identifiers to Python-friendly names.
+
+      This translation intentionally stays local to PNPedia because the
+      shared Mathematica parser should not embed catalog-specific naming
+      policy.
+
+      :param expr: The sympy expression or raw Mathematica string containing
+                   Mathematica variables.
+      :type expr: sympy expression or str
+
+      :returns: The expression string with Mathematica identifiers converted to
+                Python-friendly names.
+      :rtype: str
+
+
+
+.. py:class:: PNPediaEntry
+
+   Parsed representation of a PNPedia quantity file and README.md
+
+   :param key: The resolved key corresponding to the selected quantity.
+   :type key: str
+   :param path: The absolute path to the selected quantity file.
+   :type path: str
+   :param metadata: Metadata extracted from the quantity file and associated README.md.
+   :type metadata: dict
+   :param expr: The parsed symbolic expression for the quantity.
+   :type expr: sympy.Basic
+   :param quantity: The AnalyticExpression for the quantity corresponding to `expr`.
+   :type quantity: AnalyticExpression
+
+
+   .. py:attribute:: key
+      :type:  str
+
+
+   .. py:attribute:: path
+      :type:  str
+
+
+   .. py:attribute:: metadata
+      :type:  dict[str, Any]
+
+
+   .. py:attribute:: expr
+      :type:  sympy.Basic
+
+
+   .. py:attribute:: quantity
+      :type:  PyART.analytic.expr.AnalyticExpression
+
+
+   .. py:method:: __getitem__(field_name: str) -> Any
+
+      Return an entry attribute using mapping-style access.
+
+      :param field_name: Name of the dataclass field to retrieve.
+      :type field_name: str
+
+      :returns: Value stored in the requested field.
+      :rtype: Any
+
+      :raises KeyError: If ``field_name`` is not a valid attribute name.
+
+
+
+.. py:class:: CoordsChange
+
+   Collection of coordinate transformations with unified symbolic and
+   numeric interfaces.
+
+   Provides both numerical and symbolic (sympy) APIs for standard
+   coordinate transformations used in Post-Newtonian and EOB/ADM context.
+   Each transformation returns AnalyticExpression objects or plain numeric
+   arrays depending on the calling method.
+
+   Supported transformations:
+   - Polar <-> Cartesian  (2D phase-space)
+   - EOB <-> ADM coordinates/momenta
+
+   References for EOB <-> ADM formulas:
+   - Buonanno & Damour (1998) arXiv:gr-qc/9811091 (Appendix E)
+   - Bini & Damour (2012) arXiv:1210.28...
+
+
+   .. py:method:: _validate_pn_order(PN_order)
+      :staticmethod:
+
+
+      Validate the PN order supported by the coordinate maps.
+
+      :param PN_order: Requested post-Newtonian truncation order.
+      :type PN_order: int
+
+      :returns: Validation succeeds silently when the order is supported.
+      :rtype: None
+
+      :raises ValueError: If ``PN_order`` is not one of ``0``, ``1``, or ``2``.
+
+
+
+   .. py:method:: Eob2Adm(qe_vec, pe_vec, nu, PN_order=2)
+      :staticmethod:
+
+
+      Transform EOB phase-space coordinates into ADM coordinates.
+
+      :param qe_vec: EOB position vector.
+      :type qe_vec: sequence
+      :param pe_vec: EOB momentum vector.
+      :type pe_vec: sequence
+      :param nu: Symmetric mass ratio.
+      :type nu: float or sympy.Expr
+      :param PN_order: Post-Newtonian order retained in the transformation. Supported
+                       values are ``0``, ``1``, and ``2``.
+      :type PN_order: int, optional
+
+      :returns: Pair ``(Q_ADM, P_ADM)`` as NumPy arrays for numeric input or lists
+                of :class:`AnalyticExpression` objects for symbolic input.
+      :rtype: tuple
+
+      :raises ValueError: If ``PN_order`` is not supported.
+
+
+
+   .. py:method:: Adm2Eob(qa_vec, pa_vec, nu, PN_order=2)
+      :staticmethod:
+
+
+      Transform ADM phase-space coordinates into EOB coordinates.
+
+      :param qa_vec: ADM position vector.
+      :type qa_vec: sequence
+      :param pa_vec: ADM momentum vector.
+      :type pa_vec: sequence
+      :param nu: Symmetric mass ratio.
+      :type nu: float or sympy.Expr
+      :param PN_order: Post-Newtonian order retained in the transformation. Supported
+                       values are ``0``, ``1``, and ``2``.
+      :type PN_order: int, optional
+
+      :returns: Pair ``(Q_EOB, P_EOB)`` as NumPy arrays for numeric input or lists
+                of :class:`AnalyticExpression` objects for symbolic input.
+      :rtype: tuple
+
+      :raises ValueError: If ``PN_order`` is not supported.
+
+
+
+   .. py:method:: Polar2Cartesian(r, phi, pr, pphi)
+      :staticmethod:
+
+
+      Transform planar polar canonical variables into Cartesian form.
+
+      :param r: Radial coordinate.
+      :type r: float or sympy.Expr
+      :param phi: Azimuthal angle.
+      :type phi: float or sympy.Expr
+      :param pr: Canonical radial momentum.
+      :type pr: float or sympy.Expr
+      :param pphi: Canonical angular momentum.
+      :type pphi: float or sympy.Expr
+
+      :returns: Cartesian coordinates and momenta ``(x, y, p_x, p_y)``. Numeric
+                inputs return numeric values; symbolic inputs return
+                :class:`AnalyticExpression` wrappers.
+      :rtype: tuple
+
+
+
+   .. py:method:: Cartesian2Polar(x, y, px, py)
+      :staticmethod:
+
+
+      Transform planar Cartesian canonical variables into polar form.
+
+      :param x: Cartesian ``x`` coordinate.
+      :type x: float or sympy.Expr
+      :param y: Cartesian ``y`` coordinate.
+      :type y: float or sympy.Expr
+      :param px: Canonical momentum conjugate to ``x``.
+      :type px: float or sympy.Expr
+      :param py: Canonical momentum conjugate to ``y``.
+      :type py: float or sympy.Expr
+
+      :returns: Polar coordinates and momenta ``(r, phi, p_r, p_phi)``. Numeric
+                inputs return numeric values; symbolic inputs return
+                :class:`AnalyticExpression` wrappers.
+      :rtype: tuple
+
+
+
+.. py:function:: eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True)
+
+   Convert EOB initial data into ADM puncture-style initial data.
+
+   :param eob_Wave: Waveform-like object with ``pars`` and ``dyn`` mappings and a
+                    ``get_Pr()`` method. The object must provide ``pars["q"]``, the first
+                    entries of ``dyn["r"]``, ``dyn["phi"]``, ``dyn["Pphi"]``, and the
+                    first radial momentum from ``get_Pr()``.
+   :type eob_Wave: object
+   :param verbose: If ``True``, print a diagnostic summary of the transformed data.
+   :type verbose: bool, optional
+   :param PN_order: Post-Newtonian order retained in the EOB-to-ADM transformation.
+   :type PN_order: int, optional
+   :param rotate_on_x_axis: If ``True``, rotate the ADM coordinates so the punctures lie on the
+                            ``x`` axis at the initial time.
+   :type rotate_on_x_axis: bool, optional
+
+   :returns: Dictionary containing Cartesian coordinates and momenta in both EOB
+             and ADM frames, plus puncture placement information.
+   :rtype: dict[str, object]
+
+   :raises ValueError: If the transformed ADM separation is zero or the PN order is invalid.
+
+
