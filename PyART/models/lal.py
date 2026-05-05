@@ -21,13 +21,18 @@ class Waveform_LAL(Waveform):
         pars=None,
         approx="IMRPhenomXPHM",
         kind="FD",
+        TDmodes=True, # used only for TD waveforms
+        to_geom=True,
     ):
 
         super().__init__()
-        self.pars = pars
-        self.approx = approx
-        self._kind = kind
+        self.pars    = pars
+        self.approx  = approx
+        self.TDmodes = TDmodes
+        self._kind   = kind
         self._run_lal()
+        if to_geom:
+            self._to_geom()
         pass
 
     def _eob_to_lal_dict(self):
@@ -59,19 +64,20 @@ class Waveform_LAL(Waveform):
         M = pp["M"]
         c1x, c1y, c1z = pp["chi1x"], pp["chi1y"], pp["chi1z"]
         c2x, c2y, c2z = pp["chi2x"], pp["chi2y"], pp["chi2z"]
-        DL = pp["distance"] * 1e6 * lal.PC_SI
-        iota = pp["inclination"]
-        phir = pp["coalescence_angle"]
-        dT = 1.0 / pp["srate_interp"]
-        flow = pp["initial_frequency"]
-        df = pp["df"]
+        DL    = pp["distance"] * 1e6 * lal.PC_SI
+        iota  = pp["inclination"]
+        phir  = pp["coalescence_angle"]
+        dT    = 1.0 / pp["srate_interp"]
+        flow  = pp["initial_frequency"]
+        df    = pp["df"]
         srate = pp["srate_interp"]
 
         # Compute masses
-        m1 = M * q / (1.0 + q)
-        m2 = M / (1.0 + q)
-        m1SI = m1 * lal.MSUN_SI
-        m2SI = m2 * lal.MSUN_SI
+        m1     = M * q / (1.0 + q)
+        m2     = M / (1.0 + q)
+        m1SI   = m1 * lal.MSUN_SI
+        m2SI   = m2 * lal.MSUN_SI
+        flowSI = flow / (M * lal.MSUN_SI * lal.G_SI / lal.C_SI**3)
         return (
             params,
             m1SI,
@@ -86,7 +92,7 @@ class Waveform_LAL(Waveform):
             iota,
             phir,
             dT,
-            flow,
+            flowSI,
             srate,
             df,
         )
@@ -103,7 +109,7 @@ class Waveform_LAL(Waveform):
         return 0
 
     def _run_lal_TD(self):
-        (
+        ( 
             params,
             m1SI,
             m2SI,
@@ -117,37 +123,74 @@ class Waveform_LAL(Waveform):
             iota,
             phir,
             dT,
-            flow,
+            flowSI,
             _,
             _,
         ) = self._eob_to_lal_dict()
+        
         app = lalsim.GetApproximantFromString(self.approx)
-        hp, hc = lalsim.SimInspiralTD(
-            m1SI,
-            m2SI,
-            c1x,
-            c1y,
-            c1z,
-            c2x,
-            c2y,
-            c2z,
-            DL,
-            iota,
-            phir,
-            0.0,
-            0.0,
-            0.0,
-            dT,
-            flow,
-            flow,
-            params,
-            app,
-        )
-        t = np.array(range(0, len(hp.data.data))) * hp.deltaT
+        params = lal.CreateDict()
 
-        self._u = t
-        self._hp = hp.data.data
-        self._hc = hc.data.data
+        
+        if self.TDmodes:
+            lmax = 5
+            mode = lalsim.SimInspiralChooseTDModes(
+                  phir,
+                  dT,
+                  m1SI,
+                  m2SI,
+                  c1x,
+                  c1y,
+                  c1z,
+                  c2x,
+                  c2y,
+                  c2z,
+                  flowSI,
+                  flowSI,
+                  DL,
+                  params,
+                  lmax,
+                  app
+                 )
+            
+            t = np.array(range(0, len(mode.mode.data.data))) * dT
+            hlm = {}
+            while mode: 
+                l = mode.l
+                m = mode.m
+                data = mode.mode.data.data
+                hlm[(l,m)] = wf_ut.get_multipole_dict(data)
+                mode = mode.next
+            self._u = t
+            self._hlm = hlm
+        else:
+            hp, hc = lalsim.SimInspiralTD(
+                m1SI,
+                m2SI,
+                c1x,
+                c1y,
+                c1z,
+                c2x,
+                c2y,
+                c2z,
+                DL,
+                iota,
+                phir,
+                0.0,
+                0.0,
+                0.0,
+                dT,
+                flowSI,
+                flowSI,
+                params,
+                app,
+            )
+            
+            t = np.array(range(0, len(hp.data.data))) * hp.deltaT
+            self._u  = t
+            self._hp = hp.data.data
+            self._hc = hc.data.data
+
         pass
 
     def _run_lal_FD(self):
@@ -165,7 +208,7 @@ class Waveform_LAL(Waveform):
             iota,
             phir,
             _,
-            flow,
+            flowSI,
             srate,
             df,
         ) = self._eob_to_lal_dict()
@@ -186,7 +229,7 @@ class Waveform_LAL(Waveform):
             0.0,
             0.0,
             df,
-            flow,
+            flowSI,
             srate / 2,
             flow,
             params,
@@ -287,3 +330,23 @@ class Waveform_LAL(Waveform):
         self._hp = hp.data.data
         self._hc = hc.data.data
         pass
+
+    def _to_geom(self):
+        M  = self.pars['M'] 
+        DL = self.pars['distance']  * 1e6 * lal.PC_SI 
+        M_sec  = M * lal.MSUN_SI * lal.G_SI / lal.C_SI**3
+        D_sec  = DL / lal.C_SI
+
+        self._u = self.u/M_sec
+        hlm = {}
+        for lm in self.hlm:
+            z = self.hlm[lm]['z']* D_sec / M_sec 
+            hlm[lm] = wf_ut.get_multipole_dict(z)
+        self._hlm = hlm
+
+        if self.hp is not None and self.hc is not None:
+            self._hp = self.hp * D_sec / M_sec
+            self._hc = self.hc * D_sec / M_sec
+
+        pass
+
