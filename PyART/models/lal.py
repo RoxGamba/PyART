@@ -18,10 +18,10 @@ class Waveform_LAL(Waveform):
 
     def __init__(
         self,
-        pars=None,
-        approx="IMRPhenomXPHM",
-        kind="FD",
-        get_hlm=True, # used only for TD waveforms
+        pars    = None,
+        approx  = "IMRPhenomXPHM",
+        kind    = "FD",
+        get_hlm = True, 
     ):
 
         super().__init__()
@@ -34,8 +34,7 @@ class Waveform_LAL(Waveform):
         # define some quantities for convertion
         self.convert = {'D_sec' : self.pars['distance'] * 1e6 * lal.PC_SI / lal.C_SI,
                         'M_sec' : self.pars['M'] * lal.MSUN_SI * lal.G_SI / lal.C_SI**3}
-        self.units_geom = False
-        self.units_SI   = True
+        self.units = 'SI'
         pass
 
     def _eob_to_lal_dict(self):
@@ -368,11 +367,8 @@ class Waveform_LAL(Waveform):
         pass
 
     def to_geom(self):
-        if self.units_geom: 
-            raise RuntimeError('Waveforms and freq/times already in geom units!')
-        self.units_geom = True
-        self.units_SI   = False
-
+        if self.units=='geom': 
+            raise RuntimeError('Already using geom units!')
         M_sec = self.convert['M_sec'] 
         D_sec = self.convert['D_sec'] 
         
@@ -390,15 +386,13 @@ class Waveform_LAL(Waveform):
         if self.hp is not None and self.hc is not None:
             self._hp = self.hp * D_sec / M_sec
             self._hc = self.hc * D_sec / M_sec
-
+        
+        self.units = 'geom'
         pass
     
     def to_SI(self):
-        if self.units_SI: 
-            raise RuntimeError('Waveforms and freq/times already in SI units!')
-        self.units_geom = False
-        self.units_SI   = True
-       
+        if self.units=='SI': 
+            raise RuntimeError('Already using SI units!')
         M_sec = self.convert['M_sec'] 
         D_sec = self.convert['D_sec']
         
@@ -416,5 +410,8 @@ class Waveform_LAL(Waveform):
         if self.hp is not None and self.hc is not None:
             self._hp = self.hp / D_sec * M_sec
             self._hc = self.hc / D_sec * M_sec
-
+        
+        self.units = 'SI'
         pass
+
+
