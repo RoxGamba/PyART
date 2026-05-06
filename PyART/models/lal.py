@@ -21,18 +21,21 @@ class Waveform_LAL(Waveform):
         pars=None,
         approx="IMRPhenomXPHM",
         kind="FD",
-        TDmodes=True, # used only for TD waveforms
-        to_geom=True,
+        get_hlm=True, # used only for TD waveforms
     ):
 
         super().__init__()
-        self.pars    = pars
-        self.approx  = approx
-        self.TDmodes = TDmodes
-        self._kind   = kind
+        self.pars       = pars
+        self.approx     = approx
+        self.get_hlm    = get_hlm
+        self._kind      = kind
         self._run_lal()
-        if to_geom:
-            self._to_geom()
+        
+        # define some quantities for convertion
+        self.convert = {'D_sec' : self.pars['distance'] * 1e6 * lal.PC_SI / lal.C_SI,
+                        'M_sec' : self.pars['M'] * lal.MSUN_SI * lal.G_SI / lal.C_SI**3}
+        self.units_geom = False
+        self.units_SI   = True
         pass
 
     def _eob_to_lal_dict(self):
@@ -130,9 +133,8 @@ class Waveform_LAL(Waveform):
         
         app = lalsim.GetApproximantFromString(self.approx)
         params = lal.CreateDict()
-
         
-        if self.TDmodes:
+        if self.get_hlm:
             lmax = 5
             mode = lalsim.SimInspiralChooseTDModes(
                   phir,
@@ -213,33 +215,67 @@ class Waveform_LAL(Waveform):
             df,
         ) = self._eob_to_lal_dict()
         app = lalsim.GetApproximantFromString(self.approx)
-        hpf, hcf = lalsim.SimInspiralFD(
-            m1SI,
-            m2SI,
-            c1x,
-            c1y,
-            c1z,
-            c2x,
-            c2y,
-            c2z,
-            DL,
-            iota,
-            phir,
-            0.0,
-            0.0,
-            0.0,
-            df,
-            flowSI,
-            srate / 2,
-            flow,
-            params,
-            app,
-        )
-        f = np.array(range(0, len(hpf.data.data))) * hpf.deltaF
+        if self.get_hlm:
+            fmaxSI = 8192
+            mode = lalsim.SimInspiralChooseFDModes(
+                  m1SI,
+                  m2SI,
+                  c1x,
+                  c1y,
+                  c1z,
+                  c2x,
+                  c2y,
+                  c2z,
+                  df,
+                  flowSI, # fmin
+                  fmaxSI, # fmax
+                  flowSI, # fref
+                  phir,
+                  DL,
+                  iota,
+                  params,
+                  app
+                 )
+            f = np.array(range(0, len(mode.mode.data.data))) * df
+            hlm = {}
+            # NOTE: is the flip/shift actually motivated?
+            while mode: 
+                l = mode.l
+                m = mode.m
+                data = np.flip(mode.mode.data.data)
+                hlm[(l,m)] = wf_ut.get_multipole_dict(data)
+                mode = mode.next
+            self._f = f - fmaxSI
+            self._hlm = hlm
+        
+        else:
+            hpf, hcf = lalsim.SimInspiralFD(
+                m1SI,
+                m2SI,
+                c1x,
+                c1y,
+                c1z,
+                c2x,
+                c2y,
+                c2z,
+                DL,
+                iota,
+                phir,
+                0.0,
+                0.0,
+                0.0,
+                df,
+                flowSI,
+                srate / 2,
+                flowSI,
+                params,
+                app,
+            )
+            f = np.array(range(0, len(hpf.data.data))) * hpf.deltaF
 
-        self._f = f
-        self._hp = hpf.data.data
-        self._hc = hcf.data.data
+            self._f = f
+            self._hp = hpf.data.data
+            self._hc = hcf.data.data
         pass
 
     def _load_lal_lvcnr(self):
@@ -331,13 +367,20 @@ class Waveform_LAL(Waveform):
         self._hc = hc.data.data
         pass
 
-    def _to_geom(self):
-        M  = self.pars['M'] 
-        DL = self.pars['distance']  * 1e6 * lal.PC_SI 
-        M_sec  = M * lal.MSUN_SI * lal.G_SI / lal.C_SI**3
-        D_sec  = DL / lal.C_SI
+    def to_geom(self):
+        if self.units_geom: 
+            raise RuntimeError('Waveforms and freq/times already in geom units!')
+        self.units_geom = True
+        self.units_SI   = False
 
-        self._u = self.u/M_sec
+        M_sec = self.convert['M_sec'] 
+        D_sec = self.convert['D_sec'] 
+        
+        if self.u is not None:
+            self._u = self.u/M_sec
+        if self.f is not None:
+            self._f = self.f*M_sec
+
         hlm = {}
         for lm in self.hlm:
             z = self.hlm[lm]['z']* D_sec / M_sec 
@@ -349,4 +392,29 @@ class Waveform_LAL(Waveform):
             self._hc = self.hc * D_sec / M_sec
 
         pass
+    
+    def to_SI(self):
+        if self.units_SI: 
+            raise RuntimeError('Waveforms and freq/times already in SI units!')
+        self.units_geom = False
+        self.units_SI   = True
+       
+        M_sec = self.convert['M_sec'] 
+        D_sec = self.convert['D_sec']
+        
+        if self.u is not None:
+            self._u = self.u*M_sec
+        if self.f is not None:
+            self._f = self.f/M_sec
 
+        hlm = {}
+        for lm in self.hlm:
+            z = self.hlm[lm]['z']/ D_sec * M_sec 
+            hlm[lm] = wf_ut.get_multipole_dict(z)
+        self._hlm = hlm
+
+        if self.hp is not None and self.hc is not None:
+            self._hp = self.hp / D_sec * M_sec
+            self._hc = self.hc / D_sec * M_sec
+
+        pass
