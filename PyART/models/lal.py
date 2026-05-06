@@ -18,23 +18,25 @@ class Waveform_LAL(Waveform):
 
     def __init__(
         self,
-        pars    = None,
-        approx  = "IMRPhenomXPHM",
-        kind    = "FD",
-        get_hlm = True, 
+        pars=None,
+        approx="IMRPhenomXPHM",
+        kind="FD",
+        get_hlm=True,
     ):
 
         super().__init__()
-        self.pars       = pars
-        self.approx     = approx
-        self.get_hlm    = get_hlm
-        self._kind      = kind
+        self.pars = pars
+        self.approx = approx
+        self.get_hlm = get_hlm
+        self._kind = kind
         self._run_lal()
-        
+
         # define some quantities for convertion
-        self.convert = {'D_sec' : self.pars['distance'] * 1e6 * lal.PC_SI / lal.C_SI,
-                        'M_sec' : self.pars['M'] * lal.MSUN_SI * lal.G_SI / lal.C_SI**3}
-        self.units = 'SI'
+        self.convert = {
+            "D_sec": self.pars["distance"] * 1e6 * lal.PC_SI / lal.C_SI,
+            "M_sec": self.pars["M"] * lal.MSUN_SI * lal.G_SI / lal.C_SI**3,
+        }
+        self.units = "SI"
         pass
 
     def _eob_to_lal_dict(self):
@@ -66,19 +68,19 @@ class Waveform_LAL(Waveform):
         M = pp["M"]
         c1x, c1y, c1z = pp["chi1x"], pp["chi1y"], pp["chi1z"]
         c2x, c2y, c2z = pp["chi2x"], pp["chi2y"], pp["chi2z"]
-        DL    = pp["distance"] * 1e6 * lal.PC_SI
-        iota  = pp["inclination"]
-        phir  = pp["coalescence_angle"]
-        dT    = 1.0 / pp["srate_interp"]
-        flow  = pp["initial_frequency"]
-        df    = pp["df"]
+        DL = pp["distance"] * 1e6 * lal.PC_SI
+        iota = pp["inclination"]
+        phir = pp["coalescence_angle"]
+        dT = 1.0 / pp["srate_interp"]
+        flow = pp["initial_frequency"]
+        df = pp["df"]
         srate = pp["srate_interp"]
 
         # Compute masses
-        m1     = M * q / (1.0 + q)
-        m2     = M / (1.0 + q)
-        m1SI   = m1 * lal.MSUN_SI
-        m2SI   = m2 * lal.MSUN_SI
+        m1 = M * q / (1.0 + q)
+        m2 = M / (1.0 + q)
+        m1SI = m1 * lal.MSUN_SI
+        m2SI = m2 * lal.MSUN_SI
         flowSI = flow / (M * lal.MSUN_SI * lal.G_SI / lal.C_SI**3)
         return (
             params,
@@ -111,7 +113,7 @@ class Waveform_LAL(Waveform):
         return 0
 
     def _run_lal_TD(self):
-        ( 
+        (
             params,
             m1SI,
             m2SI,
@@ -129,38 +131,38 @@ class Waveform_LAL(Waveform):
             _,
             _,
         ) = self._eob_to_lal_dict()
-        
+
         app = lalsim.GetApproximantFromString(self.approx)
         params = lal.CreateDict()
-        
+
         if self.get_hlm:
             lmax = 5
             mode = lalsim.SimInspiralChooseTDModes(
-                  phir,
-                  dT,
-                  m1SI,
-                  m2SI,
-                  c1x,
-                  c1y,
-                  c1z,
-                  c2x,
-                  c2y,
-                  c2z,
-                  flowSI,
-                  flowSI,
-                  DL,
-                  params,
-                  lmax,
-                  app
-                 )
-            
+                phir,
+                dT,
+                m1SI,
+                m2SI,
+                c1x,
+                c1y,
+                c1z,
+                c2x,
+                c2y,
+                c2z,
+                flowSI,
+                flowSI,
+                DL,
+                params,
+                lmax,
+                app,
+            )
+
             t = np.array(range(0, len(mode.mode.data.data))) * dT
             hlm = {}
-            while mode: 
+            while mode:
                 l = mode.l
                 m = mode.m
                 data = mode.mode.data.data
-                hlm[(l,m)] = wf_ut.get_multipole_dict(data)
+                hlm[(l, m)] = wf_ut.get_multipole_dict(data)
                 mode = mode.next
             self._u = t
             self._hlm = hlm
@@ -186,9 +188,9 @@ class Waveform_LAL(Waveform):
                 params,
                 app,
             )
-            
+
             t = np.array(range(0, len(hp.data.data))) * hp.deltaT
-            self._u  = t
+            self._u = t
             self._hp = hp.data.data
             self._hc = hc.data.data
 
@@ -217,36 +219,36 @@ class Waveform_LAL(Waveform):
         if self.get_hlm:
             fmaxSI = 8192
             mode = lalsim.SimInspiralChooseFDModes(
-                  m1SI,
-                  m2SI,
-                  c1x,
-                  c1y,
-                  c1z,
-                  c2x,
-                  c2y,
-                  c2z,
-                  df,
-                  flowSI, # fmin
-                  fmaxSI, # fmax
-                  flowSI, # fref
-                  phir,
-                  DL,
-                  iota,
-                  params,
-                  app
-                 )
+                m1SI,
+                m2SI,
+                c1x,
+                c1y,
+                c1z,
+                c2x,
+                c2y,
+                c2z,
+                df,
+                flowSI,  # fmin
+                fmaxSI,  # fmax
+                flowSI,  # fref
+                phir,
+                DL,
+                iota,
+                params,
+                app,
+            )
             f = np.array(range(0, len(mode.mode.data.data))) * df
             hlm = {}
-            # NOTE: is the flip/shift actually motivated?
-            while mode: 
+            # NOTE: is the flip/shift actually motivated?
+            while mode:
                 l = mode.l
                 m = mode.m
                 data = np.flip(mode.mode.data.data)
-                hlm[(l,m)] = wf_ut.get_multipole_dict(data)
+                hlm[(l, m)] = wf_ut.get_multipole_dict(data)
                 mode = mode.next
             self._f = f - fmaxSI
             self._hlm = hlm
-        
+
         else:
             hpf, hcf = lalsim.SimInspiralFD(
                 m1SI,
@@ -367,51 +369,49 @@ class Waveform_LAL(Waveform):
         pass
 
     def to_geom(self):
-        if self.units=='geom': 
-            raise RuntimeError('Already using geom units!')
-        M_sec = self.convert['M_sec'] 
-        D_sec = self.convert['D_sec'] 
-        
+        if self.units == "geom":
+            raise RuntimeError("Already using geom units!")
+        M_sec = self.convert["M_sec"]
+        D_sec = self.convert["D_sec"]
+
         if self.u is not None:
-            self._u = self.u/M_sec
+            self._u = self.u / M_sec
         if self.f is not None:
-            self._f = self.f*M_sec
+            self._f = self.f * M_sec
 
         hlm = {}
         for lm in self.hlm:
-            z = self.hlm[lm]['z']* D_sec / M_sec 
+            z = self.hlm[lm]["z"] * D_sec / M_sec
             hlm[lm] = wf_ut.get_multipole_dict(z)
         self._hlm = hlm
 
         if self.hp is not None and self.hc is not None:
             self._hp = self.hp * D_sec / M_sec
             self._hc = self.hc * D_sec / M_sec
-        
-        self.units = 'geom'
+
+        self.units = "geom"
         pass
-    
+
     def to_SI(self):
-        if self.units=='SI': 
-            raise RuntimeError('Already using SI units!')
-        M_sec = self.convert['M_sec'] 
-        D_sec = self.convert['D_sec']
-        
+        if self.units == "SI":
+            raise RuntimeError("Already using SI units!")
+        M_sec = self.convert["M_sec"]
+        D_sec = self.convert["D_sec"]
+
         if self.u is not None:
-            self._u = self.u*M_sec
+            self._u = self.u * M_sec
         if self.f is not None:
-            self._f = self.f/M_sec
+            self._f = self.f / M_sec
 
         hlm = {}
         for lm in self.hlm:
-            z = self.hlm[lm]['z']/ D_sec * M_sec 
+            z = self.hlm[lm]["z"] / D_sec * M_sec
             hlm[lm] = wf_ut.get_multipole_dict(z)
         self._hlm = hlm
 
         if self.hp is not None and self.hc is not None:
             self._hp = self.hp / D_sec * M_sec
             self._hc = self.hc / D_sec * M_sec
-        
-        self.units = 'SI'
+
+        self.units = "SI"
         pass
-
-
