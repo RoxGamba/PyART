@@ -14,7 +14,7 @@ def mode_to_k(ell, emm):
 def modes_to_k(modes):
     return [mode_to_k(x[0], x[1]) for x in modes]
 
-modes   = [(2,2),(2,1),(3,3),(3,2),(4,4)]
+modes   = [(2,2),(2,1),(3,3),(4,4)]
 modes_k = modes_to_k(modes)
 eobpars = CreateDict(M     = M, 
                      q     = q,
@@ -24,56 +24,29 @@ eobpars = CreateDict(M     = M,
                      srate = 8192,
                      use_mode_lm = modes_k)
 
-def test_generation_FD():
-    lalFpc = Waveform_LAL(pars=eobpars, approx='IMRPhenomXPHM', kind='FD', get_hlm=False)
-    assert lalFpc.hp is not None
-    assert lalFpc.hc is not None
+def test_generation():
+    app_kinds = {'IMRPhenomXPHM':'FD',
+                 'IMRPhenomTHM' :'TD'}
+    for approx in app_kinds:
+        wvf = Waveform_LAL(pars=eobpars, approx=approx, kind=app_kinds[approx])
+        assert wvf.hp is not None
+        assert wvf.hc is not None
 
-    assert lalFpc.units=='SI'
-    lalFpc.to_geom()
-    assert lalFpc.units=='geom'
-    
-    lalFlm = Waveform_LAL(pars=eobpars, approx='IMRPhenomXHM', kind='FD', get_hlm=True)
-    lalFlm.to_geom()
-    assert lalFlm.hlm is not None
-    
-    return lalFpc, lalFlm  
-
-def test_generation_TD():
-    lalTpc = Waveform_LAL(pars=eobpars, approx='IMRPhenomTHM',  kind='TD', get_hlm=False)
-    lalTpc.to_geom()
-    assert lalTpc.hp is not None
-    assert lalTpc.hc is not None
-    
-    lalTlm = Waveform_LAL(pars=eobpars, approx='IMRPhenomTHM',  kind='TD', get_hlm=True)
-    lalTlm.to_geom()
-    assert lalTlm.hlm is not None
-
-    return lalTpc, lalTlm  
-
-if __name__=='__main__':
-    
-    lalFpc, lalFlm = test_generation_FD()
-    lalTpc, lalTlm = test_generation_TD()
-
-    import matplotlib.pyplot as plt
-    from PyART.models.teob import Waveform_EOB
-    
-    plt.figure
-    plt.plot(lalFpc.f, np.abs(lalFpc.hp+1j*lalFpc.hc))
-    for lm in [(2,2),(2,1),(3,3),(4,4)]:
-        plt.plot(lalFlm.f, lalFlm.hlm[lm]['A'])
-    plt.yscale('log')
-    plt.show()
-
-    tmax,_,_,_ = lalTlm.find_max()
-    eob = Waveform_EOB(eobpars)
-    plt.figure
-    plt.plot(lalTlm.u-tmax, lalTlm.hlm[(2,2)]['A'], c='b', label='IMRPhenomTHM')
-    plt.plot(eob.u, eob.hlm[(2,2)]['A']*nu, ls='--', c='r', label='TEOB')
-    plt.ylabel(r'$A_{22}$', fontsize=16)
-    plt.legend()
-    plt.show()
-
+        assert wvf.units=='SI'
+        hp_SI_0 = np.copy(wvf.hp)
+        wvf.to_geom()
+        
+        assert wvf.units=='geom'
+        wvf.to_SI()
+        assert wvf.units=='SI'
+        
+        diff = wvf.hp-hp_SI_0
+        assert np.all(np.abs(diff)<1e-14)
+        
+        wvf.to_geom()
+        wvf.get_hlm(fmaxSI=4096, lmax=5)
+        assert wvf.hlm is not None
+        assert (2,2) in wvf.hlm
+    pass     
 
 
