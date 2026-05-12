@@ -18,21 +18,21 @@ class Waveform_LAL(Waveform):
 
     def __init__(
         self,
-        pars    = None,
-        approx  = "IMRPhenomXPHM",
-        kind    = "FD",
+        pars=None,
+        approx="IMRPhenomXPHM",
+        kind="FD",
     ):
 
         super().__init__()
-        self.pars     = pars
-        self.approx   = approx
+        self.pars = pars
+        self.approx = approx
         self.lal_dict = self._eob_to_lal_dict()
-        self._kind    = kind
+        self._kind = kind
 
-        if self.kind=='FD':
-            self.domain = 'Freq'
+        if self.kind == "FD":
+            self.domain = "Freq"
         else:
-            self.domain = 'Time'
+            self.domain = "Time"
         self._run_lal()
 
         # define some quantities for convertion
@@ -135,10 +135,10 @@ class Waveform_LAL(Waveform):
             _,
             _,
         ) = self.lal_dict
-        
+
         app = lalsim.GetApproximantFromString(self.approx)
         params = lal.CreateDict()
-        
+
         hp, hc = lalsim.SimInspiralTD(
             m1SI,
             m2SI,
@@ -160,11 +160,11 @@ class Waveform_LAL(Waveform):
             params,
             app,
         )
-        
+
         t = np.array(range(0, len(hp.data.data))) * hp.deltaT
         self.u_pc = t
-        self._hp  = hp.data.data
-        self._hc  = hc.data.data
+        self._hp = hp.data.data
+        self._hc = hc.data.data
         pass
 
     def _run_lal_FD(self):
@@ -187,7 +187,7 @@ class Waveform_LAL(Waveform):
             df,
         ) = self.lal_dict
         app = lalsim.GetApproximantFromString(self.approx)
-        
+
         hpf, hcf = lalsim.SimInspiralFD(
             m1SI,
             m2SI,
@@ -212,18 +212,18 @@ class Waveform_LAL(Waveform):
         )
         f = np.array(range(0, len(hpf.data.data))) * hpf.deltaF
 
-        self._f  = f
+        self._f = f
         self._hp = hpf.data.data
         self._hc = hcf.data.data
         pass
 
     def get_hlm(self, fmaxSI=8192, lmax=5):
-        if self.kind=='FD':
+        if self.kind == "FD":
             self._get_hlm_FD(fmaxSI=fmaxSI)
-        elif self.kind=='TD':
+        elif self.kind == "TD":
             self._get_hlm_TD(lmax=lmax)
         else:
-            raise ValueError(f'Unknown domain: {self.domain}')
+            raise ValueError(f"Unknown domain: {self.domain}")
         pass
 
     def _get_hlm_FD(self, fmaxSI=8192):
@@ -246,40 +246,42 @@ class Waveform_LAL(Waveform):
             df,
         ) = self.lal_dict
         app = lalsim.GetApproximantFromString(self.approx)
-        
+
         mode = lalsim.SimInspiralChooseFDModes(
-              m1SI,
-              m2SI,
-              c1x,
-              c1y,
-              c1z,
-              c2x,
-              c2y,
-              c2z,
-              df,
-              flowSI, # fmin
-              fmaxSI, # fmax
-              flowSI, # fref
-              phir,
-              DL,
-              iota,
-              params,
-              app
-             )
+            m1SI,
+            m2SI,
+            c1x,
+            c1y,
+            c1z,
+            c2x,
+            c2y,
+            c2z,
+            df,
+            flowSI,  # fmin
+            fmaxSI,  # fmax
+            flowSI,  # fref
+            phir,
+            DL,
+            iota,
+            params,
+            app,
+        )
         hlm = {}
-        flm = mode.mode.f0 + mode.mode.deltaF * np.arange(mode.mode.data.length) - fmaxSI
-        while mode: 
+        flm = (
+            mode.mode.f0 + mode.mode.deltaF * np.arange(mode.mode.data.length) - fmaxSI
+        )
+        while mode:
             l = mode.l
             m = mode.m
             data = mode.mode.data.data
-            hlm[(l,m)] = wf_ut.get_multipole_dict(data)
+            hlm[(l, m)] = wf_ut.get_multipole_dict(data)
             mode = mode.next
-         
-        self.flm  = flm
+
+        self.flm = flm
         self._hlm = hlm
-        pass 
-    
-    def _get_hlm_TD(self,lmax=5):
+        pass
+
+    def _get_hlm_TD(self, lmax=5):
         (
             params,
             m1SI,
@@ -299,34 +301,34 @@ class Waveform_LAL(Waveform):
             _,
         ) = self.lal_dict
         app = lalsim.GetApproximantFromString(self.approx)
-        
+
         mode = lalsim.SimInspiralChooseTDModes(
-              phir,
-              dT,
-              m1SI,
-              m2SI,
-              c1x,
-              c1y,
-              c1z,
-              c2x,
-              c2y,
-              c2z,
-              flowSI,
-              flowSI,
-              DL,
-              params,
-              lmax,
-              app
-             )
+            phir,
+            dT,
+            m1SI,
+            m2SI,
+            c1x,
+            c1y,
+            c1z,
+            c2x,
+            c2y,
+            c2z,
+            flowSI,
+            flowSI,
+            DL,
+            params,
+            lmax,
+            app,
+        )
         t = np.array(range(0, len(mode.mode.data.data))) * dT
         hlm = {}
-        while mode: 
+        while mode:
             l = mode.l
             m = mode.m
             data = mode.mode.data.data
-            hlm[(l,m)] = wf_ut.get_multipole_dict(data)
+            hlm[(l, m)] = wf_ut.get_multipole_dict(data)
             mode = mode.next
-        self._u   = t 
+        self._u = t
         self._hlm = hlm
         pass
 
@@ -426,14 +428,14 @@ class Waveform_LAL(Waveform):
         D_sec = self.convert["D_sec"]
 
         if self.u is not None:
-            self._u = self.u/M_sec
-        if hasattr(self, 'u_pc'):
-            self.u_pc = self.u_pc/M_sec
+            self._u = self.u / M_sec
+        if hasattr(self, "u_pc"):
+            self.u_pc = self.u_pc / M_sec
 
         if self.f is not None:
-            self._f = self.f*M_sec
-        if hasattr(self, 'flm'):
-            self.flm = self.flm*M_sec
+            self._f = self.f * M_sec
+        if hasattr(self, "flm"):
+            self.flm = self.flm * M_sec
 
         hlm = {}
         for lm in self.hlm:
@@ -455,14 +457,14 @@ class Waveform_LAL(Waveform):
         D_sec = self.convert["D_sec"]
 
         if self.u is not None:
-            self._u = self.u*M_sec
-        if hasattr(self, 'u_pc'):
-            self.u_pc = self.u_pc*M_sec
-        
+            self._u = self.u * M_sec
+        if hasattr(self, "u_pc"):
+            self.u_pc = self.u_pc * M_sec
+
         if self.f is not None:
-            self._f = self.f/M_sec
-        if hasattr(self, 'flm'):
-            self.flm = self.flm/M_sec
+            self._f = self.f / M_sec
+        if hasattr(self, "flm"):
+            self.flm = self.flm / M_sec
 
         hlm = {}
         for lm in self.hlm:
