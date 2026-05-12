@@ -34,11 +34,13 @@ class Waveform_LAL(Waveform):
         else:
             self.domain = 'Time'
         self._run_lal()
-        
+
         # define some quantities for convertion
-        self.convert = {'D_sec' : self.pars['distance'] * 1e6 * lal.PC_SI / lal.C_SI,
-                        'M_sec' : self.pars['M'] * lal.MSUN_SI * lal.G_SI / lal.C_SI**3}
-        self.units = 'SI'
+        self.convert = {
+            "D_sec": self.pars["distance"] * 1e6 * lal.PC_SI / lal.C_SI,
+            "M_sec": self.pars["M"] * lal.MSUN_SI * lal.G_SI / lal.C_SI**3,
+        }
+        self.units = "SI"
         pass
 
     def _eob_to_lal_dict(self):
@@ -70,19 +72,19 @@ class Waveform_LAL(Waveform):
         M = pp["M"]
         c1x, c1y, c1z = pp["chi1x"], pp["chi1y"], pp["chi1z"]
         c2x, c2y, c2z = pp["chi2x"], pp["chi2y"], pp["chi2z"]
-        DL    = pp["distance"] * 1e6 * lal.PC_SI
-        iota  = pp["inclination"]
-        phir  = pp["coalescence_angle"]
-        dT    = 1.0 / pp["srate_interp"]
-        flow  = pp["initial_frequency"]
-        df    = pp["df"]
+        DL = pp["distance"] * 1e6 * lal.PC_SI
+        iota = pp["inclination"]
+        phir = pp["coalescence_angle"]
+        dT = 1.0 / pp["srate_interp"]
+        flow = pp["initial_frequency"]
+        df = pp["df"]
         srate = pp["srate_interp"]
 
         # Compute masses
-        m1     = M * q / (1.0 + q)
-        m2     = M / (1.0 + q)
-        m1SI   = m1 * lal.MSUN_SI
-        m2SI   = m2 * lal.MSUN_SI
+        m1 = M * q / (1.0 + q)
+        m2 = M / (1.0 + q)
+        m1SI = m1 * lal.MSUN_SI
+        m2SI = m2 * lal.MSUN_SI
         flowSI = flow / (M * lal.MSUN_SI * lal.G_SI / lal.C_SI**3)
         return (
             params,
@@ -115,7 +117,7 @@ class Waveform_LAL(Waveform):
         return 0
 
     def _run_lal_TD(self):
-        ( 
+        (
             params,
             m1SI,
             m2SI,
@@ -163,7 +165,6 @@ class Waveform_LAL(Waveform):
         self.u_pc = t
         self._hp  = hp.data.data
         self._hc  = hc.data.data
-
         pass
 
     def _run_lal_FD(self):
@@ -419,11 +420,11 @@ class Waveform_LAL(Waveform):
         pass
 
     def to_geom(self):
-        if self.units=='geom': 
-            raise RuntimeError('Already using geom units!')
-        M_sec = self.convert['M_sec'] 
-        D_sec = self.convert['D_sec'] 
-        
+        if self.units == "geom":
+            raise RuntimeError("Already using geom units!")
+        M_sec = self.convert["M_sec"]
+        D_sec = self.convert["D_sec"]
+
         if self.u is not None:
             self._u = self.u/M_sec
         if hasattr(self, 'u_pc'):
@@ -436,23 +437,23 @@ class Waveform_LAL(Waveform):
 
         hlm = {}
         for lm in self.hlm:
-            z = self.hlm[lm]['z']* D_sec / M_sec 
+            z = self.hlm[lm]["z"] * D_sec / M_sec
             hlm[lm] = wf_ut.get_multipole_dict(z)
         self._hlm = hlm
 
         if self.hp is not None and self.hc is not None:
             self._hp = self.hp * D_sec / M_sec
             self._hc = self.hc * D_sec / M_sec
-        
-        self.units = 'geom'
+
+        self.units = "geom"
         pass
-    
+
     def to_SI(self):
-        if self.units=='SI': 
-            raise RuntimeError('Already using SI units!')
-        M_sec = self.convert['M_sec'] 
-        D_sec = self.convert['D_sec']
-        
+        if self.units == "SI":
+            raise RuntimeError("Already using SI units!")
+        M_sec = self.convert["M_sec"]
+        D_sec = self.convert["D_sec"]
+
         if self.u is not None:
             self._u = self.u*M_sec
         if hasattr(self, 'u_pc'):
@@ -465,15 +466,13 @@ class Waveform_LAL(Waveform):
 
         hlm = {}
         for lm in self.hlm:
-            z = self.hlm[lm]['z']/ D_sec * M_sec 
+            z = self.hlm[lm]["z"] / D_sec * M_sec
             hlm[lm] = wf_ut.get_multipole_dict(z)
         self._hlm = hlm
 
         if self.hp is not None and self.hc is not None:
             self._hp = self.hp / D_sec * M_sec
             self._hc = self.hc / D_sec * M_sec
-        
-        self.units = 'SI'
+
+        self.units = "SI"
         pass
-
-
