@@ -91,7 +91,7 @@ class Waveform(object):
         kind="last-peak",
         wave="hlm",
         umin=0,
-        height=0.15,
+        height=None,
         return_idx=False,
     ):
         """
@@ -110,8 +110,9 @@ class Waveform(object):
             'hlm' or 'psi4lm'
         umin: float
             minimum time to consider (for 'first-max-after-t')
-        height: float
+        height: float or None
             minimum height of the peak (for scipy find_peaks)
+            if None, set to mean(Alm)/2
         return_idx: bool
             if True, return also the index of the peak
         Returns
@@ -142,6 +143,8 @@ class Waveform(object):
         domg[1:] = np.diff(omg) / np.diff(t)
 
         # find peaks
+        if height is None:
+            height = np.mean(Alm) / 2
         peaks, props = find_peaks(Alm, height=height)
 
         if kind == "first-max-after-t":

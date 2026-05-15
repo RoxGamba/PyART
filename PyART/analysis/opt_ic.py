@@ -534,7 +534,7 @@ class Optimizer(object):
             print(f"{action} {json_file}\n")
         pass
 
-    def generate_EOB(self, ICs={"f0": None, "e0": None}):
+    def generate_EOB(self, ICs={"f0": None, "e0": None}, model_opts={}):
         """
         Generate an EOB waveform with given initial conditions (ICs).
         TODO: generalise this to any model
@@ -549,7 +549,8 @@ class Optimizer(object):
         -------
         eob_wave : Waveform_EOB or None
             Generated EOB waveform object, or None if generation failed.
-
+        model_opts : dict
+           Additional options to use for EOB generation
         Notes
         -----
         - Maps the provided ICs to EOB parameters using the specified mapping function.
@@ -612,6 +613,7 @@ class Optimizer(object):
         sub_meta.update(self.model_opts)
         try:
             pars = CreateDict(**sub_meta)
+            pars = pars | model_opts
             eob_wave = Waveform_EOB(pars=pars)
             # eob_wave._u = eob_wave.u#-eob_wave.u[0]
         except Exception as e:
