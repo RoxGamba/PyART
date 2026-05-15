@@ -90,19 +90,32 @@ class Waveform(object):
     # both methods return a new waveform object, without modifying the original one
     def __mul__(self, factor):
         # check if factor is a number
-        if not isinstance(factor, (int, float, complex)):
-            raise ValueError("Factor must be an int, float or complex number")
+        if not isinstance(factor, (int, float)):
+            raise ValueError("Factor must be an int or float number")
         new_wf = copy.deepcopy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=factor)
+
+        # also scale hp and hc if they are defined
+        if self.hp is not None:
+            new_wf._hp = self.hp * factor
+        if self.hc is not None:
+            new_wf._hc = self.hc * factor
+
         return new_wf
 
     def __truediv__(self, factor):
         # check if factor is a number
-        if not isinstance(factor, (int, float, complex)):
-            raise ValueError("Factor must be an int, float or complex number")
+        if not isinstance(factor, (int, float)):
+            raise ValueError("Factor must be an int or float number")
 
         new_wf = copy.deepcopy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=1 / factor)
+
+        # also scale hp and hc if they are defined
+        if self.hp is not None:
+            new_wf._hp = self.hp / factor
+        if self.hc is not None:
+            new_wf._hc = self.hc / factor
         return new_wf
 
     def __multiply_by__(self, var=["hlm"], factor=1.0):
