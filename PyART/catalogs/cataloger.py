@@ -520,7 +520,7 @@ class Cataloger(object):
 
         plt.yscale("log")
         plt.grid()
-        
+
         if ylim is not None:
             plt.ylim(ylim)
 

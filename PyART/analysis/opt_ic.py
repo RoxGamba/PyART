@@ -549,7 +549,7 @@ class Optimizer(object):
         -------
         eob_wave : Waveform_EOB or None
             Generated EOB waveform object, or None if generation failed.
-        model_opts : dict 
+        model_opts : dict
            Additional options to use for EOB generation
         Notes
         -----

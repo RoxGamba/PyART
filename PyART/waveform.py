@@ -144,7 +144,7 @@ class Waveform(object):
 
         # find peaks
         if height is None:
-            height = np.mean(Alm)/2
+            height = np.mean(Alm) / 2
         peaks, props = find_peaks(Alm, height=height)
 
         if kind == "first-max-after-t":
