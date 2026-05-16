@@ -103,6 +103,9 @@ class Waveform(object):
 
         return new_wf
 
+    def __rmul__(self, factor):
+        return self.__mul__(factor)
+
     def __truediv__(self, factor):
         # check if factor is a number
         if not isinstance(factor, (int, float)):
