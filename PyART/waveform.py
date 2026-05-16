@@ -122,7 +122,7 @@ class Waveform(object):
             new_wf._hc = self.hc / factor
         return new_wf
 
-    def __multiply_by__(self, var=["hlm"], factor=1.0):
+    def __multiply_by__(self, var=None, factor=1.0):
         """
         Multiply specified variable by factor
         Parameters
@@ -132,6 +132,8 @@ class Waveform(object):
         factor: float
             factor to multiply by
         """
+        if var is None:
+            var = ["hlm"]
         for v in var:
             wave_dict = getattr(self, v)
             for lm in wave_dict.keys():
@@ -139,7 +141,7 @@ class Waveform(object):
                 wave_dict[lm] = wf_ut.get_multipole_dict(h)
         pass
 
-    def __add_to__(self, var=["hlm"], factor=0.0):
+    def __add_to__(self, var=None, factor=0.0):
         """
         Add factor to specified variable
         Parameters
@@ -149,7 +151,8 @@ class Waveform(object):
         factor: float
             factor to add
         """
-
+        if var is None:
+            var = ["hlm"]
         for v in var:
             wave_dict = getattr(self, v)
             for lm in wave_dict.keys():
