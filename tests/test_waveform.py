@@ -46,8 +46,12 @@ def test_waveform():
         assert np.all(wf3.__getattribute__(var)[(2, 2)]["real"] == 2 * re)
 
     for var in ["hlm", "dothlm", "psi4lm"]:
-        assert np.all(wf.__getattribute__(var)[(2, 2)]["real"] == original_modes[var]["real"])
-        assert np.all(wf.__getattribute__(var)[(2, 2)]["imag"] == original_modes[var]["imag"])
+        assert np.all(
+            wf.__getattribute__(var)[(2, 2)]["real"] == original_modes[var]["real"]
+        )
+        assert np.all(
+            wf.__getattribute__(var)[(2, 2)]["imag"] == original_modes[var]["imag"]
+        )
         assert np.all(wf.__getattribute__(var)[(2, 2)]["z"] == original_modes[var]["z"])
         assert np.all(wf.__getattribute__(var)[(2, 2)]["A"] == original_modes[var]["A"])
         assert np.all(wf.__getattribute__(var)[(2, 2)]["p"] == original_modes[var]["p"])
