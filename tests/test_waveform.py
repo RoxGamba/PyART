@@ -5,6 +5,7 @@ General tests for the waveform class in PyART
 from PyART import waveform
 import copy
 import numpy as np
+import pytest
 
 
 def test_waveform():
@@ -45,6 +46,10 @@ def test_waveform():
     for var in ["hlm", "dothlm", "psi4lm"]:
         assert np.all(wf3.__getattribute__(var)[(2, 2)]["real"] == 2 * re)
 
+    wf4 = wf * np.int64(2)
+    for var in ["hlm", "dothlm", "psi4lm"]:
+        assert np.all(wf4.__getattribute__(var)[(2, 2)]["real"] == 2 * re)
+
     for var in ["hlm", "dothlm", "psi4lm"]:
         assert np.all(
             wf.__getattribute__(var)[(2, 2)]["real"] == original_modes[var]["real"]
@@ -59,4 +64,7 @@ def test_waveform():
     wfo2 = wf / 2
     for var in ["hlm", "dothlm", "psi4lm"]:
         assert np.all(wfo2.__getattribute__(var)[(2, 2)]["real"] == 0.5 * re)
+
+    with pytest.raises(TypeError):
+        wf * "2"
     pass

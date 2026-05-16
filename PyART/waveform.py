@@ -4,6 +4,7 @@ Classes to handle waveforms
 
 # standard imports
 import logging
+import numbers
 import numpy as np
 import copy
 from scipy.signal import find_peaks
@@ -90,8 +91,8 @@ class Waveform(object):
     # both methods return a new waveform object, without modifying the original one
     def __mul__(self, factor):
         # check if factor is a number
-        if not isinstance(factor, (int, float)):
-            raise ValueError("Factor must be an int or float number")
+        if not isinstance(factor, numbers.Real):
+            return NotImplemented
         new_wf = copy.deepcopy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=factor)
 
@@ -108,8 +109,8 @@ class Waveform(object):
 
     def __truediv__(self, factor):
         # check if factor is a number
-        if not isinstance(factor, (int, float)):
-            raise ValueError("Factor must be an int or float number")
+        if not isinstance(factor, numbers.Real):
+            return NotImplemented
 
         new_wf = copy.deepcopy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=1 / factor)
