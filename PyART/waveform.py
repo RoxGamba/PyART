@@ -4,6 +4,7 @@ Classes to handle waveforms
 
 # standard imports
 import logging
+import numbers
 import numpy as np
 import copy
 from scipy.signal import find_peaks
@@ -90,8 +91,8 @@ class Waveform(object):
     # both methods return a new waveform object, without modifying the original one
     def __mul__(self, factor):
         # check if factor is a number
-        if not isinstance(factor, (int, float)):
-            raise ValueError("Factor must be an int or float number")
+        if not isinstance(factor, numbers.Real):
+            return NotImplemented
         new_wf = copy.deepcopy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=factor)
 
@@ -103,10 +104,13 @@ class Waveform(object):
 
         return new_wf
 
+    def __rmul__(self, factor):
+        return self.__mul__(factor)
+
     def __truediv__(self, factor):
         # check if factor is a number
-        if not isinstance(factor, (int, float)):
-            raise ValueError("Factor must be an int or float number")
+        if not isinstance(factor, numbers.Real):
+            return NotImplemented
 
         new_wf = copy.deepcopy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=1 / factor)
@@ -118,7 +122,7 @@ class Waveform(object):
             new_wf._hc = self.hc / factor
         return new_wf
 
-    def __multiply_by__(self, var=["hlm"], factor=1.0):
+    def __multiply_by__(self, var=None, factor=1.0):
         """
         Multiply specified variable by factor
         Parameters
@@ -128,6 +132,8 @@ class Waveform(object):
         factor: float
             factor to multiply by
         """
+        if var is None:
+            var = ["hlm"]
         for v in var:
             wave_dict = getattr(self, v)
             for lm in wave_dict.keys():
@@ -135,7 +141,7 @@ class Waveform(object):
                 wave_dict[lm] = wf_ut.get_multipole_dict(h)
         pass
 
-    def __add_to__(self, var=["hlm"], factor=0.0):
+    def __add_to__(self, var=None, factor=0.0):
         """
         Add factor to specified variable
         Parameters
@@ -145,7 +151,8 @@ class Waveform(object):
         factor: float
             factor to add
         """
-
+        if var is None:
+            var = ["hlm"]
         for v in var:
             wave_dict = getattr(self, v)
             for lm in wave_dict.keys():
