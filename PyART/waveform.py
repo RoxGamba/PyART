@@ -239,6 +239,21 @@ class Waveform(object):
         else:
             return t_mrg, A_mrg, omg_mrg, domg_mrg
 
+    def _validate_uniform_u(self, quantity_name):
+        """
+        Validate the time grid used by finite-difference derivatives.
+        """
+
+        u = np.asarray(self.u)
+        if u.size < 6:
+            raise RuntimeError(
+                f"{quantity_name} requires at least 6 samples for 4th-order derivatives"
+            )
+
+        du = np.diff(u)
+        if not np.allclose(du, du[0], rtol=1e-10, atol=1e-14):
+            raise ValueError(f"{quantity_name} requires a uniformly sampled u-grid")
+
     def compute_dothlm(self, factor=1.0, only_warn=False):
         """
         Compute dothlm from self.hlm using
@@ -263,6 +278,9 @@ class Waveform(object):
                 logging.warning(msg)
             else:
                 raise RuntimeError(msg)
+
+        if self.hlm:
+            self._validate_uniform_u_for_derivatives("dothlm")
 
         dothlm = {}
         for k in self.hlm:
@@ -297,6 +315,9 @@ class Waveform(object):
                 logging.warning(msg)
             else:
                 raise RuntimeError(msg)
+
+        if self.dothlm:
+            self._validate_uniform_u_for_derivatives("psi4lm")
 
         psi4lm = {}
         for k in self.dothlm:
@@ -530,6 +551,7 @@ class Waveform(object):
             self._hp = ut.zero_pad_before(self.hp, dN, return_column=False)
             self._hc = ut.zero_pad_before(self.hp, dN, return_column=False)
             assert len(self.u) == len(self.hp)
+            assert len(self.u) == len(self.hc)
 
         self._f, self._hp = ut.fft(self.hp, dt)
         self._f, self._hc = ut.fft(self.hc, dt)
