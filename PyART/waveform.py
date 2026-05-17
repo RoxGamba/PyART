@@ -287,7 +287,7 @@ class Waveform(object):
                 raise RuntimeError(msg)
 
         if self.hlm:
-            self._validate_uniform_u_for_derivatives("dothlm")
+            self._validate_uniform_u("dothlm")
 
         dothlm = {}
         for k in self.hlm:
@@ -324,7 +324,7 @@ class Waveform(object):
                 raise RuntimeError(msg)
 
         if self.dothlm:
-            self._validate_uniform_u_for_derivatives("psi4lm")
+            self._validate_uniform_u("psi4lm")
 
         psi4lm = {}
         for k in self.dothlm:
