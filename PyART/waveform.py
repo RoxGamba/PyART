@@ -4,7 +4,9 @@ Classes to handle waveforms
 
 # standard imports
 import logging
+import numbers
 import numpy as np
+import copy
 from scipy.signal import find_peaks
 from scipy import integrate
 import matplotlib.pyplot as plt
@@ -84,6 +86,79 @@ class Waveform(object):
     @property
     def kind(self):
         return self._kind
+
+    # define multiplication and division by a factor
+    # both methods return a new waveform object, without modifying the original one
+    def __mul__(self, factor):
+        # check if factor is a number
+        if not isinstance(factor, numbers.Real):
+            return NotImplemented
+        new_wf = copy.deepcopy(self)
+        new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=factor)
+
+        # also scale hp and hc if they are defined
+        if self.hp is not None:
+            new_wf._hp = self.hp * factor
+        if self.hc is not None:
+            new_wf._hc = self.hc * factor
+
+        return new_wf
+
+    def __rmul__(self, factor):
+        return self.__mul__(factor)
+
+    def __truediv__(self, factor):
+        # check if factor is a number
+        if not isinstance(factor, numbers.Real):
+            return NotImplemented
+
+        new_wf = copy.deepcopy(self)
+        new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=1 / factor)
+
+        # also scale hp and hc if they are defined
+        if self.hp is not None:
+            new_wf._hp = self.hp / factor
+        if self.hc is not None:
+            new_wf._hc = self.hc / factor
+        return new_wf
+
+    def __multiply_by__(self, var=None, factor=1.0):
+        """
+        Multiply specified variable by factor
+        Parameters
+        ----------
+        var: list
+            list of variables to multiply, e.g. ['hlm', 'dothlm']
+        factor: float
+            factor to multiply by
+        """
+        if var is None:
+            var = ["hlm"]
+        for v in var:
+            wave_dict = getattr(self, v)
+            for lm in wave_dict.keys():
+                h = wave_dict[lm]["z"] * factor
+                wave_dict[lm] = wf_ut.get_multipole_dict(h)
+        pass
+
+    def __add_to__(self, var=None, factor=0.0):
+        """
+        Add factor to specified variable
+        Parameters
+        ----------
+        var: list
+            list of variables to add to, e.g. ['hlm', 'dothlm']
+        factor: float
+            factor to add
+        """
+        if var is None:
+            var = ["hlm"]
+        for v in var:
+            wave_dict = getattr(self, v)
+            for lm in wave_dict.keys():
+                h = wave_dict[lm]["z"] + factor
+                wave_dict[lm] = wf_ut.get_multipole_dict(h)
+        pass
 
     def find_max(
         self,
@@ -171,6 +246,21 @@ class Waveform(object):
         else:
             return t_mrg, A_mrg, omg_mrg, domg_mrg
 
+    def _validate_uniform_u(self, quantity_name):
+        """
+        Validate the time grid used by finite-difference derivatives.
+        """
+
+        u = np.asarray(self.u)
+        if u.size < 6:
+            raise RuntimeError(
+                f"{quantity_name} requires at least 6 samples for 4th-order derivatives"
+            )
+
+        du = np.diff(u)
+        if not np.allclose(du, du[0], rtol=1e-10, atol=1e-14):
+            raise ValueError(f"{quantity_name} requires a uniformly sampled u-grid")
+
     def compute_dothlm(self, factor=1.0, only_warn=False):
         """
         Compute dothlm from self.hlm using
@@ -195,6 +285,9 @@ class Waveform(object):
                 logging.warning(msg)
             else:
                 raise RuntimeError(msg)
+
+        if self.hlm:
+            self._validate_uniform_u("dothlm")
 
         dothlm = {}
         for k in self.hlm:
@@ -230,6 +323,9 @@ class Waveform(object):
             else:
                 raise RuntimeError(msg)
 
+        if self.dothlm:
+            self._validate_uniform_u("psi4lm")
+
         psi4lm = {}
         for k in self.dothlm:
             dothlm = self.dothlm[k]["z"]
@@ -237,24 +333,6 @@ class Waveform(object):
             ddothlm *= factor
             psi4lm[k] = wf_ut.get_multipole_dict(ddothlm)
         self._psi4lm = psi4lm
-        pass
-
-    def multiply_by(self, var=["hlm"], factor=1.0):
-        """
-        Multiply specified variable by factor
-        Parameters
-        ----------
-        var: list
-            list of variables to multiply, e.g. ['hlm', 'dothlm']
-        factor: float
-            factor to multiply by
-        """
-
-        for v in var:
-            wave_dict = getattr(self, v)
-            for lm in wave_dict:
-                h = wave_dict[lm]["z"] * factor
-                wave_dict[lm] = wf_ut.get_multipole_dict(h)
         pass
 
     def cut(
@@ -480,10 +558,33 @@ class Waveform(object):
             self._hp = ut.zero_pad_before(self.hp, dN, return_column=False)
             self._hc = ut.zero_pad_before(self.hp, dN, return_column=False)
             assert len(self.u) == len(self.hp)
+            assert len(self.u) == len(self.hc)
 
         self._f, self._hp = ut.fft(self.hp, dt)
         self._f, self._hc = ut.fft(self.hc, dt)
         self._domain = "Frequency"
+        pass
+
+    def to_time(self):
+        """
+        Inverse Fourier transform the waveform from frequency to time domain
+        Returns
+        -------
+        out: (t, hp, hc)
+        """
+        raise NotImplementedError(".to_time method not implemented yet")
+
+    def phase_shift(self, delta_phi, var="hlm"):
+        """
+        Phase shift var by delta_phi.
+        The shift is propagated as:
+        var -> var * exp(-1j * m * delta_phi)
+        """
+        wave_dict = getattr(self, var)
+        for lm in wave_dict.keys():
+            emm = lm[1]
+            h = wave_dict[lm]["z"] * np.exp(-1j * emm * delta_phi)
+            wave_dict[lm] = wf_ut.get_multipole_dict(h)
         pass
 
     def integrate_data(
