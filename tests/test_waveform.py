@@ -186,8 +186,6 @@ def test_waveform_phase_shift():
         omega * u + 0.5 * 2
     )  # since the mode is (2, 2), the phase shift is 2 times the input value
 
-    print(expected_phase, wf.hlm[(2, 2)]["p"])
-
     interior = slice(5, -5)
     assert np.allclose(
         wf.hlm[(2, 2)]["p"][interior], expected_phase[interior], rtol=1e-4, atol=1e-4
