@@ -574,6 +574,19 @@ class Waveform(object):
         """
         raise NotImplementedError(".to_time method not implemented yet")
 
+    def phase_shift(self, delta_phi, var="hlm"):
+        """
+        Phase shift var by delta_phi.
+        The shift is propagated as:
+        var -> var * exp(-1j * m * delta_phi)
+        """
+        wave_dict = getattr(self, var)
+        for lm in wave_dict.keys():
+            emm = lm[1]
+            h = wave_dict[lm]["z"] * np.exp(-1j * emm * delta_phi)
+            wave_dict[lm] = wf_ut.get_multipole_dict(h)
+        pass
+
     def integrate_data(
         self,
         t_psi4,

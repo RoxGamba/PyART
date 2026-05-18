@@ -168,3 +168,28 @@ def test_compute_dothlm_and_psi4lm():
     non_uniform._dothlm[(2, 2)] = wf_utils.get_multipole_dict(z_nu)
     with pytest.raises(ValueError, match="uniformly sampled u-grid"):
         non_uniform.compute_psi4lm()
+
+
+def test_waveform_phase_shift():
+
+    # mock waveform
+    wf = waveform.Waveform()
+    u = np.linspace(0.0, 5.0, 64)
+    amp = 1.7
+    omega = 1.3
+    z = amp * np.exp(-1j * omega * u)
+    wf._u = u
+    wf._hlm[(2, 2)] = wf_utils.get_multipole_dict(z)
+
+    wf.phase_shift(0.5, var="hlm")
+    expected_phase = (
+        omega * u + 0.5 * 2
+    )  # since the mode is (2, 2), the phase shift is 2 times the input value
+
+    print(expected_phase, wf.hlm[(2, 2)]["p"])
+
+    interior = slice(5, -5)
+    assert np.allclose(
+        wf.hlm[(2, 2)]["p"][interior], expected_phase[interior], rtol=1e-4, atol=1e-4
+    )
+    assert np.allclose(wf.hlm[(2, 2)]["A"][interior], amp, rtol=1e-4, atol=1e-4)
