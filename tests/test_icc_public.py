@@ -73,6 +73,3 @@ def test_icc_public_catalog():
     delta_phase = numpy.unwrap(phase)
     delta = numpy.max(numpy.abs(numpy.diff(delta_phase)))
     assert delta < numpy.pi  # no big jumps
-
-
-test_icc_public_catalog()
