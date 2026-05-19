@@ -101,7 +101,7 @@ eobpars = {
     "spin_interp_domain": 0,
 }
 eob = teob.Waveform_EOB(pars=eobpars)
-eob.multiply_by(var=["hlm"], factor=q / (1 + q) ** 2)
+eob = eob * (q / (1 + q) ** 2)
 
 # plt.figure
 # plt.plot(eob.u, eob.hlm[(2,2)]['A'])

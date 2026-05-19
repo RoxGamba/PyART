@@ -16,6 +16,9 @@
   <a href="https://results.pre-commit.ci/latest/github/RoxGamba/PyART/main">
     <img src="https://results.pre-commit.ci/badge/github/RoxGamba/PyART/main.svg" alt="pre-commit.ci status">
   </a>
+  <a href="https://codecov.io/github/RoxGamba/PyART" > 
+     <img src="https://codecov.io/github/RoxGamba/PyART/graph/badge.svg?token=R9OV89SSY6"/> 
+ </a>
 </p>
 
 ## Getting started
