@@ -23,18 +23,18 @@ class Waveform_IMRPhenomT(Waveform):
     # ---------------------------
     # Approximant selector
     # ---------------------------
-    def _get_approximant(self, pars):
+    def _get_approximant(self):
         if self.approx == "IMRPhenomT":
-            return IMRPhenomT(**pars)
+            return IMRPhenomT(**self.pars)
 
         elif self.approx == "IMRPhenomTHM":
-            return IMRPhenomTHM(**pars)
+            return IMRPhenomTHM(**self.pars)
 
         elif self.approx == "IMRPhenomTP":
-            return IMRPhenomTP(**pars)
+            return IMRPhenomTP(**self.pars)
 
         elif self.approx == "IMRPhenomTPHM":
-            return IMRPhenomTPHM(**pars)
+            return IMRPhenomTPHM(**self.pars)
 
         else:
             raise ValueError("Unknown approximant")
@@ -43,17 +43,18 @@ class Waveform_IMRPhenomT(Waveform):
     # Main dispatcher
     # ---------------------------
     def _run(self):
-        phen = self._get_approximant(self.pars)
-        self._run_THM(phen)
+        phenom = self._get_approximant()
+        self._run_TD(phenom)
+        # to expand for FD
         pass        
 
     # ---------------------------
     # Time domain
     # ---------------------------
-    def _run_THM(self, phen):
+    def _run_TD(self, phenom):
 
         # Compute THM polarizations
-        hp, hc, t = phen.compute_polarizations(times=None)
+        hp, hc, t = phenom.compute_polarizations(times=None)
         
         self._u  = t
         self._hp = np.array(hp)
@@ -62,9 +63,9 @@ class Waveform_IMRPhenomT(Waveform):
         # Compute THM individual modes
         if self.approx[-2:]=='HM':
             if 'PhenomTP' in self.approx:
-                hlm_phen, tlm = phen.compute_CPmodes(times=None)
+                hlm_phen, tlm = phenom.compute_CPmodes(times=None)
             else:
-                hlm_phen, tlm = phen.compute_hlms(times=None)
+                hlm_phen, tlm = phenom.compute_hlms(times=None)
 
             hlm = {}
             for ky in hlm_phen: # keys: '22', '21', etc.

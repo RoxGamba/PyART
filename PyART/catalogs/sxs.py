@@ -20,7 +20,7 @@ class Waveform_SXS(Waveform):
 
     def __init__(
         self,
-        path="../dat/SXS/",
+        path=r"../dat/SXS/",
         ID="0001",
         order=2,
         level=None,
