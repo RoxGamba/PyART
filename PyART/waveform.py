@@ -20,6 +20,7 @@ from .utils import load_nr_utils as nr_ut
 from .analysis.integrate_wave import IntegrateMultipole
 from astropy.constants import G, c, M_sun, pc
 
+
 class Waveform(object):
     """
     Parent class to handle waveforms
@@ -41,7 +42,7 @@ class Waveform(object):
         self._psi4lm = {}
         self._dyn = {}
         self._kind = None
-        self._units = 'geom'
+        self._units = "geom"
         pass
 
     @property
@@ -87,7 +88,7 @@ class Waveform(object):
     @property
     def kind(self):
         return self._kind
-    
+
     @property
     def units(self):
         return self._units
@@ -653,12 +654,12 @@ class Waveform(object):
     def to_geom(self, M, distance):
         """
         Convert waveform and time/freqs to geom units from SI
-        
+
         Parameters
         ----------
-        M : float 
+        M : float
             total mass of the system in Solar masses
-        distance : float 
+        distance : float
             distance in Mpc
         """
         if self.units == "geom":
@@ -667,25 +668,25 @@ class Waveform(object):
         D_sec = distance * 1e6 * pc.value / c.value
         M_sec = M * M_sun.value * G.value / c.value**3
 
-        time_attrs = ['_u', '_t', 't_psi4', 'u_pc']
+        time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
         for time_attr in time_attrs:
             val = getattr(self, time_attr, None)
             if val is not None:
                 setattr(self, time_attr, val / M_sec)
-        
-        freq_attrs = ['_f', 'flm']
+
+        freq_attrs = ["_f", "flm"]
         for freq_attr in freq_attrs:
             val = getattr(self, freq_attr, None)
             if val is not None:
                 setattr(self, freq_attr, val * M_sec)
-        
-        for attr in ['hlm', 'dothlm', 'psi4lm']:
+
+        for attr in ["hlm", "dothlm", "psi4lm"]:
             data = getattr(self, attr, None)
             out = {}
             for lm, modes in data.items():
-                z = modes['z'] * D_sec / M_sec
+                z = modes["z"] * D_sec / M_sec
                 out[lm] = wf_ut.get_multipole_dict(z)
-            setattr(self, f'_{attr}', out)
+            setattr(self, f"_{attr}", out)
 
         if self.hp is not None and self.hc is not None:
             self._hp = self.hp * D_sec / M_sec
@@ -700,9 +701,9 @@ class Waveform(object):
 
         Parameters
         ----------
-        M : float 
+        M : float
             total mass of the system in Solar masses
-        distance : float 
+        distance : float
             distance in Mpc
         """
         if self.units == "SI":
@@ -710,26 +711,26 @@ class Waveform(object):
 
         D_sec = distance * 1e6 * pc.value / c.value
         M_sec = M * M_sun.value * G.value / c.value**3
-        
-        time_attrs = ['_u', '_t', 't_psi4', 'u_pc']
+
+        time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
         for time_attr in time_attrs:
             val = getattr(self, time_attr, None)
             if val is not None:
                 setattr(self, time_attr, val * M_sec)
-        
-        freq_attrs = ['_f', 'flm']
+
+        freq_attrs = ["_f", "flm"]
         for freq_attr in freq_attrs:
             val = getattr(self, freq_attr, None)
             if val is not None:
                 setattr(self, freq_attr, val / M_sec)
-        
-        for attr in ['hlm', 'dothlm', 'psi4lm']:
+
+        for attr in ["hlm", "dothlm", "psi4lm"]:
             data = getattr(self, attr, None)
             out = {}
             for lm, modes in data.items():
-                z = modes['z'] / D_sec * M_sec
+                z = modes["z"] / D_sec * M_sec
                 out[lm] = wf_ut.get_multipole_dict(z)
-            setattr(self, f'_{attr}', out)
+            setattr(self, f"_{attr}", out)
 
         if self.hp is not None and self.hc is not None:
             self._hp = self.hp / D_sec * M_sec
@@ -737,6 +738,7 @@ class Waveform(object):
 
         self._units = "SI"
         pass
+
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
