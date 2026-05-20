@@ -28,19 +28,13 @@ class Waveform_LAL(Waveform):
         self.approx = approx
         self.lal_dict = self._eob_to_lal_dict()
         self._kind = kind
-
+        self._units = 'SI'
         if self.kind == "FD":
             self.domain = "Freq"
         else:
             self.domain = "Time"
         self._run_lal()
-
-        # define some quantities for convertion
-        self.convert = {
-            "D_sec": self.pars["distance"] * 1e6 * lal.PC_SI / lal.C_SI,
-            "M_sec": self.pars["M"] * lal.MSUN_SI * lal.G_SI / lal.C_SI**3,
-        }
-        self.units = "SI"
+        
         pass
 
     def _eob_to_lal_dict(self):
@@ -421,60 +415,3 @@ class Waveform_LAL(Waveform):
         self._hc = hc.data.data
         pass
 
-    def to_geom(self):
-        if self.units == "geom":
-            raise RuntimeError("Already using geom units!")
-        M_sec = self.convert["M_sec"]
-        D_sec = self.convert["D_sec"]
-
-        if self.u is not None:
-            self._u = self.u / M_sec
-        if hasattr(self, "u_pc"):
-            self.u_pc = self.u_pc / M_sec
-
-        if self.f is not None:
-            self._f = self.f * M_sec
-        if hasattr(self, "flm"):
-            self.flm = self.flm * M_sec
-
-        hlm = {}
-        for lm in self.hlm:
-            z = self.hlm[lm]["z"] * D_sec / M_sec
-            hlm[lm] = wf_ut.get_multipole_dict(z)
-        self._hlm = hlm
-
-        if self.hp is not None and self.hc is not None:
-            self._hp = self.hp * D_sec / M_sec
-            self._hc = self.hc * D_sec / M_sec
-
-        self.units = "geom"
-        pass
-
-    def to_SI(self):
-        if self.units == "SI":
-            raise RuntimeError("Already using SI units!")
-        M_sec = self.convert["M_sec"]
-        D_sec = self.convert["D_sec"]
-
-        if self.u is not None:
-            self._u = self.u * M_sec
-        if hasattr(self, "u_pc"):
-            self.u_pc = self.u_pc * M_sec
-
-        if self.f is not None:
-            self._f = self.f / M_sec
-        if hasattr(self, "flm"):
-            self.flm = self.flm / M_sec
-
-        hlm = {}
-        for lm in self.hlm:
-            z = self.hlm[lm]["z"] / D_sec * M_sec
-            hlm[lm] = wf_ut.get_multipole_dict(z)
-        self._hlm = hlm
-
-        if self.hp is not None and self.hc is not None:
-            self._hp = self.hp / D_sec * M_sec
-            self._hc = self.hc / D_sec * M_sec
-
-        self.units = "SI"
-        pass

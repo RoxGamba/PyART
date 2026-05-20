@@ -18,7 +18,7 @@ from .utils import wf_utils as wf_ut
 from .utils import load_nr_utils as nr_ut
 
 from .analysis.integrate_wave import IntegrateMultipole
-
+from astropy.constants import G, c, M_sun, pc
 
 class Waveform(object):
     """
@@ -41,6 +41,7 @@ class Waveform(object):
         self._psi4lm = {}
         self._dyn = {}
         self._kind = None
+        self._units = 'geom'
         pass
 
     @property
@@ -86,6 +87,10 @@ class Waveform(object):
     @property
     def kind(self):
         return self._kind
+    
+    @property
+    def units(self):
+        return self._units
 
     # define multiplication and division by a factor
     # both methods return a new waveform object, without modifying the original one
@@ -93,7 +98,8 @@ class Waveform(object):
         # check if factor is a number
         if not isinstance(factor, numbers.Real):
             return NotImplemented
-        new_wf = copy.deepcopy(self)
+        #new_wf = copy.deepcopy(self)
+        new_wf = copy.copy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=factor)
 
         # also scale hp and hc if they are defined
@@ -112,7 +118,8 @@ class Waveform(object):
         if not isinstance(factor, numbers.Real):
             return NotImplemented
 
-        new_wf = copy.deepcopy(self)
+        #new_wf = copy.deepcopy(self)
+        new_wf = copy.copy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=1 / factor)
 
         # also scale hp and hc if they are defined
@@ -645,6 +652,93 @@ class Waveform(object):
         self._psi4lm = psi4lm
         return mode.integr_opts
 
+    def to_geom(self, M, distance):
+        """
+        Convert waveform and time/freqs to geom units from SI
+        
+        Parameters
+        ----------
+        M : float 
+            total mass of the system in Solar masses
+        distance : float 
+            distance in Mpc
+        """
+        if self.units == "geom":
+            raise RuntimeError("Already using geom units!")
+
+        D_sec = distance * 1e6 * pc / c
+        M_sec = M * M_sun * G / c**3
+
+        time_attrs = ['_u', '_t', 't_psi4', 'u_pc']
+        for time_attr in time_attrs:
+            val = getattr(self, time_attr, None)
+            if val is not None:
+                setattr(self, time_attr, val / M_sec)
+        
+        freq_attrs = ['_f', 'flm']
+        for freq_attr in freq_attrs:
+            val = getattr(self, freq_attr, None)
+            if val is not None:
+                setattr(self, freq_attr, val * M_sec)
+        
+        for attr in ['hlm', 'dothlm', 'psi4lm']:
+            data = getattr(self, attr, None)
+            out = {}
+            for lm, modes in data.items():
+                z = modes['z'] * D_sec / M_sec
+                out[lm] = wf_ut.get_multipole_dict(z)
+            setattr(self, f'_{attr}', out)
+
+        if self.hp is not None and self.hc is not None:
+            self._hp = self.hp * D_sec / M_sec
+            self._hc = self.hc * D_sec / M_sec
+
+        self._units = "geom"
+        pass
+
+    def to_SI(self, M, distance):
+        """
+        Convert waveform and time/freqs to SI units from geom
+
+        Parameters
+        ----------
+        M : float 
+            total mass of the system in Solar masses
+        distance : float 
+            distance in Mpc
+        """
+        if self.units == "SI":
+            raise RuntimeError("Already using SI units!")
+
+        D_sec = distance * 1e6 * pc / c
+        M_sec = M * M_sun * G / c**3
+        
+        time_attrs = ['_u', '_t', 't_psi4', 'u_pc']
+        for time_attr in time_attrs:
+            val = getattr(self, time_attr, None)
+            if val is not None:
+                setattr(self, time_attr, val * M_sec)
+        
+        freq_attrs = ['_f', 'flm']
+        for freq_attr in freq_attrs:
+            val = getattr(self, freq_attr, None)
+            if val is not None:
+                setattr(self, freq_attr, val / M_sec)
+        
+        for attr in ['hlm', 'dothlm', 'psi4lm']:
+            data = getattr(self, attr, None)
+            out = {}
+            for lm, modes in data.items():
+                z = modes['z'] / D_sec * M_sec
+                out[lm] = wf_ut.get_multipole_dict(z)
+            setattr(self, f'_{attr}', out)
+
+        if self.hp is not None and self.hc is not None:
+            self._hp = self.hp / D_sec * M_sec
+            self._hc = self.hc / D_sec * M_sec
+
+        self._units = "SI"
+        pass
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
