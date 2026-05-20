@@ -17,6 +17,7 @@ pycbc>=2.4.0
 # gw-eccentricity>=1.0.4
 # mayawaves>=2024.4.25
 lalsuite>=7.22
+phenomxpy 
 
 # SXS catalog support (optional; needed for downloading SXS simulations)
 sxs>=2025.0
