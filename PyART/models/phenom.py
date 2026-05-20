@@ -1,5 +1,5 @@
-from ..waveform import Waveform
 import numpy as np
+from ..waveform import Waveform
 from PyART.utils.wf_utils import get_multipole_dict
 
 try:
@@ -44,14 +44,6 @@ class Waveform_IMRPhenomT(Waveform):
     # ---------------------------
     def _run(self):
         phenom = self._get_approximant()
-        self._run_TD(phenom)
-        # to expand for FD
-        pass        
-
-    # ---------------------------
-    # Time domain
-    # ---------------------------
-    def _run_TD(self, phenom):
 
         # Compute THM polarizations
         hp, hc, t = phenom.compute_polarizations(times=None)
@@ -76,23 +68,6 @@ class Waveform_IMRPhenomT(Waveform):
 
             self._hlm = hlm
         pass
-
-#    # ---------------------------
-#    # Frequency domain
-#    # ---------------------------
-#    def _run_FD(self, phen):
-#        # Creation time array
-#        #srate = self.pars["srate_interp"]
-#        #duration = self.pars.get("duration", 1.0)
-#        
-#        # Compute FD polarizations
-#        hpf, hcf, f = phen.compute_fd_polarizations(times=None)
-#
-#        #Calcolo HMs?
-#
-#        self._f = np.array(f)
-#        self._hp = np.array(hpf)
-#        self._hc = np.array(hcf)
 
 def CreateDict(
     q=1.,
