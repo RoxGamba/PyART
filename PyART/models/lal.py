@@ -28,13 +28,13 @@ class Waveform_LAL(Waveform):
         self.approx = approx
         self.lal_dict = self._eob_to_lal_dict()
         self._kind = kind
-        self._units = 'SI'
+        self._units = "SI"
         if self.kind == "FD":
             self.domain = "Freq"
         else:
             self.domain = "Time"
         self._run_lal()
-        
+
         pass
 
     def _eob_to_lal_dict(self):
@@ -414,4 +414,3 @@ class Waveform_LAL(Waveform):
         self._hp = hp.data.data
         self._hc = hc.data.data
         pass
-

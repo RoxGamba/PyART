@@ -3,7 +3,7 @@ from ..waveform import Waveform
 from PyART.utils.wf_utils import get_multipole_dict
 
 try:
-    from phenomxpy import IMRPhenomT,IMRPhenomTHM,IMRPhenomTP,IMRPhenomTPHM
+    from phenomxpy import IMRPhenomT, IMRPhenomTHM, IMRPhenomTP, IMRPhenomTPHM
 except ImportError:
     raise ImportError("WARNING: phenomxpy not installed.")
 
@@ -22,24 +22,25 @@ class Waveform_IMRPhenomT(Waveform):
         self.approx = approx
         self._run()
         pass
-    
+
     def _phenom_params(self):
         pp = self.pars
-        
-        for chi in ['chi1', 'chi2']:
-            for w in ['x', 'y', 'z']:
-                pp.setdefault(f'{chi}{w}', 0)
 
-        params = {'eta'     : pp['q']/(1+pp['q'])**2,
-                  's1'      : np.array([pp['chi1x'], pp['chi1y'], pp['chi1z']]),
-                  's2'      : np.array([pp['chi2x'], pp['chi2y'], pp['chi2z']]),
-                  'f_min'   : pp['initial_frequency'],
-                  'delta_t' : pp['dt'] if 'dt' in pp else 0.5,
-                 }
-        return params 
-    
+        for chi in ["chi1", "chi2"]:
+            for w in ["x", "y", "z"]:
+                pp.setdefault(f"{chi}{w}", 0)
+
+        params = {
+            "eta": pp["q"] / (1 + pp["q"]) ** 2,
+            "s1": np.array([pp["chi1x"], pp["chi1y"], pp["chi1z"]]),
+            "s2": np.array([pp["chi2x"], pp["chi2y"], pp["chi2z"]]),
+            "f_min": pp["initial_frequency"],
+            "delta_t": pp["dt"] if "dt" in pp else 0.5,
+        }
+        return params
+
     def _get_approximant(self):
-        params = self._phenom_params() 
+        params = self._phenom_params()
         if self.approx == "IMRPhenomT":
             return IMRPhenomT(**params)
 
@@ -60,25 +61,24 @@ class Waveform_IMRPhenomT(Waveform):
 
         # Compute THM polarizations
         hp, hc, t = phenom.compute_polarizations(times=None)
-        
-        self._u  = t
+
+        self._u = t
         self._hp = np.array(hp)
         self._hc = np.array(hc)
-        
+
         # Compute THM individual modes
-        if self.approx[-2:]=='HM':
-            if 'PhenomTP' in self.approx:
+        if self.approx[-2:] == "HM":
+            if "PhenomTP" in self.approx:
                 hlm_phen, tlm = phenom.compute_CPmodes(times=None)
             else:
                 hlm_phen, tlm = phenom.compute_hlms(times=None)
 
             hlm = {}
-            for ky in hlm_phen: # keys: '22', '21', etc.
+            for ky in hlm_phen:  # keys: '22', '21', etc.
                 l = int(ky[0])
                 m = int(ky[1:])
                 z = hlm_phen[ky]
-                hlm[(l,m)] = get_multipole_dict(z)
+                hlm[(l, m)] = get_multipole_dict(z)
 
             self._hlm = hlm
         pass
-
