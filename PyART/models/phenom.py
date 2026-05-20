@@ -14,34 +14,47 @@ class Waveform_IMRPhenomT(Waveform):
     """
 
     def __init__(self, pars=None, approx="IMRPhenomTHM"):
+        """
+        Pars as in Waveform_EOB class, the mapping is done internally
+        """
         super().__init__()
         self.pars = pars
         self.approx = approx
         self._run()
         pass
+    
+    def _phenom_params(self):
+        pp = self.pars
+        
+        for chi in ['chi1', 'chi2']:
+            for w in ['x', 'y', 'z']:
+                pp.setdefault(f'{chi}{w}', 0)
 
-    # ---------------------------
-    # Approximant selector
-    # ---------------------------
+        params = {'eta'     : pp['q']/(1+pp['q'])**2,
+                  's1'      : np.array([pp['chi1x'], pp['chi1y'], pp['chi1z']]),
+                  's2'      : np.array([pp['chi2x'], pp['chi2y'], pp['chi2z']]),
+                  'f_min'   : pp['initial_frequency'],
+                  'delta_t' : pp['dt'] if 'dt' in pp else 0.5,
+                 }
+        return params 
+    
     def _get_approximant(self):
+        params = self._phenom_params() 
         if self.approx == "IMRPhenomT":
-            return IMRPhenomT(**self.pars)
+            return IMRPhenomT(**params)
 
         elif self.approx == "IMRPhenomTHM":
-            return IMRPhenomTHM(**self.pars)
+            return IMRPhenomTHM(**params)
 
         elif self.approx == "IMRPhenomTP":
-            return IMRPhenomTP(**self.pars)
+            return IMRPhenomTP(**params)
 
         elif self.approx == "IMRPhenomTPHM":
-            return IMRPhenomTPHM(**self.pars)
+            return IMRPhenomTPHM(**params)
 
         else:
             raise ValueError("Unknown approximant")
 
-    # ---------------------------
-    # Main dispatcher
-    # ---------------------------
     def _run(self):
         phenom = self._get_approximant()
 
@@ -68,55 +81,4 @@ class Waveform_IMRPhenomT(Waveform):
 
             self._hlm = hlm
         pass
-
-def CreateDict(
-    q=1.,
-    chi1z=0.,
-    chi2z=0.,
-    chi1x=0.,
-    chi2x=0.,
-    chi1y=0.,
-    chi2y=0.,
-    f0=0.0035,
-    dt=0.5,
-):
-    """
-    Create the dictionary of parameters for IMRPhenomT (geom units)
-    
-    Parameters
-    ----------
-    q : float
-        Mass ratio m1/m2 >= 1. Default is 1.
-    chi1z : float
-        Dimensionless spin of the primary along the orbital angular momentum.
-        Default is 0.0.
-    chi2z : float
-        Dimensionless spin of the secondary along the orbital angular momentum.
-        Default is 0.0.
-    chi1x : float
-        Dimensionless spin of the primary in the orbital plane (x-component).
-        Default is 0.0.
-    chi2x : float
-        Dimensionless spin of the secondary in the orbital plane (x-component).
-        Default is 0.0.
-    chi1y : float
-        Dimensionless spin of the primary in the orbital plane (y-component).
-        Default is 0.0.
-    chi2y : float
-        Dimensionless spin of the secondary in the orbital plane (y-component).
-        Default is 0.0.
-    f0 : float
-        Starting frequency of the (2,2) mode in geometric units. Default is 0.0035.
-    dt : float
-        Time step in seconds. Default is 0.5
-    """
-    pars = {
-        "eta"     : q/(1+q)**2, 
-        "s1"      : [chi1x,chi1y,chi1z],
-        "s2"      : [chi2x,chi2y,chi2z],
-        "f_min"   : f0,
-        "delta_t" : dt,
-    }
-    return pars
-
 
