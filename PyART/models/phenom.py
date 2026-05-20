@@ -20,7 +20,7 @@ class Waveform_IMRPhenomT(Waveform):
         super().__init__()
         self.pars = pars
         self.approx = approx
-        self.domain = 'Time'
+        self.domain = "Time"
         self._run()
         pass
 
