@@ -98,7 +98,6 @@ class Waveform(object):
         # check if factor is a number
         if not isinstance(factor, numbers.Real):
             return NotImplemented
-        #new_wf = copy.deepcopy(self)
         new_wf = copy.copy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=factor)
 
@@ -118,7 +117,6 @@ class Waveform(object):
         if not isinstance(factor, numbers.Real):
             return NotImplemented
 
-        #new_wf = copy.deepcopy(self)
         new_wf = copy.copy(self)
         new_wf.__multiply_by__(var=["hlm", "dothlm", "psi4lm"], factor=1 / factor)
 
