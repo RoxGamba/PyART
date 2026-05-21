@@ -33,8 +33,8 @@ class Waveform_IMRPhenomT(Waveform):
 
         params = {
             "eta": pp["q"] / (1 + pp["q"]) ** 2,
-            "s1": np.array([pp["chi1x"], pp["chi1y"], pp["chi1z"]]),
-            "s2": np.array([pp["chi2x"], pp["chi2y"], pp["chi2z"]]),
+            "s1": [pp["chi1x"], pp["chi1y"], pp["chi1z"]],
+            "s2": [pp["chi2x"], pp["chi2y"], pp["chi2z"]],
             "f_min": pp["initial_frequency"],
             "delta_t": pp["dt"] if "dt" in pp else 0.5,
         }

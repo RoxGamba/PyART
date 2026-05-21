@@ -17,7 +17,8 @@ pycbc>=2.4.0
 # gw-eccentricity>=1.0.4
 # mayawaves>=2024.4.25
 lalsuite>=7.22
-phenomxpy @ git+https://gitlab.com/imrphenom-dev/phenomxpy.git@f4a6800710cb3f400057c8a2302af51402d05b23
+phenomxpy
+#phenomxpy @ git+https://gitlab.com/imrphenom-dev/phenomxpy.git@f4a6800710cb3f400057c8a2302af51402d05b23
 
 # SXS catalog support (optional; needed for downloading SXS simulations)
 sxs>=2025.0
