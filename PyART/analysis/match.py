@@ -164,8 +164,8 @@ class Matcher(object):
             self.settings["initial_frequency_mm"] = f0_postmrg
 
         # Get local objects with TimeSeries
-        wf1 = self._wave2locobj(WaveForm1, isgeom=self.settings['geom'])
-        wf2 = self._wave2locobj(WaveForm2, isgeom=self.settings['geom'])
+        wf1 = self._wave2locobj(WaveForm1, isgeom=self.settings["geom"])
+        wf2 = self._wave2locobj(WaveForm2, isgeom=self.settings["geom"])
 
         # Determine time length for resizing
         self.settings["tlen"] = self._find_tlen(
@@ -642,20 +642,21 @@ class Matcher(object):
                 settings["final_frequency_mm"],
                 len(h1),
             )
-            #plt.plot(freq, hf1.data * np.conjugate(hf2.data), color="red")
+            # plt.plot(freq, hf1.data * np.conjugate(hf2.data), color="red")
         from astropy.constants import G, c, M_sun, pc
-        distance = 1.
-        M = settings['M']
+
+        distance = 1.0
+        M = settings["M"]
         D_sec = distance * 1e6 * pc.value / c.value
         M_sec = M * M_sun.value * G.value / c.value**3
 
         for i in FT_panels:
             plt.subplot(figm, fign, i)
             plt.title("Fourier transforms (abs value)")
-            plt.plot(f1, Af1/D_sec*M_sec, c="blue", label="FT h1")
-            plt.plot(f2, Af2/D_sec*M_sec, c="green", label="FT h2")
+            plt.plot(f1, Af1 / D_sec * M_sec, c="blue", label="FT h1")
+            plt.plot(f2, Af2 / D_sec * M_sec, c="green", label="FT h2")
             freqs = psd.sample_frequencies
-            plt.plot(freqs, np.sqrt(psd.data*freqs), 'k--')
+            plt.plot(freqs, np.sqrt(psd.data * freqs), "k--")
 
             plt.axvline(settings["initial_frequency_mm"], lw=0.8, c="r")
             plt.axvline(settings["final_frequency_mm"], lw=0.8, c="r")

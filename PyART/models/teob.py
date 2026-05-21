@@ -9,8 +9,9 @@ try:
 except ModuleNotFoundError:
     print("WARNING: TEOBResumS not installed.")
 
-from ..waveform       import Waveform
+from ..waveform import Waveform
 from ..utils.wf_utils import get_multipole_dict
+
 
 class Waveform_EOB(Waveform):
     """
@@ -25,7 +26,7 @@ class Waveform_EOB(Waveform):
         self.pars = pars
         self._kind = "EOB"
 
-        if self.pars['use_geometric_units']=='yes':
+        if self.pars["use_geometric_units"] == "yes":
             self._units = "geom"
         else:
             self._units = "SI"
@@ -58,7 +59,7 @@ class Waveform_EOB(Waveform):
         if self.pars["domain"]:
             f, rhp, ihp, rhc, ihc, hflm, dyn, _ = EOB.EOBRunPy(self.pars)
             self._f = f
-            #self._hlm = hflm
+            # self._hlm = hflm
             hflm_conv = convert_hlm(hflm)
             self._hlm = hflm_conv
             self._dyn = dyn
@@ -113,15 +114,15 @@ def convert_hlm(hlm):
             emm = wfu.k_to_emm(int(key))
         A = hlm[key][0]
         p = hlm[key][1]
-        z =  A * np.exp(-1j * p)
-        hlm_conv[(ell,emm)] = get_multipole_dict(z)
-#        hlm_conv[(ell, emm)] = {
-#            "real": A * np.cos(p),
-#            "imag": -1 * A * np.sin(p),
-#            "A": A,
-#            "p": p,
-#            "z": A * np.exp(-1j * p),
-#        }
+        z = A * np.exp(-1j * p)
+        hlm_conv[(ell, emm)] = get_multipole_dict(z)
+    #        hlm_conv[(ell, emm)] = {
+    #            "real": A * np.cos(p),
+    #            "imag": -1 * A * np.sin(p),
+    #            "A": A,
+    #            "p": p,
+    #            "z": A * np.exp(-1j * p),
+    #        }
     return hlm_conv
 
 
