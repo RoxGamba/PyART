@@ -32,7 +32,7 @@ class Waveform_GRAHyp(Waveform):
         self.path = path
         self.ID = ID
         self.sim_path = os.path.join(self.path, "BBH_GRAHYP_" + self.ID)
-        self.domain = "Time"
+        self._domain = "Time"
         self._kind = "GRAHYP"
         self.nu_rescale = nu_rescale
 

@@ -30,9 +30,9 @@ class Waveform_LAL(Waveform):
         self._kind = kind
         self._units = "SI"
         if self.kind == "FD":
-            self.domain = "Freq"
+            self._domain = "Freq"
         else:
-            self.domain = "Time"
+            self._domain = "Time"
         self._run_lal()
 
         pass

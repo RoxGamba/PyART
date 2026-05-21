@@ -42,7 +42,8 @@ class Waveform(object):
         self._psi4lm = {}
         self._dyn = {}
         self._kind = None
-        self._units = "geom"
+        self._units  = None
+        self._domain = None
         pass
 
     @property
@@ -92,6 +93,10 @@ class Waveform(object):
     @property
     def units(self):
         return self._units
+    
+    @property
+    def domain(self):
+        return self._domain
 
     # define multiplication and division by a factor
     # both methods return a new waveform object, without modifying the original one
@@ -568,7 +573,7 @@ class Waveform(object):
 
         self._f, self._hp = ut.fft(self.hp, dt)
         self._f, self._hc = ut.fft(self.hc, dt)
-        self._domain = "Frequency"
+        self._domain = "Freq"
         pass
 
     def to_time(self):
@@ -679,18 +684,23 @@ class Waveform(object):
             val = getattr(self, freq_attr, None)
             if val is not None:
                 setattr(self, freq_attr, val * M_sec)
+       
+        if self.domain=="Time":
+            fact = D_sec/M_sec
+        else:
+            fact = D_sec/M_sec**2
 
         for attr in ["hlm", "dothlm", "psi4lm"]:
             data = getattr(self, attr, None)
             out = {}
             for lm, modes in data.items():
-                z = modes["z"] * D_sec / M_sec
+                z = modes["z"] * fact
                 out[lm] = wf_ut.get_multipole_dict(z)
             setattr(self, f"_{attr}", out)
 
         if self.hp is not None and self.hc is not None:
-            self._hp = self.hp * D_sec / M_sec
-            self._hc = self.hc * D_sec / M_sec
+            self._hp = self.hp * fact 
+            self._hc = self.hc * fact
 
         self._units = "geom"
         pass
@@ -723,18 +733,23 @@ class Waveform(object):
             val = getattr(self, freq_attr, None)
             if val is not None:
                 setattr(self, freq_attr, val / M_sec)
+        
+        if self.domain=="Time":
+            fact = M_sec/D_sec
+        else:
+            fact = M_sec**2/D_sec
 
         for attr in ["hlm", "dothlm", "psi4lm"]:
             data = getattr(self, attr, None)
             out = {}
             for lm, modes in data.items():
-                z = modes["z"] / D_sec * M_sec
+                z = modes["z"] * fact 
                 out[lm] = wf_ut.get_multipole_dict(z)
             setattr(self, f"_{attr}", out)
 
         if self.hp is not None and self.hc is not None:
-            self._hp = self.hp / D_sec * M_sec
-            self._hc = self.hc / D_sec * M_sec
+            self._hp = self.hp * fact 
+            self._hc = self.hc * fact
 
         self._units = "SI"
         pass

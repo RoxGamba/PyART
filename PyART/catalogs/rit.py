@@ -71,7 +71,7 @@ class Waveform_RIT(Waveform):
         self.ell_emms = ell_emms
         self.metadata = None
         self.metadata_psi4 = None
-        self.domain = "Time"
+        self._domain = "Time"
         self.nu_rescale = nu_rescale
         self.shorten_rng = shorten_rng
 

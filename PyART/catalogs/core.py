@@ -107,7 +107,7 @@ class Waveform_CoRe(Waveform):
         self.ell_emms = ell_emms
         self.core_data_path = os.path.join(path, ID)
         self.metadata = None
-        self.domain = "Time"
+        self._domain = "Time"
         self.nu_rescale = nu_rescale
 
         if os.path.exists(self.core_data_path) == False:

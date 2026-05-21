@@ -35,7 +35,7 @@ class Waveform_ICC(Waveform):
         self.path = path
         self.ID = ID
         self.sim_path = os.path.join(self.path, "ICC_BBH_" + self.ID)
-        self.domain = "Time"
+        self._domain = "Time"
         self._kind = "ICC"
         self.ellmax = ellmax
         self.tmax_after_peak = tmax_after_peak

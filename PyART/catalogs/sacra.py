@@ -75,7 +75,7 @@ class Waveform_SACRA(Waveform):
         self.path = path
         self.nu_rescale = nu_rescale
         self.cut_final = cut_final
-        self.domain = "Time"
+        self._domain = "Time"
 
         self.load_metadata()
         self.load_hlm()
