@@ -13,7 +13,7 @@ class Waveform_IMRPhenomT(Waveform):
     Interface for IMRPhenomT via phenomxpy
     """
 
-    def __init__(self, pars=None, approx="IMRPhenomTHM"):
+    def __init__(self, pars=None, approx="IMRPhenomTHM", reference_frame='CP'):
         """
         Pars as in Waveform_EOB class, the mapping is done internally
         """
@@ -21,6 +21,7 @@ class Waveform_IMRPhenomT(Waveform):
         self.pars = pars
         self.approx = approx
         self._domain = "Time"
+        self.reference_frame = reference_frame
         self._run()
         pass
 
@@ -70,7 +71,14 @@ class Waveform_IMRPhenomT(Waveform):
         # Compute THM individual modes
         if self.approx[-2:] == "HM":
             if "PhenomTP" in self.approx:
-                hlm_phen, tlm = phenom.compute_CPmodes(times=None)
+                if self.reference_frame=='CP': # co-precessing
+                    hlm_phen, tlm = phenom.compute_CPmodes(times=None)
+                elif self.reference_frame=='J': # J-frame
+                    hlm_phen, tlm = phenom.compute_Jmodes(times=None)
+                elif self.reference_frame=='L0': # L0-frame
+                    hlm_phen, tlm = phenom.compute_L0modes(times=None)
+                else:
+                    raise ValueError(f'Unknown reference frame: {self.reference_frame}')
             else:
                 hlm_phen, tlm = phenom.compute_hlms(times=None)
 
