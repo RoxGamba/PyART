@@ -166,7 +166,6 @@ class Matcher(object):
         # Get local objects with TimeSeries
         wf1 = self._wave2locobj(WaveForm1, isgeom=self.settings["geom"])
         wf2 = self._wave2locobj(WaveForm2, isgeom=self.settings["geom"])
-        
 
         # Determine time length for resizing
         self.settings["tlen"] = self._find_tlen(
@@ -447,7 +446,6 @@ class Matcher(object):
 
         h1_nc = self._get_single_mode_nc(wf1, settings)
         h2_nc = self._get_single_mode_nc(wf2, settings)
-        
 
         Mref = settings["M"]
 
@@ -489,11 +487,11 @@ class Matcher(object):
                 settings["final_frequency_mm"] = h1f.sample_frequencies[j_f]
 
         assert len(h1f) == len(h2f)
-        df   = h1f.delta_f
-        flen = len(h1f) 
-        psd  = self._get_psd(flen, df, settings["initial_frequency_mm"])
-        assert len(psd.data) == len(h1f)
-
+        df = h1f.delta_f
+        flen = len(h1f)
+        psd = self._get_psd(flen, df, settings["initial_frequency_mm"])
+        assert len(h1f) == len(psd)
+        
         m, j_shift, ph_shift = optimized_match(
             h1f,
             h2f,
@@ -541,7 +539,7 @@ class Matcher(object):
         tap_times_w2=None,
         six_panels=False,
         mm=None,
-        Nmax_plot = 50000,
+        Nmax_plot=50000,
     ):
         """
         Plot waveforms and PSD for debugging.
@@ -568,15 +566,15 @@ class Matcher(object):
             If True, create a six-panel plot (default is False).
         mm : float, optional
             Mismatch value to display in the plot title (default is None).
-        Nmax_plot : 
+        Nmax_plot :
             Max number of points in plot (downsample if arrays are longer)
         """
 
         hf1 = h1.to_frequencyseries()
-        f1  = hf1.get_sample_frequencies()
+        f1 = hf1.get_sample_frequencies()
         hf2 = h2.to_frequencyseries()
-        f2  = hf2.get_sample_frequencies()
-        
+        f2 = hf2.get_sample_frequencies()
+
         Af1 = np.abs(hf1)
         Af2 = np.abs(hf2)
 
@@ -590,7 +588,7 @@ class Matcher(object):
             fign = 2
             figsize = (10, 7)
             FT_panels = [3, 4]
-        
+
         Ns = max(1, len(h1_nc) // Nmax_plot)
 
         plt.figure(figsize=figsize)
@@ -616,7 +614,13 @@ class Matcher(object):
         plt.subplot(figm, fign, 2)
         plt.title("Real part of waveforms after conditioning")
         plt.plot(h1.sample_times[::Ns], h1[::Ns], label="h1 conditioned", color="blue")
-        plt.plot(h2.sample_times[::Ns], h2[::Ns], label="h2 conditioned", color="green", ls="--")
+        plt.plot(
+            h2.sample_times[::Ns],
+            h2[::Ns],
+            label="h2 conditioned",
+            color="green",
+            ls="--",
+        )
         if tap_times_w1 is not None:
             t1 = tap_times_w1["t1"]
             t2 = tap_times_w1["t2"]
@@ -659,9 +663,9 @@ class Matcher(object):
             plt.title("Fourier transforms (abs value)")
             plt.plot(f1[::Ns], Af1[::Ns], c="blue", label="FT h1")
             plt.plot(f2[::Ns], Af2[::Ns], c="green", label="FT h2")
-            #plt.plot(f1, Af1 / D_sec * M_sec, c="blue", label="FT h1")
-            #plt.plot(f2, Af2 / D_sec * M_sec, c="green", label="FT h2")
-            #if settings['psd'] in ['LISA','aLIGOZeroDetHighPower']:
+            # plt.plot(f1, Af1 / D_sec * M_sec, c="blue", label="FT h1")
+            # plt.plot(f2, Af2 / D_sec * M_sec, c="green", label="FT h2")
+            # if settings['psd'] in ['LISA','aLIGOZeroDetHighPower']:
             #    freqs = psd.sample_frequencies
             #    plt.plot(freqs, np.sqrt(psd.data * freqs), "k--")
 
@@ -674,7 +678,7 @@ class Matcher(object):
                 plt.xscale("log")
         if mm is not None:
             plt.subplot(figm, fign, 1)
-            M = self.settings['M']
+            M = self.settings["M"]
             plt.title(f"mismatch: {mm:.3e} for $M={M:.1f} M_\\odot$")
         plt.tight_layout()
         if "save" not in settings.keys():
