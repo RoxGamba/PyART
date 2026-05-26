@@ -120,7 +120,7 @@ mm = masses * 0.0
 t0 = time.perf_counter()
 for i, M in enumerate(masses):
     if args.f1 is None:
-        f0_mm = 1.25 * f0 / (M * ut.consts['Msun'])
+        f0_mm = 1.25 * f0 / (M * ut.consts["Msun"])
     else:
         f0_mm = args.f1
     matcher = Matcher(
