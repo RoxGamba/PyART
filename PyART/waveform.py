@@ -19,6 +19,7 @@ from .utils import load_nr_utils as nr_ut
 
 from .analysis.integrate_wave import IntegrateMultipole
 
+
 class Waveform(object):
     """
     Parent class to handle waveforms
@@ -668,10 +669,10 @@ class Waveform(object):
         if self.units == "geom":
             raise RuntimeError("Already using geom units!")
 
-        #D_sec = distance * 1e6 * pc.value / c.value
-        #M_sec = M * M_sun.value * G.value / c.value**3
-        D_sec = distance * ut.consts['DMpc']
-        M_sec = M * ut.consts['Msun']
+        # D_sec = distance * 1e6 * pc.value / c.value
+        # M_sec = M * M_sun.value * G.value / c.value**3
+        D_sec = distance * ut.consts["DMpc"]
+        M_sec = M * ut.consts["Msun"]
 
         time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
         for time_attr in time_attrs:
@@ -719,10 +720,10 @@ class Waveform(object):
         if self.units == "SI":
             raise RuntimeError("Already using SI units!")
 
-        #D_sec = distance * 1e6 * pc.value / c.value
-        #M_sec = M * M_sun.value * G.value / c.value**3
-        D_sec = distance * ut.consts['DMpc']
-        M_sec = M * ut.consts['Msun']
+        # D_sec = distance * 1e6 * pc.value / c.value
+        # M_sec = M * M_sun.value * G.value / c.value**3
+        D_sec = distance * ut.consts["DMpc"]
+        M_sec = M * ut.consts["Msun"]
 
         time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
         for time_attr in time_attrs:
