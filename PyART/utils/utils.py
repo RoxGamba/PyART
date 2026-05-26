@@ -7,11 +7,14 @@ from scipy.signal.windows import tukey
 from math import factorial as fact
 from math import ceil
 import matplotlib.pyplot as plt
-from astropy.constants import G, c, M_sun
 
-Msun = G.value * M_sun.value / (c.value**3)  # Solar mass
 ## Misc
-
+consts = {'G_SI'    : 6.67429999999999937900e-11,
+          'c_SI'    : 299792458.,
+          'pc_SI'   : 3.08567758149136720000e+16,
+          'Msun_SI' : 1.98840987069805095916e+30}
+consts['Msun'] = consts['G_SI'] * consts['Msun_SI'] / consts['c_SI']**3
+consts['DMpc'] = 1e6 * consts['pc_SI'] / consts['c_SI']
 
 def rotate3_axis(vector, theta=0.0, axis=[0, 0, 1]):
     """

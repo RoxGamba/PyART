@@ -160,7 +160,7 @@ class Matcher(object):
             p1 = WaveForm1.hlm[mode]["p"]
             Omg1 = np.abs(np.gradient(p1, WaveForm1.u))
             Omg10_postmrg = Omg1[i_mrg]
-            f0_postmrg = Omg10_postmrg / (self.settings["M"] * ut.Msun * 2 * np.pi)
+            f0_postmrg = Omg10_postmrg / (self.settings["M"] * ut.consts['Msun'] * 2 * np.pi)
             self.settings["initial_frequency_mm"] = f0_postmrg
 
         # Get local objects with TimeSeries
@@ -279,7 +279,7 @@ class Matcher(object):
         new_u = None
         if isgeom:
             M = self.settings["M"]
-            dT_resc = dT / (M * ut.Msun)
+            dT_resc = dT / (M * ut.consts['Msun'])
             new_u = np.arange(u[0], u[-1], dT_resc)
             hp = ut.spline(u, hp, new_u, kind=kind)
             hc = ut.spline(u, hc, new_u, kind=kind)
@@ -492,7 +492,8 @@ class Matcher(object):
         df   = h1f.delta_f
         flen = len(h1f) 
         psd  = self._get_psd(flen, df, settings["initial_frequency_mm"])
-        
+        assert len(psd.data) == len(h1f)
+
         m, j_shift, ph_shift = optimized_match(
             h1f,
             h2f,
