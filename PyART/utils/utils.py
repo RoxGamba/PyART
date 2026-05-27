@@ -191,7 +191,7 @@ def safe_sigmoid(x, alpha, clip=None):
 
 
 def taper_waveform(
-    t, h, t1=None, t2=None, alpha=0.2, alpha_end=None, kind="sigmoid", debug=False
+    t, h, t1=None, t2=None, alpha=0.2, alpha_end=None, kind="sigmoid", debug=False, norm_alpha=False,
 ):
     """
     Waveform tapering in Matcher-class.
@@ -215,21 +215,31 @@ def taper_waveform(
         tapering method, can be 'sigmoid' or 'tukey' (default: 'sigmoid')
     debug: bool
         if True, plot the tapering window
+    norm_alpha: bool
+        if True, normalize alpha(s) with t1 or t2
+
     Returns
     -------
     out: array-like
         tapered strain
     """
+    
     if kind is None:
         return h
-
+    
     elif kind == "sigmoid":
         if alpha_end is None:
             alpha_end = alpha
         window = np.ones_like(h)
+        
         if t1 is not None:
+            if norm_alpha:
+                alpha *= 1/(t[-1]-t[0])
             window *= safe_sigmoid(t - t1, alpha=alpha, clip=50)
+        
         if t2 is not None:
+            if norm_alpha:
+                alpha_end *= 1/(t[-1]-t[0])
             window *= safe_sigmoid(t2 - t, alpha=alpha_end, clip=50)
 
     elif kind == "tukey":
