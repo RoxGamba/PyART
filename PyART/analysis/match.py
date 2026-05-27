@@ -355,7 +355,7 @@ class Matcher(object):
             "taper_end": None,  # parameter for sigmoid or tukey window
             "taper_alpha": 0.5,  # alpha parameter for sigmoid or tukey (will be M-normalized)
             "taper_alpha_end": None,  # if specified, use this alpha for the end (only with sigmoid)
-            "norm_alpha" : False,
+            "norm_alpha": False,
             "resize_factor": 4,
             "debug": False,
             "geom": True,
@@ -498,7 +498,7 @@ class Matcher(object):
         flen = len(h1f)
         psd = self._get_psd(flen, df, settings["initial_frequency_mm"])
         assert len(h1f) == len(psd)
-        
+
         m, j_shift, ph_shift = optimized_match(
             h1f,
             h2f,
@@ -938,7 +938,7 @@ def condition_td_waveform(h_in, settings, return_tap_times=False, mrg_idx=None):
             alpha=alpha_M,
             alpha_end=alpha_end_M,
             kind=settings["taper"],
-            norm_alpha=settings["norm_alpha"]
+            norm_alpha=settings["norm_alpha"],
         )
     else:
         t1 = None
