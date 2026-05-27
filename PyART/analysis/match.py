@@ -243,8 +243,8 @@ class Matcher(object):
                 try:
                     umrg, _, _, _ = WaveForm.find_max()
                 except:
-                    logging.warning('merger time not found! Using u[-1]-2') 
-                    umrg = wf.u[-1]-2
+                    logging.warning("merger time not found! Using u[-1]-2")
+                    umrg = wf.u[-1] - 2
                 C = wf.u[0]
                 D = wf.u[-1]
                 A = WaveForm.u[0]
@@ -497,7 +497,7 @@ class Matcher(object):
         flen = len(h1f)
         psd = self._get_psd(flen, df, settings["initial_frequency_mm"])
         assert len(h1f) == len(psd)
-        
+
         m, j_shift, ph_shift = optimized_match(
             h1f,
             h2f,
