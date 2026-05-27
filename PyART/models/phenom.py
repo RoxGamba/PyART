@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 from ..waveform import Waveform
 from PyART.utils.wf_utils import get_multipole_dict
 
@@ -37,8 +38,14 @@ class Waveform_IMRPhenomT(Waveform):
             "s1": [pp["chi1x"], pp["chi1y"], pp["chi1z"]],
             "s2": [pp["chi2x"], pp["chi2y"], pp["chi2z"]],
             "f_min": pp["initial_frequency"],
-            "delta_t": pp["dt"] if "dt" in pp else 0.5,
         }
+        if "f_max" in pp:
+            if "dt" in pp:
+                logging.warning('If f_max is provided, dt is ignored')
+            params["f_max"] = pp["f_max"]
+            params["delta_t"] = 0.5/pp["f_max"]
+        else:
+            params["delta_t"] = pp["dt"] if "dt" in pp else 0.5
         return params
 
     def _get_approximant(self):
