@@ -41,9 +41,9 @@ class Waveform_IMRPhenomT(Waveform):
         }
         if "f_max" in pp:
             if "dt" in pp:
-                logging.warning('If f_max is provided, dt is ignored')
+                logging.warning("If f_max is provided, dt is ignored")
             params["f_max"] = pp["f_max"]
-            params["delta_t"] = 0.5/pp["f_max"]
+            params["delta_t"] = 0.5 / pp["f_max"]
         else:
             params["delta_t"] = pp["dt"] if "dt" in pp else 0.5
         return params
