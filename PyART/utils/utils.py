@@ -773,7 +773,7 @@ def D02(xp, yp, pad=True):
     return dyp
 
 
-def D1(f, x, order):
+def D1(f, x, order=4, uniform_check=True):
     """
     Computes the first derivative of function f(x)
 
@@ -783,14 +783,23 @@ def D1(f, x, order):
        uniformly sampled function
     x : float (list/numpy array of)
        uniformly sampled function domain or grid spacing
-    order : int
-       finite differencing order
-
+    order : int, optional
+       finite differencing order (default is 4)
+    uniform_check: bool, optional
+       check that the arrayr has uniform spacing
+       (default is true)
+    
     Returns
     -------
     df : list (or numpy array)
        finite differences at given order
     """
+    
+    if uniform_check:
+        dx = np.diff(x)
+        is_constant = np.allclose(dx, dx[0])
+        if not is_constant:
+            raise RuntimeError('Array not uniformly spaced')
 
     df = np.zeros_like(f)
 
