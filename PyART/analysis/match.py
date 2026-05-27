@@ -243,8 +243,8 @@ class Matcher(object):
                 try:
                     umrg, _, _, _ = WaveForm.find_max()
                 except:
-                    logging.warning("merger time not found! Using u[-1]-2")
-                    umrg = wf.u[-1] - 2
+                    logging.warning("merger time not found! Using u[-10]")
+                    umrg = wf.u[-10]
                 C = wf.u[0]
                 D = wf.u[-1]
                 A = WaveForm.u[0]
