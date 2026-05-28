@@ -14,7 +14,9 @@ class Waveform_IMRPhenomT(Waveform):
     Interface for IMRPhenomT via phenomxpy
     """
 
-    def __init__(self, pars=None, approx="IMRPhenomTHM", reference_frame="CP", skip_hphc=False):
+    def __init__(
+        self, pars=None, approx="IMRPhenomTHM", reference_frame="CP", skip_hphc=False
+    ):
         """
         Pars as in Waveform_EOB class, the mapping is done internally
         """
@@ -71,7 +73,7 @@ class Waveform_IMRPhenomT(Waveform):
         # Compute THM polarizations
         if skip_hphc:
             if "HM" not in self.approx:
-                raise RuntimeError('Skipping hp,hc computation but no HMs available!')
+                raise RuntimeError("Skipping hp,hc computation but no HMs available!")
         else:
             hp, hc, t = phenom.compute_polarizations(times=None)
             self._u = t
