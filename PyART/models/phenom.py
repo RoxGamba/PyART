@@ -14,7 +14,7 @@ class Waveform_IMRPhenomT(Waveform):
     Interface for IMRPhenomT via phenomxpy
     """
 
-    def __init__(self, pars=None, approx="IMRPhenomTHM", reference_frame="CP"):
+    def __init__(self, pars=None, approx="IMRPhenomTHM", reference_frame="CP", skip_hphc=False):
         """
         Pars as in Waveform_EOB class, the mapping is done internally
         """
@@ -23,7 +23,7 @@ class Waveform_IMRPhenomT(Waveform):
         self.approx = approx
         self._domain = "Time"
         self.reference_frame = reference_frame
-        self._run()
+        self._run(skip_hphc=skip_hphc)
         pass
 
     def _phenom_params(self):
@@ -65,15 +65,18 @@ class Waveform_IMRPhenomT(Waveform):
         else:
             raise ValueError("Unknown approximant")
 
-    def _run(self):
+    def _run(self, skip_hphc=False):
         phenom = self._get_approximant()
 
         # Compute THM polarizations
-        hp, hc, t = phenom.compute_polarizations(times=None)
-
-        self._u = t
-        self._hp = np.array(hp)
-        self._hc = np.array(hc)
+        if skip_hphc:
+            if "HM" not in self.approx:
+                raise RuntimeError('Skipping hp,hc computation but no HMs available!')
+        else:
+            hp, hc, t = phenom.compute_polarizations(times=None)
+            self._u = t
+            self._hp = np.array(hp)
+            self._hc = np.array(hc)
 
         # Compute THM individual modes
         if self.approx[-2:] == "HM":
@@ -96,5 +99,7 @@ class Waveform_IMRPhenomT(Waveform):
                 z = hlm_phen[ky]
                 hlm[(l, m)] = get_multipole_dict(z)
 
+            if skip_hphc:
+                self._u = tlm
             self._hlm = hlm
         pass
