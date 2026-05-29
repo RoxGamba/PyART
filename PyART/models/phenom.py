@@ -1,13 +1,12 @@
 import numpy as np
 import logging
 from ..waveform import Waveform
-from PyART.utils.wf_utils import get_multipole_dict
+from PyART.utils.wf_utils import get_multipole_dict, k_to_ell, k_to_emm
 
 try:
     from phenomxpy import IMRPhenomT, IMRPhenomTHM, IMRPhenomTP, IMRPhenomTPHM
 except ImportError:
     raise ImportError("WARNING: phenomxpy not installed.")
-
 
 class Waveform_IMRPhenomT(Waveform):
     """
@@ -15,7 +14,11 @@ class Waveform_IMRPhenomT(Waveform):
     """
 
     def __init__(
-        self, pars=None, approx="IMRPhenomTHM", reference_frame="CP", skip_hphc=False
+        self, 
+        pars=None, 
+        approx="IMRPhenomTHM", 
+        reference_frame="CP", 
+        skip_hphc=False,
     ):
         """
         Pars as in Waveform_EOB class, the mapping is done internally
@@ -48,10 +51,21 @@ class Waveform_IMRPhenomT(Waveform):
             params["delta_t"] = 0.5 / pp["f_max"]
         else:
             params["delta_t"] = pp["dt"] if "dt" in pp else 0.5
+
+        # modes selection:
+        if "mode_array" in pp:
+            mode_array = pp["mode_array"]
+        elif "use_mode_lm" in pp:
+            mode_array = []
+            for k in pp["use_mode_lm"]:
+                mode_array.append((k_to_ell(k),k_to_emm(k)))
+        else:
+            mode_array = [(2,2)]
+        params["mode_array"] = mode_array
+            
         return params
 
-    def _get_approximant(self):
-        params = self._phenom_params()
+    def _get_approximant(self, params):
         if self.approx == "IMRPhenomT":
             return IMRPhenomT(**params)
 
@@ -68,7 +82,8 @@ class Waveform_IMRPhenomT(Waveform):
             raise ValueError("Unknown approximant")
 
     def _run(self, skip_hphc=False):
-        phenom = self._get_approximant()
+        params = self._phenom_params()
+        phenom = self._get_approximant(params)
 
         # Compute THM polarizations
         if skip_hphc:
@@ -93,13 +108,19 @@ class Waveform_IMRPhenomT(Waveform):
                     raise ValueError(f"Unknown reference frame: {self.reference_frame}")
             else:
                 hlm_phen, tlm = phenom.compute_hlms(times=None)
-
+            
             hlm = {}
-            for ky in hlm_phen:  # keys: '22', '21', etc.
-                l = int(ky[0])
-                m = int(ky[1:])
-                z = hlm_phen[ky]
-                hlm[(l, m)] = get_multipole_dict(z)
+            for ky in params["mode_array"]:
+                # looping on mode_array since phenom automatically removes 
+                # odd-m modes for q=1., but we prefer to have zero arrays
+                l = ky[0]
+                m = ky[1]
+                kys = f'{l:d}{m:d}'
+                if kys in hlm_phen:
+                    z = hlm_phen[kys]
+                else:
+                    z = np.zeros_like(tlm)
+                hlm[(l,m)] = get_multipole_dict(z)
 
             if skip_hphc:
                 self._u = tlm

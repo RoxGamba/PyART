@@ -10,7 +10,7 @@ except ModuleNotFoundError:
     print("WARNING: TEOBResumS not installed.")
 
 from ..waveform import Waveform
-from ..utils.wf_utils import get_multipole_dict
+from ..utils.wf_utils import get_multipole_dict, mode_to_k
 
 
 class Waveform_EOB(Waveform):
@@ -120,17 +120,15 @@ def convert_hlm(hlm):
 
 
 # external function for dict creation
-
-
 def CreateDict(
     M=1.0,
     q=1,
     chi1z=0.0,
-    chi2z=0,
+    chi2z=0.0,
     chi1x=0.0,
-    chi2x=0,
+    chi2x=0.0,
     chi1y=0.0,
-    chi2y=0,
+    chi2y=0.0,
     LambdaAl2=0,
     LambdaBl2=0,
     iota=0,
@@ -212,6 +210,7 @@ def CreateDict(
         Version of tidal effects to use (default is None).
     use_mode_lm : list of tuples, optional
         List of (ell, m) modes to use (default is [(1)]).
+        Can be also list of modes as [(2,2), (2,1), ...] etc.
     ode_tmax : float, optional
         Maximum time for ODE solver (default is 1e7).
     cN3LO : float, optional
@@ -237,7 +236,14 @@ def CreateDict(
 
     if r_hyp is None:
         r_hyp = 0
-
+    
+    if all(isinstance(x, (list,tuple)) for x in use_mode_lm):
+        use_mode_lm_k = []
+        for lm in use_mode_lm:
+            use_mode_lm_k.append(mode_to_k(*lm))
+    else:
+        use_mode_lm_k = use_mode_lm
+      
     pardic = {
         "M": M,
         "q": q,
@@ -259,7 +265,7 @@ def CreateDict(
         "srate_interp": srate,
         "inclination": iota,
         "output_hpc": "no",
-        "use_mode_lm": use_mode_lm,  # List of modes to use
+        "use_mode_lm": use_mode_lm_k,  # List of modes to use
         "arg_out": arg_out,  # output dynamics and hlm in addition to h+, hx
         "ecc": ecc,
         "r_hyp": r_hyp,
