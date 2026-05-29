@@ -236,14 +236,14 @@ def CreateDict(
 
     if r_hyp is None:
         r_hyp = 0
-    
-    if all(isinstance(x, (list,tuple)) for x in use_mode_lm):
+
+    if all(isinstance(x, (list, tuple)) for x in use_mode_lm):
         use_mode_lm_k = []
         for lm in use_mode_lm:
             use_mode_lm_k.append(mode_to_k(*lm))
     else:
         use_mode_lm_k = use_mode_lm
-      
+
     pardic = {
         "M": M,
         "q": q,

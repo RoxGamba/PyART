@@ -8,16 +8,17 @@ try:
 except ImportError:
     raise ImportError("WARNING: phenomxpy not installed.")
 
+
 class Waveform_IMRPhenomT(Waveform):
     """
     Interface for IMRPhenomT via phenomxpy
     """
 
     def __init__(
-        self, 
-        pars=None, 
-        approx="IMRPhenomTHM", 
-        reference_frame="CP", 
+        self,
+        pars=None,
+        approx="IMRPhenomTHM",
+        reference_frame="CP",
         skip_hphc=False,
     ):
         """
@@ -58,11 +59,11 @@ class Waveform_IMRPhenomT(Waveform):
         elif "use_mode_lm" in pp:
             mode_array = []
             for k in pp["use_mode_lm"]:
-                mode_array.append((k_to_ell(k),k_to_emm(k)))
+                mode_array.append((k_to_ell(k), k_to_emm(k)))
         else:
-            mode_array = [(2,2)]
+            mode_array = [(2, 2)]
         params["mode_array"] = mode_array
-            
+
         return params
 
     def _get_approximant(self, params):
@@ -108,19 +109,19 @@ class Waveform_IMRPhenomT(Waveform):
                     raise ValueError(f"Unknown reference frame: {self.reference_frame}")
             else:
                 hlm_phen, tlm = phenom.compute_hlms(times=None)
-            
+
             hlm = {}
             for ky in params["mode_array"]:
-                # looping on mode_array since phenom automatically removes 
+                # looping on mode_array since phenom automatically removes
                 # odd-m modes for q=1., but we prefer to have zero arrays
                 l = ky[0]
                 m = ky[1]
-                kys = f'{l:d}{m:d}'
+                kys = f"{l:d}{m:d}"
                 if kys in hlm_phen:
                     z = hlm_phen[kys]
                 else:
                     z = np.zeros_like(tlm)
-                hlm[(l,m)] = get_multipole_dict(z)
+                hlm[(l, m)] = get_multipole_dict(z)
 
             if skip_hphc:
                 self._u = tlm
