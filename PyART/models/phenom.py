@@ -84,13 +84,12 @@ class Waveform_IMRPhenomT(Waveform):
 
     def _run(self, skip_hphc=False):
         params = self._phenom_params()
-        
-        approx_with_HMs = (self.approx[-2:] == "HM")
+
+        approx_with_HMs = self.approx[-2:] == "HM"
         if not approx_with_HMs:
             del params["mode_array"]
 
         phenom = self._get_approximant(params)
-        
 
         # Compute THM polarizations
         if skip_hphc:
