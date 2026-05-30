@@ -702,7 +702,9 @@ class Optimizer(object):
             "objective_settings['aggregate'] must be one of: max, mean, median, min"
         )
 
-    def objective_mismatch(self, eob_Waveform, verbose=None, iter_loop=False, cache=None):
+    def objective_mismatch(
+        self, eob_Waveform, verbose=None, iter_loop=False, cache=None
+    ):
         """Evaluate the scalar objective used by the optimizer.
 
         Default behavior is a single mismatch at reference mass (metric='reference').
