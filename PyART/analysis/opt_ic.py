@@ -265,7 +265,7 @@ class Optimizer(object):
                         opt_data_new = self.optimize_mismatch(use_ref_guess=False)
                         if opt_data_new["mm_opt"] < opt_data["mm_opt"]:
                             opt_data = opt_data_new
-                    # if we reached a nice mismatche, break loop on initial guesses
+                    # if we reached a nice mismatch, break loop on initial guesses
                     if opt_data["mm_opt"] <= self.opt_good_mm:
                         break
 
@@ -932,7 +932,7 @@ class Optimizer(object):
         else:
             cache = {}
 
-        # prepare for annealing
+        # prepare for minimization
         x0 = [vs0[ky] for ky in kys]
         bounds_array = np.array([[bounds[ky][0], bounds[ky][1]] for ky in kys])
         f = lambda x: self.__func_to_minimize(x, kys, verbose=verbose, cache=cache)

@@ -7,6 +7,7 @@ from PyART.catalogs.rit import Waveform_RIT
 from PyART.catalogs.icc import Waveform_ICC
 from PyART.catalogs.core import Waveform_CoRe
 from PyART.analysis.match import Matcher
+from PyART.utils.utils import Msun
 
 matplotlib.rc("text", usetex=True)
 
@@ -35,13 +36,13 @@ parser.add_argument(
     "--id",
     default=1,
     type=int,
-    help="Simulatoion ID. If not specified, download hard-coded ID list",
+    help="Simulation ID. If not specified, download hard-coded ID list",
 )
 parser.add_argument("--maxfun", default=100, type=int, help="Maxfun in dual annealing")
 parser.add_argument("--use_nqc", action="store_true", help="Use NQC")
 parser.add_argument("--opt_max_iter", default=1, type=int, help="Max opt iter")
 parser.add_argument(
-    "--opt_good_mm", default=5e-3, type=float, help="opt_good_mm from opt_ic"
+    "--opt_good_mm", default=5e-4, type=float, help="opt_good_mm from opt_ic"
 )
 parser.add_argument(
     "-d", "--download", action="store_true", help="Eventually download data"
@@ -59,13 +60,16 @@ parser.add_argument("--source", default="BBH", help="Source, BBH or BHNS (only S
 
 args = parser.parse_args()
 
+M_target = 25
 mm_settings = {
     "cut_second_waveform": True,
-    "initial_frequency_mm": 10,
-    "M": 100,
-    "final_frequency_mm": 1024,
-    "taper_alpha": args.taper_alpha,
-    "taper_start": args.taper_start,
+    "M": M_target,
+    "final_frequency_mm": 2048,
+    "dt": 1.0 / (2 * 4096),
+    "resize_factor": 4,
+    # "taper_alpha": args.taper_alpha,
+    # "taper_start": args.taper_start,
+    "modes": [(2, 2)],
 }
 
 if args.catalog == "rit":
@@ -76,11 +80,11 @@ else:
     mm_settings["pre_align_shift"] = 0.0
 
 if args.kind_ic == "e0f0":
-    bounds = {"e0": [0, 0.7], "f0": [None, None]}
+    bounds = {"e0": [0.0, 0.7], "f0": [0.005, 0.007]}
     bounds_iter = {
-        "eps_initial": {"e0": 0.1, "f0": 0.01},
+        "eps_initial": {"e0": 0.1, "f0": 0.1},
         "eps_factors": {"e0": 2, "f0": 2},
-        "bad_mm": 1e-2,
+        "bad_mm": 1e-4,
         "max_iter": 3,
     }
 else:
@@ -143,6 +147,17 @@ if args.catalog == "sxs":
     print("Removing (200 M) junk for SXS")
     ebbh.cut(200)
 
+# get the initial frequency for the MM from the waveform
+h22 = ebbh.hlm[(2, 2)]
+imrg = np.argmax(h22["A"])
+omg22 = np.diff(h22["p"]) / np.diff(ebbh.u)
+f0_mm = omg22[0] / (2 * np.pi) / (mm_settings["M"] * Msun) * 0.95
+ff_mm = omg22[imrg] / (2 * np.pi) / (mm_settings["M"] * Msun)
+mm_settings["initial_frequency_mm"] = f0_mm
+print("Initial frequency for MM: ", f0_mm)
+print("Max frequency for MM: ", omg22[imrg] / (2 * np.pi) / (mm_settings["M"] * Msun))
+
+
 minimizer = {
     "kind": "dual_annealing",
     "opt_maxfun": args.maxfun,
@@ -163,6 +178,7 @@ opt = Optimizer(
     debug=args.debug_plot,
     json_file=args.json_file,
     overwrite=args.overwrite,
+    # r0_eob="read",
 )
 
 
@@ -171,6 +187,7 @@ if args.mm_vs_M:
     mm = masses * 0.0
     for i, M in enumerate(masses):
         mm_settings["M"] = M
+        mm_settings["initial_frequency_mm"] = f0_mm * M_target / M
         matcher = Matcher(ebbh, opt.opt_Waveform, settings=mm_settings)
         mm[i] = matcher.mismatch
         print(f"mass:{M:8.2f}, mm: {mm[i]:.3e}")
