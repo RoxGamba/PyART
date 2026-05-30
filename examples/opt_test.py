@@ -150,12 +150,12 @@ if args.catalog == "sxs":
 # get the initial frequency for the MM from the waveform
 h22 = ebbh.hlm[(2, 2)]
 imrg = np.argmax(h22["A"])
-omg22 = np.diff(h22["p"]) / np.diff(ebbh.u)
+omg22 = np.abs(np.gradient(h22["p"], ebbh.u))
 f0_mm = omg22[0] / (2 * np.pi) / (mm_settings["M"] * Msun) * 0.95
 ff_mm = omg22[imrg] / (2 * np.pi) / (mm_settings["M"] * Msun)
 mm_settings["initial_frequency_mm"] = f0_mm
 print("Initial frequency for MM: ", f0_mm)
-print("Max frequency for MM: ", omg22[imrg] / (2 * np.pi) / (mm_settings["M"] * Msun))
+print("Max frequency for MM: ", ff_mm)
 
 
 minimizer = {
