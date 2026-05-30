@@ -37,6 +37,7 @@ class Optimizer(object):
         overwrite=False,
         json_save_dyn=False,
         mm_settings=None,
+        objective_settings=None,
         verbose=True,
         debug=False,
     ):
@@ -67,7 +68,7 @@ class Optimizer(object):
         bounds_iter : dict, optional
             Options for iterating over bounds during optimization (default: {}).
         minimizer : dict, optional
-            Minimizer options, including kind (e.g., "dual_annealing", "dynesty", "differential_evolution") (default: {"kind": "dual_annealing"}).
+            Minimizer options, including kind (e.g., "dual_annealing", "dynesty", "differential_evolution", "minimize_scalar") (default: {"kind": "dual_annealing"}).
         use_matcher_cache : bool, optional
             Whether to use cached mismatch computations (default: False).
         json_file : str or None, optional
@@ -78,6 +79,11 @@ class Optimizer(object):
             Whether to save dynamics in the JSON output (default: False).
         mm_settings : dict or None, optional
             Options for the Matcher class (default: None).
+        objective_settings : dict or None, optional
+            Objective function settings. By default, the optimizer minimizes the
+            mismatch at a single reference mass (metric='reference'). It can be
+            configured to aggregate mismatch across a mass range with
+            metric='mass_range' and aggregate='max' (or mean/median/min).
         verbose : bool, optional
             Whether to print verbose output during optimization (default: True).
         debug : bool, optional
@@ -117,6 +123,11 @@ class Optimizer(object):
         if isinstance(mm_settings, dict):
             for k in mm_settings:
                 self.mm_settings[k] = mm_settings[k]
+
+        # objective settings
+        self.__objective__defaults__()
+        if isinstance(objective_settings, dict):
+            self.objective_settings = {**self.objective_settings, **objective_settings}
         if self.mm_settings["cut_longer"] and self.verbose:
             print(
                 "Warning: using the option 'cut_longer' during optimization should be avoided!"
@@ -137,6 +148,31 @@ class Optimizer(object):
 
         if self.opt_bounds is None:
             self.opt_bounds = {var: [None, None] for var in self.opt_vars}
+
+        # Reference values used to (re)build bounds when they are expanded.
+        # For variables not present in metadata, use the center of user-provided
+        # bounds when available to keep expansions in a physical region.
+        self._bounds_reference = {}
+        for ky in self.opt_vars:
+            if ky in self.ref_Waveform.metadata:
+                self._bounds_reference[ky] = self.ref_Waveform.metadata[ky]
+                continue
+
+            ky_bounds = self.opt_bounds.get(ky, [None, None])
+            if ky_bounds[0] is not None and ky_bounds[1] is not None:
+                self._bounds_reference[ky] = 0.5 * (ky_bounds[0] + ky_bounds[1])
+                if self.verbose:
+                    print(
+                        f"WARNING: update bounds, {ky} not found in metadata. "
+                        f"Using bound center {self._bounds_reference[ky]:.5f} as reference."
+                    )
+            else:
+                self._bounds_reference[ky] = 1.0
+                if self.verbose:
+                    print(
+                        f"WARNING: update bounds, {ky} not found in metadata and no explicit bounds center is available. "
+                        "Using 1.0 as reference."
+                    )
         # update bounds iterator
         self.__bounds_iter_defaults__()
         self.bounds_iter = {**self.bounds_iter, **bounds_iter}
@@ -153,6 +189,8 @@ class Optimizer(object):
             self.minimize = self.__minimize_annealing_
         elif minimizer["kind"] == "differential_evolution":
             self.minimize = self.__minimize_differential_evo_
+        elif minimizer["kind"] == "minimize_scalar":
+            self.minimize = self.__minimize_scalar_
         else:
             raise ValueError(f'Unknown minimizer kind: {minimizer["kind"]}')
 
@@ -172,6 +210,13 @@ class Optimizer(object):
             print(f"(q, chi1z, chi2z)  : ({q:.2f}, {chi1:.2f}, {chi2:.2f})")
             print(f"binary type        : {flags_str}")
             print(f"Variables for ICs  : {self.opt_vars}")
+            print(f"Objective metric   : {self.objective_settings['metric']}")
+            if self.objective_settings["metric"] == "mass_range":
+                m0, m1 = self.objective_settings["mass_range"]
+                nm = self.objective_settings["num_masses"]
+                agg = self.objective_settings["aggregate"]
+                print(f"Objective mass span: [{m0:.3f}, {m1:.3f}] with {nm:d} points")
+                print(f"Objective aggregate: {agg}")
             print(" ")
 
         mm_data = self.load_or_create_mismatches()
@@ -230,28 +275,26 @@ class Optimizer(object):
 
                 elif i < self.bounds_iter["max_iter"]:
                     # otherwise, increase the bound search (if we are not at the last iter)
-                    flat_old_bounds = [
-                        item for key in self.opt_bounds for item in self.opt_bounds[key]
-                    ]
-
                     kys = self.opt_vars
-                    self.opt_bounds = {kys[0]: [None, None], kys[1]: [None, None]}
+                    old_bounds = {ky: list(self.opt_bounds[ky]) for ky in kys}
+                    self.opt_bounds = {ky: [None, None] for ky in kys}
                     for ky in eps:
                         eps[ky] *= self.bounds_iter["eps_factors"][ky]
                     self.__update_bounds(eps=eps)
-                    flat_new_bounds = [
-                        item for key in self.opt_bounds for item in self.opt_bounds[key]
-                    ]
-                    print(
-                        "\nIncreasing search bounds: [{:.3f},{:.3f}], [{:.3f},{:.3f}]".format(
-                            *flat_old_bounds
-                        )
+                    old_bounds_str = ", ".join(
+                        [
+                            f"{ky}:[{old_bounds[ky][0]:.3f},{old_bounds[ky][1]:.3f}]"
+                            for ky in kys
+                        ]
                     )
-                    print(
-                        "                  ----> : [{:.3f},{:.3f}], [{:.3f},{:.3f}]".format(
-                            *flat_new_bounds
-                        )
+                    new_bounds_str = ", ".join(
+                        [
+                            f"{ky}:[{self.opt_bounds[ky][0]:.3f},{self.opt_bounds[ky][1]:.3f}]"
+                            for ky in kys
+                        ]
                     )
+                    print(f"\nIncreasing search bounds: {old_bounds_str}")
+                    print(f"                  ----> : {new_bounds_str}")
 
                 else:
                     mm_opt = opt_data["mm_opt"]
@@ -373,20 +416,13 @@ class Optimizer(object):
         """
         if eps is None:
             eps = self.bounds_iter["eps_initial"]
-        vls = []
+        default_bounds = {}
         for ky in self.opt_vars:
-            try:
-                vls.append(self.ref_Waveform.metadata[ky])
-            except KeyError:
-                print(
-                    f"WARNING: update bounds, {ky} not found in metadata. Setting to 1."
-                )
-                vls.append(1)
-
-        default_bounds = {
-            ky: [vl * (1 - eps[ky]), vl * (1 + eps[ky])]
-            for ky, vl in zip(self.opt_vars, vls)
-        }
+            ref_val = self._bounds_reference[ky]
+            delta = abs(ref_val) * eps[ky]
+            if delta == 0:
+                delta = eps[ky]
+            default_bounds[ky] = [ref_val - delta, ref_val + delta]
 
         for ky in self.opt_vars:
             for j in range(2):
@@ -584,7 +620,7 @@ class Optimizer(object):
 
         sub_meta = {key: ref_meta[key] for key in default_intrinsic}
         sub_meta["use_nqc"] = self.use_nqc
-        sub_meta["ode_tmax"] = 3e4
+        sub_meta["ode_tmax"] = 3e5
 
         # map the ICs (and the other intrinsic pars) to the EOB parameters
         mapped_ids = self.map_function({**ICs, **sub_meta})
@@ -610,17 +646,127 @@ class Optimizer(object):
         # add the mapped ICs to the sub_meta dictionary & additional model options
         # and run
         sub_meta.update(mapped_ids)
-        sub_meta.update(self.model_opts)
         try:
             pars = CreateDict(**sub_meta)
-            pars = pars | model_opts
+            pars = pars | self.model_opts | model_opts
             eob_wave = Waveform_EOB(pars=pars)
             # eob_wave._u = eob_wave.u#-eob_wave.u[0]
         except Exception as e:
             # FIXME: no error msg is a little bit criminal
-            # print(f'Error occured in EOB wave generation:\n{e}')
+            print(f"Error occured in EOB wave generation:\n{e}")
             eob_wave = None
         return eob_wave
+
+    def __objective__defaults__(self):
+        """Set default options for the optimization objective."""
+        ref_mass = self.mm_settings.get("M", self.ref_Waveform.metadata.get("M", 1.0))
+        self.objective_settings = {
+            "metric": "reference",  # reference | mass_range
+            "mass_range": [float(ref_mass), float(ref_mass)],
+            "num_masses": 11,
+            "aggregate": "max",  # max | mean | median | min
+            "rescale_initial_frequency": True,
+        }
+
+    def _objective_mass_grid(self):
+        """Return the mass grid used by the mass-range objective."""
+        mass_range = self.objective_settings.get("mass_range", None)
+        if not isinstance(mass_range, (list, tuple)) or len(mass_range) != 2:
+            raise ValueError(
+                "objective_settings['mass_range'] must be a 2-element list/tuple [Mmin, Mmax]"
+            )
+
+        m0 = float(mass_range[0])
+        m1 = float(mass_range[1])
+        if m1 < m0:
+            m0, m1 = m1, m0
+
+        num_masses = int(self.objective_settings.get("num_masses", 11))
+        if num_masses < 2:
+            num_masses = 2
+
+        return np.linspace(m0, m1, num=num_masses)
+
+    def _aggregate_values(self, values, aggregate):
+        """Aggregate a 1D array according to the selected rule."""
+        vals = np.asarray(values, dtype=float)
+        if aggregate == "max":
+            return float(np.max(vals))
+        if aggregate == "mean":
+            return float(np.mean(vals))
+        if aggregate == "median":
+            return float(np.median(vals))
+        if aggregate == "min":
+            return float(np.min(vals))
+        raise ValueError(
+            "objective_settings['aggregate'] must be one of: max, mean, median, min"
+        )
+
+    def objective_mismatch(self, eob_Waveform, verbose=None, iter_loop=False, cache={}):
+        """Evaluate the scalar objective used by the optimizer.
+
+        Default behavior is a single mismatch at reference mass (metric='reference').
+        Alternative behavior aggregates mismatch over a total-mass grid
+        (metric='mass_range').
+        """
+        if verbose is None:
+            verbose = self.verbose
+
+        metric = self.objective_settings.get("metric", "reference")
+        if metric == "reference":
+            return self.match_against_ref(
+                eob_Waveform,
+                verbose=verbose,
+                iter_loop=iter_loop,
+                cache=cache,
+            )
+
+        if metric == "mass_range":
+            if eob_Waveform is None:
+                mm_obj = 1.0
+            else:
+                masses = self._objective_mass_grid()
+                mm_values = np.zeros_like(masses)
+
+                ref_mass = float(self.mm_settings.get("M", masses[0]))
+                ref_f0_mm = self.mm_settings.get("initial_frequency_mm", None)
+                do_rescale_f1 = (
+                    bool(self.objective_settings.get("rescale_initial_frequency", True))
+                    and ref_f0_mm is not None
+                )
+
+                # Do not reuse matcher cache across varying masses.
+                for i, mass in enumerate(masses):
+                    mm_settings_mass = dict(self.mm_settings)
+                    mm_settings_mass["M"] = float(mass)
+                    if do_rescale_f1:
+                        mm_settings_mass["initial_frequency_mm"] = (
+                            float(ref_f0_mm) * ref_mass / float(mass)
+                        )
+                    mm_values[i] = self.match_against_ref(
+                        eob_Waveform,
+                        verbose=False,
+                        iter_loop=False,
+                        cache={},
+                        mm_settings=mm_settings_mass,
+                    )
+
+                aggregate = self.objective_settings.get("aggregate", "max")
+                mm_obj = self._aggregate_values(mm_values, aggregate)
+
+            if verbose and iter_loop:
+                self.annealing_counter += 1
+                print(
+                    "  >> mismatch - iter  : {:.3e} - {:3d}".format(
+                        mm_obj, self.annealing_counter
+                    ),
+                    end="\r",
+                )
+            return mm_obj
+
+        raise ValueError(
+            "objective_settings['metric'] must be one of: reference, mass_range"
+        )
 
     def match_against_ref(
         self,
@@ -692,7 +838,7 @@ class Optimizer(object):
         vs = {kys[i]: x[i] for i in range(len(kys))}
         eob_Waveform = self.generate_EOB(ICs=vs)
         if eob_Waveform is not None:
-            mm = self.match_against_ref(
+            mm = self.objective_mismatch(
                 eob_Waveform, verbose=self.verbose, iter_loop=True, cache=cache
             )
         else:
@@ -756,10 +902,15 @@ class Optimizer(object):
             if ky not in kys_ref:
                 vs0[ky] = np.random.uniform(bounds[ky][0], bounds[ky][1])
 
-        # reference match
-        mm0, matcher0 = self.match_against_ref(
-            self.generate_EOB(ICs=vs0), iter_loop=False, return_matcher=True
-        )
+        metric = self.objective_settings.get("metric", "reference")
+        eob0 = self.generate_EOB(ICs=vs0)
+        if metric == "reference":
+            mm0, matcher0 = self.match_against_ref(
+                eob0, iter_loop=False, return_matcher=True
+            )
+        else:
+            mm0 = self.objective_mismatch(eob0, iter_loop=False)
+            matcher0 = None
         if verbose:
             print(f"Original  mismatch    : {mm0:.3e}")
             print("Optimization interval :")
@@ -771,7 +922,7 @@ class Optimizer(object):
             for ky in kys:
                 print(f"                        {ky:5s} : {vs0[ky]:.15f}")
 
-        if self.use_matcher_cache:
+        if self.use_matcher_cache and metric == "reference":
             if matcher0 is None:
                 if verbose:
                     print("+++ First mm-computation failed! Not using cache +++")
@@ -808,6 +959,7 @@ class Optimizer(object):
 
         # generate the eob waveform corresponding to the optimal ICs
         eob_opt = self.generate_EOB(ICs=opts)
+        self.opt_Waveform = eob_opt
 
         if self.debug:
             temp_settings = copy.copy(self.mm_settings)
@@ -828,6 +980,7 @@ class Optimizer(object):
             "LambdaBl2": meta["LambdaBl2"] if "LambdaBl2" in meta else 0.0,
             "initial_frequency_mm": self.mm_settings["initial_frequency_mm"],
             "final_frequency_mm": self.mm_settings["final_frequency_mm"],
+            "objective_settings": self.objective_settings,
             "opt_seed": self.minimizer["opt_seed"],
             "opt_max_iter": self.opt_max_iter,
             "opt_good_mm": self.opt_good_mm,
@@ -874,6 +1027,7 @@ class Optimizer(object):
             "kind": "dual_annealing",
             "opt_maxfun": 1000,
             "opt_seed": 190521,
+            "xatol": 1e-4,
             # differiantial_evolution options
             "opt_workers": 1,
             # dynesty options
@@ -961,6 +1115,50 @@ class Optimizer(object):
         opt_pars = opt_result["x"]
         opts = {kys[i]: opt_pars[i] for i in range(len(kys))}
         mm_opt = opt_result["fun"]
+        return opts, mm_opt
+
+    def __minimize_scalar_(self, f, x0, bounds_array, kys):
+        """
+        Minimize with scipy.optimize.minimize_scalar.
+
+        Parameters
+        ----------
+        f : callable
+            The objective function to minimize.
+        x0 : array-like
+            Initial guess for the parameters. Unused by the bounded scalar solver.
+        bounds_array : array-like
+            Bounds for each parameter as an array of shape (n, 2).
+        kys : list of str
+            List of parameter names corresponding to the elements in x0.
+        Returns
+        -------
+        opts : dict
+            Dictionary of optimized parameters.
+        mm_opt : float
+            The minimum value of the objective function found.
+        """
+        if len(kys) != 1:
+            raise ValueError(
+                "The 'minimize_scalar' backend can only be used with exactly one optimization variable."
+            )
+
+        maxiter = self.minimizer.get("opt_maxfun", 1000)
+        xatol = self.minimizer.get("xatol", 1e-5)
+        bounds = (bounds_array[0][0], bounds_array[0][1])
+
+        def f_scalar(x):
+            return f(np.array([x]))
+
+        opt_result = optimize.minimize_scalar(
+            f_scalar,
+            bounds=bounds,
+            method="bounded",
+            options={"maxiter": maxiter, "xatol": xatol},
+        )
+
+        opts = {kys[0]: opt_result.x}
+        mm_opt = opt_result.fun
         return opts, mm_opt
 
     def __minimize__dynesty__(self, f, x0, bounds_array, kys):
