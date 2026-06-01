@@ -60,7 +60,7 @@ class Waveform_GRA(Waveform):
         self.modes = modes
         self.ellmax = ellmax
         self.extrap = ext
-        self.domain = "Time"
+        self._domain = "Time"
         self.r_ext = r_ext
         self.nu_rescale = nu_rescale
         self.res = res

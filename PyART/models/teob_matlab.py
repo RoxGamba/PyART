@@ -317,7 +317,7 @@ class Waveform_EOBMatlab(Waveform):
                     "p": -np.unwrap(np.angle(h)),
                     "z": h,
                 }
-        self.domain = "Time"
+        self._domain = "Time"
 
         self._hp, self._hc = wfu.compute_hphc(self._hlm, modes=list(self._hlm.keys()))
 

@@ -41,6 +41,8 @@ class Waveform(object):
         self._psi4lm = {}
         self._dyn = {}
         self._kind = None
+        self._units = None
+        self._domain = None
         pass
 
     @property
@@ -86,6 +88,14 @@ class Waveform(object):
     @property
     def kind(self):
         return self._kind
+
+    @property
+    def units(self):
+        return self._units
+
+    @property
+    def domain(self):
+        return self._domain
 
     # define multiplication and division by a factor
     # both methods return a new waveform object, without modifying the original one
@@ -562,7 +572,7 @@ class Waveform(object):
 
         self._f, self._hp = ut.fft(self.hp, dt)
         self._f, self._hc = ut.fft(self.hc, dt)
-        self._domain = "Frequency"
+        self._domain = "Freq"
         pass
 
     def to_time(self):
@@ -644,6 +654,108 @@ class Waveform(object):
         self._dothlm = dothlm
         self._psi4lm = psi4lm
         return mode.integr_opts
+
+    def to_geom(self, M, distance):
+        """
+        Convert waveform and time/freqs to geom units from SI
+
+        Parameters
+        ----------
+        M : float
+            total mass of the system in Solar masses
+        distance : float
+            distance in Mpc
+        """
+        if self.units == "geom":
+            raise RuntimeError("Already using geom units!")
+
+        # D_sec = distance * 1e6 * pc.value / c.value
+        # M_sec = M * M_sun.value * G.value / c.value**3
+        D_sec = distance * ut.consts["DMpc"]
+        M_sec = M * ut.consts["Msun"]
+
+        time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
+        for time_attr in time_attrs:
+            val = getattr(self, time_attr, None)
+            if val is not None:
+                setattr(self, time_attr, val / M_sec)
+
+        freq_attrs = ["_f", "flm"]
+        for freq_attr in freq_attrs:
+            val = getattr(self, freq_attr, None)
+            if val is not None:
+                setattr(self, freq_attr, val * M_sec)
+
+        if self.domain == "Time":
+            fact = D_sec / M_sec
+        else:
+            fact = D_sec / M_sec**2
+
+        for attr in ["hlm", "dothlm", "psi4lm"]:
+            data = getattr(self, attr, None)
+            out = {}
+            for lm, modes in data.items():
+                z = modes["z"] * fact
+                out[lm] = wf_ut.get_multipole_dict(z)
+            setattr(self, f"_{attr}", out)
+
+        if self.hp is not None and self.hc is not None:
+            self._hp = self.hp * fact
+            self._hc = self.hc * fact
+
+        self._units = "geom"
+        pass
+
+    def to_SI(self, M, distance):
+        """
+        Convert waveform and time/freqs to SI units from geom
+
+        Parameters
+        ----------
+        M : float
+            total mass of the system in Solar masses
+        distance : float
+            distance in Mpc
+        """
+        if self.units == "SI":
+            raise RuntimeError("Already using SI units!")
+
+        # D_sec = distance * 1e6 * pc.value / c.value
+        # M_sec = M * M_sun.value * G.value / c.value**3
+        D_sec = distance * ut.consts["DMpc"]
+        M_sec = M * ut.consts["Msun"]
+
+        time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
+        for time_attr in time_attrs:
+            val = getattr(self, time_attr, None)
+            if val is not None:
+                setattr(self, time_attr, val * M_sec)
+
+        freq_attrs = ["_f", "flm"]
+        for freq_attr in freq_attrs:
+            val = getattr(self, freq_attr, None)
+            if val is not None:
+                setattr(self, freq_attr, val / M_sec)
+
+        if self.domain == "Time":
+            fact = M_sec / D_sec
+        else:
+            fact = M_sec**2 / D_sec
+
+        for attr in ["hlm", "dothlm", "psi4lm"]:
+            data = getattr(self, attr, None)
+            out = {}
+            for lm, modes in data.items():
+                z = modes["z"] * fact
+                out[lm] = wf_ut.get_multipole_dict(z)
+            setattr(self, f"_{attr}", out)
+
+        if self.hp is not None and self.hc is not None:
+            self._hp = self.hp * fact
+            self._hc = self.hc * fact
+
+        self._units = "SI"
+        pass
 
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):

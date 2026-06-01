@@ -35,7 +35,7 @@ class Waveform_RWZ(Waveform):
         self.mmin = mmin
         self.cut_u = cut_u
         self._kind = "RWZ"
-        self.domain = "Time"
+        self._domain = "Time"
         self.par_rel_path = par_rel_path
 
         self.load_metadata(tokens=parfile_tokens)

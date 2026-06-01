@@ -8,6 +8,7 @@ nu = q / (1 + q) ** 2
 chi1z = 0.5
 chi2z = -0.8
 f0 = 0.003
+DL = 2.0
 
 
 def mode_to_k(ell, emm):
@@ -23,6 +24,7 @@ modes_k = modes_to_k(modes)
 eobpars = CreateDict(
     M=M, q=q, chi1z=chi1z, chi2z=chi2z, f0=f0, srate=8192, use_mode_lm=modes_k
 )
+eobpars["distance"] = DL
 
 
 def test_generation():
@@ -34,16 +36,16 @@ def test_generation():
 
         assert wvf.units == "SI"
         hp_SI_0 = np.copy(wvf.hp)
-        wvf.to_geom()
+        wvf.to_geom(M, DL)
 
         assert wvf.units == "geom"
-        wvf.to_SI()
+        wvf.to_SI(M, DL)
         assert wvf.units == "SI"
 
         diff = wvf.hp - hp_SI_0
         assert np.all(np.abs(diff) < 1e-14)
 
-        wvf.to_geom()
+        wvf.to_geom(M, DL)
         wvf.get_hlm(fmaxSI=4096, lmax=5)
         assert wvf.hlm is not None
         assert (2, 2) in wvf.hlm

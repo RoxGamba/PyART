@@ -10,6 +10,7 @@ except ModuleNotFoundError:
     print("WARNING: TEOBResumS not installed.")
 
 from ..waveform import Waveform
+from ..utils.wf_utils import get_multipole_dict, mode_to_k
 
 
 class Waveform_EOB(Waveform):
@@ -24,6 +25,12 @@ class Waveform_EOB(Waveform):
         super().__init__()
         self.pars = pars
         self._kind = "EOB"
+
+        if self.pars["use_geometric_units"] == "yes":
+            self._units = "geom"
+        else:
+            self._units = "SI"
+
         self._run_py()
         pass
 
@@ -52,11 +59,13 @@ class Waveform_EOB(Waveform):
         if self.pars["domain"]:
             f, rhp, ihp, rhc, ihc, hflm, dyn, _ = EOB.EOBRunPy(self.pars)
             self._f = f
-            self._hlm = hflm
+            # self._hlm = hflm
+            hflm_conv = convert_hlm(hflm)
+            self._hlm = hflm_conv
             self._dyn = dyn
             self._hp = rhp - 1j * ihp
             self._hc = rhc - 1j * ihc
-            self.domain = "Freq"
+            self._domain = "Freq"
         else:
             t, hp, hc, hlm, dyn = EOB.EOBRunPy(self.pars)
             self._u = t
@@ -65,7 +74,7 @@ class Waveform_EOB(Waveform):
             self._dyn = dyn
             self._hp = hp
             self._hc = hc
-            self.domain = "Time"
+            self._domain = "Time"
         return 0
 
     def get_Pr(self):
@@ -105,28 +114,21 @@ def convert_hlm(hlm):
             emm = wfu.k_to_emm(int(key))
         A = hlm[key][0]
         p = hlm[key][1]
-        hlm_conv[(ell, emm)] = {
-            "real": A * np.cos(p),
-            "imag": -1 * A * np.sin(p),
-            "A": A,
-            "p": p,
-            "z": A * np.exp(-1j * p),
-        }
+        z = A * np.exp(-1j * p)
+        hlm_conv[(ell, emm)] = get_multipole_dict(z)
     return hlm_conv
 
 
 # external function for dict creation
-
-
 def CreateDict(
     M=1.0,
     q=1,
     chi1z=0.0,
-    chi2z=0,
+    chi2z=0.0,
     chi1x=0.0,
-    chi2x=0,
+    chi2x=0.0,
     chi1y=0.0,
-    chi2y=0,
+    chi2y=0.0,
     LambdaAl2=0,
     LambdaBl2=0,
     iota=0,
@@ -208,6 +210,7 @@ def CreateDict(
         Version of tidal effects to use (default is None).
     use_mode_lm : list of tuples, optional
         List of (ell, m) modes to use (default is [(1)]).
+        Can be also list of modes as [(2,2), (2,1), ...] etc.
     ode_tmax : float, optional
         Maximum time for ODE solver (default is 1e7).
     cN3LO : float, optional
@@ -234,6 +237,13 @@ def CreateDict(
     if r_hyp is None:
         r_hyp = 0
 
+    if all(isinstance(x, (list, tuple)) for x in use_mode_lm):
+        use_mode_lm_k = []
+        for lm in use_mode_lm:
+            use_mode_lm_k.append(mode_to_k(*lm))
+    else:
+        use_mode_lm_k = use_mode_lm
+
     pardic = {
         "M": M,
         "q": q,
@@ -255,7 +265,7 @@ def CreateDict(
         "srate_interp": srate,
         "inclination": iota,
         "output_hpc": "no",
-        "use_mode_lm": use_mode_lm,  # List of modes to use
+        "use_mode_lm": use_mode_lm_k,  # List of modes to use
         "arg_out": arg_out,  # output dynamics and hlm in addition to h+, hx
         "ecc": ecc,
         "r_hyp": r_hyp,

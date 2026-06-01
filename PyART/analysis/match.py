@@ -160,12 +160,14 @@ class Matcher(object):
             p1 = WaveForm1.hlm[mode]["p"]
             Omg1 = np.abs(np.gradient(p1, WaveForm1.u))
             Omg10_postmrg = Omg1[i_mrg]
-            f0_postmrg = Omg10_postmrg / (self.settings["M"] * ut.Msun * 2 * np.pi)
+            f0_postmrg = Omg10_postmrg / (
+                self.settings["M"] * ut.consts["Msun"] * 2 * np.pi
+            )
             self.settings["initial_frequency_mm"] = f0_postmrg
 
         # Get local objects with TimeSeries
-        wf1 = self._wave2locobj(WaveForm1)
-        wf2 = self._wave2locobj(WaveForm2)
+        wf1 = self._wave2locobj(WaveForm1, isgeom=self.settings["geom"])
+        wf2 = self._wave2locobj(WaveForm2, isgeom=self.settings["geom"])
 
         # Determine time length for resizing
         self.settings["tlen"] = self._find_tlen(
@@ -238,7 +240,11 @@ class Matcher(object):
             )
             wf.modes[k] = {"real": re_lm, "imag": im_lm}
             if k[0] == 2 and k[1] == 2:
-                umrg, _, _, _ = WaveForm.find_max()
+                try:
+                    umrg, _, _, _ = WaveForm.find_max()
+                except:
+                    logging.warning("merger time not found! Using u[-10]")
+                    umrg = wf.u[-10]
                 C = wf.u[0]
                 D = wf.u[-1]
                 A = WaveForm.u[0]
@@ -275,9 +281,10 @@ class Matcher(object):
 
         # TODO : test isgeom==False
         dT = self.settings["dt"]
+        new_u = None
         if isgeom:
             M = self.settings["M"]
-            dT_resc = dT / (M * ut.Msun)
+            dT_resc = dT / (M * ut.consts["Msun"])
             new_u = np.arange(u[0], u[-1], dT_resc)
             hp = ut.spline(u, hp, new_u, kind=kind)
             hc = ut.spline(u, hc, new_u, kind=kind)
@@ -348,6 +355,7 @@ class Matcher(object):
             "taper_end": None,  # parameter for sigmoid or tukey window
             "taper_alpha": 0.5,  # alpha parameter for sigmoid or tukey (will be M-normalized)
             "taper_alpha_end": None,  # if specified, use this alpha for the end (only with sigmoid)
+            "norm_alpha": False,
             "resize_factor": 4,
             "debug": False,
             "geom": True,
@@ -486,9 +494,10 @@ class Matcher(object):
                 settings["final_frequency_mm"] = h1f.sample_frequencies[j_f]
 
         assert len(h1f) == len(h2f)
-        df = 1.0 / h1f.duration
-        flen = len(h1f) // 2 + 1
+        df = h1f.delta_f
+        flen = len(h1f)
         psd = self._get_psd(flen, df, settings["initial_frequency_mm"])
+        assert len(h1f) == len(psd)
 
         m, j_shift, ph_shift = optimized_match(
             h1f,
@@ -537,6 +546,7 @@ class Matcher(object):
         tap_times_w2=None,
         six_panels=False,
         mm=None,
+        Nmax_plot=50000,
     ):
         """
         Plot waveforms and PSD for debugging.
@@ -563,12 +573,15 @@ class Matcher(object):
             If True, create a six-panel plot (default is False).
         mm : float, optional
             Mismatch value to display in the plot title (default is None).
+        Nmax_plot :
+            Max number of points in plot (downsample if arrays are longer)
         """
 
         hf1 = h1.to_frequencyseries()
         f1 = hf1.get_sample_frequencies()
         hf2 = h2.to_frequencyseries()
         f2 = hf2.get_sample_frequencies()
+
         Af1 = np.abs(hf1)
         Af2 = np.abs(hf2)
 
@@ -583,20 +596,22 @@ class Matcher(object):
             figsize = (10, 7)
             FT_panels = [3, 4]
 
+        Ns = max(1, len(h1_nc) // Nmax_plot)
+
         plt.figure(figsize=figsize)
 
         plt.subplot(figm, fign, 1)
         plt.title("Real part of waveforms before conditioning")
         plt.plot(
-            h1_nc.sample_times,
-            h1_nc,
+            h1_nc.sample_times[::Ns],
+            h1_nc[::Ns],
             label="h1 unconditioned",
             color="blue",
             linestyle="-",
         )
         plt.plot(
-            h2_nc.sample_times,
-            h2_nc,
+            h2_nc.sample_times[::Ns],
+            h2_nc[::Ns],
             label="h2 unconditioned",
             color="green",
             linestyle="--",
@@ -605,8 +620,14 @@ class Matcher(object):
 
         plt.subplot(figm, fign, 2)
         plt.title("Real part of waveforms after conditioning")
-        plt.plot(h1.sample_times, h1, label="h1 conditioned", color="blue")
-        plt.plot(h2.sample_times, h2, label="h2 conditioned", color="green", ls="--")
+        plt.plot(h1.sample_times[::Ns], h1[::Ns], label="h1 conditioned", color="blue")
+        plt.plot(
+            h2.sample_times[::Ns],
+            h2[::Ns],
+            label="h2 conditioned",
+            color="green",
+            ls="--",
+        )
         if tap_times_w1 is not None:
             t1 = tap_times_w1["t1"]
             t2 = tap_times_w1["t2"]
@@ -624,11 +645,12 @@ class Matcher(object):
         plt.legend()
 
         if six_panels:
+            y = np.sqrt(psd.data * psd.sample_frequencies)
             plt.subplot(figm, fign, 4)
             plt.title("PSD used for match")
             plt.loglog(
-                psd.sample_frequencies,
-                np.sqrt(psd.data * psd.sample_frequencies),
+                psd.sample_frequencies[::Ns],
+                y[::Ns],
                 label="PSD",
                 color="black",
             )
@@ -641,13 +663,19 @@ class Matcher(object):
                 settings["final_frequency_mm"],
                 len(h1),
             )
-            plt.plot(freq, hf1.data * np.conjugate(hf2.data), color="red")
+            # plt.plot(freq, hf1.data * np.conjugate(hf2.data), color="red")
 
         for i in FT_panels:
             plt.subplot(figm, fign, i)
             plt.title("Fourier transforms (abs value)")
-            plt.plot(f1, Af1, c="blue", label="FT h1")
-            plt.plot(f2, Af2, c="green", label="FT h2")
+            plt.plot(f1[::Ns], Af1[::Ns], c="blue", label="FT h1")
+            plt.plot(f2[::Ns], Af2[::Ns], c="green", label="FT h2")
+            # plt.plot(f1, Af1 / D_sec * M_sec, c="blue", label="FT h1")
+            # plt.plot(f2, Af2 / D_sec * M_sec, c="green", label="FT h2")
+            # if settings['psd'] in ['LISA','aLIGOZeroDetHighPower']:
+            #    freqs = psd.sample_frequencies
+            #    plt.plot(freqs, np.sqrt(psd.data * freqs), "k--")
+
             plt.axvline(settings["initial_frequency_mm"], lw=0.8, c="r")
             plt.axvline(settings["final_frequency_mm"], lw=0.8, c="r")
             plt.grid()
@@ -657,7 +685,8 @@ class Matcher(object):
                 plt.xscale("log")
         if mm is not None:
             plt.subplot(figm, fign, 1)
-            plt.title(f"mismatch: {mm:.3e}")
+            M = self.settings["M"]
+            plt.title(f"mismatch: {mm:.3e} for $M={M:.1f} M_\\odot$")
         plt.tight_layout()
         if "save" not in settings.keys():
             plt.show()
@@ -909,6 +938,7 @@ def condition_td_waveform(h_in, settings, return_tap_times=False, mrg_idx=None):
             alpha=alpha_M,
             alpha_end=alpha_end_M,
             kind=settings["taper"],
+            norm_alpha=settings["norm_alpha"],
         )
     else:
         t1 = None

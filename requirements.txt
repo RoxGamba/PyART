@@ -7,7 +7,7 @@ scipy>=1.13.0
 rich>=13.7.0
 matplotlib>=3.7.3
 pandas>=2.1.4
-astropy>=5.0.0
+#astropy>=5.0.0
 setuptools
 sympy
 
@@ -17,6 +17,7 @@ pycbc>=2.4.0
 # gw-eccentricity>=1.0.4
 # mayawaves>=2024.4.25
 lalsuite>=7.22
+phenomxpy @ git+https://gitlab.com/imrphenom-dev/phenomxpy.git
 
 # SXS catalog support (optional; needed for downloading SXS simulations)
 sxs>=2025.0

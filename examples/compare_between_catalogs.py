@@ -4,8 +4,10 @@ import json
 import re
 from PyART.catalogs import sxs, gra
 from PyART.analysis import match
-from PyART.utils import utils, wf_utils, Msun
+from PyART.utils import utils, wf_utils, consts
 from rich.progress import track
+
+Msun = consts["Msun"]
 
 
 # Function to convert string values with comparison operators to floats
