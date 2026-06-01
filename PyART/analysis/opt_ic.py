@@ -659,9 +659,7 @@ class Optimizer(object):
             pars = CreateDict(**sub_meta)
             pars = pars | self.model_opts | model_opts
             eob_wave = Waveform_EOB(pars=pars)
-            # eob_wave._u = eob_wave.u#-eob_wave.u[0]
         except Exception as e:
-            # FIXME: no error msg is a little bit criminal
             logging.warning(f"Error occurred in EOB wave generation:\n{e}")
             eob_wave = None
         return eob_wave
