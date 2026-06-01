@@ -7,7 +7,14 @@ from PyART.catalogs.rit import Waveform_RIT
 from PyART.catalogs.icc import Waveform_ICC
 from PyART.catalogs.core import Waveform_CoRe
 from PyART.analysis.match import Matcher
-from PyART.utils.utils import Msun
+from PyART.utils.utils import consts
+
+# setup pyart logger
+from PyART.logging_config import setup_logging
+
+setup_logging(level="INFO")
+
+Msun = consts["Msun"]
 
 matplotlib.rc("text", usetex=True)
 
