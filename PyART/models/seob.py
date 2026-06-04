@@ -1,18 +1,18 @@
 import os, subprocess
 import logging
 import numpy as np
+from PyART.utils.wf_utils import get_multipole_dict, k_to_ell, k_to_emm
 
 try:
     import pyseobnr.generate_waveform as SEOB
 except ModuleNotFoundError:
     logging.warning("pyseobnr not installed.")
-try:
-    import lal
-except ModuleNotFoundError:
-    logging.warning("lal not installed.")
 
 from ..waveform import Waveform
 from ..utils import wf_utils as wfu
+from ..utils import utils as ut
+
+
 
 
 class Waveform_SEOB(Waveform):
@@ -24,6 +24,7 @@ class Waveform_SEOB(Waveform):
     def __init__(
         self,
         pars=None,
+        approx="SEOBNRv5HM",
     ):
         """
         Initialize the Waveform_SEOB class.
@@ -37,13 +38,103 @@ class Waveform_SEOB(Waveform):
         if pars is None:
             raise RuntimeError("No input parameters given for SEOB!")
         self.pars = pars
+        self.approx = approx
         self._kind = "SEOB"
-        self.check_pars()
-        self.SEOB = SEOB.GenerateWaveform(self.pars)
-        self._run()
-        pass
 
-    def _run(self):
+        # do not store as attribute to avoid duplicates
+        params = self._SEOB_params()
+        self.check_pars(params)
+        self.SEOB = SEOB.GenerateWaveform(params)
+        self._run(params)
+        pass
+    
+    def check_pars(self, params):
+        """
+        Check and adjust pars dictionary
+        """
+        
+        if "q" not in params and "M" not in params:
+            if "mass1" not in params or "mass2" not in params:
+                raise ValueError(
+                    "SEOB: Neither mass ratio nor individual masses given in input."
+                )
+            params["q"] = self.pars["mass1"] / self.pars["mass2"]
+            params["M"] = self.pars["mass1"] + self.pars["mass2"]
+
+        if ("mass1" not in params or "mass2" not in params) and params[
+            "use_geometric_units"
+        ] == "no":
+            raise ValueError("SEOB: If not using geom. units, need individual masses.")
+
+        if params["use_geometric_units"] == "yes":
+            # If using geometric units
+            params["mass1"] = params["M"] * params["q"] / (1.0 + params["q"])
+            params["mass2"] = params["M"] / (1.0 + params["q"])
+
+            # Convert initial frequency to physical units, save geometric in dict
+            params["f22_start"] = (
+            params["f22_start_geom"]
+            / params["M"]
+            / ut.consts["Msun"]
+            )
+
+        # If x, y spin components given, check that approximant is SEOBNRv5->P<-HM
+        if (
+            max(
+                [
+                    np.abs(params["spin1x"]),
+                    np.abs(params["spin1y"]),
+                    np.abs(params["spin2x"]),
+                    np.abs(params["spin2y"]),
+                ]
+            )
+            > 1.0e-10
+        ):
+            if self.approx != "SEOBNRv5PHM":
+                logging.info("Switching to SEOBNRv5PHM for non-aligned spins.")
+                self.approx = "SEOBNRv5PHM"
+
+    def _SEOB_params(self):
+        pp = self.pars
+
+        for i in ["1", "2"]:
+            for w in ["x", "y", "z"]:
+                pp[f"spin{i}{w}"] = self.pars[f"chi{i}{w}"]
+
+        params = {
+            "M": pp['M'],
+            "q": pp["q"],
+            "use_geometric_units": pp["use_geometric_units"],
+            "f22_start_geom": pp["initial_frequency"],
+            "spin1x": pp["spin1x"],
+            "spin1y": pp["spin1y"],
+            "spin1z": pp["spin1z"],
+            "spin2x": pp["spin2x"],
+            "spin2y": pp["spin2y"],
+            "spin2z": pp["spin2z"],
+            "distance": pp["distance"],
+        }
+
+         # modes selection:
+        if "mode_array" in pp:
+            mode_array = pp["mode_array"]
+        elif "use_mode_lm" in pp:
+            mode_array = []
+            for k in pp["use_mode_lm"]:
+                mode_array.append((k_to_ell(k), k_to_emm(k)))
+        else:
+            mode_array = [(2, 2)]
+        params["mode_array"] = mode_array
+
+        if "dt" in pp:
+            params["deltaT"] = pp["dt"]
+        else:
+            params["deltaT"] = 1/2048
+
+        return params
+    
+
+    def _run(self,params):
         """
         Run the SEOB waveform generation and store the results in the class attributes.
         This method generates the waveform modes, computes the plus and cross polarizations,
@@ -51,26 +142,31 @@ class Waveform_SEOB(Waveform):
         """
         # This gives time, modes in physical units
         t, hlm_seob = self.SEOB.generate_td_modes()
-        nu = self.pars["q"] / (1.0 + self.pars["q"]) ** 2
-        if self.pars["use_geometric_units"] == "yes":
-            M = self.pars["mass1"] + self.pars["mass2"]
-            fac = -1 * M * lal.MRSUN_SI / (self.pars["distance"] * lal.PC_SI * 1.0e6)
-            t = t / (M * lal.MTSUN_SI)
+        nu = params["q"] / (1.0 + params["q"]) ** 2
+        if params["use_geometric_units"] == "yes":
+            M = params["M"]
+            fac = -1 * M * ut.consts["Msun"] * ut.consts["c_SI"] / (params["distance"] * ut.consts["pc_SI"] * 1.0e6)
+            t = t / (M * ut.consts["Msun"])
             for mode in hlm_seob.keys():
                 # Also rescale by nu
                 hlm_seob[mode] = hlm_seob[mode] / fac / nu
 
         self._u = t
-        hlm = convert_hlm(hlm_seob)
+        #hlm = convert_hlm(hlm_seob)
+        hlm = {}
+        for ky in hlm_seob:
+            hlm[ky] = get_multipole_dict(hlm_seob[ky])
+
         self._hlm = hlm
 
         self._hp, self._hc = wfu.compute_hphc(hlm, modes=list(hlm.keys()))
-        if self.pars["approximant"] == "SEOBNRv5EHM":
+        if self.approx == "SEOBNRv5EHM":
             idx_H = 8
             idx_MOmg = 9
         else:
             idx_H = 5
             idx_MOmg = 6
+
         self._dyn = {
             "t": self.SEOB.model.dynamics[:, 0],
             "r": self.SEOB.model.dynamics[:, 1],
@@ -83,56 +179,11 @@ class Waveform_SEOB(Waveform):
         self._domain = "Time"
         return 0
 
-    def check_pars(self):
-        """
-        Check and adjust pars dictionary
-        """
-        if "q" not in self.pars:
-            if "mass1" not in self.pars or "mass2" not in self.pars:
-                raise ValueError(
-                    "SEOB: Neither mass ratio nor individual masses given in input."
-                )
-            self.pars["q"] = self.pars["mass1"] / self.pars["mass2"]
-
-        if ("mass1" not in self.pars or "mass2" not in self.pars) and self.pars[
-            "use_geometric_units"
-        ] == "no":
-            raise ValueError("SEOB: If not using geom. units, need individual masses.")
-
-        if self.pars["use_geometric_units"] == "yes":
-            # If using geometric units, set total mass to 100
-            self.pars["mass1"] = 100.0 * self.pars["q"] / (1.0 + self.pars["q"])
-            self.pars["mass2"] = 100.0 / (1.0 + self.pars["q"])
-
-            # Convert initial frequency to physical units, save geometric in dict
-            self.pars["f22_start_geom"] = self.pars["f22_start"]
-            self.pars["f22_start"] = (
-                self.pars["f22_start"]
-                / (self.pars["mass1"] + self.pars["mass2"])
-                / lal.MTSUN_SI
-            )
-
-        # If x, y spin components given, check that approximant is SEOBNRv5->P<-HM
-        if (
-            max(
-                [
-                    np.abs(self.pars["spin1x"]),
-                    np.abs(self.pars["spin1y"]),
-                    np.abs(self.pars["spin2x"]),
-                    np.abs(self.pars["spin2y"]),
-                ]
-            )
-            > 1.0e-10
-        ):
-            if self.pars["approximant"] != "SEOBNRv5PHM":
-                logging.info("Switching to SEOBNRv5PHM for non-aligned spins.")
-                self.pars["approximant"] = "SEOBNRv5PHM"
-
-    def compute_energetics(self):
+    def compute_energetics(self, params):
         """
         Compute binding energy and angular momentum from dynamics.
         """
-        pars = self.pars
+        pars = params
         q = pars["q"]
         q = float(q)
         nu = q / (1.0 + q) ** 2
@@ -144,33 +195,33 @@ class Waveform_SEOB(Waveform):
         return Eb, j
 
 
-def convert_hlm(hlm):
-    """
-    Convert the hlm dictionary from SEOB to PyART notation
-
-    Parameters
-    ----------
-    hlm : dict
-        Dictionary of waveform modes from SEOBNR, with keys as (l, m) tuples
-        and values as complex numpy arrays.
-    Returns
-    -------
-    hlm_conv : dict
-        Dictionary of waveform modes in PyART notation, with each mode as a
-        dictionary containing 'real', 'imag', 'A', 'p', and 'z'.
-    """
-    hlm_conv = {}
-    for key in hlm.keys():
-        A = np.abs(hlm[key])
-        p = -np.unwrap(np.angle(hlm[key]))
-        hlm_conv[key] = {
-            "real": A * np.cos(p),
-            "imag": -1 * A * np.sin(p),
-            "A": A,
-            "p": p,
-            "z": A * np.exp(-1j * p),
-        }
-    return hlm_conv
+#def convert_hlm(hlm):
+#    """
+#    Convert the hlm dictionary from SEOB to PyART notation
+#
+#    Parameters
+#    ----------
+#    hlm : dict
+#        Dictionary of waveform modes from SEOBNR, with keys as (l, m) tuples
+#        and values as complex numpy arrays.
+#    Returns
+#    -------
+#    hlm_conv : dict
+#        Dictionary of waveform modes in PyART notation, with each mode as a
+#        dictionary containing 'real', 'imag', 'A', 'p', and 'z'.
+#    """
+#    hlm_conv = {}
+#    for key in hlm.keys():
+#        A = np.abs(hlm[key])
+#        p = -np.unwrap(np.angle(hlm[key]))
+#        hlm_conv[key] = {
+#            "real": A * np.cos(p),
+#            "imag": -1 * A * np.sin(p),
+#            "A": A,
+#            "p": p,
+#            "z": A * np.exp(-1j * p),
+#        }
+#    return hlm_conv
 
 
 def CreateDict(
