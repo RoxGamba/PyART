@@ -20,7 +20,7 @@ class Waveform_SXS(Waveform):
 
     def __init__(
         self,
-        path="../dat/SXS/",
+        path=r"../dat/SXS/",
         ID="0001",
         order=2,
         level=None,
@@ -98,7 +98,7 @@ class Waveform_SXS(Waveform):
         self._kind = "SXS"
         self.src = src
         self.nr = None
-        self.domain = "Time"
+        self._domain = "Time"
         self.nu_rescale = nu_rescale
 
         if basename is None:

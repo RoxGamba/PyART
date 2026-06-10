@@ -94,7 +94,7 @@ class Cataloger(object):
             raise ValueError(f"Unknown catalog: {self.catalog}")
         return wave
 
-    def get_model_waveform(self, name, add_opts={}, verbose=None):
+    def get_model_waveform(self, name, model_opts={}, verbose=None):
         """
         Compute the waveform with the model corresponding to a catalog ID
         """
@@ -104,7 +104,7 @@ class Cataloger(object):
             x_opt = optimizer.opt_data[kys[0] + "_opt"]
             y_opt = optimizer.opt_data[kys[1] + "_opt"]
             ICs = {kys[0]: x_opt, kys[1]: y_opt}
-            eob = optimizer.generate_EOB(ICs=ICs)
+            eob = optimizer.generate_EOB(ICs=ICs, model_opts=model_opts)
         else:
             # Create a mock optimizer
             params = self.data[name]["Waveform"].metadata
@@ -113,7 +113,8 @@ class Cataloger(object):
             params = CreateDict(**newpars)
             # have a slightly lower f0
             params["initial_frequency"] = 0.95 * params["initial_frequency"]
-            eob = Waveform_EOB(params)
+            all_params = params | model_opts
+            eob = Waveform_EOB(all_params)
         return eob
 
     def plot_waves(self, cmap="rainbow", legend=False):
@@ -398,9 +399,9 @@ class Cataloger(object):
         plt.show()
         return
 
-    def mm_at_M(self, name, M, mm_settings=None):
+    def mm_at_M(self, name, M, mm_settings=None, model_opts={}):
 
-        eob = self.get_model_waveform(name)
+        eob = self.get_model_waveform(name, model_opts=model_opts)
         nr = self.data[name]["Waveform"]
         mm_settings["M"] = M
         matcher = Matcher(nr, eob, settings=mm_settings)
@@ -415,9 +416,11 @@ class Cataloger(object):
         json_load=None,  # load if not None
         json_save=None,  # save if not None
         mm_settings=None,
+        model_opts={},
         ranges={"pph0": [1, 10]},
         cmap_var="E0byM",
         hlines=[],
+        ylim=None,
         figname=None,  # save if not None
     ):
         if figname is not None:
@@ -473,9 +476,8 @@ class Cataloger(object):
                     )
             logging.info(f"mm for: {name}")
             mm = masses * 0
-            eob = self.get_model_waveform(name)
+            eob = self.get_model_waveform(name, model_opts=model_opts)
             nr = self.data[name]["Waveform"]
-
             for j, M in enumerate(masses):
                 mm_settings["M"] = M
                 matcher = Matcher(nr, eob, settings=mm_settings)
@@ -518,6 +520,9 @@ class Cataloger(object):
 
         plt.yscale("log")
         plt.grid()
+
+        if ylim is not None:
+            plt.ylim(ylim)
 
         if figname is None:
             figname = f"mismatches_{self.catalog}_{cmap_var}.png"

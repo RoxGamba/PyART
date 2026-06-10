@@ -7,10 +7,16 @@ from scipy.signal.windows import tukey
 from math import factorial as fact
 from math import ceil
 import matplotlib.pyplot as plt
-from astropy.constants import G, c, M_sun
 
-Msun = G.value * M_sun.value / (c.value**3)  # Solar mass
 ## Misc
+consts = {
+    "G_SI": 6.67429999999999937900e-11,
+    "c_SI": 299792458.0,
+    "pc_SI": 3.08567758149136720000e16,
+    "Msun_SI": 1.98840987069805095916e30,
+}
+consts["Msun"] = consts["G_SI"] * consts["Msun_SI"] / consts["c_SI"] ** 3
+consts["DMpc"] = 1e6 * consts["pc_SI"] / consts["c_SI"]
 
 
 def rotate3_axis(vector, theta=0.0, axis=[0, 0, 1]):
@@ -185,7 +191,15 @@ def safe_sigmoid(x, alpha, clip=None):
 
 
 def taper_waveform(
-    t, h, t1=None, t2=None, alpha=0.2, alpha_end=None, kind="sigmoid", debug=False
+    t,
+    h,
+    t1=None,
+    t2=None,
+    alpha=0.2,
+    alpha_end=None,
+    kind="sigmoid",
+    debug=False,
+    norm_alpha=False,
 ):
     """
     Waveform tapering in Matcher-class.
@@ -209,11 +223,15 @@ def taper_waveform(
         tapering method, can be 'sigmoid' or 'tukey' (default: 'sigmoid')
     debug: bool
         if True, plot the tapering window
+    norm_alpha: bool
+        if True, normalize alpha(s) with t1 or t2
+
     Returns
     -------
     out: array-like
         tapered strain
     """
+
     if kind is None:
         return h
 
@@ -221,9 +239,15 @@ def taper_waveform(
         if alpha_end is None:
             alpha_end = alpha
         window = np.ones_like(h)
+
         if t1 is not None:
+            if norm_alpha:
+                alpha *= 1 / (t[-1] - t[0])
             window *= safe_sigmoid(t - t1, alpha=alpha, clip=50)
+
         if t2 is not None:
+            if norm_alpha:
+                alpha_end *= 1 / (t[-1] - t[0])
             window *= safe_sigmoid(t2 - t, alpha=alpha_end, clip=50)
 
     elif kind == "tukey":
@@ -767,7 +791,7 @@ def D02(xp, yp, pad=True):
     return dyp
 
 
-def D1(f, x, order):
+def D1(f, x, order=4, uniform_check=True):
     """
     Computes the first derivative of function f(x)
 
@@ -777,14 +801,23 @@ def D1(f, x, order):
        uniformly sampled function
     x : float (list/numpy array of)
        uniformly sampled function domain or grid spacing
-    order : int
-       finite differencing order
+    order : int, optional
+       finite differencing order (default is 4)
+    uniform_check: bool, optional
+       check that the arrayr has uniform spacing
+       (default is true)
 
     Returns
     -------
     df : list (or numpy array)
        finite differences at given order
     """
+
+    if uniform_check:
+        dx = np.diff(x)
+        is_constant = np.allclose(dx, dx[0])
+        if not is_constant:
+            raise RuntimeError("Array not uniformly spaced")
 
     df = np.zeros_like(f)
 

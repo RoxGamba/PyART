@@ -2,8 +2,24 @@ import numpy as np
 import os
 import h5py
 from ..waveform import Waveform
-import glob as glob
 import json
+import logging
+import re
+import time
+import tarfile
+
+# libraries for downloading
+try:
+    import requests
+    from bs4 import BeautifulSoup
+    from urllib.parse import urljoin
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+except ImportError as e:
+    raise ImportError(
+        "To use the GRA catalog, please install the required "
+        "dependencies: requests, beautifulsoup4, urllib3"
+    ) from e
 
 
 class Waveform_GRA(Waveform):
@@ -17,39 +33,110 @@ class Waveform_GRA(Waveform):
 
     def __init__(
         self,
-        path,
+        ID="0001",
+        path="../dat/GRA",
         ellmax=8,
         ext="ext",
+        res="128",
         r_ext=None,
         cut_N=None,
         cut_U=None,
-        mtdt_path=None,
-        rescale=False,
+        nu_rescale=False,
         modes=[(2, 2)],
+        download=False,
+        downloads=["hlm", "metadata"],
     ):
 
         super().__init__()
+        # Normalize ID to a 4-digit zero-padded string for consistency
+        if isinstance(ID, int):
+            ID = f"{ID:04d}"
+        elif isinstance(ID, str) and ID.isdigit() and len(ID) < 4:
+            ID = ID.zfill(4)
+        self.ID = ID
         self.path = path
         self.cut_N = cut_N
         self.cut_U = cut_U
         self.modes = modes
         self.ellmax = ellmax
         self.extrap = ext
-        self.domain = "Time"
+        self._domain = "Time"
         self.r_ext = r_ext
-        self.rescale = rescale
+        self.nu_rescale = nu_rescale
+        self.res = res
         # comment out the following for the moment
-        self.load_metadata(mtdt_path)
+
+        if download:
+            self.download_simulation(ID=ID, path=path, downloads=downloads, res=res)
+
+        self.load_metadata()
         self.load_hlm(extrap=ext, ellmax=ellmax, r_ext=r_ext)
         pass
 
-    def load_metadata(self, path):
+    def download_simulation(
+        self,
+        ID="0001",
+        path=None,
+        downloads=["hlm", "metadata"],
+        res=None,
+    ):
         """
-        Load the metadata, if path is None assume
-        that they are in the same dir as the .h5 files
+        Automatically download and unpack a GRAthena++
+        simulation from scholarsphere.
         """
+
         if path is None:
             path = self.path
+
+        session = make_session()
+
+        logging.info("Fetching catalog...")
+        id_map = get_id_to_item_url(session)
+
+        if ID not in id_map:
+            raise RuntimeError(f"ID {ID} not found in catalog")
+
+        item_url = id_map[ID]
+
+        soup = get_item_soup(session, item_url)
+
+        if "hlm" in downloads:
+            logging.info("Downloading hlm data...")
+            if res is None:
+                res = "128"
+                self.res = res
+                logging.warning("No resolution specified, defaulting to res=128")
+
+            filename, tar_url = find_tar_for_resolution(soup, res)
+            logging.info(f"Found .tar: {filename}")
+            logging.info(f"Downloading from: {tar_url}")
+            download_safe(session, tar_url, filename)
+            extract_path = os.path.join(path, f"GRA_BHBH_{ID}")
+            os.makedirs(extract_path, exist_ok=True)
+            logging.info(f"Extracting to: {extract_path}")
+            with tarfile.open(filename) as tar:
+                tar.extractall(path=extract_path)
+            os.remove(filename)
+
+        if "metadata" in downloads:
+            logging.info("Downloading metadata...")
+            filename, meta_url = find_metadata_file(soup)
+            logging.info(f"Found metadata file: {filename}")
+            logging.info(f"Downloading from: {meta_url}")
+            download_safe(session, meta_url, filename)
+            # move to correct location
+            extract_path = os.path.join(path, f"GRA_BHBH_{ID}", "metadata.json")
+            os.makedirs(os.path.dirname(extract_path), exist_ok=True)
+            os.rename(filename, extract_path)
+
+        # Be polite to the server
+        time.sleep(3)
+
+    def load_metadata(self):
+        """
+        Load the metadata from the json file and store it in self.metadata
+        """
+        path = os.path.join(self.path, f"GRA_BHBH_{self.ID}", "metadata.json")
         ometa = json.load(open(path, "r"))
 
         m1 = float(ometa["initial-mass1"])
@@ -124,11 +211,23 @@ class Waveform_GRA(Waveform):
             r_ext = "100.00"
 
         if extrap == "ext":
-            h5_file = os.path.join(self.path, "rh_Asymptotic_GeometricUnits.h5")
+            h5_file = os.path.join(
+                self.path,
+                f"GRA_BHBH_{self.ID}",
+                self.res,
+                "rh_Asymptotic_GeometricUnits.h5",
+            )
         elif extrap == "CCE":
-            h5_file = os.path.join(self.path, "rh_CCE_GeometricUnits.h5")
+            h5_file = os.path.join(
+                self.path, f"GRA_BHBH_{self.ID}", self.res, "rh_CCE_GeometricUnits.h5"
+            )
         elif extrap == "finite":
-            h5_file = os.path.join(self.path, "rh_FiniteRadii_GeometricUnits.h5")
+            h5_file = os.path.join(
+                self.path,
+                f"GRA_BHBH_{self.ID}",
+                self.res,
+                "rh_FiniteRadii_GeometricUnits.h5",
+            )
         else:
             raise ValueError('extrap should be either "ext", "CCE" or "finite"')
 
@@ -171,7 +270,7 @@ class Waveform_GRA(Waveform):
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             hlm = nr[r_ext][mode]
             h = hlm[:, 1] + 1j * hlm[:, 2]
-            if self.rescale:
+            if self.nu_rescale:
                 h /= self.metadata["nu"]
             # amp and phase
             Alm = abs(h)[self.cut_N :]
@@ -222,13 +321,14 @@ class Waveform_GRA(Waveform):
 
     def load_psi4lm(
         self,
-        path=None,
-        fname=None,
         ellmax=None,
         r_ext=None,
         extrap="ext",
         load_m0=False,
     ):
+        """
+        Load the data from the h5 file, but for psi4 instead of h.
+        """
         if ellmax == None:
             ellmax = self.ellmax
 
@@ -236,11 +336,26 @@ class Waveform_GRA(Waveform):
             r_ext = "100.00"
 
         if extrap == "ext":
-            h5_file = os.path.join(self.path, "rPsi4_Asymptotic_GeometricUnits.h5")
+            h5_file = os.path.join(
+                self.path,
+                f"GRA_BHBH_{self.ID}",
+                self.res,
+                "rPsi4_Asymptotic_GeometricUnits.h5",
+            )
         elif extrap == "CCE":
-            h5_file = os.path.join(self.path, "rPsi4_CCE_GeometricUnits.h5")
+            h5_file = os.path.join(
+                self.path,
+                f"GRA_BHBH_{self.ID}",
+                self.res,
+                "rPsi4_CCE_GeometricUnits.h5",
+            )
         elif extrap == "finite":
-            h5_file = os.path.join(self.path, "rPsi4_FiniteRadii_GeometricUnits.h5")
+            h5_file = os.path.join(
+                self.path,
+                f"GRA_BHBH_{self.ID}",
+                self.res,
+                "rPsi4_FiniteRadii_GeometricUnits.h5",
+            )
         else:
             raise ValueError('extrap should be either "ext", "CCE" or "finite"')
 
@@ -282,7 +397,7 @@ class Waveform_GRA(Waveform):
             mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
             psi4lm = nr[r_ext][mode]
             psi4 = psi4lm[:, 1] + 1j * psi4lm[:, 2]
-            if self.rescale:
+            if self.nu_rescale:
                 psi4 /= self.metadata["nu"]
             Alm = abs(psi4)[self.cut_N :]
             plm = -np.unwrap(np.angle(psi4))[self.cut_N :]
@@ -297,3 +412,228 @@ class Waveform_GRA(Waveform):
 
         self._psi4lm = dict_psi4lm
         pass
+
+
+# ----------------------------------------------------------------------
+# Functions needed to download data from GRAthena++
+# ----------------------------------------------------------------------
+
+CATALOG_URL = (
+    "https://scholarsphere.psu.edu/resources/610744ac-80b9-4689-8119-320dfd2e2b9a"
+)
+BASE_URL = "https://scholarsphere.psu.edu"
+
+
+def make_session():
+    session = requests.Session()
+
+    retries = Retry(
+        total=5,
+        connect=5,
+        read=5,
+        backoff_factor=1.5,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET", "HEAD"],
+    )
+
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+
+    session.headers.update(
+        {
+            "User-Agent": (
+                "Mozilla/5.0 (X11; Linux x86_64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/121.0 Safari/537.36"
+            ),
+            "Accept": "*/*",
+            "Accept-Encoding": "identity",  # avoids chunked/gzip resets
+            "Connection": "keep-alive",
+            "Referer": "https://scholarsphere.psu.edu/",
+        }
+    )
+
+    return session
+
+
+def make_download_session(base_session=None):
+    """Create a fresh session for a single asset download.
+
+    Large tar downloads can leave the previous connection in a reset state.
+    Using a dedicated session per asset avoids reusing that stale connection
+    when the next file, such as metadata, is fetched.
+    """
+
+    download_session = make_session()
+
+    if base_session is not None:
+        if hasattr(base_session, "headers"):
+            download_session.headers.update(base_session.headers)
+        if hasattr(base_session, "cookies"):
+            download_session.cookies.update(base_session.cookies)
+
+    return download_session
+
+
+def get_id_to_item_url(session):
+    r = session.get(CATALOG_URL, timeout=30)
+    r.raise_for_status()
+    soup = BeautifulSoup(r.text, "html.parser")
+
+    id_map = {}
+
+    for a in soup.find_all("a", href=True):
+        text = a.get_text(strip=True)
+        m = re.search(r"GRAthena:BHBH:(\d{4})", text)
+        if m:
+            id_map[m.group(1)] = urljoin(BASE_URL, a["href"])
+
+    if not id_map:
+        raise RuntimeError("No GRAthena IDs found on catalog page")
+
+    return id_map
+
+
+def get_item_soup(session, item_url):
+    r = session.get(item_url, timeout=30)
+    r.raise_for_status()
+    return BeautifulSoup(r.text, "html.parser")
+
+
+def find_tar_for_resolution(item_soup, resolution):
+    resolution = resolution.lower()
+
+    for a in item_soup.find_all("a", href=True):
+        href = a["href"].lower()
+        text = a.get_text(strip=True).lower()
+        if (
+            "/downloads/" in href
+            and "download:" in text
+            and text.endswith(".tar")
+            and resolution in (href + text)
+        ):
+            filename = text.split("download:", 1)[1].strip()
+            return filename, urljoin(BASE_URL, a["href"])
+
+    raise RuntimeError(f"No .tar found for resolution '{resolution}'")
+
+
+def find_metadata_file(item_soup):
+    for a in item_soup.find_all("a", href=True):
+        href = a["href"].lower()
+        text = a.get_text(strip=True).lower()
+        if "/downloads/" in href and "download:" in text and text.endswith(".json"):
+            filename = text.split("download:", 1)[1].strip()
+            return filename, urljoin(BASE_URL, a["href"])
+
+    raise RuntimeError("No metadata.json file found")
+
+
+def resolve_download_url(session, url, timeout=30):
+    """Resolve a ScholarSphere download URL to the signed asset URL.
+
+    ScholarSphere serves an HTML shell for direct GET requests to the
+    `/downloads/...` endpoint, but exposes the real object location in the
+    response to a HEAD request via a short-lived redirect to S3.
+    """
+
+    response = session.head(url, allow_redirects=False, timeout=timeout)
+    response.raise_for_status()
+
+    if response.is_redirect:
+        location = response.headers.get("Location")
+        if not location:
+            raise RuntimeError(f"Download redirect missing Location header for {url}")
+        return location
+
+    return url
+
+
+def download_safe(session, url, filename, chunk_size=1024 * 1024):
+    tmp_file = filename + ".part"
+    max_attempts = 3
+    last_error = None
+
+    for attempt in range(1, max_attempts + 1):
+        downloaded = 0
+        if os.path.exists(tmp_file):
+            downloaded = os.path.getsize(tmp_file)
+            logging.info(f"Resuming download from byte {downloaded}")
+
+        headers = {}
+        if downloaded > 0:
+            headers["Range"] = f"bytes={downloaded}-"
+
+        download_session = make_download_session(session)
+
+        try:
+            download_url = resolve_download_url(download_session, url)
+
+            with download_session.get(
+                download_url, stream=True, headers=headers, timeout=60
+            ) as r:
+                r.raise_for_status()
+
+                content_type = (r.headers.get("Content-Type") or "").lower()
+                if content_type.startswith("text/html"):
+                    raise RuntimeError(
+                        f"Expected file download for {filename}, got HTML from "
+                        f"{download_url}"
+                    )
+
+                # Decide whether we can safely resume or must restart from scratch.
+                resume_supported = False
+                if downloaded > 0:
+                    if r.status_code == 206:
+                        content_range = r.headers.get("Content-Range", "")
+                        # Expect the content range to start at our downloaded offset.
+                        expected = f"bytes {downloaded}-"
+                        if (
+                            content_range.startswith(expected)
+                            or expected in content_range
+                        ):
+                            resume_supported = True
+                    else:
+                        logging.info(
+                            "Server did not honor Range header (status %s); "
+                            "restarting full download",
+                            r.status_code,
+                        )
+
+                if not resume_supported:
+                    # If we had a partial file, overwrite it rather than append,
+                    # to avoid corrupting the file when the server sends the full
+                    # content.
+                    if downloaded > 0:
+                        logging.info(
+                            "Discarding existing partial download and restarting"
+                        )
+                    mode = "wb"
+                else:
+                    mode = "ab"
+
+                with open(tmp_file, mode) as f:
+                    for chunk in r.iter_content(chunk_size=chunk_size):
+                        if chunk:
+                            f.write(chunk)
+
+            os.rename(tmp_file, filename)
+            logging.info("Download completed")
+            return
+        except (requests.RequestException, RuntimeError) as exc:
+            last_error = exc
+            if attempt == max_attempts:
+                raise
+            logging.warning(
+                "Download attempt %s/%s for %s failed: %s. Retrying with a "
+                "fresh session.",
+                attempt,
+                max_attempts,
+                filename,
+                exc,
+            )
+        finally:
+            download_session.close()
+
+    raise last_error

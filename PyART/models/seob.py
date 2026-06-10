@@ -80,7 +80,7 @@ class Waveform_SEOB(Waveform):
             "E": self.SEOB.model.dynamics[:, idx_H] * nu,
             "MOmega": self.SEOB.model.dynamics[:, idx_MOmg],
         }
-        self.domain = "Time"
+        self._domain = "Time"
         return 0
 
     def check_pars(self):

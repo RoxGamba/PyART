@@ -16,6 +16,9 @@
   <a href="https://results.pre-commit.ci/latest/github/RoxGamba/PyART/main">
     <img src="https://results.pre-commit.ci/badge/github/RoxGamba/PyART/main.svg" alt="pre-commit.ci status">
   </a>
+  <a href="https://codecov.io/github/RoxGamba/PyART" > 
+     <img src="https://codecov.io/github/RoxGamba/PyART/graph/badge.svg?token=R9OV89SSY6"/> 
+ </a>
 </p>
 
 ## Getting started
@@ -24,6 +27,14 @@ Install with
 ```
 pip install .
 ```
+
+> **Note:** PyART depends on `pycbc`, which currently has two incompatibilities with numpy 2.x.
+> After installing, apply the one-time patch:
+> ```
+> python scripts/patch_pycbc_numpy2.py
+> ```
+> This patches `pycbc`'s `events/threshold_cpu.py` and `filter/matchedfilter.py`
+> in-place. It is idempotent and safe to re-run after pycbc upgrades.
 
 ## For developers
 

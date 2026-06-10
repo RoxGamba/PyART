@@ -258,12 +258,10 @@ class TwoPunctID(object):
         Py = self.L / self.D
         Py2 = Py**2
         P2 = P**2
-        if P2 <= Py2:
-            P = 0.0
-            Py = 0.0
-            Px = 0.0
-        else:
-            Px = np.sqrt(P2 - Py2)
+        delta_p2 = P2 - Py2
+        if delta_p2 < 0 and not np.isclose(P2, Py2):
+            raise ValueError("Momentum magnitude P must satisfy P >= |L / D|")
+        Px = np.sqrt(max(delta_p2, 0.0))
         TP_pars_P = copy.deepcopy(self.TP_pars)
         TP_pars_P["par_P_plus1"] = -Px
         TP_pars_P["par_P_plus2"] = Py

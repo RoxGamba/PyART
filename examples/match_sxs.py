@@ -5,6 +5,9 @@ from PyART.catalogs import sxs
 from PyART.models import teob
 from PyART.analysis.match import Matcher
 from PyART.utils import utils as ut
+from PyART.logging_config import setup_logging
+
+setup_logging(level="INFO")
 
 matplotlib.rc("text", usetex=True)
 
@@ -39,7 +42,13 @@ sxs_path = os.path.join(repo_path, "examples/local_data/sxs/")
 # load (or download) SXS data
 sxs_id = f"{args.sxs_id:04}"  # e.g.0180
 nr = sxs.Waveform_SXS(
-    path=sxs_path, download=True, ID=sxs_id, order="Extrapolated_N3.dir", ellmax=7
+    path=sxs_path,
+    download=True,
+    ID=sxs_id,
+    ellmax=7,
+    ignore_deprecation=True,
+    downloads=["hlm", "metadata", "horizons"],
+    load=["hlm", "metadata", "horizons"],
 )
 nr.cut(300)
 # nr.compute_hphc()
@@ -92,7 +101,7 @@ eobpars = {
     "spin_interp_domain": 0,
 }
 eob = teob.Waveform_EOB(pars=eobpars)
-eob.multiply_by(var=["hlm"], factor=q / (1 + q) ** 2)
+eob = eob * (q / (1 + q) ** 2)
 
 # plt.figure
 # plt.plot(eob.u, eob.hlm[(2,2)]['A'])
@@ -111,7 +120,7 @@ mm = masses * 0.0
 t0 = time.perf_counter()
 for i, M in enumerate(masses):
     if args.f1 is None:
-        f0_mm = 1.25 * f0 / (M * ut.Msun)
+        f0_mm = 1.25 * f0 / (M * ut.consts["Msun"])
     else:
         f0_mm = args.f1
     matcher = Matcher(

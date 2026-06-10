@@ -3,7 +3,6 @@ from ..utils import wf_utils as wf_ut
 import numpy as np
 import h5py
 
-
 try:
     import lalsimulation as lalsim
     import lal
@@ -27,8 +26,15 @@ class Waveform_LAL(Waveform):
         super().__init__()
         self.pars = pars
         self.approx = approx
+        self.lal_dict = self._eob_to_lal_dict()
         self._kind = kind
+        self._units = "SI"
+        if self.kind == "FD":
+            self._domain = "Freq"
+        else:
+            self._domain = "Time"
         self._run_lal()
+
         pass
 
     def _eob_to_lal_dict(self):
@@ -73,6 +79,7 @@ class Waveform_LAL(Waveform):
         m2 = M / (1.0 + q)
         m1SI = m1 * lal.MSUN_SI
         m2SI = m2 * lal.MSUN_SI
+        flowSI = flow / (M * lal.MSUN_SI * lal.G_SI / lal.C_SI**3)
         return (
             params,
             m1SI,
@@ -87,7 +94,7 @@ class Waveform_LAL(Waveform):
             iota,
             phir,
             dT,
-            flow,
+            flowSI,
             srate,
             df,
         )
@@ -118,11 +125,14 @@ class Waveform_LAL(Waveform):
             iota,
             phir,
             dT,
-            flow,
+            flowSI,
             _,
             _,
-        ) = self._eob_to_lal_dict()
+        ) = self.lal_dict
+
         app = lalsim.GetApproximantFromString(self.approx)
+        params = lal.CreateDict()
+
         hp, hc = lalsim.SimInspiralTD(
             m1SI,
             m2SI,
@@ -139,14 +149,14 @@ class Waveform_LAL(Waveform):
             0.0,
             0.0,
             dT,
-            flow,
-            flow,
+            flowSI,
+            flowSI,
             params,
             app,
         )
-        t = np.array(range(0, len(hp.data.data))) * hp.deltaT
 
-        self._u = t
+        t = np.array(range(0, len(hp.data.data))) * hp.deltaT
+        self.u_pc = t
         self._hp = hp.data.data
         self._hc = hc.data.data
         pass
@@ -166,11 +176,12 @@ class Waveform_LAL(Waveform):
             iota,
             phir,
             _,
-            flow,
+            flowSI,
             srate,
             df,
-        ) = self._eob_to_lal_dict()
+        ) = self.lal_dict
         app = lalsim.GetApproximantFromString(self.approx)
+
         hpf, hcf = lalsim.SimInspiralFD(
             m1SI,
             m2SI,
@@ -187,9 +198,9 @@ class Waveform_LAL(Waveform):
             0.0,
             0.0,
             df,
-            flow,
+            flowSI,
             srate / 2,
-            flow,
+            flowSI,
             params,
             app,
         )
@@ -198,6 +209,121 @@ class Waveform_LAL(Waveform):
         self._f = f
         self._hp = hpf.data.data
         self._hc = hcf.data.data
+        pass
+
+    def get_hlm(self, fmaxSI=8192, lmax=5):
+        if self.kind == "FD":
+            self._get_hlm_FD(fmaxSI=fmaxSI)
+        elif self.kind == "TD":
+            self._get_hlm_TD(lmax=lmax)
+        else:
+            raise ValueError(f"Unknown domain: {self.domain}")
+        pass
+
+    def _get_hlm_FD(self, fmaxSI=8192):
+        (
+            params,
+            m1SI,
+            m2SI,
+            c1x,
+            c1y,
+            c1z,
+            c2x,
+            c2y,
+            c2z,
+            DL,
+            iota,
+            phir,
+            _,
+            flowSI,
+            srate,
+            df,
+        ) = self.lal_dict
+        app = lalsim.GetApproximantFromString(self.approx)
+
+        mode = lalsim.SimInspiralChooseFDModes(
+            m1SI,
+            m2SI,
+            c1x,
+            c1y,
+            c1z,
+            c2x,
+            c2y,
+            c2z,
+            df,
+            flowSI,  # fmin
+            fmaxSI,  # fmax
+            flowSI,  # fref
+            phir,
+            DL,
+            iota,
+            params,
+            app,
+        )
+        hlm = {}
+        flm = (
+            mode.mode.f0 + mode.mode.deltaF * np.arange(mode.mode.data.length) - fmaxSI
+        )
+        while mode:
+            l = mode.l
+            m = mode.m
+            data = mode.mode.data.data
+            hlm[(l, m)] = wf_ut.get_multipole_dict(data)
+            mode = mode.next
+
+        self.flm = flm
+        self._hlm = hlm
+        pass
+
+    def _get_hlm_TD(self, lmax=5):
+        (
+            params,
+            m1SI,
+            m2SI,
+            c1x,
+            c1y,
+            c1z,
+            c2x,
+            c2y,
+            c2z,
+            DL,
+            iota,
+            phir,
+            dT,
+            flowSI,
+            _,
+            _,
+        ) = self.lal_dict
+        app = lalsim.GetApproximantFromString(self.approx)
+
+        mode = lalsim.SimInspiralChooseTDModes(
+            phir,
+            dT,
+            m1SI,
+            m2SI,
+            c1x,
+            c1y,
+            c1z,
+            c2x,
+            c2y,
+            c2z,
+            flowSI,
+            flowSI,
+            DL,
+            params,
+            lmax,
+            app,
+        )
+        t = np.array(range(0, len(mode.mode.data.data))) * dT
+        hlm = {}
+        while mode:
+            l = mode.l
+            m = mode.m
+            data = mode.mode.data.data
+            hlm[(l, m)] = wf_ut.get_multipole_dict(data)
+            mode = mode.next
+        self._u = t
+        self._hlm = hlm
         pass
 
     def _load_lal_lvcnr(self):

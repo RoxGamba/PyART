@@ -48,7 +48,7 @@ class Waveform_NRPM(Waveform):
         self.pars_bajes = self.__convert_pars__()
         self.wf = waveform
         self._kind = "BaJes"
-        self.domain = "Time"
+        self._domain = "Time"
         self.__attach__()
 
     def __set__default_pars__(self):

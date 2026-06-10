@@ -731,7 +731,7 @@ def convert_simulation(
     The option resolution is an integer labeling the resolution of the
     converted waveform. Modes is an array of the format
     [[l1, m1], [l2, m2], ...] listing the l,m modes to convert. This function
-    outputs a file in LVC format named SXS_BBH_\#\#\#\#_Res\#.h5
+    outputs a file in LVC format named SXS_BBH_####_Res#.h5
     in out_path."""
     horizons = h5py.File(sxs_data_path + "/Horizons.h5", "r")
     rhOverM = h5py.File(sxs_data_path + "/rhOverM_Asymptotic_GeometricUnits_CoM.h5")
