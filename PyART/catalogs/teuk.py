@@ -24,7 +24,7 @@ class Waveform_Teuk(Waveform):
         self.path = path
         self.ellmax = ellmax
         self._kind = "Teukode"
-        self.domain = "Time"
+        self._domain = "Time"
         self.datafmt = datafmt
         self.input_meta = input_meta
 
@@ -171,6 +171,26 @@ class Waveform_Teuk(Waveform):
                 }
         return dyn
 
+    def __load_dynamics_mAll_py(self):
+        subdirs = os.listdir(self.path)
+        dyn = {}
+        for sd in subdirs:
+            if sd[:5] == "kerr_":
+                full_dyn_path = os.path.join(self.path, sd)
+                for qt in [
+                    "r.txt",
+                    "ph.txt",
+                    "prstar.txt",
+                    "pph.txt",
+                    "H.txt",
+                    "Omg.txt",
+                ]:
+                    qt_name = qt.split(".")[0]
+                    this_file = np.loadtxt(os.path.join(full_dyn_path, qt))
+                    dyn[qt_name] = this_file[:, 1]
+                dyn["t"] = this_file[:, 0]
+        return dyn
+
     def __load_dynamics_from_path(self):
         """
         Assume folder structured for the horizon flux project
@@ -197,10 +217,12 @@ class Waveform_Teuk(Waveform):
             dyn = self.__load_dynamics_npz()
         elif self.datafmt == "teuk_mAll":
             dyn = self.__load_dynamics_mAll()
+        elif self.datafmt == "teuk_mAll_py":
+            dyn = self.__load_dynamics_mAll_py()
         elif self.datafmt == "path":
             dyn = self.__load_dynamics_from_path()
         else:
-            raise ValueError("Data format for dynamics unknown")
+            raise ValueError(f"Data format for dynamics unknown: {self.datafmt}")
         self._dyn = dyn
 
     def __load_hlm_npz(self):
@@ -221,7 +243,7 @@ class Waveform_Teuk(Waveform):
         subdirs = os.listdir(self.path)
         hlm_z = {}
         for sd in subdirs:
-            if sd[:9] == "teuk_HH10":
+            if sd[:9] == "teuk_HH10" and not ".tar.gz" in sd:
                 mstr = sd.split("_")[-1]
                 m = int(mstr.replace("m", ""))
                 for ell in range(2, self.ellmax + 1):
