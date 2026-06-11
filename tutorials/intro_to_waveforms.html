@@ -1,0 +1,1087 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Downloading Waveforms from Different Catalogs" href="catalog_downloads.html"><link rel="prev" title="PyART — Python Analytical Relativity Toolkit" href="../index.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>Intro to Waveforms - PyART 0.0.1dev documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">PyART 0.0.1dev documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">PyART 0.0.1dev documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Intro to Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="catalog_downloads.html">Downloading Waveforms from Different Catalogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="phase_alignment.html">Time and Phase Alignment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nr_eob_mismatch.html">Computing Mismatches Between NR and EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizing_initial_conditions.html">Optimizing Initial Conditions for EOB Waveforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="iccub_waveform_integration.html">Working with ICCUB Catalog and Waveform Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scattering_angles.html">Scattering Angles from EOB Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coordinates_and_twopuncture.html">Coordinates and TwoPunctures from EOB IDs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pnpedia.html">PNPedia interface</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../autoapi/PyART/index.html">PyART</a><input aria-label="Toggle navigation of PyART" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/analysis/index.html">PyART.analysis</a><input aria-label="Toggle navigation of PyART.analysis" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/calc_coprecessing/index.html">PyART.analysis.calc_coprecessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/eccentricity_calc/index.html">PyART.analysis.eccentricity_calc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/hypfit/index.html">PyART.analysis.hypfit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/integrate_wave/index.html">PyART.analysis.integrate_wave</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/match/index.html">PyART.analysis.match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/opt_ic/index.html">PyART.analysis.opt_ic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/parspace_TEOB/index.html">PyART.analysis.parspace_TEOB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analysis/scattering_angle/index.html">PyART.analysis.scattering_angle</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/analytic/index.html">PyART.analytic</a><input aria-label="Toggle navigation of PyART.analytic" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analytic/analytic_catalog/index.html">PyART.analytic.analytic_catalog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analytic/bhpt_pnsf/index.html">PyART.analytic.bhpt_pnsf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analytic/coordschange/index.html">PyART.analytic.coordschange</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analytic/expr/index.html">PyART.analytic.expr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analytic/mathematica_parser/index.html">PyART.analytic.mathematica_parser</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/analytic/pnpedia/index.html">PyART.analytic.pnpedia</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/catalogs/index.html">PyART.catalogs</a><input aria-label="Toggle navigation of PyART.catalogs" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/cataloger/index.html">PyART.catalogs.cataloger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/core/index.html">PyART.catalogs.core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/gra/index.html">PyART.catalogs.gra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/gra_hyp/index.html">PyART.catalogs.gra_hyp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/icc/index.html">PyART.catalogs.icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/icc_public/index.html">PyART.catalogs.icc_public</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/lvknr/index.html">PyART.catalogs.lvknr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/maya/index.html">PyART.catalogs.maya</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/rit/index.html">PyART.catalogs.rit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/rwz/index.html">PyART.catalogs.rwz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/sacra/index.html">PyART.catalogs.sacra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/catalogs/sxs/index.html">PyART.catalogs.sxs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/PyART/logging_config/index.html">PyART.logging_config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/models/index.html">PyART.models</a><input aria-label="Toggle navigation of PyART.models" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/bajes/index.html">PyART.models.bajes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/lal/index.html">PyART.models.lal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/phenom/index.html">PyART.models.phenom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/ringdown/index.html">PyART.models.ringdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/ringdown_fits/index.html">PyART.models.ringdown_fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/ringdown_fits_noncirc/index.html">PyART.models.ringdown_fits_noncirc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/seob/index.html">PyART.models.seob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/teob/index.html">PyART.models.teob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/models/teob_matlab/index.html">PyART.models.teob_matlab</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/numerical/index.html">PyART.numerical</a><input aria-label="Toggle navigation of PyART.numerical" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/numerical/twopuncts_ID/index.html">PyART.numerical.twopuncts_ID</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/PyART/utils/index.html">PyART.utils</a><input aria-label="Toggle navigation of PyART.utils" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/cat_utils/index.html">PyART.utils.cat_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/convert_sxs_to_lvc/index.html">PyART.utils.convert_sxs_to_lvc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/load_nr_utils/index.html">PyART.utils.load_nr_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/os_utils/index.html">PyART.utils.os_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/tocatalog_icc/index.html">PyART.utils.tocatalog_icc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/utils/index.html">PyART.utils.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/PyART/utils/wf_utils/index.html">PyART.utils.wf_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/PyART/waveform/index.html">PyART.waveform</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/tutorials/intro_to_waveforms.ipynb.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="intro-to-waveforms">
+<h1>Intro to Waveforms<a class="headerlink" href="#intro-to-waveforms" title="Link to this heading">¶</a></h1>
+<p>This tutorial demonstrates how to use PyART’s waveform class</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="o">%</span><span class="k">config</span> InlineBackend.figure_format = &#39;retina&#39;
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">rcParams</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+
+<span class="c1"># logging configuration, default INFO level</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyART.logging_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logging</span>
+<span class="n">setup_logging</span><span class="p">()</span>
+
+<span class="c1"># Set up Seaborn aesthetics</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;talk&#39;</span><span class="p">)</span> 
+<span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">(</span><span class="n">font_scale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;ticks&#39;</span><span class="p">)</span>
+
+<span class="c1"># Update matplotlib rcParams</span>
+<span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;text.usetex&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s1">&#39;font.family&#39;</span><span class="p">:</span> <span class="s1">&#39;stixgeneral&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mathtext.fontset&#39;</span><span class="p">:</span> <span class="s1">&#39;stix&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;axes.grid&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s1">&#39;grid.linestyle&#39;</span><span class="p">:</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;grid.color&#39;</span><span class="p">:</span> <span class="s1">&#39;#bbbbbb&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;axes.linewidth&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We now create an empty Waveform object and inspect its attributes.
+This class is inherited by all waveform catalogs and models, meaning that they will <em>all</em> have these attributes and methods.<br />
+For more information, see the <a class="reference external" href="https://roxgamba.github.io/PyART/autoapi/PyART/waveform/index.html">Waveform class documentation</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PyART.waveform</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waveform</span>
+
+<span class="c1"># Create an empty Waveform object</span>
+<span class="n">waveform</span> <span class="o">=</span> <span class="n">Waveform</span><span class="p">()</span>
+
+<span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">attr</span><span class="p">))]</span>
+<span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">method</span> <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">method</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">method</span><span class="p">))]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Attributes of the Waveform object:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Methods of the Waveform object:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">methods</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Attributes of the Waveform object:
+- domain
+- dothlm
+- dyn
+- f
+- hc
+- hlm
+- hp
+- kind
+- psi4lm
+- t
+- t_psi4
+- u
+- units
+
+Methods of the Waveform object:
+- compute_dothlm
+- compute_hphc
+- compute_psi4lm
+- cut
+- dynamics_from_hlm
+- ej_from_hlm
+- find_max
+- integrate_data
+- interpolate_hlm
+- phase_shift
+- to_SI
+- to_frequency
+- to_geom
+- to_time
+</pre></div>
+</div>
+</div>
+</div>
+<p>We now load a waveform from the SXS catalog and plot its modes <span class="math notranslate nohighlight">\(h_{\ell m}\)</span>.<br />
+They are stored as a dictionary of the form: <code class="docutils literal notranslate"><span class="pre">hlm[(l,m)]</span></code>. Each dictionary entry has the amplitude: <code class="docutils literal notranslate"><span class="pre">A</span></code> and phase <code class="docutils literal notranslate"><span class="pre">p</span></code> of the mode, as well as the <code class="docutils literal notranslate"><span class="pre">real</span></code> and <code class="docutils literal notranslate"><span class="pre">imag</span></code> part of <span class="math notranslate nohighlight">\(h_{\ell,m}\)</span>.</p>
+<p>Note that, by default, the modes are <em>not</em> interpolated to a uniform time grid. Therefore, before plotting, we:</p>
+<ul class="simple">
+<li><p>Interpolate to a uniform time grid with <code class="docutils literal notranslate"><span class="pre">waveform.interpolate_hlm</span></code></p></li>
+<li><p>Shift the time array so that the (2,2) mode peaks at <span class="math notranslate nohighlight">\(t=0M\)</span>, using the <code class="docutils literal notranslate"><span class="pre">find_max</span></code> method.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PyART.catalogs</span><span class="w"> </span><span class="kn">import</span> <span class="n">sxs</span>
+
+<span class="c1"># Utility function to check if an array is uniformly spaced</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_uniform</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">delta</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span>
+
+<span class="n">sxs_waveform</span> <span class="o">=</span> <span class="n">sxs</span><span class="o">.</span><span class="n">Waveform_SXS</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="s1">&#39;0180&#39;</span><span class="p">,</span>
+                                <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="n">ignore_deprecation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="n">downloads</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;hlm&quot;</span><span class="p">,</span> <span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="s2">&quot;horizons&quot;</span><span class="p">],</span>
+                                <span class="n">load</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;hlm&quot;</span><span class="p">,</span> <span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="s2">&quot;horizons&quot;</span><span class="p">]</span>
+                                <span class="p">)</span>
+
+
+<span class="c1"># verify that the time array is uniform</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Is the time array uniform?&quot;</span><span class="p">,</span> <span class="n">is_uniform</span><span class="p">(</span><span class="n">sxs_waveform</span><span class="o">.</span><span class="n">u</span><span class="p">))</span>
+
+<span class="c1"># interpolate to uniform time gri, dT = 1M</span>
+<span class="n">t_interp</span><span class="p">,</span> <span class="n">hlm_interp</span> <span class="o">=</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">interpolate_hlm</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># overwrite time array and modes in the waveform object</span>
+<span class="n">sxs_waveform</span><span class="o">.</span><span class="n">_t</span> <span class="o">=</span> <span class="n">t_interp</span>
+<span class="n">sxs_waveform</span><span class="o">.</span><span class="n">_u</span> <span class="o">=</span> <span class="n">t_interp</span>
+<span class="n">sxs_waveform</span><span class="o">.</span><span class="n">_hlm</span> <span class="o">=</span> <span class="n">hlm_interp</span>
+
+<span class="c1"># verify that the time array is uniform</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Is the time array uniform?&quot;</span><span class="p">,</span> <span class="n">is_uniform</span><span class="p">(</span><span class="n">sxs_waveform</span><span class="o">.</span><span class="n">u</span><span class="p">))</span>
+
+<span class="n">t_max</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">mrg_idx</span> <span class="o">=</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">find_max</span><span class="p">(</span><span class="n">return_idx</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">modes</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">sxs_waveform</span><span class="o">.</span><span class="n">u</span><span class="o">-</span><span class="n">t_max</span><span class="p">,</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">hlm</span><span class="p">[</span><span class="n">mode</span><span class="p">][</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># legend, out of box</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;t/M&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$h_{\ell m}/\nu$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-06-11 08:35:20 The path ../dat/SXS/SXS_BBH_0180 does not exist or contains no &#39;Lev*&#39; directory.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-06-11 08:35:20 Downloading the simulation from the SXS catalog.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-06-11 08:35:20 Setting the download (cache) directory to ../dat/SXS/
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-06-11 08:35:31 Loaded SXS simulation SXS:BBH:0180.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-06-11 08:35:44 Saved hlm data.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-06-11 08:35:49 Saved horizons data.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-06-11 08:35:49 Saved metadata.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Is the time array uniform? False
+Is the time array uniform? True
+</pre></div>
+</div>
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">KeyboardInterrupt</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">line</span> <span class="mi">42</span>
+<span class="g g-Whitespace">     </span><span class="mi">38</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">39</span> <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">40</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;t/M&#39;</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">41</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$h_{\ell m}/\nu$&#39;</span><span class="p">)</span>
+<span class="ne">---&gt; </span><span class="mi">42</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/pyplot.py:613,</span> in <span class="ni">show</span><span class="nt">(*args, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">569</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">570</span><span class="sd"> Display all open figures.</span>
+<span class="g g-Whitespace">    </span><span class="mi">571</span><span class="sd"> </span>
+<span class="sd">   (...)    610 explicitly there.</span>
+<span class="g g-Whitespace">    </span><span class="mi">611</span><span class="sd"> &quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">612</span> <span class="n">_warn_if_gui_out_of_main_thread</span><span class="p">()</span>
+<span class="ne">--&gt; </span><span class="mi">613</span> <span class="k">return</span> <span class="n">_get_backend_mod</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib_inline/backend_inline.py:90,</span> in <span class="ni">show</span><span class="nt">(close, block)</span>
+<span class="g g-Whitespace">     </span><span class="mi">88</span> <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">89</span>     <span class="k">for</span> <span class="n">figure_manager</span> <span class="ow">in</span> <span class="n">Gcf</span><span class="o">.</span><span class="n">get_all_fig_managers</span><span class="p">():</span>
+<span class="ne">---&gt; </span><span class="mi">90</span>         <span class="n">display</span><span class="p">(</span>
+<span class="g g-Whitespace">     </span><span class="mi">91</span>             <span class="n">figure_manager</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">figure</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">92</span>             <span class="n">metadata</span><span class="o">=</span><span class="n">_fetch_figure_metadata</span><span class="p">(</span><span class="n">figure_manager</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">figure</span><span class="p">),</span>
+<span class="g g-Whitespace">     </span><span class="mi">93</span>         <span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">94</span> <span class="k">finally</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">95</span>     <span class="n">show</span><span class="o">.</span><span class="n">_to_draw</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/decorator/__init__.py:247,</span> in <span class="ni">decorate.&lt;locals&gt;.fun</span><span class="nt">(*args, **kw)</span>
+<span class="g g-Whitespace">    </span><span class="mi">245</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">kwsyntax</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">246</span>     <span class="n">args</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="n">fix</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">247</span> <span class="k">return</span> <span class="n">caller</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">extras</span> <span class="o">+</span> <span class="n">args</span><span class="p">),</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/backend_bases.py:2157,</span> in <span class="ni">FigureCanvasBase.print_figure</span><span class="nt">(self, filename, dpi, facecolor, edgecolor, orientation, format, bbox_inches, pad_inches, bbox_extra_artists, backend, **kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">2154</span>     <span class="c1"># we do this instead of `self.figure.draw_without_rendering`</span>
+<span class="g g-Whitespace">   </span><span class="mi">2155</span>     <span class="c1"># so that we can inject the orientation</span>
+<span class="g g-Whitespace">   </span><span class="mi">2156</span>     <span class="k">with</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">renderer</span><span class="p">,</span> <span class="s2">&quot;_draw_disabled&quot;</span><span class="p">,</span> <span class="n">nullcontext</span><span class="p">)():</span>
+<span class="ne">-&gt; </span><span class="mi">2157</span>         <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">2158</span> <span class="k">if</span> <span class="n">bbox_inches</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">2159</span>     <span class="k">if</span> <span class="n">bbox_inches</span> <span class="o">==</span> <span class="s2">&quot;tight&quot;</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/artist.py:94,</span> in <span class="ni">_finalize_rasterization.&lt;locals&gt;.draw_wrapper</span><span class="nt">(artist, renderer, *args, **kwargs)</span>
+<span class="g g-Whitespace">     </span><span class="mi">92</span> <span class="nd">@wraps</span><span class="p">(</span><span class="n">draw</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">93</span> <span class="k">def</span><span class="w"> </span><span class="nf">draw_wrapper</span><span class="p">(</span><span class="n">artist</span><span class="p">,</span> <span class="n">renderer</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">94</span>     <span class="n">result</span> <span class="o">=</span> <span class="n">draw</span><span class="p">(</span><span class="n">artist</span><span class="p">,</span> <span class="n">renderer</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">95</span>     <span class="k">if</span> <span class="n">renderer</span><span class="o">.</span><span class="n">_rasterizing</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">96</span>         <span class="n">renderer</span><span class="o">.</span><span class="n">stop_rasterizing</span><span class="p">()</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/artist.py:71,</span> in <span class="ni">allow_rasterization.&lt;locals&gt;.draw_wrapper</span><span class="nt">(artist, renderer)</span>
+<span class="g g-Whitespace">     </span><span class="mi">68</span>     <span class="k">if</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_agg_filter</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">69</span>         <span class="n">renderer</span><span class="o">.</span><span class="n">start_filter</span><span class="p">()</span>
+<span class="ne">---&gt; </span><span class="mi">71</span>     <span class="k">return</span> <span class="n">draw</span><span class="p">(</span><span class="n">artist</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">72</span> <span class="k">finally</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">73</span>     <span class="k">if</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_agg_filter</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/figure.py:3264,</span> in <span class="ni">Figure.draw</span><span class="nt">(self, renderer)</span>
+<span class="g g-Whitespace">   </span><span class="mi">3261</span>             <span class="c1"># ValueError can occur when resizing a window.</span>
+<span class="g g-Whitespace">   </span><span class="mi">3263</span>     <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+<span class="ne">-&gt; </span><span class="mi">3264</span>     <span class="n">mimage</span><span class="o">.</span><span class="n">_draw_list_compositing_images</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">3265</span>         <span class="n">renderer</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">artists</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppressComposite</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">3267</span>     <span class="n">renderer</span><span class="o">.</span><span class="n">close_group</span><span class="p">(</span><span class="s1">&#39;figure&#39;</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">3268</span> <span class="k">finally</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/image.py:134,</span> in <span class="ni">_draw_list_compositing_images</span><span class="nt">(renderer, parent, artists, suppress_composite)</span>
+<span class="g g-Whitespace">    </span><span class="mi">132</span> <span class="k">if</span> <span class="n">not_composite</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">has_images</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span>     <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">artists</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">134</span>         <span class="n">a</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span>     <span class="c1"># Composite any adjacent images together</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="n">image_group</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/artist.py:71,</span> in <span class="ni">allow_rasterization.&lt;locals&gt;.draw_wrapper</span><span class="nt">(artist, renderer)</span>
+<span class="g g-Whitespace">     </span><span class="mi">68</span>     <span class="k">if</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_agg_filter</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">69</span>         <span class="n">renderer</span><span class="o">.</span><span class="n">start_filter</span><span class="p">()</span>
+<span class="ne">---&gt; </span><span class="mi">71</span>     <span class="k">return</span> <span class="n">draw</span><span class="p">(</span><span class="n">artist</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">72</span> <span class="k">finally</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">73</span>     <span class="k">if</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_agg_filter</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/axes/_base.py:3226,</span> in <span class="ni">_AxesBase.draw</span><span class="nt">(self, renderer)</span>
+<span class="g g-Whitespace">   </span><span class="mi">3223</span> <span class="k">if</span> <span class="n">artists_rasterized</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">3224</span>     <span class="n">_draw_rasterized</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_figure</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">artists_rasterized</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span>
+<span class="ne">-&gt; </span><span class="mi">3226</span> <span class="n">mimage</span><span class="o">.</span><span class="n">_draw_list_compositing_images</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">3227</span>     <span class="n">renderer</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">artists</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_figure</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">suppressComposite</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">3229</span> <span class="n">renderer</span><span class="o">.</span><span class="n">close_group</span><span class="p">(</span><span class="s1">&#39;axes&#39;</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">3230</span> <span class="bp">self</span><span class="o">.</span><span class="n">stale</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/image.py:134,</span> in <span class="ni">_draw_list_compositing_images</span><span class="nt">(renderer, parent, artists, suppress_composite)</span>
+<span class="g g-Whitespace">    </span><span class="mi">132</span> <span class="k">if</span> <span class="n">not_composite</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">has_images</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span>     <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">artists</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">134</span>         <span class="n">a</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span>     <span class="c1"># Composite any adjacent images together</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="n">image_group</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/artist.py:71,</span> in <span class="ni">allow_rasterization.&lt;locals&gt;.draw_wrapper</span><span class="nt">(artist, renderer)</span>
+<span class="g g-Whitespace">     </span><span class="mi">68</span>     <span class="k">if</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_agg_filter</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">69</span>         <span class="n">renderer</span><span class="o">.</span><span class="n">start_filter</span><span class="p">()</span>
+<span class="ne">---&gt; </span><span class="mi">71</span>     <span class="k">return</span> <span class="n">draw</span><span class="p">(</span><span class="n">artist</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">72</span> <span class="k">finally</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">73</span>     <span class="k">if</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_agg_filter</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/axis.py:1412,</span> in <span class="ni">Axis.draw</span><span class="nt">(self, renderer)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1410</span> <span class="c1"># Shift label away from axes to avoid overlapping ticklabels.</span>
+<span class="g g-Whitespace">   </span><span class="mi">1411</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_label_position</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+<span class="ne">-&gt; </span><span class="mi">1412</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1414</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_offset_text_position</span><span class="p">(</span><span class="n">tlb1</span><span class="p">,</span> <span class="n">tlb2</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1415</span> <span class="bp">self</span><span class="o">.</span><span class="n">offsetText</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">major</span><span class="o">.</span><span class="n">formatter</span><span class="o">.</span><span class="n">get_offset</span><span class="p">())</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/artist.py:71,</span> in <span class="ni">allow_rasterization.&lt;locals&gt;.draw_wrapper</span><span class="nt">(artist, renderer)</span>
+<span class="g g-Whitespace">     </span><span class="mi">68</span>     <span class="k">if</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_agg_filter</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">69</span>         <span class="n">renderer</span><span class="o">.</span><span class="n">start_filter</span><span class="p">()</span>
+<span class="ne">---&gt; </span><span class="mi">71</span>     <span class="k">return</span> <span class="n">draw</span><span class="p">(</span><span class="n">artist</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">72</span> <span class="k">finally</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">73</span>     <span class="k">if</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_agg_filter</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/text.py:752,</span> in <span class="ni">Text.draw</span><span class="nt">(self, renderer)</span>
+<span class="g g-Whitespace">    </span><span class="mi">749</span> <span class="n">renderer</span><span class="o">.</span><span class="n">open_group</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_gid</span><span class="p">())</span>
+<span class="g g-Whitespace">    </span><span class="mi">751</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cm_set</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_wrapped_text</span><span class="p">()):</span>
+<span class="ne">--&gt; </span><span class="mi">752</span>     <span class="n">bbox</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">descent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_layout</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">753</span>     <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transform</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">755</span>     <span class="c1"># don&#39;t use self.get_position here, which refers to text</span>
+<span class="g g-Whitespace">    </span><span class="mi">756</span>     <span class="c1"># position in Text:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/text.py:382,</span> in <span class="ni">Text._get_layout</span><span class="nt">(self, renderer)</span>
+<span class="g g-Whitespace">    </span><span class="mi">380</span> <span class="n">clean_line</span><span class="p">,</span> <span class="n">ismath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_math</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">381</span> <span class="k">if</span> <span class="n">clean_line</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">382</span>     <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">_get_text_metrics_with_cache</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">383</span>         <span class="n">renderer</span><span class="p">,</span> <span class="n">clean_line</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fontproperties</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">384</span>         <span class="n">ismath</span><span class="o">=</span><span class="n">ismath</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_figure</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">385</span> <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span>     <span class="n">w</span> <span class="o">=</span> <span class="n">h</span> <span class="o">=</span> <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/text.py:69,</span> in <span class="ni">_get_text_metrics_with_cache</span><span class="nt">(renderer, text, fontprop, ismath, dpi)</span>
+<span class="g g-Whitespace">     </span><span class="mi">66</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;Call ``renderer.get_text_width_height_descent``, caching the results.&quot;&quot;&quot;</span>
+<span class="g g-Whitespace">     </span><span class="mi">67</span> <span class="c1"># Cached based on a copy of fontprop so that later in-place mutations of</span>
+<span class="g g-Whitespace">     </span><span class="mi">68</span> <span class="c1"># the passed-in argument do not mess up the cache.</span>
+<span class="ne">---&gt; </span><span class="mi">69</span> <span class="k">return</span> <span class="n">_get_text_metrics_with_cache_impl</span><span class="p">(</span>
+<span class="g g-Whitespace">     </span><span class="mi">70</span>     <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">renderer</span><span class="p">),</span> <span class="n">text</span><span class="p">,</span> <span class="n">fontprop</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">ismath</span><span class="p">,</span> <span class="n">dpi</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/text.py:77,</span> in <span class="ni">_get_text_metrics_with_cache_impl</span><span class="nt">(renderer_ref, text, fontprop, ismath, dpi)</span>
+<span class="g g-Whitespace">     </span><span class="mi">73</span> <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="mi">4096</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">74</span> <span class="k">def</span><span class="w"> </span><span class="nf">_get_text_metrics_with_cache_impl</span><span class="p">(</span>
+<span class="g g-Whitespace">     </span><span class="mi">75</span>         <span class="n">renderer_ref</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">fontprop</span><span class="p">,</span> <span class="n">ismath</span><span class="p">,</span> <span class="n">dpi</span><span class="p">):</span>
+<span class="g g-Whitespace">     </span><span class="mi">76</span>     <span class="c1"># dpi is unused, but participates in cache invalidation (via the renderer).</span>
+<span class="ne">---&gt; </span><span class="mi">77</span>     <span class="k">return</span> <span class="n">renderer_ref</span><span class="p">()</span><span class="o">.</span><span class="n">get_text_width_height_descent</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">fontprop</span><span class="p">,</span> <span class="n">ismath</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/backends/backend_agg.py:215,</span> in <span class="ni">RendererAgg.get_text_width_height_descent</span><span class="nt">(self, s, prop, ismath)</span>
+<span class="g g-Whitespace">    </span><span class="mi">211</span>     <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_text_width_height_descent</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">ismath</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">213</span> <span class="k">if</span> <span class="n">ismath</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">214</span>     <span class="n">ox</span><span class="p">,</span> <span class="n">oy</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">descent</span><span class="p">,</span> <span class="n">font_image</span> <span class="o">=</span> \
+<span class="ne">--&gt; </span><span class="mi">215</span>         <span class="bp">self</span><span class="o">.</span><span class="n">mathtext_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">,</span> <span class="n">prop</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">216</span>     <span class="k">return</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">descent</span>
+<span class="g g-Whitespace">    </span><span class="mi">218</span> <span class="n">font</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_font</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/mathtext.py:86,</span> in <span class="ni">MathTextParser.parse</span><span class="nt">(self, s, dpi, prop, antialiased)</span>
+<span class="g g-Whitespace">     </span><span class="mi">81</span> <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend_agg</span>
+<span class="g g-Whitespace">     </span><span class="mi">82</span> <span class="n">load_glyph_flags</span> <span class="o">=</span> <span class="p">{</span>
+<span class="g g-Whitespace">     </span><span class="mi">83</span>     <span class="s2">&quot;vector&quot;</span><span class="p">:</span> <span class="n">LoadFlags</span><span class="o">.</span><span class="n">NO_HINTING</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">84</span>     <span class="s2">&quot;raster&quot;</span><span class="p">:</span> <span class="n">backend_agg</span><span class="o">.</span><span class="n">get_hinting_flag</span><span class="p">(),</span>
+<span class="g g-Whitespace">     </span><span class="mi">85</span> <span class="p">}[</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_type</span><span class="p">]</span>
+<span class="ne">---&gt; </span><span class="mi">86</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_cached</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">dpi</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">antialiased</span><span class="p">,</span> <span class="n">load_glyph_flags</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/mathtext.py:100,</span> in <span class="ni">MathTextParser._parse_cached</span><span class="nt">(self, s, dpi, prop, antialiased, load_glyph_flags)</span>
+<span class="g g-Whitespace">     </span><span class="mi">97</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># Cache the parser globally.</span>
+<span class="g g-Whitespace">     </span><span class="mi">98</span>     <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">_parser</span> <span class="o">=</span> <span class="n">_mathtext</span><span class="o">.</span><span class="n">Parser</span><span class="p">()</span>
+<span class="ne">--&gt; </span><span class="mi">100</span> <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">fontset</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">dpi</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">101</span> <span class="n">output</span> <span class="o">=</span> <span class="n">_mathtext</span><span class="o">.</span><span class="n">ship</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">102</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_type</span> <span class="o">==</span> <span class="s2">&quot;vector&quot;</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2157,</span> in <span class="ni">Parser.parse</span><span class="nt">(self, s, fonts_object, fontsize, dpi)</span>
+<span class="g g-Whitespace">   </span><span class="mi">2155</span> <span class="bp">self</span><span class="o">.</span><span class="n">_em_width_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="g g-Whitespace">   </span><span class="mi">2156</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">2157</span>     <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expression</span><span class="o">.</span><span class="n">parse_string</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">2158</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">2159</span>     <span class="c1"># explain becomes a plain method on pyparsing 3 (err.explain(0)).</span>
+<span class="g g-Whitespace">   </span><span class="mi">2160</span>     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">ParseException</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1334,</span> in <span class="ni">ParserElement.parse_string</span><span class="nt">(self, instring, parse_all, **kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1332</span>     <span class="n">instring</span> <span class="o">=</span> <span class="n">instring</span><span class="o">.</span><span class="n">expandtabs</span><span class="p">()</span>
+<span class="g g-Whitespace">   </span><span class="mi">1333</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1334</span>     <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1335</span>     <span class="k">if</span> <span class="n">parse_all</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1336</span>         <span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preParse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:956,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">954</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mayIndexError</span> <span class="ow">or</span> <span class="n">pre_loc</span> <span class="o">&gt;=</span> <span class="n">len_instring</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">955</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">956</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">pre_loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">957</span>     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">958</span>         <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">len_instring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:4630,</span> in <span class="ni">And.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4626</span>             <span class="k">raise</span> <span class="n">ParseSyntaxException</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">4627</span>                 <span class="n">instring</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">instring</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span>
+<span class="g g-Whitespace">   </span><span class="mi">4628</span>             <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4629</span>     <span class="k">else</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">4630</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">exprtokens</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4631</span>     <span class="n">resultlist</span> <span class="o">+=</span> <span class="n">exprtokens</span>
+<span class="g g-Whitespace">   </span><span class="mi">4632</span> <span class="k">return</span> <span class="n">loc</span><span class="p">,</span> <span class="n">resultlist</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:956,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">954</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mayIndexError</span> <span class="ow">or</span> <span class="n">pre_loc</span> <span class="o">&gt;=</span> <span class="n">len_instring</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">955</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">956</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">pre_loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">957</span>     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">958</span>         <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">len_instring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:5790,</span> in <span class="ni">ZeroOrMore.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5788</span> <span class="k">def</span><span class="w"> </span><span class="nf">parseImpl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParseImplReturnType</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">5789</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">5790</span>         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5791</span>     <span class="k">except</span> <span class="p">(</span><span class="n">ParseException</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+<span class="g g-Whitespace">   </span><span class="mi">5792</span>         <span class="k">return</span> <span class="n">loc</span><span class="p">,</span> <span class="n">ParseResults</span><span class="p">([],</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resultsName</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:5675,</span> in <span class="ni">_MultipleMatch.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5673</span> <span class="k">if</span> <span class="n">check_ender</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">5674</span>     <span class="n">try_not_ender</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+<span class="ne">-&gt; </span><span class="mi">5675</span> <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="n">self_expr_parse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5676</span> <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">5677</span>     <span class="n">hasIgnoreExprs</span> <span class="o">=</span> <span class="ow">not</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignoreExprs</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:956,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">954</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mayIndexError</span> <span class="ow">or</span> <span class="n">pre_loc</span> <span class="o">&gt;=</span> <span class="n">len_instring</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">955</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">956</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">pre_loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">957</span>     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">958</span>         <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">len_instring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:4608,</span> in <span class="ni">And.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4605</span> <span class="k">def</span><span class="w"> </span><span class="nf">parseImpl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="g g-Whitespace">   </span><span class="mi">4606</span>     <span class="c1"># pass False as callPreParse arg to _parse for first element, since we already</span>
+<span class="g g-Whitespace">   </span><span class="mi">4607</span>     <span class="c1"># pre-parsed the string as part of our And pre-parsing</span>
+<span class="ne">-&gt; </span><span class="mi">4608</span>     <span class="n">loc</span><span class="p">,</span> <span class="n">resultlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">4609</span>         <span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="o">=</span><span class="kc">False</span>
+<span class="g g-Whitespace">   </span><span class="mi">4610</span>     <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4611</span>     <span class="n">errorStop</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="g g-Whitespace">   </span><span class="mi">4612</span>     <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exprs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+<span class="g g-Whitespace">   </span><span class="mi">4613</span>         <span class="c1"># if isinstance(e, And._ErrorStop):</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:995,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">993</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseAction</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">994</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">995</span>         <span class="n">tokens</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">tokens_start</span><span class="p">,</span> <span class="n">ret_tokens</span><span class="p">)</span>  <span class="c1"># type: ignore [call-arg, arg-type]</span>
+<span class="g g-Whitespace">    </span><span class="mi">996</span>     <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">parse_action_exc</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">997</span>         <span class="n">exc</span> <span class="o">=</span> <span class="n">ParseException</span><span class="p">(</span><span class="s2">&quot;exception raised in parse action&quot;</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:287,</span> in <span class="ni">_trim_arity.&lt;locals&gt;.wrapper</span><span class="nt">(*args)</span>
+<span class="g g-Whitespace">    </span><span class="mi">285</span> <span class="k">nonlocal</span> <span class="n">found_arity</span><span class="p">,</span> <span class="n">limit</span>
+<span class="g g-Whitespace">    </span><span class="mi">286</span> <span class="k">if</span> <span class="n">found_arity</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">287</span>     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">[</span><span class="n">limit</span><span class="p">:])</span>
+<span class="g g-Whitespace">    </span><span class="mi">288</span> <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">289</span>     <span class="k">try</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2184,</span> in <span class="ni">Parser.math_string</span><span class="nt">(self, toks)</span>
+<span class="g g-Whitespace">   </span><span class="mi">2183</span> <span class="k">def</span><span class="w"> </span><span class="nf">math_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">toks</span><span class="p">:</span> <span class="n">ParseResults</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParseResults</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">2184</span>     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_math_expression</span><span class="o">.</span><span class="n">parse_string</span><span class="p">(</span><span class="n">toks</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">parse_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1334,</span> in <span class="ni">ParserElement.parse_string</span><span class="nt">(self, instring, parse_all, **kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1332</span>     <span class="n">instring</span> <span class="o">=</span> <span class="n">instring</span><span class="o">.</span><span class="n">expandtabs</span><span class="p">()</span>
+<span class="g g-Whitespace">   </span><span class="mi">1333</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1334</span>     <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1335</span>     <span class="k">if</span> <span class="n">parse_all</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1336</span>         <span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preParse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:956,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">954</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mayIndexError</span> <span class="ow">or</span> <span class="n">pre_loc</span> <span class="o">&gt;=</span> <span class="n">len_instring</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">955</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">956</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">pre_loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">957</span>     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">958</span>         <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">len_instring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:5675,</span> in <span class="ni">_MultipleMatch.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5673</span> <span class="k">if</span> <span class="n">check_ender</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">5674</span>     <span class="n">try_not_ender</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+<span class="ne">-&gt; </span><span class="mi">5675</span> <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="n">self_expr_parse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5676</span> <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">5677</span>     <span class="n">hasIgnoreExprs</span> <span class="o">=</span> <span class="ow">not</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignoreExprs</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:956,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">954</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mayIndexError</span> <span class="ow">or</span> <span class="n">pre_loc</span> <span class="o">&gt;=</span> <span class="n">len_instring</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">955</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">956</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">pre_loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">957</span>     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">958</span>         <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">len_instring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:6258,</span> in <span class="ni">Forward.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">6251</span>     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">6252</span>         <span class="s2">&quot;warn_on_parse_using_empty_Forward:&quot;</span>
+<span class="g g-Whitespace">   </span><span class="mi">6253</span>         <span class="s2">&quot; Forward expression was never assigned a value, will not parse any input&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">6254</span>         <span class="n">PyparsingDiagnosticWarning</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">6255</span>         <span class="n">stacklevel</span><span class="o">=</span><span class="n">stacklevel</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">6256</span>     <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">6257</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">_left_recursion_enabled</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">6258</span>     <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">6259</span> <span class="c1"># ## Bounded Recursion algorithm ##</span>
+<span class="g g-Whitespace">   </span><span class="mi">6260</span> <span class="c1"># Recursion only needs to be processed at ``Forward`` elements, since they are</span>
+<span class="g g-Whitespace">   </span><span class="mi">6261</span> <span class="c1"># the only ones that can actually refer to themselves. The general idea is</span>
+   <span class="p">(</span><span class="o">...</span><span class="p">)</span>   <span class="mi">6276</span> <span class="c1"># we expand using `do_actions=False` and only run `do_actions=True` if the next</span>
+<span class="g g-Whitespace">   </span><span class="mi">6277</span> <span class="c1"># recursion level is acceptable.</span>
+<span class="g g-Whitespace">   </span><span class="mi">6278</span> <span class="k">with</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">recursion_lock</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:5151,</span> in <span class="ni">ParseElementEnhance.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5148</span>     <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="s2">&quot;No expression defined&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5150</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">5151</span>     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5152</span> <span class="k">except</span> <span class="n">ParseSyntaxException</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">5153</span>     <span class="k">raise</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:956,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">954</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mayIndexError</span> <span class="ow">or</span> <span class="n">pre_loc</span> <span class="o">&gt;=</span> <span class="n">len_instring</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">955</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">956</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">pre_loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">957</span>     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">958</span>         <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">len_instring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:4870,</span> in <span class="ni">MatchFirst.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4868</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exprs</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">4869</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">4870</span>         <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4871</span>     <span class="k">except</span> <span class="n">ParseFatalException</span> <span class="k">as</span> <span class="n">pfe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">4872</span>         <span class="n">pfe</span><span class="o">.</span><span class="n">__traceback__</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:956,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">954</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mayIndexError</span> <span class="ow">or</span> <span class="n">pre_loc</span> <span class="o">&gt;=</span> <span class="n">len_instring</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">955</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">956</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">pre_loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">957</span>     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">958</span>         <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">len_instring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:4870,</span> in <span class="ni">MatchFirst.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4868</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exprs</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">4869</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">4870</span>         <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4871</span>     <span class="k">except</span> <span class="n">ParseFatalException</span> <span class="k">as</span> <span class="n">pfe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">4872</span>         <span class="n">pfe</span><span class="o">.</span><span class="n">__traceback__</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:956,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">954</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mayIndexError</span> <span class="ow">or</span> <span class="n">pre_loc</span> <span class="o">&gt;=</span> <span class="n">len_instring</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">955</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">956</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">pre_loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">957</span>     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">958</span>         <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">len_instring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:4608,</span> in <span class="ni">And.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4605</span> <span class="k">def</span><span class="w"> </span><span class="nf">parseImpl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="g g-Whitespace">   </span><span class="mi">4606</span>     <span class="c1"># pass False as callPreParse arg to _parse for first element, since we already</span>
+<span class="g g-Whitespace">   </span><span class="mi">4607</span>     <span class="c1"># pre-parsed the string as part of our And pre-parsing</span>
+<span class="ne">-&gt; </span><span class="mi">4608</span>     <span class="n">loc</span><span class="p">,</span> <span class="n">resultlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">4609</span>         <span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="o">=</span><span class="kc">False</span>
+<span class="g g-Whitespace">   </span><span class="mi">4610</span>     <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4611</span>     <span class="n">errorStop</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="g g-Whitespace">   </span><span class="mi">4612</span>     <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exprs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+<span class="g g-Whitespace">   </span><span class="mi">4613</span>         <span class="c1"># if isinstance(e, And._ErrorStop):</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:956,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">954</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mayIndexError</span> <span class="ow">or</span> <span class="n">pre_loc</span> <span class="o">&gt;=</span> <span class="n">len_instring</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">955</span>     <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">956</span>         <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseImpl</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">pre_loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">957</span>     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">958</span>         <span class="k">raise</span> <span class="n">ParseException</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">len_instring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errmsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:5939,</span> in <span class="ni">Opt.parseImpl</span><span class="nt">(self, instring, loc, do_actions)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5937</span> <span class="n">self_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expr</span>
+<span class="g g-Whitespace">   </span><span class="mi">5938</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">5939</span>     <span class="n">loc</span><span class="p">,</span> <span class="n">tokens</span> <span class="o">=</span> <span class="n">self_expr</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">5940</span>         <span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="o">=</span><span class="kc">False</span>
+<span class="g g-Whitespace">   </span><span class="mi">5941</span>     <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">5942</span> <span class="k">except</span> <span class="p">(</span><span class="n">ParseException</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+<span class="g g-Whitespace">   </span><span class="mi">5943</span>     <span class="n">default_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultValue</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:1094,</span> in <span class="ni">ParserElement._parseCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span> <span class="n">ParserElement</span><span class="o">.</span><span class="n">packrat_cache_stats</span><span class="p">[</span><span class="n">MISS</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseNoCache</span><span class="p">(</span><span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="p">,</span> <span class="n">callPreParse</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">except</span> <span class="n">ParseBaseException</span> <span class="k">as</span> <span class="n">pe</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="c1"># cache a copy of the exception, without the traceback</span>
+<span class="g g-Whitespace">   </span><span class="mi">1097</span>     <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">pe</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">pe</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/pyparsing/core.py:916,</span> in <span class="ni">ParserElement._parseNoCache</span><span class="nt">(self, instring, loc, do_actions, callPreParse)</span>
+<span class="g g-Whitespace">    </span><span class="mi">913</span>     <span class="k">return</span> <span class="n">tokenlist</span>
+<span class="g g-Whitespace">    </span><span class="mi">915</span> <span class="c1"># @profile</span>
+<span class="ne">--&gt; </span><span class="mi">916</span> <span class="k">def</span><span class="w"> </span><span class="nf">_parseNoCache</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">917</span>     <span class="bp">self</span><span class="p">,</span> <span class="n">instring</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">do_actions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">callPreParse</span><span class="o">=</span><span class="kc">True</span>
+<span class="g g-Whitespace">    </span><span class="mi">918</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ParseResults</span><span class="p">]:</span>
+<span class="g g-Whitespace">    </span><span class="mi">919</span>     <span class="n">debugging</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span>  <span class="c1"># and do_actions)</span>
+<span class="g g-Whitespace">    </span><span class="mi">920</span>     <span class="n">len_instring</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">instring</span><span class="p">)</span>
+
+<span class="ne">KeyboardInterrupt</span>: 
+</pre></div>
+</div>
+</div>
+</div>
+<p>We now use the modes to compute the energy and angular momentum radiated as a function of time.
+To do so we use the <code class="docutils literal notranslate"><span class="pre">ej_from_hlm</span></code> method of the Waveform class.</p>
+<p>Note that this method requires knowledge of the initial ADM mass and angular
+momentum of the system, which are stored as attributes of the Waveform object (and automatically loaded, for most catalogs).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M_adm_0</span> <span class="o">=</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;E0byM&#39;</span><span class="p">]</span>
+<span class="n">J_adm_0</span> <span class="o">=</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;Jz0&#39;</span><span class="p">]</span>
+<span class="n">m1</span> <span class="o">=</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+<span class="n">m2</span> <span class="o">=</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+
+<span class="n">eb</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">jorb</span> <span class="o">=</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">ej_from_hlm</span><span class="p">(</span><span class="n">M_adm_0</span><span class="p">,</span> <span class="n">J_adm_0</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">modes</span><span class="o">=</span><span class="n">modes</span><span class="p">)</span>
+
+<span class="c1"># identify merger</span>
+<span class="n">e_mrg</span> <span class="o">=</span> <span class="n">eb</span><span class="p">[</span><span class="n">mrg_idx</span><span class="p">]</span>
+<span class="n">j_mrg</span> <span class="o">=</span> <span class="n">jorb</span><span class="p">[</span><span class="n">mrg_idx</span><span class="p">]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">jorb</span><span class="p">,</span> <span class="n">eb</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$J/M^2$&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$E_b/M$&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">j_mrg</span><span class="p">,</span> <span class="n">e_mrg</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Merger&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Binding energy vs Angular Momentum&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<a class="reference internal image-reference" href="../_images/74c71ba965d60e521d04ac2ce80c034212f53eb5bfadbddbe17cf21441ad38b3.png"><img alt="../_images/74c71ba965d60e521d04ac2ce80c034212f53eb5bfadbddbe17cf21441ad38b3.png" height="466" src="../_images/74c71ba965d60e521d04ac2ce80c034212f53eb5bfadbddbe17cf21441ad38b3.png" width="598" />
+</a>
+</div>
+</div>
+<p>We will now look at the dynamics. This is not available for all catalogs/models. In the case of SXS waveforms, we do load Horizon data when we download the waveform and can access it.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot the mass / spin evolution</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">],</span> <span class="nb">abs</span><span class="p">(</span><span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">m1</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$m_1$&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">],</span> <span class="nb">abs</span><span class="p">(</span><span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">m2</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$m_2$&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">],</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;chi1&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;S_1&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">],</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;chi2&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;S_2&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\Delta m_i$&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$|S_i|$&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;t/M&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="c1"># plot the trajectories</span>
+<span class="n">xA</span> <span class="o">=</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">]</span>
+<span class="n">xB</span> <span class="o">=</span> <span class="n">sxs_waveform</span><span class="o">.</span><span class="n">dyn</span><span class="p">[</span><span class="s1">&#39;x2&#39;</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xA</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xA</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;BH 1&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xB</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xB</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;BH 2&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;x/M&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;y/M&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Black Hole Trajectories&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<a class="reference internal image-reference" href="../_images/dc1bef1a2c90f60b7583b23a64b14b0085135be5c53dd13543ec2ff5c1df4f84.png"><img alt="../_images/dc1bef1a2c90f60b7583b23a64b14b0085135be5c53dd13543ec2ff5c1df4f84.png" height="690" src="../_images/dc1bef1a2c90f60b7583b23a64b14b0085135be5c53dd13543ec2ff5c1df4f84.png" width="1021" />
+</a>
+<a class="reference internal image-reference" href="../_images/bd2db77485439e71e83a1593f72014469cbccddceb75c73c90fd4b0a32b67418.png"><img alt="../_images/bd2db77485439e71e83a1593f72014469cbccddceb75c73c90fd4b0a32b67418.png" height="712" src="../_images/bd2db77485439e71e83a1593f72014469cbccddceb75c73c90fd4b0a32b67418.png" width="732" />
+</a>
+</div>
+</div>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="catalog_downloads.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Downloading Waveforms from Different Catalogs</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Home</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Simone Albanesi, Danilo Chiaramello, Rossella Gamba, Koustav Chandra
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=1b65bdd7"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    </body>
+</html>

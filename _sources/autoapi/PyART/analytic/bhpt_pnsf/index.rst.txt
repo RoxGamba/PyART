@@ -1,0 +1,169 @@
+PyART.analytic.bhpt_pnsf
+========================
+
+.. py:module:: PyART.analytic.bhpt_pnsf
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analytic.bhpt_pnsf.BHPTEntry
+   PyART.analytic.bhpt_pnsf.BHPTPN
+
+
+Module Contents
+---------------
+
+.. py:class:: BHPTEntry
+
+   Parsed representation of a single BHPT series file.
+
+   :param key: Canonical catalog key for the entry.
+   :type key: str
+   :param path: Absolute path to the Mathematica source file.
+   :type path: str
+   :param metadata: Metadata association extracted from the file.
+   :type metadata: dict[str, Any]
+   :param assignments: Top-level Mathematica assignments found in the source.
+   :type assignments: dict[str, str]
+   :param definitions: Delayed Mathematica definitions found in the source.
+   :type definitions: dict[str, str]
+   :param expr: Parsed SymPy expression for the selected series.
+   :type expr: sympy.Basic
+   :param quantity: Wrapped analytic expression corresponding to ``expr``.
+   :type quantity: AnalyticExpression
+
+
+   .. py:attribute:: key
+      :type:  str
+
+
+   .. py:attribute:: path
+      :type:  str
+
+
+   .. py:attribute:: metadata
+      :type:  dict[str, Any]
+
+
+   .. py:attribute:: assignments
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: definitions
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: expr
+      :type:  sympy.Basic
+
+
+   .. py:attribute:: quantity
+      :type:  PyART.analytic.expr.AnalyticExpression
+
+
+   .. py:method:: __getitem__(field_name: str) -> Any
+
+      Return an entry attribute using mapping-style access.
+
+      :param field_name: Name of the dataclass field to retrieve.
+      :type field_name: str
+
+      :returns: Value stored in the requested field.
+      :rtype: Any
+
+      :raises KeyError: If ``field_name`` is not a valid attribute name.
+
+
+
+.. py:class:: BHPTPN(path, download=False)
+
+   Bases: :py:obj:`PyART.analytic.analytic_catalog.AnalyticCatalog`
+
+
+   Interface to BlackHolePerturbationToolkit self-force series data.
+
+   :param path: Path to the local BHPT repository or extracted data directory.
+   :type path: str
+   :param download: If ``True``, clone the repository when it is not already present.
+   :type download: bool, optional
+
+   .. rubric:: Notes
+
+   The expected repository layout follows the
+   BlackHolePerturbationToolkit PostNewtonianSelfForce project.
+
+
+   .. py:attribute:: structure_name
+      :value: 'BHPTPN'
+
+
+
+   .. py:attribute:: _entry_cache
+
+
+   .. py:attribute:: _mathematica_parser
+
+
+   .. py:method:: download_bhptpn()
+
+      Clone the BHPT repository into the configured catalog path.
+
+      :returns: The repository is cloned when it is not already available.
+      :rtype: None
+
+
+
+   .. py:method:: __parse_bhptpn()
+
+      Index the BHPT Mathematica files available on disk.
+
+      :returns: The indexed path mapping is stored on the instance.
+      :rtype: None
+
+      :raises FileNotFoundError: If the configured BHPT path does not exist.
+
+
+
+   .. py:method:: get_entry(name=None, path=None)
+
+      Resolve, parse, and cache a BHPT Mathematica file.
+
+      The returned :class:`BHPTEntry` contains the resolved key and path,
+      parsed
+      metadata, raw assignment tables extracted from the Mathematica
+      source, the SymPy expression, and the corresponding
+      `AnalyticExpression` wrapper.
+
+      :param name: Indexed quantity name used for lookup.
+      :type name: str or None, optional
+      :param path: Direct path to a Mathematica file inside the indexed tree.
+      :type path: str or None, optional
+
+      :returns: Parsed and cached representation of the requested series file.
+      :rtype: BHPTEntry
+
+      :raises ValueError: If the source or selected expression cannot be parsed.
+
+
+
+   .. py:method:: _resolve_entry(name=None, path=None)
+
+      Resolve a user query to an indexed BHPT file path and canonical key.
+
+      A direct path lookup wins when `path` is provided, but the resolved
+      file must still live inside the configured BHPT tree. Otherwise the
+      method performs a normalized token match on the indexed quantity keys.
+
+      :param name: Indexed quantity name used for lookup.
+      :type name: str or None, optional
+      :param path: Direct path to a Mathematica file inside the indexed tree.
+      :type path: str or None, optional
+
+      :returns: Canonical quantity key and absolute file path.
+      :rtype: tuple[str, str]
+
+
+

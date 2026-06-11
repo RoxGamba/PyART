@@ -1,0 +1,316 @@
+PyART.models.teob_matlab
+========================
+
+.. py:module:: PyART.models.teob_matlab
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.models.teob_matlab.matlab_setup_base
+   PyART.models.teob_matlab.matlab_base
+   PyART.models.teob_matlab.matlab_base_hyp
+   PyART.models.teob_matlab.matlab_base_leob
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.models.teob_matlab.Waveform_EOBMatlab
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.models.teob_matlab.matnames
+   PyART.models.teob_matlab.CreateDict
+
+
+Module Contents
+---------------
+
+.. py:data:: matlab_setup_base
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      addpath('${code_dir}TEOBRun/');
+      addpath('${code_dir}TEOBRun/parfiles/');
+      addpath('${code_dir}PointMass/');
+      evalc("SetNaming('new')");
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:data:: matlab_base
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      eval${verbose}("eob_run_spin_eccentric_Pade33(${q}, 'single', ${chi1}, ${chi2}${ecc_s}${omg_ap_s}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${Tmax}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
+      quit;
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:data:: matlab_base_hyp
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      eval${verbose}("eob_run_hyperbolic(${q}, ${E0}, ${L0}, ${chi1}, ${chi2}${Tmax}${r0}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${H_model}${newlogs}${rho22_SO_resum}${rend}${nqc_amp}${nqc_omg})");
+      quit;
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:data:: matlab_base_leob
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      eval${verbose}("eob_run_spin_leob(${q}, ${irf}, ${chi1}, ${chi2}${omg_ap_s}${r0}${Tmax}${c3_s}${a6_s}${nr_s}${outdir_s}${ell_s}${rholm}${newlogs}${rho22_SO_resum}${rend}${ASS_fact}${SSPM}${nqc_amp}${nqc_omg})");
+      quit;
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:class:: Waveform_EOBMatlab(pars=None, code_dir='/home/danilo.chiaramello/teobresumsmatlab/', data_dir='/data/prometeo/danilo.chiaramello/teob_seob/data/matlab_data/', source='/usr/local/src/R2020b/bin/matlab', run=False, verbose=False, load_insp=False)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Class to handle EOB waveforms generated with the Matlab code.
+
+
+   .. py:attribute:: pars
+      :value: None
+
+
+
+   .. py:attribute:: _kind
+      :value: 'EOB'
+
+
+
+   .. py:attribute:: code_dir
+      :value: '/home/danilo.chiaramello/teobresumsmatlab/'
+
+
+
+   .. py:attribute:: dir
+      :value: '/data/prometeo/danilo.chiaramello/teob_seob/data/matlab_data/'
+
+
+
+   .. py:attribute:: source
+      :value: '/usr/local/src/R2020b/bin/matlab'
+
+
+
+   .. py:attribute:: run
+      :value: False
+
+
+
+   .. py:attribute:: verbose
+      :value: False
+
+
+
+   .. py:attribute:: load_insp
+      :value: False
+
+
+
+   .. py:attribute:: hyp
+      :value: True
+
+
+
+   .. py:attribute:: leob
+
+
+   .. py:method:: compute_energetics()
+
+      Compute the binding energy and angular momentum from the dynamics.
+
+      :returns: * **Eb** (*np.ndarray*) -- The binding energy.
+                * **j** (*np.ndarray*) -- The dimensionless angular momentum.
+
+
+
+   .. py:method:: _check_dir()
+
+      Check if the waveform and dynamics files exist in the specified directory.
+
+
+
+   .. py:method:: _convert_pars()
+
+      Build dictionary for template, converting parameters as needed.
+
+
+
+   .. py:method:: _run_matlab()
+
+      Run the matlab
+
+
+
+   .. py:method:: _load_hlm()
+
+      Load the waveform modes from the matlab .mat file.
+
+
+
+   .. py:method:: _load_dyn()
+
+      Load the dynamics from the matlab .mat file.
+
+
+
+   .. py:method:: clean_data()
+
+      Remove the generated .mat files to clean up the data directory.
+
+
+
+.. py:function:: matnames(q, chi1=0, chi2=0, ecc=0, f0=0.01 / np.pi, E0=None, L0=None, r0=None, nr=None, leob=False)
+
+   Name of dynamics, wave mat files given parameters.
+   If nr is given, use it as identifier. Otherwise, build name from parameters.
+   If leob is True, build names for leob runs.
+
+   :param q: Mass ratio.
+   :type q: float
+   :param chi1: Dimensionless spin of the primary black hole. Default is 0.
+   :type chi1: float, optional
+   :param chi2: Dimensionless spin of the secondary black hole. Default is 0.
+   :type chi2: float, optional
+   :param ecc: Eccentricity. Default is 0.
+   :type ecc: float, optional
+   :param f0: Initial gravitational wave frequency in units of 1/M. Default is 0.01/pi
+   :type f0: float, optional
+   :param E0: Initial energy for hyperbolic orbits. Default is None.
+   :type E0: float, optional
+   :param L0: Initial angular momentum for hyperbolic orbits. Default is None.
+   :type L0: float, optional
+   :param r0: Initial separation. Default is None.
+   :type r0: float, optional
+   :param nr: Identifier for numerical relativity data. If provided, it will be used
+              to build the filenames. Default is None.
+   :type nr: str, optional
+   :param leob: If True, build names for leob runs. Default is False.
+   :type leob: bool, optional
+
+
+.. py:function:: CreateDict(M=1.0, q=1, chi1z=0.0, chi2z=0.0, chi1x=0.0, chi2x=0.0, chi1y=0.0, chi2y=0.0, f0=0.0035, ecc=1e-08, l_max=2, ode_tmax=1000000.0, ode_rend=None, r0=None, H_hyp=None, J_hyp=None, cN3LO=None, a6c=None, nr=None, Hmod='std', rho22_SO_resum=0, newlogs=1, rholm='newlogs', nqc_amp=2, nqc_omg=2, leob=False, iresum=0, ASS_fact='none', SSPM=4)
+
+   Create the dictionary of parameters for teobresumsmatlab.
+
+   :param M: Total mass of the system (default is 1.0).
+   :type M: float, optional
+   :param q: Mass ratio (default is 1).
+   :type q: float, optional
+   :param chi1z: z-component of spin for object 1 (default is 0.0).
+   :type chi1z: float, optional
+   :param chi2z: z-component of spin for object 2 (default is 0.0).
+   :type chi2z: float, optional
+   :param chi1x: x-component of spin for object 1 (default is 0.0).
+   :type chi1x: float, optional
+   :param chi2x: x-component of spin for object 2 (default is 0.0).
+   :type chi2x: float, optional
+   :param chi1y: y-component of spin for object 1 (default is 0.0).
+   :type chi1y: float, optional
+   :param chi2y: y-component of spin for object 2 (default is 0.0).
+   :type chi2y: float, optional
+   :param f0: Initial frequency (default is 0.0035).
+   :type f0: float, optional
+   :param ecc: Initial eccentricity (default is 1e-8).
+   :type ecc: float, optional
+   :param l_max: Maximum multipole order (default is 2).
+   :type l_max: int, optional
+   :param ode_tmax: Maximum time for ODE integration (default is 1e6).
+   :type ode_tmax: float, optional
+   :param ode_rend: End radius for ODE integration (default is None).
+   :type ode_rend: float or None, optional
+   :param r0: Initial separation (default is None).
+   :type r0: float or None, optional
+   :param H_hyp: Initial energy parameter for hyperbolic orbits (default is None).
+   :type H_hyp: any, optional
+   :param J_hyp: Initial angular momentum parameter for hyperbolic orbits (default is None).
+   :type J_hyp: any, optional
+   :param cN3LO: cN3LO parameter (default is None).
+   :type cN3LO: any, optional
+   :param a6c: a6c parameter (default is None).
+   :type a6c: any, optional
+   :param nr: nr parameter (default is None).
+   :type nr: any, optional
+   :param Hmod: Hamiltonian model (default is "std").
+   :type Hmod: str, optional
+   :param rho22_SO_resum: Spin-orbit resummation flag (default is 0).
+   :type rho22_SO_resum: int, optional
+   :param newlogs: New logarithms flag (default is 1).
+   :type newlogs: int, optional
+   :param rholm: rholm parameter (default is "newlogs").
+   :type rholm: str, optional
+   :param nqc_amp: NQC amplitude parameters (default is 2).
+   :type nqc_amp: int, optional
+   :param nqc_omg: NQC omega parameters (default is 2).
+   :type nqc_omg: int, optional
+   :param leob: LEOB mode flag (default is False).
+   :type leob: bool, optional
+   :param iresum: iresum parameter (default is 0).
+   :type iresum: int, optional
+   :param ASS_fact: ASS factor (default is "none").
+   :type ASS_fact: str, optional
+   :param SSPM: SSPM parameter (default is 4).
+   :type SSPM: int, optional
+
+   :returns: Dictionary containing all parameters for teobresumsmatlab.
+   :rtype: dict
+
+

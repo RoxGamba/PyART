@@ -1,0 +1,186 @@
+PyART.analytic.coordschange
+===========================
+
+.. py:module:: PyART.analytic.coordschange
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.analytic.coordschange.pi
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analytic.coordschange.CoordsChange
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analytic.coordschange.eob_ID_to_ADM
+
+
+Module Contents
+---------------
+
+.. py:data:: pi
+
+.. py:class:: CoordsChange
+
+   Collection of coordinate transformations with unified symbolic and
+   numeric interfaces.
+
+   Provides both numerical and symbolic (sympy) APIs for standard
+   coordinate transformations used in Post-Newtonian and EOB/ADM context.
+   Each transformation returns AnalyticExpression objects or plain numeric
+   arrays depending on the calling method.
+
+   Supported transformations:
+   - Polar <-> Cartesian  (2D phase-space)
+   - EOB <-> ADM coordinates/momenta
+
+   References for EOB <-> ADM formulas:
+   - Buonanno & Damour (1998) arXiv:gr-qc/9811091 (Appendix E)
+   - Bini & Damour (2012) arXiv:1210.28...
+
+
+   .. py:method:: _validate_pn_order(PN_order)
+      :staticmethod:
+
+
+      Validate the PN order supported by the coordinate maps.
+
+      :param PN_order: Requested post-Newtonian truncation order.
+      :type PN_order: int
+
+      :returns: Validation succeeds silently when the order is supported.
+      :rtype: None
+
+      :raises ValueError: If ``PN_order`` is not one of ``0``, ``1``, or ``2``.
+
+
+
+   .. py:method:: Eob2Adm(qe_vec, pe_vec, nu, PN_order=2)
+      :staticmethod:
+
+
+      Transform EOB phase-space coordinates into ADM coordinates.
+
+      :param qe_vec: EOB position vector.
+      :type qe_vec: sequence
+      :param pe_vec: EOB momentum vector.
+      :type pe_vec: sequence
+      :param nu: Symmetric mass ratio.
+      :type nu: float or sympy.Expr
+      :param PN_order: Post-Newtonian order retained in the transformation. Supported
+                       values are ``0``, ``1``, and ``2``.
+      :type PN_order: int, optional
+
+      :returns: Pair ``(Q_ADM, P_ADM)`` as NumPy arrays for numeric input or lists
+                of :class:`AnalyticExpression` objects for symbolic input.
+      :rtype: tuple
+
+      :raises ValueError: If ``PN_order`` is not supported.
+
+
+
+   .. py:method:: Adm2Eob(qa_vec, pa_vec, nu, PN_order=2)
+      :staticmethod:
+
+
+      Transform ADM phase-space coordinates into EOB coordinates.
+
+      :param qa_vec: ADM position vector.
+      :type qa_vec: sequence
+      :param pa_vec: ADM momentum vector.
+      :type pa_vec: sequence
+      :param nu: Symmetric mass ratio.
+      :type nu: float or sympy.Expr
+      :param PN_order: Post-Newtonian order retained in the transformation. Supported
+                       values are ``0``, ``1``, and ``2``.
+      :type PN_order: int, optional
+
+      :returns: Pair ``(Q_EOB, P_EOB)`` as NumPy arrays for numeric input or lists
+                of :class:`AnalyticExpression` objects for symbolic input.
+      :rtype: tuple
+
+      :raises ValueError: If ``PN_order`` is not supported.
+
+
+
+   .. py:method:: Polar2Cartesian(r, phi, pr, pphi)
+      :staticmethod:
+
+
+      Transform planar polar canonical variables into Cartesian form.
+
+      :param r: Radial coordinate.
+      :type r: float or sympy.Expr
+      :param phi: Azimuthal angle.
+      :type phi: float or sympy.Expr
+      :param pr: Canonical radial momentum.
+      :type pr: float or sympy.Expr
+      :param pphi: Canonical angular momentum.
+      :type pphi: float or sympy.Expr
+
+      :returns: Cartesian coordinates and momenta ``(x, y, p_x, p_y)``. Numeric
+                inputs return numeric values; symbolic inputs return
+                :class:`AnalyticExpression` wrappers.
+      :rtype: tuple
+
+
+
+   .. py:method:: Cartesian2Polar(x, y, px, py)
+      :staticmethod:
+
+
+      Transform planar Cartesian canonical variables into polar form.
+
+      :param x: Cartesian ``x`` coordinate.
+      :type x: float or sympy.Expr
+      :param y: Cartesian ``y`` coordinate.
+      :type y: float or sympy.Expr
+      :param px: Canonical momentum conjugate to ``x``.
+      :type px: float or sympy.Expr
+      :param py: Canonical momentum conjugate to ``y``.
+      :type py: float or sympy.Expr
+
+      :returns: Polar coordinates and momenta ``(r, phi, p_r, p_phi)``. Numeric
+                inputs return numeric values; symbolic inputs return
+                :class:`AnalyticExpression` wrappers.
+      :rtype: tuple
+
+
+
+.. py:function:: eob_ID_to_ADM(eob_Wave, verbose=False, PN_order=2, rotate_on_x_axis=True)
+
+   Convert EOB initial data into ADM puncture-style initial data.
+
+   :param eob_Wave: Waveform-like object with ``pars`` and ``dyn`` mappings and a
+                    ``get_Pr()`` method. The object must provide ``pars["q"]``, the first
+                    entries of ``dyn["r"]``, ``dyn["phi"]``, ``dyn["Pphi"]``, and the
+                    first radial momentum from ``get_Pr()``.
+   :type eob_Wave: object
+   :param verbose: If ``True``, print a diagnostic summary of the transformed data.
+   :type verbose: bool, optional
+   :param PN_order: Post-Newtonian order retained in the EOB-to-ADM transformation.
+   :type PN_order: int, optional
+   :param rotate_on_x_axis: If ``True``, rotate the ADM coordinates so the punctures lie on the
+                            ``x`` axis at the initial time.
+   :type rotate_on_x_axis: bool, optional
+
+   :returns: Dictionary containing Cartesian coordinates and momenta in both EOB
+             and ADM frames, plus puncture placement information.
+   :rtype: dict[str, object]
+
+   :raises ValueError: If the transformed ADM separation is zero or the PN order is invalid.
+
+

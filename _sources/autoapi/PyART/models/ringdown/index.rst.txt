@@ -1,0 +1,76 @@
+PyART.models.ringdown
+=====================
+
+.. py:module:: PyART.models.ringdown
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.models.ringdown.params
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.models.ringdown.TEOBRingdown
+
+
+Module Contents
+---------------
+
+.. py:class:: TEOBRingdown(t, t_ref=0.0, parameters=None, modes=[(2, 2)], use_fits=True, noncircular=False, kind='aligned-spins-equal-mass', databases=['RIT'])
+
+   Bases: :py:obj:`object`
+
+
+   .. py:attribute:: params
+
+
+   .. py:attribute:: modes
+      :value: [(2, 2)]
+
+
+
+   .. py:attribute:: rd_params
+
+
+   .. py:attribute:: hlm
+
+
+   .. py:method:: _intrinsic_to_rdpars(modes)
+
+      Compute the ringdown parameters from the intrinsic ones
+
+
+
+   .. py:method:: _set_rd_params(modes)
+
+
+   .. py:method:: _rd_template(x, ell, emm)
+
+
+   .. py:method:: _eval_fits(nu, X1, X2, X12, a0, a12, S_hat, S_bar, chi1, chi2, ell, emm) -> None
+
+
+   .. py:method:: _eval_fits_qnm(af, ell, emm)
+
+
+   .. py:method:: _noncircular_corrections(modes, kind='non-spinning-equal-mass', databases=['RIT', 'SXS', 'ET'])
+
+
+   .. py:method:: _overwrite_rdpars(input_par)
+
+
+   .. py:method:: compute_modes(modes, t_ref, t)
+
+      Assume that the max of 22 is at t_ref (contained in t)
+
+
+
+.. py:data:: params
+

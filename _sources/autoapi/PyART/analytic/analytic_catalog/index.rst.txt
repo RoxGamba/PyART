@@ -1,0 +1,188 @@
+PyART.analytic.analytic_catalog
+===============================
+
+.. py:module:: PyART.analytic.analytic_catalog
+
+.. autoapi-nested-parse::
+
+   Shared infrastructure for file-backed analytic catalogs.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analytic.analytic_catalog.AnalyticCatalog
+
+
+Module Contents
+---------------
+
+.. py:class:: AnalyticCatalog(path: str)
+
+   Parent base class for analytic catalogs.
+
+   :param path: Path to the catalog
+   :type path: str
+
+   .. attribute:: path
+
+      Absolute path to the catalog.
+
+      :type: str
+
+
+   .. py:attribute:: structure_name
+      :value: 'analytic catalog'
+
+
+
+   .. py:attribute:: path
+      :value: b'.'
+
+
+
+   .. py:attribute:: _index_root
+      :value: b'.'
+
+
+
+   .. py:attribute:: _indexed_paths
+      :type:  dict[str, str]
+
+
+   .. py:attribute:: _path_to_key
+      :type:  dict[str, str]
+
+
+   .. py:method:: _set_index(base_root: str, suffixes: tuple[str, Ellipsis]) -> None
+
+      Populate the catalog index from the given root directory.
+
+      :param base_root: Directory to scan for quantity files.
+      :type base_root: str
+      :param suffixes: File suffixes to include in the index.
+      :type suffixes: tuple[str, ...]
+
+      :returns: The catalog index is stored on the instance.
+      :rtype: None
+
+      :raises FileNotFoundError: If ``base_root`` does not exist or is not a directory.
+
+
+
+   .. py:property:: indexed_paths
+      :type: types.MappingProxyType[str, str]
+
+
+      Expose the indexed catalog paths as a read-only mapping.
+
+      :returns: Immutable view of the canonical key to path mapping.
+      :rtype: types.MappingProxyType[str, str]
+
+
+   .. py:method:: list_quantities() -> list[str]
+
+      Return the sorted list of indexed quantity keys.
+
+      :returns: Sorted canonical keys currently stored in the catalog index.
+      :rtype: list[str]
+
+
+
+   .. py:method:: get_metadata(name=None, path=None)
+
+      Return metadata for a resolved catalog entry.
+
+      :param name: Indexed quantity name used for lookup.
+      :type name: str or None, optional
+      :param path: Direct path to the Mathematica file.
+      :type path: str or None, optional
+
+      :returns: Metadata association extracted from the selected entry.
+      :rtype: dict[str, Any]
+
+
+
+   .. py:method:: get_pn_quantity(name=None, path=None, order=None, variable='x')
+
+      Return a catalog quantity as an analytic expression wrapper.
+
+      When ``order`` is provided, the returned quantity is truncated
+      relative to the leading power of ``variable``.
+
+      :param name: Indexed quantity name used for lookup.
+      :type name: str or None, optional
+      :param path: Direct path to the Mathematica file.
+      :type path: str or None, optional
+      :param order: PN order relative to the leading power of ``variable``.
+      :type order: object, optional
+      :param variable: Variable used for PN order counting. When the selected variable
+                       is not present and the quantity has exactly one variable, that
+                       variable is inferred automatically.
+      :type variable: str or sympy.Symbol, optional
+
+      :returns: Parsed BHPT series wrapped for symbolic and numerical use.
+      :rtype: AnalyticExpression
+
+
+
+   .. py:method:: get_entry(name=None, path=None)
+      :abstractmethod:
+
+
+      Resolve, parse and cache a catalog quantity file.
+      This method should be implemented by subclasses to perform the actual
+      file parsing and return a structured representation of the quantity entry.
+
+
+
+   .. py:method:: _resolve_name(name: str, ambiguous_hint: str | None = None) -> tuple[str, str]
+
+      Resolve a quantity name against the catalog index.
+
+      :param name: User-facing quantity name or partial key.
+      :type name: str
+      :param ambiguous_hint: Additional guidance appended when multiple matches are found.
+      :type ambiguous_hint: str or None, optional
+
+      :returns: Canonical key and resolved file path.
+      :rtype: tuple[str, str]
+
+
+
+   .. py:method:: _resolve_existing_path(path: str, *roots: str) -> str
+
+      Resolve a file path and ensure the target exists.
+
+      :param path: Absolute or relative file path.
+      :type path: str
+      :param \*roots: Candidate roots used when ``path`` is relative.
+      :type \*roots: str
+
+      :returns: Absolute path to an existing file.
+      :rtype: str
+
+      :raises FileNotFoundError: If the resolved path does not exist.
+
+
+
+   .. py:method:: _resolve_indexed_path(path: str, *roots: str) -> tuple[str, str]
+
+      Resolve a path and verify that it belongs to the catalog index.
+
+      :param path: Absolute or relative file path.
+      :type path: str
+      :param \*roots: Candidate roots used when ``path`` is relative.
+      :type \*roots: str
+
+      :returns: Canonical quantity key and absolute file path.
+      :rtype: tuple[str, str]
+
+      :raises ValueError: If the resolved path exists outside the indexed tree or does not
+          correspond to an indexed quantity.
+
+
+
