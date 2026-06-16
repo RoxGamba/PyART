@@ -1,6 +1,8 @@
 import os, json, random, time, copy
 import numpy as np
 from scipy import optimize
+from scipy.signal import hilbert
+from scipy.stats import norm
 import logging
 
 from .match import Matcher
@@ -247,6 +249,7 @@ class Optimizer(object):
             np.random.seed(self.minimizer["opt_seed"])
             dashes = "-" * 45
             asterisks = "*" * 45
+            best_waveform = None
 
             eps = copy.copy(self.bounds_iter["eps_initial"])
 
@@ -268,10 +271,16 @@ class Optimizer(object):
                         i == 1 and j == 1 and opt_data is None
                     ):  # if first iter of both loops
                         opt_data = self.optimize_mismatch(use_ref_guess=True)
+                        best_waveform = self.opt_Waveform
                     else:
                         opt_data_new = self.optimize_mismatch(use_ref_guess=False)
+                        candidate_waveform = self.opt_Waveform
                         if opt_data_new["mm_opt"] < opt_data["mm_opt"]:
                             opt_data = opt_data_new
+                            best_waveform = candidate_waveform
+                        else:
+                            # Keep the waveform associated with the global best result.
+                            self.opt_Waveform = best_waveform
                     # if we reached a nice mismatch, break loop on initial guesses
                     if opt_data["mm_opt"] <= self.opt_good_mm:
                         break
@@ -328,6 +337,7 @@ class Optimizer(object):
 
             if json_file is not None:
                 self.save_mismatches(mm_data)
+            self.opt_Waveform = best_waveform
         self.opt_data = opt_data
         pass
 
@@ -743,11 +753,13 @@ class Optimizer(object):
         if cache is None:
             cache = {}
         metric = self.objective_settings.get("metric", "reference")
+
+        ret = None
         if metric == "reference":
-            return self.match_against_ref(
+            mm_obj = self.match_against_ref(
                 eob_Waveform,
-                verbose=verbose,
-                iter_loop=iter_loop,
+                verbose=False,
+                iter_loop=False,
                 cache=cache,
             )
 
@@ -784,18 +796,87 @@ class Optimizer(object):
                 aggregate = self.objective_settings.get("aggregate", "max")
                 mm_obj = self._aggregate_values(mm_values, aggregate)
 
-            if verbose and iter_loop:
-                self.annealing_counter += 1
-                self._log_progress_line(
-                    "  >> mismatch - iter  : {:.3e} - {:3d}".format(
-                        mm_obj, self.annealing_counter
-                    )
-                )
-            return mm_obj
+        ret = mm_obj
 
-        raise ValueError(
-            "objective_settings['metric'] must be one of: reference, mass_range"
-        )
+        if ret is None:
+            raise ValueError(
+                "objective_settings['metric'] must be one of: reference, mass_range"
+            )
+
+        penalty = 0.0
+        if self.objective_settings.get("low_freq_align", False):
+            # additionally perform a low-frequency alignment
+            # with a flat PSD and penalize the result if the
+            # merger time difference is > 5 M
+            time_factor = self.mm_settings.get("M", 1.0) * ut.consts["Msun"]
+            # estimate merger frequency from the inst. NR frequency
+            p22 = self.ref_Waveform.hlm[(2, 2)]["p"]
+            t22 = self.ref_Waveform.u * time_factor / self.ref_Waveform.metadata["M"]
+            omg22 = np.gradient(p22, t22)
+            f22 = omg22 / (2 * np.pi)
+            imx = np.argmax(self.ref_Waveform.hlm[(2, 2)]["A"])  # merger time index
+            f_merger = f22[imx]
+
+            # compute match up to f_merger, but use a flat PSD
+            mm_settings_low = dict(self.mm_settings)
+            # mm_settings_low["final_frequency_mm"] = f_merger / 2
+            mm_settings_low["psd"] = "flat"
+            _, matcher = self.match_against_ref(
+                eob_Waveform,
+                verbose=False,
+                iter_loop=False,
+                return_matcher=True,
+                cache={},
+                mm_settings=mm_settings_low,
+            )
+            # extract the time and phase shifts from the low-frequency match
+            out = matcher.match_out
+            h1f = out["h1f"]
+            h2f = out["h2f"]
+            j_shift = out["j_shift"]
+            ph_shift = out["ph_shift"]
+
+            # apply the time and phase shifts to the EOB waveform
+            h2f_shifted = h2f * np.exp(
+                1j * (2 * np.pi * j_shift * h2f.sample_frequencies + ph_shift)
+            )
+            h1t = h1f.to_timeseries()
+            h2t = h2f_shifted.to_timeseries()
+
+            # if we assume that ht is the real part of the complex waveform,
+            # we now reconstruct the full complex waveform via Hilbert transform
+            h1tc = hilbert(h1t)
+            h2tc = hilbert(h2t)
+
+            # find the time of merger (peak of amplitude) in the NR waveform
+            mrg_idx1 = np.argmax(np.abs(h1tc))
+            mrg_time_1 = h1t.sample_times[mrg_idx1]
+            mrg_idx2 = np.argmax(np.abs(h2tc))
+            mrg_time_2 = h2t.sample_times[mrg_idx2]
+            # transform the time difference into a mismatch penalty (e.g., quadratic)
+            # in geom units
+            M = self.mm_settings.get("M", 1.0) * ut.consts["Msun"]
+            tdiff = mrg_time_1 - mrg_time_2
+            penalty = (tdiff / M / 5.0) ** 2
+            ret = (mm_obj / 1e-4) ** 2 + penalty
+
+            # import matplotlib.pyplot as plt
+            # plt.plot(h1t.sample_times / M, np.abs(h1tc), label="NR")
+            # plt.plot(h2t.sample_times / M, np.abs(h2tc), label="EOB")
+            # plt.axvline(mrg_time_1 / M, color="k", linestyle="--", label="NR merger")
+            # plt.axvline(mrg_time_2 / M, color="r", linestyle="--", label="EOB merger")
+            # plt.legend()
+            # plt.show()
+
+        if verbose and iter_loop:
+            self.annealing_counter += 1
+            self._log_progress_line(
+                "  >> mismatch - penalty - iter  : {:.3e} - {:.3e} - {:3d}".format(
+                    mm_obj, penalty, self.annealing_counter
+                )
+            )
+
+        return ret
 
     def match_against_ref(
         self,
