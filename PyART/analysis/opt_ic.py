@@ -6,8 +6,7 @@ from scipy.stats import norm
 import logging
 
 from .match import Matcher
-from ..models.teob import Waveform_EOB
-from ..models.teob import CreateDict
+from ..models import teob, seob
 from ..models.teob import PotentialMinimum
 from ..utils import utils as ut
 
@@ -21,6 +20,7 @@ class Optimizer(object):
     def __init__(
         self,
         ref_Waveform,
+        model='teob',
         kind_ic="E0pph0",
         vrs=[
             "H_hyp",
@@ -101,6 +101,7 @@ class Optimizer(object):
 
         self.ref_Waveform = ref_Waveform
         self.opt_Waveform = None
+        self.model = model
 
         self.kind_ic = kind_ic
         self.use_nqc = use_nqc
@@ -589,7 +590,7 @@ class Optimizer(object):
             logging.info(f"{action} {json_file}\n")
         pass
 
-    def generate_EOB(self, ICs={"f0": None, "e0": None}, model_opts={}):
+    def generate_EOB(self, model='teob', ICs={"f0": None, "e0": None}, model_opts={}):
         """
         Generate an EOB waveform with given initial conditions (ICs).
         TODO: generalise this to any model
@@ -625,50 +626,63 @@ class Optimizer(object):
             "chi2x",
             "chi2y",
             "chi2z",
-            "LambdaAl2",
-            "LambdaBl2",
         ]
+        if model == "teob":
+            default_intrinsic += [
+                "LambdaAl2", 
+                "LambdaBl2",
+                ]
         for ic in ICs:
             if ic in default_intrinsic:
                 default_intrinsic.remove(ic)
 
-        if "LambdaAl2" not in ref_meta:
-            ref_meta["LambdaAl2"] = 0.0
-        if "LambdaBl2" not in ref_meta:
-            ref_meta["LambdaBl2"] = 0.0
+        if model == "teob":
+            if "LambdaAl2" not in ref_meta:
+                ref_meta["LambdaAl2"] = 0.0
+            if "LambdaBl2" not in ref_meta:
+                ref_meta["LambdaBl2"] = 0.0
 
         sub_meta = {key: ref_meta[key] for key in default_intrinsic}
-        sub_meta["use_nqc"] = self.use_nqc
-        sub_meta["ode_tmax"] = 3e5
 
         # map the ICs (and the other intrinsic pars) to the EOB parameters
         mapped_ids = self.map_function({**ICs, **sub_meta})
 
-        if "H_hyp" in mapped_ids or "J_hyp" in mapped_ids:
-            if self.r0_eob == "read":
-                # start close to the NR value, a little earlier
-                mapped_ids["r_hyp"] = ref_meta["r0"] * 1.1
-            else:
-                if self.r0_eob is not None:
-                    if self.r0_eob < ref_meta["r0"]:
-                        logging.warning(
-                            f'r0_eob={self.r0_eob} is smaller than the NR value r0={ref_meta["r0"]}'
-                        )
-                        logging.warning("         Setting r0_eob to NR value")
-                        mapped_ids["r_hyp"] = ref_meta["r0"]
-                    else:
-                        mapped_ids["r_hyp"] = self.r0_eob
-                mapped_ids["r_hyp"] = (
-                    self.r0_eob
-                )  # if None, it will be computed in the EOB model
+        if model == "teob":
+            sub_meta["use_nqc"] = self.use_nqc
+            sub_meta["ode_tmax"] = 3e5
+            if "H_hyp" in mapped_ids or "J_hyp" in mapped_ids:
+                if self.r0_eob == "read":
+                    # start close to the NR value, a little earlier
+                    mapped_ids["r_hyp"] = ref_meta["r0"] * 1.1
+                else:
+                    if self.r0_eob is not None:
+                        if self.r0_eob < ref_meta["r0"]:
+                            logging.warning(
+                                f'r0_eob={self.r0_eob} is smaller than the NR value r0={ref_meta["r0"]}'
+                            )
+                            logging.warning("         Setting r0_eob to NR value")
+                            mapped_ids["r_hyp"] = ref_meta["r0"]
+                        else:
+                            mapped_ids["r_hyp"] = self.r0_eob
+                    mapped_ids["r_hyp"] = (
+                        self.r0_eob
+                    )  # if None, it will be computed in the EOB model
 
         # add the mapped ICs to the sub_meta dictionary & additional model options
         # and run
         sub_meta.update(mapped_ids)
         try:
-            pars = CreateDict(**sub_meta)
+            if model == "teob":
+                dict_func = teob.CreateDict
+                eob_model = teob.Waveform_EOB
+            elif model == "seob":
+                dict_func = seob.CreateDict
+                eob_model = seob.Waveform_SEOB
+            else:
+                raise ValueError(f"Unknown model: {model}")
+            pars = dict_func(**sub_meta)
             pars = pars | self.model_opts | model_opts
-            eob_wave = Waveform_EOB(pars=pars)
+            eob_wave = eob_model(pars=pars)
         except Exception as e:
             logging.warning(f"Error occurred in EOB wave generation:\n{e}")
             eob_wave = None
@@ -945,7 +959,7 @@ class Optimizer(object):
             verbose = self.verbose
         # reassemble the ICs
         vs = {kys[i]: x[i] for i in range(len(kys))}
-        eob_Waveform = self.generate_EOB(ICs=vs)
+        eob_Waveform = self.generate_EOB(model=self.model, ICs=vs)
         if eob_Waveform is not None:
             mm = self.objective_mismatch(
                 eob_Waveform, verbose=self.verbose, iter_loop=True, cache=cache
@@ -1012,7 +1026,7 @@ class Optimizer(object):
                 vs0[ky] = np.random.uniform(bounds[ky][0], bounds[ky][1])
 
         metric = self.objective_settings.get("metric", "reference")
-        eob0 = self.generate_EOB(ICs=vs0)
+        eob0 = self.generate_EOB(model=self.model, ICs=vs0)
         if metric == "reference":
             mm0, matcher0 = self.match_against_ref(
                 eob0, iter_loop=False, return_matcher=True
@@ -1066,7 +1080,7 @@ class Optimizer(object):
             )
 
         # generate the eob waveform corresponding to the optimal ICs
-        eob_opt = self.generate_EOB(ICs=opts)
+        eob_opt = self.generate_EOB(model=self.model, ICs=opts)
         self.opt_Waveform = eob_opt
 
         if self.debug:
