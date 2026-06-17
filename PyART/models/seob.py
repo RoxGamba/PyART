@@ -86,20 +86,20 @@ class Waveform_SEOB(Waveform):
             )
             >= 1.0e-4
         ):
-            if (
-                "eccentricity" in params and params["eccentricity"] != 0.0
-            ) or (
-                 "rel_anomaly" in params and params["rel_anomaly"] != 0.0
+            if ("eccentricity" in params and params["eccentricity"] != 0.0) or (
+                "rel_anomaly" in params and params["rel_anomaly"] != 0.0
             ):
-                logging.error("Non-aligned spins not supported with orbital eccentricity for SEOBNRv5.")
+                logging.error(
+                    "Non-aligned spins not supported with orbital eccentricity for SEOBNRv5."
+                )
             else:
                 if params["approximant"] != "SEOBNRv5PHM":
-                    logging.info("In-plane spin components are non-zero; switching to SEOBNRv5PHM.")
+                    logging.info(
+                        "In-plane spin components are non-zero; switching to SEOBNRv5PHM."
+                    )
                     params["approximant"] = "SEOBNRv5PHM"
         else:
-            if (
-                "eccentricity" in self.pars and self.pars["eccentricity"] != 0.0
-            ) or (
+            if ("eccentricity" in self.pars and self.pars["eccentricity"] != 0.0) or (
                 "rel_anomaly" in self.pars and self.pars["rel_anomaly"] != 0.0
             ):
                 if self.pars["approximant"] != "SEOBNRv5EHM":
