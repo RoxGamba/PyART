@@ -74,7 +74,7 @@ class Waveform_SEOB(Waveform):
                 params["f22_start_geom"] / params["M"] / ut.consts["Msun"]
             )
 
-        # If x, y spin components given, check that approximant is SEOBNRv5->P<-HM
+        # If x, y spin components given and large enough, check that approximant is SEOBNRv5PHM
         if (
             max(
                 [
@@ -84,11 +84,31 @@ class Waveform_SEOB(Waveform):
                     np.abs(params["spin2y"]),
                 ]
             )
-            > 1.0e-10
+            >= 1.0e-4
         ):
-            if self.approx != "SEOBNRv5PHM":
-                logging.info("Switching to SEOBNRv5PHM for non-aligned spins.")
-                self.approx = "SEOBNRv5PHM"
+            if (
+                "eccentricity" in params and params["eccentricity"] != 0.0
+            ) or (
+                 "rel_anomaly" in params and params["rel_anomaly"] != 0.0
+            ):
+                logging.error("Non-aligned spins not supported with orbital eccentricity for SEOBNRv5.")
+            else:
+                if params["approximant"] != "SEOBNRv5PHM":
+                    logging.info("In-plane spin components are non-zero; switching to SEOBNRv5PHM.")
+                    params["approximant"] = "SEOBNRv5PHM"
+        else:
+            if (
+                "eccentricity" in self.pars and self.pars["eccentricity"] != 0.0
+            ) or (
+                "rel_anomaly" in self.pars and self.pars["rel_anomaly"] != 0.0
+            ):
+                if self.pars["approximant"] != "SEOBNRv5EHM":
+                    logging.info("Switching to SEOBNRv5EHM for eccentric waveform.")
+                    self.pars["approximant"] = "SEOBNRv5EHM"
+                for spin_comp in ["spin1x", "spin1y", "spin2x", "spin2y"]:
+                    if self.pars[spin_comp] != 0.0:
+                        # logging.warning(f"Setting {spin_comp} to 0 for eccentric waveform.")
+                        self.pars[spin_comp] = 0.0
 
     def _SEOB_params(self):
         pp = self.pars
@@ -111,6 +131,10 @@ class Waveform_SEOB(Waveform):
             "distance": pp["distance"],
         }
 
+        if ("eccentricity" in pp) and ("rel_anomaly" in pp):
+            params["eccentricity"] = pp["eccentricity"]
+            params["rel_anomaly"] = pp["rel_anomaly"]
+
         # modes selection:
         if "mode_array" in pp:
             mode_array = pp["mode_array"]
@@ -126,6 +150,11 @@ class Waveform_SEOB(Waveform):
             params["deltaT"] = pp["dt"]
         else:
             params["deltaT"] = 1 / 2048
+
+        # Add rest of parameter in pp to params
+        for key in pp.keys():
+            if key not in params:
+                params[key] = pp[key]
 
         return params
 
@@ -240,11 +269,12 @@ def CreateDict(
     df=1.0 / 128.0,
     dt=1.0 / 2048,
     phi_ref=0.0,
-    e0=0.0,
-    rel_anomaly=np.pi,
+    ecc=0.0,
+    anomaly=0.0,
     use_geom="yes",
     approx="SEOBNRv5HM",
     use_mode_lm=[(2, 2)],
+    lmax_nyquist=1,
 ):
     """
     Create the dictionary of parameters for pyseobnr->GenerateWaveform
@@ -285,9 +315,9 @@ def CreateDict(
         Time step in seconds. Default is 1/2048.
     phi_ref : float
         Reference phase at f0 in radians. Default is 0.0.
-    e0 : float
+    ecc : float
         Initial eccentricity at f0. Default is 0.0.
-    rel_anomaly : float
+    anomaly : float
         Relativistic anomaly at f0 in radians. Default is pi.
     use_geom : str
         Whether to use geometric units ('yes' or 'no'). Default is 'yes'.
@@ -296,6 +326,8 @@ def CreateDict(
         Default is 'SEOBNRv5HM'.
     use_mode_lm : list of tuple
         List of (l, m) tuples specifying which modes to use. Default is [(2, 2)].
+    lmax_nyquist : int
+        Maximum l mode for Nyquist frequency check. Default is 1 (i.e. no check).
     """
     pardic = {
         "q": q,
@@ -311,12 +343,13 @@ def CreateDict(
         "inclination": iota,
         "phi_ref": phi_ref,
         "f22_start": f0,
-        "eccentricity": e0,
-        "rel_anomaly": rel_anomaly,
+        "eccentricity": ecc,
+        "rel_anomaly": anomaly,
         "deltaF": df,
         "deltaT": dt,
         "ModeArray": use_mode_lm,
         "use_geometric_units": use_geom,
         "approximant": approx,
+        "lmax_nyquist": lmax_nyquist,
     }
     return pardic
