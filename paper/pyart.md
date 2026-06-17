@@ -40,22 +40,19 @@ bibliography: references.bib
 `PyART` (Python Analytical Relativity Toolkit) is an open-source Python package providing a unified framework for gravitational-wave (GW) modeling.
 It is designed to streamline tasks routinely encountered in the development and validation of waveform models, particularly at the interface between
 numerical relativity (NR) and analytical or semi-analytical approaches. The package provides tools for loading, manipulating, and comparing data
-from heterogeneous sources, including NR catalogs, widely used waveform models, and analytical post-Newtonian or post-Minkowskian calculations.
+from heterogeneous sources, including NR catalogs, widely used waveform models, and analytical post-Newtonian calculations.
 
 ---
 
 # Statement of Need
 
 Modeled gravitational-wave data analysis relies critically on accurate waveform templates, which underpin matched-filter searches, parameter estimation,
-and tests of general relativity. The construction and validation of these templates, in turn, require systematic comparisons between waveforms and dynamical
-quantities derived from multiple sources, including NR catalogs (e.g., SXS [@Scheel:2025jct], RIT [@Healy:2022wdn], GRA [@Rashti:2024yoc],
-Maya [@Ferguson:2023vta], CoRe [@Gonzalez:2022mgo]) and analytical calculations.
+and tests of general relativity. The construction and validation of these templates, in turn, require systematic comparisons between waveforms and dynamical quantities derived from multiple sources, including NR catalogs (e.g., SXS [@Scheel:2025jct], RIT [@Healy:2022wdn], GRA [@Rashti:2024yoc],
+Maya [@Ferguson:2023vta], CoRe [@Gonzalez:2022mgo], Cardiff-BAM [@Hamilton:2023qkv]) and analytical calculations.
 
 In practice, such comparisons are technically involved:
-- on the NR side, different catalogs adopt distinct conventions and extraction procedures, and waveform comparison requires careful handling of signal-processing steps such as windowing, tapering, interpolation, and zero-padding.
-These operations are error-prone and are typically not discussed in detail in the literature, making it difficult to reproduce results and to compare findings across studies.
-- on the analytical side, post-Newtonian and post-Minkowskian calculations are scattered across a considerable body of works, and their numerical implmentation often left to the single researcher.
-Beyond the risk of transcription errors, this approach causes significant effort duplication and time waste.
+  - on the NR side, different catalogs adopt distinct conventions and extraction procedures, and waveform comparison requires careful handling of signal-processing steps such as windowing, tapering, interpolation, and zero-padding. These operations are error-prone and are typically not discussed in detail in the literature, making it difficult to reproduce results and to compare findings across studies.
+  - on the analytical side, post-Newtonian calculations are scattered across a considerable body of works, and their numerical implmentation often left to the single researcher. Beyond the risk of transcription errors, this approach causes significant effort duplication and time waste.
 
 `PyART` addresses these challenges by providing a unified, publicly available toolkit for handling data from simulations, models and analytical calculations,
 and for performing systematic comparisons among them. In doing so, it aims to facilitate the development of accurate waveform templates
@@ -119,10 +116,9 @@ The basic parent class, `AnalyticalExpression`, provides a lightweight wrapper a
 The class methods include standard operations, such as differentiation, as well as more specialized tools, such as PN order counting and expansion, and conversion to `numpy`-compatible functions.
 
 We also provide:
-- coordinate transformation tools, necessary to map ADM to EOB coordinates and vice versa;
-- a collection of PN quantities (fluxes and Hamiltonians) currently natively implemented in the package, with plans to expand this collection in the future;
-- an interface with the `PNPedia` project, which offers a growing database of PN expressions for various quantities relevant to compact binary dynamics and waveforms;
-- an interface with [PostNewtonianSelfForce](https://github.com/BlackHolePerturbationToolkit/PostNewtonianSelfForce) from the Black Hole Perturbation Toolkit (TO BE IMPLEMENTED).
+  - coordinate transformation tools, necessary to map ADM to EOB coordinates and vice versa;
+  - an interface with the `PNPedia` project, which offers a growing database of PN expressions for various quantities relevant to compact binary dynamics and waveforms;
+  - an interface with [PostNewtonianSelfForce](https://github.com/BlackHolePerturbationToolkit/PostNewtonianSelfForce) from the Black Hole Perturbation Toolkit.
 
 ---
 
@@ -134,10 +130,8 @@ This design allows users to access waveforms from multiple sources through a con
 
 ### `models`
 
-The `models` module provides an interface for loading and handling analytical and semi-analytical waveform models. It includes wrappers for commonly used packages, such as
-`teobresums`, `pyseobnr`, `lalsuite`, `pycbc` (IMPLEMENT) and `gwsignal` (IMPLEMENT).
-User-defined models can be easily added by copying and modifying existing wrappers;
-developers of new models are encouraged to contribute their wrappers to the package, adding -- if desired -- support for additional model-specific features.
+The `models` module provides an interface for loading and handling analytical and semi-analytical waveform models. It includes wrappers for commonly used packages, such as `teobresums`, `pyseobnr`, `lalsuite` and `phenomxpy`.
+User-defined models can be easily added by copying and modifying existing wrappers; developers of new models are encouraged to contribute their wrappers to the package, adding -- if desired -- support for additional model-specific features.
 
 ### `numerical`
 
