@@ -13,8 +13,6 @@ from ..utils import wf_utils as wfu
 from ..utils import utils as ut
 
 
-
-
 class Waveform_SEOB(Waveform):
     """
     Class for SEOBNRv5HM waveforms
@@ -47,12 +45,12 @@ class Waveform_SEOB(Waveform):
         self.SEOB = SEOB.GenerateWaveform(params)
         self._run(params)
         pass
-    
+
     def check_pars(self, params):
         """
         Check and adjust pars dictionary
         """
-        
+
         if "q" not in params and "M" not in params:
             if "mass1" not in params or "mass2" not in params:
                 raise ValueError(
@@ -73,9 +71,7 @@ class Waveform_SEOB(Waveform):
 
             # Convert initial frequency to physical units, save geometric in dict
             params["f22_start"] = (
-            params["f22_start_geom"]
-            / params["M"]
-            / ut.consts["Msun"]
+                params["f22_start_geom"] / params["M"] / ut.consts["Msun"]
             )
 
         # If x, y spin components given, check that approximant is SEOBNRv5->P<-HM
@@ -102,7 +98,7 @@ class Waveform_SEOB(Waveform):
                 pp[f"spin{i}{w}"] = self.pars[f"chi{i}{w}"]
 
         params = {
-            "M": pp['M'],
+            "M": pp["M"],
             "q": pp["q"],
             "use_geometric_units": pp["use_geometric_units"],
             "f22_start_geom": pp["initial_frequency"],
@@ -115,7 +111,7 @@ class Waveform_SEOB(Waveform):
             "distance": pp["distance"],
         }
 
-         # modes selection:
+        # modes selection:
         if "mode_array" in pp:
             mode_array = pp["mode_array"]
         elif "use_mode_lm" in pp:
@@ -129,12 +125,11 @@ class Waveform_SEOB(Waveform):
         if "dt" in pp:
             params["deltaT"] = pp["dt"]
         else:
-            params["deltaT"] = 1/2048
+            params["deltaT"] = 1 / 2048
 
         return params
-    
 
-    def _run(self,params):
+    def _run(self, params):
         """
         Run the SEOB waveform generation and store the results in the class attributes.
         This method generates the waveform modes, computes the plus and cross polarizations,
@@ -145,14 +140,20 @@ class Waveform_SEOB(Waveform):
         nu = params["q"] / (1.0 + params["q"]) ** 2
         if params["use_geometric_units"] == "yes":
             M = params["M"]
-            fac = -1 * M * ut.consts["Msun"] * ut.consts["c_SI"] / (params["distance"] * ut.consts["pc_SI"] * 1.0e6)
+            fac = (
+                -1
+                * M
+                * ut.consts["Msun"]
+                * ut.consts["c_SI"]
+                / (params["distance"] * ut.consts["pc_SI"] * 1.0e6)
+            )
             t = t / (M * ut.consts["Msun"])
             for mode in hlm_seob.keys():
                 # Also rescale by nu
                 hlm_seob[mode] = hlm_seob[mode] / fac / nu
 
         self._u = t
-        #hlm = convert_hlm(hlm_seob)
+        # hlm = convert_hlm(hlm_seob)
         hlm = {}
         for ky in hlm_seob:
             hlm[ky] = get_multipole_dict(hlm_seob[ky])
@@ -195,7 +196,7 @@ class Waveform_SEOB(Waveform):
         return Eb, j
 
 
-#def convert_hlm(hlm):
+# def convert_hlm(hlm):
 #    """
 #    Convert the hlm dictionary from SEOB to PyART notation
 #
