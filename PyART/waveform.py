@@ -474,7 +474,7 @@ class Waveform(object):
 
         return new_u, hlm_i
 
-    def dynamics_from_hlm(self, modes, warning=False):
+    def dynamics_from_hlm(self, modes, warning=False, mnegative=False):
         """
         Compute GW energy and angular momentum fluxes from multipolar waveform
 
@@ -484,6 +484,8 @@ class Waveform(object):
             list of (l,m) modes to consider
         warning: bool
             if True, warn if dothlm is not found and needs to be computed
+        mnegative: bool
+            if True, account for the factor 2 due to m<0 modes
         Returns
         -------
         out: dict
@@ -502,6 +504,7 @@ class Waveform(object):
             self.dothlm,
             self.t,
             modes,
+            mnegative=mnegative,
         )
 
         self._dyn = {**self._dyn, **dynamicsdict}
