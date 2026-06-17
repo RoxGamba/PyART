@@ -191,3 +191,56 @@ def test_waveform_phase_shift():
         wf.hlm[(2, 2)]["p"][interior], expected_phase[interior], rtol=1e-4, atol=1e-4
     )
     assert np.allclose(wf.hlm[(2, 2)]["A"][interior], amp, rtol=1e-4, atol=1e-4)
+
+
+def test_waveform_plots():
+    # Create a mock waveform
+    wf = waveform.Waveform()
+
+    # fill the waveform with some mock data
+    u = np.linspace(0.0, 10.0, 20)
+    z = np.exp(-1j * 0.2 * u) * (1.0 + 0.2 * np.sin(u))
+    re = z.real
+    im = z.imag
+    h_dict = {
+        "z": z,
+        "A": np.abs(z),
+        "p": -np.unwrap(np.angle(z)),
+        "real": re,
+        "imag": im,
+    }
+    wf._hlm[(2, 2)] = h_dict
+    wf._u = u.copy()
+
+    # also add a fake dyn quantity for testing
+    wf._dyn["r"] = np.linspace(1.0, 2.0, len(u))
+    wf._dyn["t"] = u.copy()
+    wf.dyn["x"] = np.linspace(0.0, 1.0, len(u))
+    wf.dyn["y"] = np.linspace(0.0, 1.0, len(u))
+
+    # compute pols
+    wf.compute_hphc(phi=0.0, i=np.pi / 3)
+
+    # Test plotting methods
+    for quantity in ["hlm", "hp", "hc", "dyn"]:
+        ax = wf.plot(quantity, show=False)
+        assert ax is not None
+        assert len(ax.lines) == 1  # Should have one line for the mode or pol
+        assert ax.get_xlabel() == r"$t~[M]$"  # Check that the x-axis label is correct
+
+    # check that kwargs are passed to the plot function
+    ax = wf.plot("hlm", color="red", linestyle="--", show=False)
+    assert ax.lines[0].get_color() == "red"
+    assert ax.lines[0].get_linestyle() == "--"
+
+    # check that dynamics dics are plotted correctly
+    ax = wf.plot(
+        "dyn", show=False, dyn_quantities=["y", "x"], color="blue", linestyle="-"
+    )
+    # the x array should be the x values, and the y array should be the y values
+    assert np.allclose(ax.lines[0].get_xdata(), wf.dyn["x"])
+    assert np.allclose(ax.lines[0].get_ydata(), wf.dyn["y"])
+    assert ax.lines[0].get_color() == "blue"
+    assert ax.lines[0].get_linestyle() == "-"
+    assert ax.get_xlabel() == "$x$"
+    assert ax.get_ylabel() == "$y$"

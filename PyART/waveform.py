@@ -760,6 +760,90 @@ class Waveform(object):
         self._units = "SI"
         pass
 
+    def plot(self, quantity, show=False, **kwargs):
+        """
+        Plot the specified quantity for rapid visualization.
+
+        Parameters
+        ----------
+        quantity: str
+            quantity to plot, e.g. 'hp', 'hc', 'hlm', 'dothlm', 'psi4lm', 'dyn'
+
+        show: bool
+            if True, show the plot immediately, otherwise return the axes object for further customization.
+
+        kwargs: dict
+            additional keyword arguments to pass to the plotting function.
+            The following special keyword arguments are also recognized:
+            - ax: matplotlib.axes.Axes:
+                If provided, the plot will be drawn on this axes object. If not provided, a new figure and axes will be created.
+            - mode: tuple
+                For 'hlm', 'dothlm', or 'psi4lm', specify the (l,m) mode to plot. Default is (2,2).
+            - dyn_quantities: list
+                For 'dyn', specify the dynamics quantities to plot. Can be one or two quantities. If two are provided,
+                the first will be plotted against the second. If one is provided, it will be plotted against time.
+                Default is to plot r vs t
+        """
+
+        # check if a figure / ax is provided
+        ax = kwargs.pop("ax", None)
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 6))
+        if quantity in ["hp", "hc"]:
+            if getattr(self, quantity) is None:
+                raise RuntimeError(f"{quantity} is not defined! Cannot plot.")
+            ax.plot(self.u, getattr(self, quantity), **kwargs)
+            ax.set_ylabel(r"$h_{+}$" if quantity == "hp" else "$h_{\\times}$")
+            ax.set_xlabel(r"$t~[M]$")
+        elif quantity in ["hlm", "dothlm", "psi4lm"]:
+            wave_dict = getattr(self, quantity)
+            if not wave_dict:
+                raise RuntimeError(f"{quantity} is not defined! Cannot plot.")
+            # check if a mode is provided
+            if "mode" in kwargs:
+                mode = kwargs.pop("mode")
+                if mode not in wave_dict:
+                    raise ValueError(f"Mode {mode} not found in {quantity}.")
+            else:
+                # default to 22
+                mode = (2, 2)
+            ax.plot(
+                self.u, wave_dict[mode]["real"], label=f"({mode[0]}{mode[1]})", **kwargs
+            )
+            ax.set_ylabel(f"$h_{{{mode[0]}{mode[1]}}}$")
+            ax.set_xlabel(r"$t~[M]$")
+        elif quantity == "dyn":
+            if not self.dyn:
+                raise RuntimeError("dyn is not defined! Cannot plot.")
+            # check if a quantity is provided
+            if "dyn_quantities" in kwargs:
+                dyn_quantities = kwargs.pop("dyn_quantities")
+                if len(dyn_quantities) == 1:
+                    y = self.dyn[dyn_quantities[0]]
+                    x = self.dyn["t"]
+                    xlabel = r"$t~[M]$"
+                elif len(dyn_quantities) == 2:
+                    y = self.dyn[dyn_quantities[0]]
+                    x = self.dyn[dyn_quantities[1]]
+                    xlabel = f"${dyn_quantities[1]}$"
+                else:
+                    raise ValueError("too many dyn_quantities provided, max 2 allowed")
+                ax.plot(x, y, **kwargs)
+                ax.set_ylabel(f"${dyn_quantities[0]}$")
+                ax.set_xlabel(xlabel)
+            else:
+                # assume we want to plot t vs r
+                ax.plot(self.dyn["t"], self.dyn["r"], **kwargs)
+                ax.set_ylabel(r"$r$")
+                ax.set_xlabel(r"$t~[M]$")
+        else:
+            raise ValueError(f"Quantity {quantity} not recognized for plotting.")
+
+        if show:
+            plt.show()
+        else:
+            return ax
+
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
