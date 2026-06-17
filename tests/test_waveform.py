@@ -233,6 +233,13 @@ def test_waveform_plots():
     assert ax.lines[0].get_color() == "red"
     assert ax.lines[0].get_linestyle() == "--"
 
+    # check that the correct mode is plotted when mode is specified
+    wf._hlm[(3, 3)] = copy.deepcopy(h_dict)
+    wf._hlm[(3, 3)]["real"] = np.sin(0.3 * u)  # change the data to distinguish it
+    ax = wf.plot("hlm", mode=(3, 3), show=False)
+    assert np.allclose(ax.lines[0].get_xdata(), wf.u)
+    assert np.allclose(ax.lines[0].get_ydata(), wf.hlm[(3, 3)]["real"])
+
     # check that dynamics dics are plotted correctly
     ax = wf.plot(
         "dyn", show=False, dyn_quantities=["y", "x"], color="blue", linestyle="-"
@@ -244,3 +251,16 @@ def test_waveform_plots():
     assert ax.lines[0].get_linestyle() == "-"
     assert ax.get_xlabel() == "$x$"
     assert ax.get_ylabel() == "$y$"
+
+    # Finally check the Errors
+    with pytest.raises(ValueError):
+        wf.plot("invalid_quantity", show=False)
+        wf.plot("dyn", show=False, dyn_quantities=["t", "x", "y"])
+        wf.plot("hlm", show=False, mode=(5, 5))
+
+    wf._hp = None
+    wf._dyn = None
+    with pytest.raises(RuntimeError):
+        wf.plot("hp", show=False)
+        wf.plot("dyn", show=False)
+        wf.plot("psi4lm", show=False)
