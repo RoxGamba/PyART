@@ -40,8 +40,6 @@ class Waveform_Teuk(Waveform):
             self.load_dynamics()
         if "hlm" in load:
             self.load_hlm()
-        if "horizon" in load:
-            self.load_horizon()
 
     def __read_sims__(self):
         """
@@ -318,73 +316,6 @@ class Waveform_Teuk(Waveform):
         shift = self._compute_waveform_shift()
         self._u = self.u + shift
 
-    def load_horizon(self, m=None, nx=None, ny=None, cfl=2.0):
-        """
-        Integrate dJ/dt and dm/dt.
-        Resolution taken as highest available if not specified.
-        Summing over all specified values, or all available if none in input.
-        Skipping negative ms if the opposite is available.
-        """
-        if nx is None:
-            nx, ny = self.max_res
-            logging.warning(
-                f"load_horizon: assuming highest resolution, (nx, ny) = ({nx}, {ny})"
-            )
-        if m is None:
-            emm = self.sims[(nx, ny, cfl)]
-        else:
-            emm = [m]
-        cfls = "" if cfl == 2.0 else f"_cfl{cfl:.2g}"
-
-        res = {}
-        for mv in emm:
-            if mv < 0 and -mv in emm:
-                continue
-            data_dir = os.path.join(
-                self.path,
-                f"teuk_a{self.a:.4f}_r0{self.dyn['r'][0]:.3f}_{nx}x{ny}_proc4x2_m{mv}{cfls}/out1d",
-            )
-
-            # Multiply modes other than m = 0 by 2 to account for negative m values
-            by2 = 1.0 if mv == 0 else 2.0
-
-            for kind in ["E", "J"]:
-                fname = f"d{kind}dt_hrz_td_lsum_m{mv}_Poisson.dat"
-                if not os.path.exists(os.path.join(data_dir, fname)):
-                    logging.warning(
-                        f"load_horizon: no {kind} flux file found for m = {mv}, (nx, ny, cfl) = ({nx}, {ny}, {cfl})"
-                    )
-                    continue
-                t, dy = np.loadtxt(os.path.join(data_dir, fname), unpack=True)
-                if "t" not in res.keys():
-                    res["t"] = t
-                else:
-                    if len(t) != len(res["t"]):
-                        logging.warning(
-                            f"load_horizon: time arrays do not match for m = {mv}, (nx, ny, cfl) = ({nx}, {ny}, {cfl}). Interpolating, but check consistency!"
-                        )
-                    dy = np.interp(res["t"], t, dy)
-                    t = res["t"]
-                y = sp.integrate.cumulative_trapezoid(dy, t, initial=0)
-                if mv not in res.keys():
-                    res[mv] = {}
-                res[mv][kind] = {"dy": dy, "y": y}
-                if "sum" not in res.keys():
-                    res["sum"] = {}
-                if kind not in res["sum"].keys():
-                    res["sum"][kind] = {
-                        key: res[mv][kind][key] * by2 for key in res[mv][kind].keys()
-                    }
-                else:
-                    res["sum"][kind]["dy"] += res[mv][kind]["dy"] * by2
-                    res["sum"][kind]["y"] += res[mv][kind]["y"] * by2
-
-        chi = self.a + res["sum"]["J"]["y"] / (1 + res["sum"]["E"]["y"]) ** 2
-        res["chi"] = chi
-
-        self.hflx = res
-        return res
-
     def _compute_waveform_shift(self):
 
         rBL = self.dyn["r"][0]
@@ -421,60 +352,3 @@ class Waveform_Teuk(Waveform):
             - traj_shift
         )
         return shift
-
-    def pn_hflx(self, kind="E", coords="EOB", order="NNLO_mod_fact"):
-        """
-        Compute horizon fluxes from PN expressions.
-        Output normalized by nu^2 to agree with numerical flux.
-        TODO: promote this to Waveform method rather than Teuk?
-        """
-        if self.dyn is None:
-            self.load_dyn()
-
-        if "rdot" not in self.dyn.keys():
-            self.dyn["rdot"] = np.gradient(self.dyn["r"], self.dyn["t"])
-
-        if coords != "EOB":
-            raise NotImplementedError(
-                "Harmonic coordinate fluxes are not implemented yet."
-            )
-
-        if "QC" in order:
-            x = self.dyn["Omg"] ** (1.0 / 3)
-            return pn.mj1_dot_QC_NNLO(1.0, self.mu, x, self.dyn["r"], lo=order[-1])[
-                int(kind == "J")
-            ]
-        else:
-            if kind == "J":
-                return (
-                    pn.j1_dot_spin_eob(
-                        1.0,
-                        self.mu,
-                        self.dyn["r"],
-                        self.dyn["prstar"],
-                        self.dyn["pph"],
-                        self.a,
-                        0.0,
-                        order,
-                        omg=self.dyn["Omg"],
-                    )
-                    / self.mu**2
-                )
-            elif kind == "E":
-                return (
-                    pn.m1_dot_spin_eob(
-                        1.0,
-                        self.mu,
-                        self.dyn["r"],
-                        self.dyn["prstar"],
-                        self.dyn["pph"],
-                        self.a,
-                        0.0,
-                        order,
-                        omg=self.dyn["Omg"],
-                        rdot=self.dyn["rdot"],
-                    )
-                    / self.mu**2
-                )
-            else:
-                raise ValueError("Flux kind not recognized; only E and J accepted.")
