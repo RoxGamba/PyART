@@ -8,6 +8,11 @@ import copy
 import numpy as np
 import pytest
 
+# deactivate all plots during testing
+import matplotlib
+
+matplotlib.use("Agg")
+
 
 def test_waveform_attributes_and_mul():
 
@@ -252,6 +257,12 @@ def test_waveform_plots():
     assert ax.get_xlabel() == "$x$"
     assert ax.get_ylabel() == "$y$"
 
+    # check labels_on functionality (no legends or axis labels)
+    ax = wf.plot("hp", show=False, labels_on=False)
+    assert ax.get_xlabel() == ""
+    assert ax.get_ylabel() == ""
+    assert ax.get_legend() is None
+
     # Finally check the Errors
     with pytest.raises(ValueError):
         wf.plot("invalid_quantity", show=False)
@@ -264,3 +275,13 @@ def test_waveform_plots():
         wf.plot("hp", show=False)
         wf.plot("dyn", show=False)
         wf.plot("psi4lm", show=False)
+
+    # now let's look at the plot_modes method
+    ax = wf.plot_modes(show=False)
+    assert ax is not None
+    assert wf.plot_modes(show=True) is None
+    # check modes behavior
+    ax = wf.plot_modes(modes=None, show=False)
+    assert len(ax) == len(wf.hlm)  # should have one subplot per mode
+    ax = wf.plot_modes(modes=[(2, 2), (3, 3)], show=False)
+    assert len(ax) == 2  # should have two subplots

@@ -153,7 +153,7 @@ class Waveform(object):
 
     def __add_to__(self, var=None, factor=0.0):
         """
-        Add factor to specified variable
+        Add factor to specified complex modes (hlm, dothlm, psi4lm)
         Parameters
         ----------
         var: list
@@ -760,7 +760,7 @@ class Waveform(object):
         self._units = "SI"
         pass
 
-    def plot(self, quantity, show=False, **kwargs):
+    def plot(self, quantity, show=False, ax=None, labels_on=True, **kwargs):
         """
         Plot the specified quantity for rapid visualization.
 
@@ -772,29 +772,36 @@ class Waveform(object):
         show: bool
             if True, show the plot immediately, otherwise return the axes object for further customization.
 
+        ax: matplotlib.axes.Axes
+            If provided, the plot will be drawn on this axes object. If not provided, a new figure and axes will be created.
+
+        labels_on: bool or str
+            If True, set both x and y labels. If 'x', set only x label. If 'y', set only y label. If False, do not set any labels.
+
         kwargs: dict
             additional keyword arguments to pass to the plotting function.
             The following special keyword arguments are also recognized:
-            - ax: matplotlib.axes.Axes:
-                If provided, the plot will be drawn on this axes object. If not provided, a new figure and axes will be created.
             - mode: tuple
                 For 'hlm', 'dothlm', or 'psi4lm', specify the (l,m) mode to plot. Default is (2,2).
             - dyn_quantities: list
                 For 'dyn', specify the dynamics quantities to plot. Can be one or two quantities. If two are provided,
                 the first will be plotted against the second. If one is provided, it will be plotted against time.
                 Default is to plot r vs t
+
+        Returns
+        -------
+        If show is False, returns the matplotlib.axes.Axes object containing the plot. Otherwise, nothing is returned and the plot is displayed.
+
         """
 
-        # check if a figure / ax is provided
-        ax = kwargs.pop("ax", None)
         if ax is None:
-            fig, ax = plt.subplots(figsize=(8, 6))
+            _, ax = plt.subplots(figsize=(8, 6))
         if quantity in ["hp", "hc"]:
             if getattr(self, quantity) is None:
                 raise RuntimeError(f"{quantity} is not defined! Cannot plot.")
             ax.plot(self.u, getattr(self, quantity), **kwargs)
-            ax.set_ylabel(r"$h_{+}$" if quantity == "hp" else "$h_{\\times}$")
-            ax.set_xlabel(r"$t~[M]$")
+            xlabel = r"$t~[M]$"
+            ylabel = r"$h_{+}$" if quantity == "hp" else "$h_{\\times}$"
         elif quantity in ["hlm", "dothlm", "psi4lm"]:
             wave_dict = getattr(self, quantity)
             if not wave_dict:
@@ -810,8 +817,9 @@ class Waveform(object):
             ax.plot(
                 self.u, wave_dict[mode]["real"], label=f"({mode[0]}{mode[1]})", **kwargs
             )
-            ax.set_ylabel(f"$h_{{{mode[0]}{mode[1]}}}$")
-            ax.set_xlabel(r"$t~[M]$")
+            xlabel = r"$t~[M]$"
+            ylabel = f"$h_{{{mode[0]}{mode[1]}}}$"
+
         elif quantity == "dyn":
             if not self.dyn:
                 raise RuntimeError("dyn is not defined! Cannot plot.")
@@ -829,20 +837,56 @@ class Waveform(object):
                 else:
                     raise ValueError("too many dyn_quantities provided, max 2 allowed")
                 ax.plot(x, y, **kwargs)
-                ax.set_ylabel(f"${dyn_quantities[0]}$")
-                ax.set_xlabel(xlabel)
+                ylabel = f"${dyn_quantities[0]}$"
             else:
                 # assume we want to plot t vs r
                 ax.plot(self.dyn["t"], self.dyn["r"], **kwargs)
-                ax.set_ylabel(r"$r$")
-                ax.set_xlabel(r"$t~[M]$")
+                xlabel = r"$t~[M]$"
+                ylabel = r"$r~[M]$"
         else:
             raise ValueError(f"Quantity {quantity} not recognized for plotting.")
 
+        # labels_on can be True, False, x or y
+        # if x, only set x label, if y, only set y label
+        if labels_on:
+            if labels_on in [True, "x"]:
+                ax.set_xlabel(xlabel)
+            if labels_on in [True, "y"]:
+                ax.set_ylabel(ylabel)
         if show:
             plt.show()
         else:
             return ax
+
+    def plot_modes(self, modes=None, show=False, **kwargs):
+        """
+        Plot the waveform modes.
+        If none are specified, plot all of them.
+
+        Parameters
+        ----------
+        modes: list of tuples
+            List of (l,m) modes to plot. If None, all modes will be plotted
+        show: bool
+            If True, display the plot. If False, return the axes object for further customization.
+        kwargs: dict
+            Additional keyword arguments to pass to the plotting function.
+        """
+        if modes is None:
+            modes = self.hlm.keys()
+        # setup ax depending on the number of modes, 2 cols, nrows = ceil(nmodes/2)
+        nrows = int(np.ceil(len(modes) / 2))
+
+        _, axs = plt.subplots(
+            nrows=nrows, ncols=2, figsize=(10, 3 * nrows), sharex=True
+        )
+        axs = axs.flatten()
+        for i, lm in enumerate(modes):
+            self.plot("hlm", mode=lm, ax=axs[i], labels_on="y", **kwargs)
+        if show:
+            plt.show()
+        else:
+            return axs
 
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
