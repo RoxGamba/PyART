@@ -1,7 +1,7 @@
 import os, subprocess
 import logging
 import numpy as np
-from PyART.utils.wf_utils import get_multipole_dict, k_to_ell, k_to_emm
+#from PyART.utils.wf_utils import get_multipole_dict, k_to_ell, k_to_emm
 
 try:
     import pyseobnr.generate_waveform as SEOB
@@ -141,7 +141,7 @@ class Waveform_SEOB(Waveform):
         elif "use_mode_lm" in pp:
             mode_array = []
             for k in pp["use_mode_lm"]:
-                mode_array.append((k_to_ell(k), k_to_emm(k)))
+                mode_array.append((wfu.k_to_ell(k), wfu.k_to_emm(k)))
         else:
             mode_array = [(2, 2)]
         params["mode_array"] = mode_array
@@ -185,7 +185,7 @@ class Waveform_SEOB(Waveform):
         # hlm = convert_hlm(hlm_seob)
         hlm = {}
         for ky in hlm_seob:
-            hlm[ky] = get_multipole_dict(hlm_seob[ky])
+            hlm[ky] = wfu.get_multipole_dict(hlm_seob[ky])
 
         self._hlm = hlm
 
@@ -223,35 +223,6 @@ class Waveform_SEOB(Waveform):
         self.Eb = Eb
         self.j = j
         return Eb, j
-
-
-# def convert_hlm(hlm):
-#    """
-#    Convert the hlm dictionary from SEOB to PyART notation
-#
-#    Parameters
-#    ----------
-#    hlm : dict
-#        Dictionary of waveform modes from SEOBNR, with keys as (l, m) tuples
-#        and values as complex numpy arrays.
-#    Returns
-#    -------
-#    hlm_conv : dict
-#        Dictionary of waveform modes in PyART notation, with each mode as a
-#        dictionary containing 'real', 'imag', 'A', 'p', and 'z'.
-#    """
-#    hlm_conv = {}
-#    for key in hlm.keys():
-#        A = np.abs(hlm[key])
-#        p = -np.unwrap(np.angle(hlm[key]))
-#        hlm_conv[key] = {
-#            "real": A * np.cos(p),
-#            "imag": -1 * A * np.sin(p),
-#            "A": A,
-#            "p": p,
-#            "z": A * np.exp(-1j * p),
-#        }
-#    return hlm_conv
 
 
 def CreateDict(
