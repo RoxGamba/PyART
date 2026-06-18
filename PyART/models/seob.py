@@ -1,6 +1,11 @@
 import os, subprocess
 import logging
 import numpy as np
+<<<<<<< HEAD
+=======
+
+# from PyART.utils.wf_utils import get_multipole_dict, k_to_ell, k_to_emm
+>>>>>>> db107fa1231c9897ca3a2e75c3cf8617c5fd61c4
 
 try:
     import pyseobnr.generate_waveform as SEOB
