@@ -290,6 +290,7 @@ class Waveform_SXS(Waveform):
         sxs_sim = sxsmod.load(
             name_level,
             extrapolation_order=extrapolation_order,
+            extrapolation=f"N{extrapolation_order}",
             ignore_deprecation=ignore_deprecation,
             progress=True,
         )
