@@ -1,0 +1,131 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1323, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+from PyART.catalogs import sxs
+
+# NR curve from the SXS catalog
+sxs_waveform = sxs.Waveform_SXS(
+    ID="0180",
+    download=True,
+    ignore_deprecation=True,
+    downloads=["hlm", "metadata", "horizons"],
+    load=["hlm", "metadata", "horizons"],
+)
+t_max, _, _, _, mrg_idx = sxs_waveform.find_max(return_idx=True, mode=(2, 2))
+M_adm_0 = sxs_waveform.metadata["E0byM"]
+J_adm_0 = sxs_waveform.metadata["Jz0"]
+m1 = sxs_waveform.metadata["m1"]
+m2 = sxs_waveform.metadata["m2"]
+modes = [(2, 2), (2, 1), (3, 3), (4, 4), (2, -2), (2, -1), (3, -3), (4, -4)]
+eb, e, jorb = sxs_waveform.ej_from_hlm(M_adm_0, J_adm_0, m1, m2, modes=modes)
+
+# identify NR merger
+e_mrg = eb[mrg_idx]
+j_mrg = jorb[mrg_idx]
+
+fig, ax = plt.subplots(2, 1, sharex=True)
+ax0, ax1 = ax
+ax0.plot(jorb, eb, "k-", lw=2, label="NR (SXS:BBH:0180)")
+ax0.scatter(j_mrg, e_mrg, color="k", label="Merger")
+
+# Flip arrays to have increasing J/nu for interpolation.
+jorb = jorb[::-1]
+eb = eb[::-1]
+
+# PN curve (NPN order)
+for order, color in zip(energy_orders, ["C0", "C1", "C2", "C3", "C4"]):
+    energy_expr = npd.get_pn_quantity(
+        "energy_circular_nonspinning_binding", order=order
+    )
+    angular_momentum_expr = npd.get_pn_quantity(
+        "angular_momentum_circular_nonspinning_conservative", order=order
+    )
+
+    E, _ = evaluate_expression(energy_expr)
+    J, _ = evaluate_expression(angular_momentum_expr)
+
+    ax0.plot(
+        J / value_map["nu"],
+        E / value_map["nu"],
+        "--",
+        color=color,
+        lw=2,
+        label=f"{order}PN",
+    )
+
+    # Plot residuals after interpolating both curves on a shared J grid.
+    jmin, jmax = np.min(J / value_map["nu"]), np.max(jorb)
+    jint = np.linspace(jmin, jmax, 500)
+    idx_min = np.argmin(np.abs(J / value_map["nu"] - jmin))
+    J_plot = J[: idx_min - 1][::-1]
+    E_plot = E[: idx_min - 1][::-1]
+
+    eb_nr_int = np.interp(jint, jorb, eb)
+    eb_pn_int = np.interp(jint, J_plot / value_map["nu"], E_plot / value_map["nu"])
+    deltaE = np.abs(eb_nr_int - eb_pn_int)
+    ax1.semilogy(jint, deltaE, "-", lw=2, color=color, label=f"{order}PN")
+
+ax0.set_xlim(np.min(jorb) * 0.8, np.max(jorb) * 1.1)
+ax0.set_ylim(np.min(eb) * 1.2, np.max(eb) * 0.1)
+ax0.set_ylabel(r"$E_b/\nu$")
+# legend out of plot, on top and horizontal
+ax0.legend(loc="upper center",
+           bbox_to_anchor=(0.5, 1.3),
+           ncol=4, fontsize="small",
+           fancybox=False,
+           edgecolor='none'
+        )
+ax1.set_xlabel(r"$j/M^2$")
+ax1.set_ylabel(r"$|E_b^{NR} - E_b^{PN}|$")
+plt.show()
+------------------
+
+
+[31m---------------------------------------------------------------------------[39m
+[31mFileNotFoundError[39m                         Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[3][39m[32m, line 4[39m
+[32m      1[39m [38;5;28;01mfrom[39;00m PyART.catalogs [38;5;28;01mimport[39;00m sxs
+[32m      2[39m 
+[32m      3[39m [38;5;66;03m# NR curve from the SXS catalog[39;00m
+[32m----> [39m[32m4[39m sxs_waveform = sxs.Waveform_SXS(
+[32m      5[39m     ID=[33m"0180"[39m,
+[32m      6[39m     download=[38;5;28;01mTrue[39;00m,
+[32m      7[39m     ignore_deprecation=[38;5;28;01mTrue[39;00m,
+
+[36mFile [39m[32m~/work/PyART/PyART/PyART/catalogs/sxs.py:181[39m, in [36mWaveform_SXS.__init__[39m[34m(self, path, ID, order, level, cut_N, cut_U, ellmax, load, download, downloads, load_m0, nu_rescale, src, ignore_deprecation, basename)[39m
+[32m    178[39m     [38;5;28;01mraise[39;00m [38;5;167;01mRuntimeError[39;00m([33mf[39m[33m"[39m[33mInvalid input for level: [39m[38;5;132;01m{[39;00m[38;5;28mself[39m.level[38;5;132;01m}[39;00m[33m"[39m)
+[32m    180[39m [38;5;28;01mif[39;00m [33m"[39m[33mmetadata[39m[33m"[39m [38;5;129;01min[39;00m load:
+[32m--> [39m[32m181[39m     [30;43mself[39;49m[30;43m.[39;49m[30;43mload_metadata[39;49m[30;43m([39;49m[30;43m)[39;49m
+[32m    182[39m [38;5;28;01mif[39;00m [33m"[39m[33mhlm[39m[33m"[39m [38;5;129;01min[39;00m load:
+[32m    183[39m     [38;5;28mself[39m.load_hlm(load_m0=load_m0)
+
+[36mFile [39m[32m~/work/PyART/PyART/PyART/catalogs/sxs.py:423[39m, in [36mWaveform_SXS.load_metadata[39m[34m(self)[39m
+[32m    417[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mload_metadata[39m([38;5;28mself[39m):
+[32m    418[39m [38;5;250m    [39m[33;03m"""[39;00m
+[32m    419[39m [33;03m    Load the sxs metadata from the metadata.json file.[39;00m
+[32m    420[39m [33;03m    Transform it to the PyART format, but also store the original[39;00m
+[32m    421[39m [33;03m    metadata as self.ometadata for completeness.[39;00m
+[32m    422[39m [33;03m    """[39;00m
+[32m--> [39m[32m423[39m     [38;5;28;01mwith[39;00m [30;43mopen[39;49m[30;43m([39;49m[30;43mself[39;49m[30;43m.[39;49m[30;43mget_lev_fname[39;49m[30;43m([39;49m[30;43mbasename[39;49m[30;43m=[39;49m[30;43m"[39;49m[30;43mmetadata.json[39;49m[30;43m"[39;49m[30;43m)[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m"[39;49m[30;43mr[39;49m[30;43m"[39;49m[30;43m)[39;49m [38;5;28;01mas[39;00m file:
+[32m    424[39m         ometa = json.load(file)  [38;5;66;03m# original_metadata[39;00m
+[32m    425[39m         file.close()
+
+[31mFileNotFoundError[39m: [Errno 2] No such file or directory: '../dat/SXS/SXS_BBH_0180/Lev4/metadata.json'
+

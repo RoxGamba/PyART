@@ -1,0 +1,54 @@
+PyART.models.phenom
+===================
+
+.. py:module:: PyART.models.phenom
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.models.phenom.Waveform_IMRPhenomT
+
+
+Module Contents
+---------------
+
+.. py:class:: Waveform_IMRPhenomT(pars=None, approx='IMRPhenomTHM', reference_frame='CP', skip_hphc=False)
+
+   Bases: :py:obj:`PyART.waveform.Waveform`
+
+
+   Interface for IMRPhenomT via phenomxpy
+
+
+   .. py:attribute:: pars
+      :value: None
+
+
+
+   .. py:attribute:: approx
+      :value: 'IMRPhenomTHM'
+
+
+
+   .. py:attribute:: _domain
+      :value: 'Time'
+
+
+
+   .. py:attribute:: reference_frame
+      :value: 'CP'
+
+
+
+   .. py:method:: _phenom_params()
+
+
+   .. py:method:: _get_approximant(params)
+
+
+   .. py:method:: _run(skip_hphc=False)
+
+

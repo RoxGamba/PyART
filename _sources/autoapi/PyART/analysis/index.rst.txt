@@ -1,0 +1,22 @@
+PyART.analysis
+==============
+
+.. py:module:: PyART.analysis
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/PyART/analysis/calc_coprecessing/index
+   /autoapi/PyART/analysis/eccentricity_calc/index
+   /autoapi/PyART/analysis/hypfit/index
+   /autoapi/PyART/analysis/integrate_wave/index
+   /autoapi/PyART/analysis/match/index
+   /autoapi/PyART/analysis/opt_ic/index
+   /autoapi/PyART/analysis/parspace_TEOB/index
+   /autoapi/PyART/analysis/scattering_angle/index
+
+

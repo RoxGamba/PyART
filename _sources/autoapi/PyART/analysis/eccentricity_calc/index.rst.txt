@@ -1,0 +1,187 @@
+PyART.analysis.eccentricity_calc
+================================
+
+.. py:module:: PyART.analysis.eccentricity_calc
+
+.. autoapi-nested-parse::
+
+   Module for calculating the orbital eccentricity from gravitational waveform data
+   using various definitions and post-Newtonian (PN) approximations.
+
+   Classes
+   -------
+   EccentricityCalculator
+       Computes the eccentricity from a waveform using PN formulas or external
+       amplitude fitting methods.
+
+   .. rubric:: References
+
+   - Eq. 4.8 of https://arxiv.org/pdf/1507.07100.pdf (3PN formula for e_t in Harmonic coordinates)
+   - https://github.com/anu-gw/gw_eccentricity (AmplitudeFits method)
+
+   Dependencies
+   ------------
+   - numpy
+   - gw_eccentricity (optional, required for 'gwecc' method)
+
+   .. rubric:: Example
+
+   >>> from eccentricity_calc import EccentricityCalculator
+   >>> ecc_calc = EccentricityCalculator(h, pars, kind="3PN")
+   >>> eccentricity = ecc_calc.e
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.eccentricity_calc.EccentricityCalculator
+
+
+Module Contents
+---------------
+
+.. py:class:: EccentricityCalculator(h, pars, t=None, kind='3PN')
+
+   Class to compute eccentricity from a waveform using various definitions.
+   :param h: Waveform object containing necessary data for eccentricity calculation.
+   :type h: object
+   :param pars: Dictionary of parameters required for the calculation (e.g., mass ratio 'q', reference time 'tref_in').
+   :type pars: dict
+   :param t: Time array associated with the waveform.
+   :type t: array-like, optional
+   :param omg: Frequency array associated with the waveform.
+   :type omg: array-like, optional
+   :param kind: String specifying the method for eccentricity calculation. Supported values are "0PN", "1PN", "2PN", "3PN", and "gwecc".
+   :type kind: str, optional
+
+   .. attribute:: h
+
+      Waveform object.
+
+      :type: object
+
+   .. attribute:: t
+
+      Time array.
+
+      :type: array-like
+
+   .. attribute:: omg
+
+      Frequency array.
+
+      :type: array-like
+
+   .. attribute:: kind
+
+      Method for eccentricity calculation.
+
+      :type: str
+
+   .. attribute:: pars
+
+      Parameters for calculation.
+
+      :type: dict
+
+   .. attribute:: e
+
+      Computed eccentricity.
+
+      :type: float or array-like
+
+   .. method:: compute_eccentricity(kind)
+
+      Computes the eccentricity using the specified method.
+
+   .. method:: _compute_eccentricity_PN_EJ(kind)
+
+      Computes the eccentricity using the PN formula up to 3PN order.
+
+   .. method:: _compute_eccentricity_gwecc(kind, tref_in=None, method="AmplitudeFits")
+
+      Computes the eccentricity using the gw_eccentricity package.
+
+
+
+   .. py:attribute:: h
+
+
+   .. py:attribute:: t
+      :value: None
+
+
+
+   .. py:attribute:: kind
+      :value: '3PN'
+
+
+
+   .. py:attribute:: pars
+
+
+   .. py:attribute:: e
+
+
+   .. py:method:: compute_eccentricity(kind)
+
+      Compute the eccentricity based on the specified method.
+      :param kind: The type of eccentricity to compute. Supported values are:
+                   - "PN": Post-Newtonian eccentricity.
+                   - "gwecc": Gravitational wave eccentricity.
+      :type kind: str
+
+      :returns: The computed eccentricity.
+      :rtype: float or array-like
+
+      :raises NotImplementedError: If the specified kind is not supported.
+
+      .. rubric:: Notes
+
+      Only PN and gwecc eccentricity calculations are currently implemented.
+
+
+
+   .. py:method:: _compute_eccentricity_PN_EJ(kind)
+
+      Compute eccentricity from the waveform using the 3PN formula
+      Eq. 4.8 of https://arxiv.org/pdf/1507.07100.pdf
+      e_t in Harmonic coordinates
+
+      :param kind: PN order for the eccentricity calculation. Must be one of:
+                   "0PN", "1PN", "2PN", "3PN".
+      :type kind: str
+
+      :returns: The computed eccentricity at the requested PN order.
+      :rtype: float
+
+      :raises NotImplementedError: If `kind` is not one of the supported PN orders ("0PN", "1PN", "2PN", "3PN").
+
+
+
+   .. py:method:: _compute_eccentricity_gwecc(kind, tref_in=None, method='AmplitudeFits')
+
+      Computes the eccentricity of the waveform using the `gw_eccentricity` package.
+      :param kind: The type of eccentricity calculation to perform.
+      :type kind: str
+      :param tref_in: Reference time for the eccentricity measurement. If None, uses default.
+      :type tref_in: float or None, optional
+      :param method: The method to use for amplitude fits. Default is "AmplitudeFits".
+      :type method: str, optional
+
+      :returns: The computed eccentricity value.
+      :rtype: float
+
+      :raises ImportError: If the `gw_eccentricity` package is not installed.
+
+      .. rubric:: Notes
+
+      This function requires the `gw_eccentricity` package to be installed.
+      The waveform data is extracted from the (2, 2) mode.
+      The result is also stored in `self.res`.
+
+
+

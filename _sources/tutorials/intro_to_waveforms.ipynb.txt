@@ -1,0 +1,294 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "da4e49ca",
+   "metadata": {},
+   "source": [
+    "# Intro to Waveforms\n",
+    "\n",
+    "This tutorial demonstrates how to use PyART's waveform class"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "4230ec49",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "%config InlineBackend.figure_format = 'retina'\n",
+    "\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "from matplotlib import rcParams\n",
+    "import seaborn as sns\n",
+    "\n",
+    "# logging configuration, default INFO level\n",
+    "from PyART.logging_config import setup_logging\n",
+    "setup_logging()\n",
+    "\n",
+    "# Set up Seaborn aesthetics\n",
+    "sns.set_context('talk') \n",
+    "sns.set_theme(font_scale=1.2)\n",
+    "sns.set_style('ticks')\n",
+    "\n",
+    "# Update matplotlib rcParams\n",
+    "rcParams.update(\n",
+    "    {\n",
+    "        'text.usetex': False,\n",
+    "        'font.family': 'stixgeneral',\n",
+    "        'mathtext.fontset': 'stix',\n",
+    "        'axes.grid': True,\n",
+    "        'grid.linestyle': ':',\n",
+    "        'grid.color': '#bbbbbb',\n",
+    "        'axes.linewidth': 1,\n",
+    "    }\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c71187ac",
+   "metadata": {},
+   "source": [
+    "We now create an empty Waveform object and inspect its attributes.\n",
+    "This class is inherited by all waveform catalogs and models, meaning that they will *all* have these attributes and methods.  \n",
+    "For more information, see the [Waveform class documentation](https://roxgamba.github.io/PyART/autoapi/PyART/waveform/index.html)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a126bf80",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from PyART.waveform import Waveform\n",
+    "\n",
+    "# Create an empty Waveform object\n",
+    "waveform = Waveform()\n",
+    "\n",
+    "attributes = [attr for attr in dir(waveform) if not attr.startswith('_') and not callable(getattr(waveform, attr))]\n",
+    "methods = [method for method in dir(waveform) if not method.startswith('_') and callable(getattr(waveform, method))]\n",
+    "\n",
+    "print(\"Attributes of the Waveform object:\")\n",
+    "for attr in attributes:\n",
+    "    print(f\"- {attr}\")\n",
+    "\n",
+    "print(\"\\nMethods of the Waveform object:\")\n",
+    "for method in methods:\n",
+    "    print(f\"- {method}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "202cbde6",
+   "metadata": {},
+   "source": [
+    "We now load a waveform from the SXS catalog and plot its modes $h_{\\ell m}$.  \n",
+    "They are stored as a dictionary of the form: `hlm[(l,m)]`. Each dictionary entry has the amplitude: `A` and phase `p` of the mode, as well as the `real` and `imag` part of $h_{\\ell,m}$.\n",
+    "\n",
+    "Note that, by default, the modes are *not* interpolated to a uniform time grid. Therefore, before plotting, we:\n",
+    "- Interpolate to a uniform time grid with `waveform.interpolate_hlm`\n",
+    "- Shift the time array so that the (2,2) mode peaks at $t=0M$, using the `find_max` method."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "0917632c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from PyART.catalogs import sxs\n",
+    "\n",
+    "# Utility function to check if an array is uniformly spaced\n",
+    "def is_uniform(arr, rtol=1e-10, atol=1e-12):\n",
+    "    delta = np.diff(arr)\n",
+    "    return np.allclose(delta, delta[0], rtol=rtol, atol=atol)\n",
+    "\n",
+    "sxs_waveform = sxs.Waveform_SXS(ID='0180',\n",
+    "                                download=True,\n",
+    "                                ignore_deprecation=True,\n",
+    "                                downloads=[\"hlm\", \"metadata\", \"horizons\"],\n",
+    "                                load=[\"hlm\", \"metadata\", \"horizons\"]\n",
+    "                                )\n",
+    "\n",
+    "\n",
+    "# verify that the time array is uniform\n",
+    "print(\"Is the time array uniform?\", is_uniform(sxs_waveform.u))\n",
+    "\n",
+    "# interpolate to uniform time gri, dT = 1M\n",
+    "t_interp, hlm_interp = sxs_waveform.interpolate_hlm(1)\n",
+    "\n",
+    "# overwrite time array and modes in the waveform object\n",
+    "sxs_waveform._t = t_interp\n",
+    "sxs_waveform._u = t_interp\n",
+    "sxs_waveform._hlm = hlm_interp\n",
+    "\n",
+    "# verify that the time array is uniform\n",
+    "print(\"Is the time array uniform?\", is_uniform(sxs_waveform.u))\n",
+    "\n",
+    "t_max, _, _, _, mrg_idx = sxs_waveform.find_max(return_idx=True, mode=(2,2))\n",
+    "\n",
+    "fig, ax = plt.subplots()\n",
+    "modes = [(2, 2), (2, 1), (3, 3), (4, 4), (2, -2), (2, -1), (3, -3), (4, -4)]\n",
+    "for mode in modes:\n",
+    "    ax.semilogy(sxs_waveform.u-t_max, sxs_waveform.hlm[mode]['A'], label=f'{mode}')\n",
+    "\n",
+    "# legend, out of box\n",
+    "ax.legend(ncol=1, bbox_to_anchor=(1.05, 1), loc='upper left')\n",
+    "ax.axvline(0, color='k', linestyle='--', alpha=0.5)\n",
+    "ax.set_xlabel('t/M')\n",
+    "ax.set_ylabel(r'$h_{\\ell m}/\\nu$')\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "49d6ab79",
+   "metadata": {},
+   "source": [
+    "We now use the modes to compute the energy and angular momentum radiated as a function of time.\n",
+    "To do so we use the `ej_from_hlm` method of the Waveform class.\n",
+    "\n",
+    "Note that this method requires knowledge of the initial ADM mass and angular\n",
+    "momentum of the system, which are stored as attributes of the Waveform object (and automatically loaded, for most catalogs)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "03b2979f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "M_adm_0 = sxs_waveform.metadata['E0byM']\n",
+    "J_adm_0 = sxs_waveform.metadata['Jz0']\n",
+    "m1 = sxs_waveform.metadata['m1']\n",
+    "m2 = sxs_waveform.metadata['m2']\n",
+    "\n",
+    "eb, e, jorb = sxs_waveform.ej_from_hlm(M_adm_0, J_adm_0, m1, m2, modes=modes)\n",
+    "\n",
+    "# identify merger\n",
+    "e_mrg = eb[mrg_idx]\n",
+    "j_mrg = jorb[mrg_idx]\n",
+    "\n",
+    "fig, ax = plt.subplots()\n",
+    "ax.plot(jorb, eb)\n",
+    "ax.set_xlabel(r'$J/M^2$')\n",
+    "ax.set_ylabel(r'$E_b/M$')\n",
+    "ax.scatter(j_mrg, e_mrg, color='k', label='Merger')\n",
+    "ax.set_title('Binding energy vs Angular Momentum')\n",
+    "plt.show()\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bfc68330",
+   "metadata": {},
+   "source": [
+    "We will now look at the dynamics. This is not available for all catalogs/models. In the case of SXS waveforms, we do load Horizon data when we download the waveform and can access it."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d74e74ec",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# plot the mass / spin evolution\n",
+    "fig, axs = plt.subplots(2, 1, figsize=(12, 8), sharex=True)\n",
+    "axs[0].semilogy(sxs_waveform.dyn['t'], abs(sxs_waveform.dyn['m1']-m1), label=r'$m_1$')\n",
+    "axs[0].semilogy(sxs_waveform.dyn['t'], abs(sxs_waveform.dyn['m2']-m2), label=r'$m_2$', linestyle='--')\n",
+    "axs[1].semilogy(sxs_waveform.dyn['t'], sxs_waveform.dyn['chi1'], label=r'S_1')\n",
+    "axs[1].semilogy(sxs_waveform.dyn['t'], sxs_waveform.dyn['chi2'], label=r'S_2', linestyle='--')\n",
+    "axs[0].set_ylabel(r'$\\Delta m_i$')\n",
+    "axs[1].set_ylabel(r'$|S_i|$')\n",
+    "axs[1].set_xlabel('t/M')\n",
+    "axs[0].legend()\n",
+    "plt.show()\n",
+    "\n",
+    "\n",
+    "# plot the trajectories\n",
+    "xA = sxs_waveform.dyn['x1']\n",
+    "xB = sxs_waveform.dyn['x2']\n",
+    "fig, ax = plt.subplots(figsize=(8, 8))\n",
+    "ax.plot(xA[:, 0], xA[:, 1], label='BH 1')\n",
+    "ax.plot(xB[:, 0], xB[:, 1], label='BH 2')\n",
+    "ax.set_xlabel('x/M')\n",
+    "ax.set_ylabel('y/M')\n",
+    "ax.set_title('Black Hole Trajectories')\n",
+    "ax.legend()\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "424b6905",
+   "metadata": {},
+   "source": [
+    "The waveform class itself also has a method to plot modes and/or polarizations, to get quick visualizations:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a1c58e39",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "help(sxs_waveform.plot)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "df054c5c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# we compute the polarizations & r for default plots\n",
+    "sxs_waveform.compute_hphc(phi=0., i=np.pi/3)\n",
+    "sxs_waveform.dyn['r'] = np.sqrt((xA[:, 0]-xB[:, 0])**2 + (xA[:, 1]-xB[:, 1])**2 + (xA[:, 2]-xB[:, 2])**2)\n",
+    "\n",
+    "# plot pol, modes and r(t)\n",
+    "fix, ax = plt.subplots(4, 1, figsize=(6, 10), sharex=True)s\n",
+    "for i, quantity in enumerate(['hp', 'hc', 'hlm', 'dyn']):\n",
+    "    sxs_waveform.plot(quantity, show=False, ax=ax[i])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "dcfd57d8",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "pyart-dev-3.11",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.11"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

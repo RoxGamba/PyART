@@ -1,0 +1,64 @@
+PyART.models.ringdown_fits_noncirc
+==================================
+
+.. py:module:: PyART.models.ringdown_fits_noncirc
+
+.. autoapi-nested-parse::
+
+   Functions to read and use the Noncircular fits
+   from Carullo+23
+   https://arxiv.org/abs/2309.07228
+
+   Mostly taken from Greg's repo, without all the frills
+   https://github.com/GCArullo/noncircular_BBH_fits
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.models.ringdown_fits_noncirc.fit_dim
+   PyART.models.ringdown_fits_noncirc.nu
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.models.ringdown_fits_noncirc.select_fitting_quantities
+   PyART.models.ringdown_fits_noncirc.select_template_model
+   PyART.models.ringdown_fits_noncirc.read_fit_coefficients
+   PyART.models.ringdown_fits_noncirc.template
+   PyART.models.ringdown_fits_noncirc.eval_fit
+
+
+Module Contents
+---------------
+
+.. py:data:: fit_dim
+   :value: 4
+
+
+.. py:function:: select_fitting_quantities(dataset_type, quantity_to_fit)
+
+.. py:function:: select_template_model(dataset_type)
+
+.. py:function:: read_fit_coefficients(quantity_to_fit, fitting_quantities_string, template_model, fit_dim, catalogs=['RIT', 'SXS', 'ET'], dataset_type=['non-spinning-equal-mass'], coeffs_dir='./noncircular_BBH_fits/Fitting_coefficients')
+
+.. py:function:: template(coeffs, fitting_quantities_dict, template_model='rational')
+
+.. py:function:: eval_fit(quantity_to_fit, fitting_quantities_dict, fitting_quantities_string, dataset='non-spinning', databases=['RIT', 'SXS', 'ET'], verbose=False)
+
+   Perform a fit of a given quantity based on a chosen dataset.
+   Choose between:
+       - quantities_to_fit    = ['A_peak22', 'omega_peak22', 'Mf', 'af']
+       - dataset_types        = ['aligned-spins-equal-mass','non-spinning-equal-mass', 'non-spinning']
+
+
+.. py:data:: nu
+   :value: 0.25
+
+

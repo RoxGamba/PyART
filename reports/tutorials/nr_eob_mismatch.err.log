@@ -1,0 +1,108 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1323, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+# Load SXS waveform
+sxs_id = '0180'
+nr = sxs.Waveform_SXS(
+    path='./', 
+    download=True, 
+    ID=sxs_id, 
+    order="Extrapolated_N3.dir", 
+    ellmax=7,
+    ignore_deprecation=True
+)
+nr.cut(300)  # Remove junk radiation
+
+# Extract metadata
+q = nr.metadata['q']
+M = nr.metadata['M']
+chi1z = nr.metadata['chi1z']
+chi2z = nr.metadata['chi2z']
+f0 = nr.metadata['f0']
+
+print('==============================')
+print(f'Mismatch for SXS:{sxs_id}')
+print('==============================')
+print(f'Mass ratio q : {q:.5f}')
+print(f'Total mass M : {M:.5f}')
+print(f'chi1z        : {chi1z:.5f}')
+print(f'chi2z        : {chi2z:.5f}')
+print(f'f0           : {f0:.5f}')
+print('==============================')
+------------------
+
+
+[31m---------------------------------------------------------------------------[39m
+[31mValueError[39m                                Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[2][39m[32m, line 3[39m
+[32m      1[39m [38;5;66;03m# Load SXS waveform[39;00m
+[32m      2[39m sxs_id = [33m'0180'[39m
+[32m----> [39m[32m3[39m nr = sxs.Waveform_SXS(
+[32m      4[39m     path=[33m'./'[39m,
+[32m      5[39m     download=[38;5;28;01mTrue[39;00m,
+[32m      6[39m     ID=sxs_id,
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/PyART/catalogs/sxs.py:135[39m, in [36mWaveform_SXS.__init__[39m[34m(self, path, ID, order, level, cut_N, cut_U, ellmax, load, download, downloads, load_m0, nu_rescale, src, ignore_deprecation, basename)[39m
+[32m    131[39m     logging.info(
+[32m    132[39m         [33mf[39m[33m"[39m[33mThe path [39m[38;5;132;01m{[39;00m[38;5;28mself[39m.sxs_data_path[38;5;132;01m}[39;00m[33m does not exist or contains no [39m[33m'[39m[33mLev*[39m[33m'[39m[33m directory.[39m[33m"[39m
+[32m    133[39m     )
+[32m    134[39m     logging.info([33m"[39m[33mDownloading the simulation from the SXS catalog.[39m[33m"[39m)
+[32m--> [39m[32m135[39m     [30;43mself[39;49m[30;43m.[39;49m[30;43mdownload_simulation[39;49m[30;43m([39;49m
+[32m    136[39m [30;43m        [39;49m[30;43mID[39;49m[30;43m=[39;49m[30;43mself[39;49m[30;43m.[39;49m[30;43mID[39;49m[30;43m,[39;49m
+[32m    137[39m [30;43m        [39;49m[30;43mpath[39;49m[30;43m=[39;49m[30;43mpath[39;49m[30;43m,[39;49m
+[32m    138[39m [30;43m        [39;49m[30;43mdownloads[39;49m[30;43m=[39;49m[30;43mdownloads[39;49m[30;43m,[39;49m
+[32m    139[39m [30;43m        [39;49m[30;43mlevel[39;49m[30;43m=[39;49m[30;43mself[39;49m[30;43m.[39;49m[30;43mlevel[39;49m[30;43m,[39;49m
+[32m    140[39m [30;43m        [39;49m[30;43mignore_deprecation[39;49m[30;43m=[39;49m[30;43mignore_deprecation[39;49m[30;43m,[39;49m
+[32m    141[39m [30;43m        [39;49m[30;43mextrapolation_order[39;49m[30;43m=[39;49m[30;43morder[39;49m[30;43m,[39;49m
+[32m    142[39m [30;43m    [39;49m[30;43m)[39;49m
+[32m    143[39m [38;5;28;01melse[39;00m:
+[32m    144[39m     logging.warning(
+[32m    145[39m         [33m"[39m[33mUse download=True to download the simulation from the SXS catalog.[39m[33m"[39m
+[32m    146[39m     )
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/PyART/catalogs/sxs.py:318[39m, in [36mWaveform_SXS.download_simulation[39m[34m(self, ID, path, downloads, level, ignore_deprecation, extrapolation_order)[39m
+[32m    316[39m [38;5;66;03m# Save hlm data if requested[39;00m
+[32m    317[39m [38;5;28;01mif[39;00m [33m"[39m[33mhlm[39m[33m"[39m [38;5;129;01min[39;00m downloads:
+[32m--> [39m[32m318[39m     wav = [30;43msxs_sim[39;49m[30;43m.[39;49m[30;43mh[39;49m
+[32m    319[39m     extp = [33mf[39m[33m"[39m[33mExtrapolated_N[39m[38;5;132;01m{[39;00mextrapolation_order[38;5;132;01m}[39;00m[33m.dir[39m[33m"[39m
+[32m    320[39m     to_h5file = {extp: {}}
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sxs/simulations/simulation.py:550[39m, in [36mSimulationBase.strain[39m[34m(self)[39m
+[32m    547[39m [38;5;129m@property[39m
+[32m    548[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mstrain[39m([38;5;28mself[39m):
+[32m    549[39m     [38;5;28;01mif[39;00m [38;5;129;01mnot[39;00m [38;5;28mhasattr[39m([38;5;28mself[39m, [33m"[39m[33m_strain[39m[33m"[39m):
+[32m--> [39m[32m550[39m         [38;5;28mself[39m._strain = [38;5;28mself[39m.load_waveform(*[30;43mself[39;49m[30;43m.[39;49m[30;43mstrain_path[39;49m)
+[32m    551[39m     [38;5;28;01mreturn[39;00m [38;5;28mself[39m._strain
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sxs/simulations/simulation.py:877[39m, in [36mSimulation_v2.strain_path[39m[34m(self)[39m
+[32m    874[39m [38;5;129m@property[39m
+[32m    875[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mstrain_path[39m([38;5;28mself[39m):
+[32m    876[39m     [38;5;28;01mreturn[39;00m (
+[32m--> [39m[32m877[39m         [30;43msearch_prefixes[39;49m[30;43m([39;49m[30;43mf[39;49m[30;43m"[39;49m[30;43mStrain_[39;49m[30;43;01m{[39;49;00m[30;43mself[39;49m[30;43m.[39;49m[30;43mextrapolation[39;49m[30;43;01m}[39;49;00m[30;43m"[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mself[39;49m[30;43m.[39;49m[30;43mlev[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mself[39;49m[30;43m.[39;49m[30;43mfiles[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m"[39;49m[30;43m.h5[39;49m[30;43m"[39;49m[30;43m)[39;49m,
+[32m    878[39m         [33m"[39m[33m/[39m[33m"[39m
+[32m    879[39m     )
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sxs/simulations/simulation.py:33[39m, in [36msearch_prefixes[39m[34m(file, lev, files, ending)[39m
+[32m     31[39m     [38;5;28;01mif[39;00m [33mf[39m[33m"[39m[38;5;132;01m{[39;00mfn[38;5;132;01m}[39;00m[38;5;132;01m{[39;00mending[38;5;132;01m}[39;00m[33m"[39m [38;5;129;01min[39;00m files:
+[32m     32[39m         [38;5;28;01mreturn[39;00m fn
+[32m---> [39m[32m33[39m [38;5;28;01mraise[39;00m [38;5;167;01mValueError[39;00m([33mf[39m[33m"[39m[38;5;132;01m{[39;00mfile[38;5;132;01m}[39;00m[38;5;132;01m{[39;00mending[38;5;132;01m}[39;00m[33m not found in any form in files[39m[33m"[39m)
+
+[31mValueError[39m: Strain_NExtrapolated_N3.dir.h5 not found in any form in files
+
