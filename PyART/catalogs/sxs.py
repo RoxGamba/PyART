@@ -347,9 +347,7 @@ class Waveform_SXS(Waveform):
                         f"Mode Y_l{ell}_m{m} not found in the waveform data! Skipping."
                     )
                     continue
-            # create the h5 file
-            # h5file = h5py.File(os.path.join(out_dir, f"rhOverM_Asymptotic_GeometricUnits_CoM.h5"), "w")
-            # save_dict_to_h5(h5file, to_h5file)
+            # create/udpate the h5 file
             filename = os.path.join(
                 out_dir, f"rhOverM_Asymptotic_GeometricUnits_CoM.h5"
             )
@@ -377,9 +375,7 @@ class Waveform_SXS(Waveform):
                 if mode_string in wav:
                     to_h5file[extp][mode_string] = wav[mode_string]
 
-            # create the h5 file
-            # h5file = h5py.File(os.path.join(out_dir, f"rMPsi4_Asymptotic_GeometricUnits_CoM.h5"), "w")
-            # save_dict_to_h5(h5file, to_h5file)
+            # create/udpdate the h5 file
             filename = os.path.join(out_dir, f"rMPsi4_Asymptotic_GeometricUnits_CoM.h5")
             with h5py.File(filename, "a") as h5file:
                 if extp in h5file:
