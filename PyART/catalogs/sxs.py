@@ -111,7 +111,7 @@ class Waveform_SXS(Waveform):
                 raise ValueError("basename is None, but unknown src!")
         self.basename = basename
 
-        if self.level is not None and isinstance(self.level, int):
+        if isinstance(self.level, int):
             levpath = f"{self.sxs_data_path}/Lev{self.level}"
         else:
             levpath = self.sxs_data_path
@@ -125,12 +125,29 @@ class Waveform_SXS(Waveform):
                     levpath = None
             else:
                 levpath = None
-
         self.check_cut_consistency()
-        if levpath is None or not os.path.exists(levpath):
+
+        needs_download = levpath is None or not os.path.exists(levpath)
+        if not needs_download:
+            # if files are already  downloaded, additionally check that N-order
+            # is there as well. Note: if we enter here, levpath is not None
+            # and the path exists, and thus lev_dirs not empty
+            order_group = f"Extrapolated_N{self.order}.dir"
+            if self.level is None:
+                level = int(lev_dirs[-1].replace("Lev", ""))
+                fname = self.get_lev_fname(basename=self.basename, level=level)
+                with h5py.File(fname, "r") as f:
+                    needs_download = order_group not in f
+            if needs_download:
+                logging.info(
+                    f"{levpath} found, but not the requested N={self.order} order. Download needed."
+                )
+
+        if needs_download:
             if download:
                 logging.info(
-                    f"The path {self.sxs_data_path} does not exist or contains no 'Lev*' directory."
+                    f"The path {self.sxs_data_path} does not exist, contains no 'Lev*'"
+                    + "directory, or does not contain the requested order."
                 )
                 logging.info("Downloading the simulation from the SXS catalog.")
                 self.download_simulation(
@@ -186,6 +203,9 @@ class Waveform_SXS(Waveform):
             self.load_horizon()
         if "psi4lm" in load:
             self.load_psi4lm(load_m0=load_m0)
+
+        if self.nr is not None:
+            self.nr.close()
         pass
 
     def check_cut_consistency(self):
@@ -283,10 +303,8 @@ class Waveform_SXS(Waveform):
             name_level = name
 
         # based on the logging level, redirect stdout to null
-        # This is because the sxs module prints a lot of information to stdout
         original_stdout = sys.stdout
         sys.stdout = LoggerWriter(logging.getLogger(__name__))
-        # sys.stdout = open(os.devnull, "w")
 
         sxs_sim = sxsmod.load(
             name_level,
@@ -301,17 +319,8 @@ class Waveform_SXS(Waveform):
         self.level = self.level or int(
             sxs_sim.Lev.replace("Lev", "")
         )  # Guarantees int(self.level)
-        lev = f"Lev{self.level}"
 
-        # Create the output directory
-        sxs_dir = f"SXS_{self.src}_{ID}"
-        # Only add sxs_dir if it's not already the last part of the path
-        if not path.endswith(sxs_dir):
-            full_path = os.path.join(path, sxs_dir)
-        else:
-            full_path = path
-
-        out_dir = os.path.join(full_path, lev)
+        out_dir = self.get_lev_fname(level=self.level, basename="")
         os.makedirs(out_dir, exist_ok=True)
 
         # Save hlm data if requested
@@ -339,10 +348,16 @@ class Waveform_SXS(Waveform):
                     )
                     continue
             # create the h5 file
-            h5file = h5py.File(
-                os.path.join(out_dir, f"rhOverM_Asymptotic_GeometricUnits_CoM.h5"), "w"
+            # h5file = h5py.File(os.path.join(out_dir, f"rhOverM_Asymptotic_GeometricUnits_CoM.h5"), "w")
+            # save_dict_to_h5(h5file, to_h5file)
+            filename = os.path.join(
+                out_dir, f"rhOverM_Asymptotic_GeometricUnits_CoM.h5"
             )
-            save_dict_to_h5(h5file, to_h5file)
+            with h5py.File(filename, "a") as h5file:
+                if extp in h5file:
+                    logging.info(f"{extp} already present, skipping.")
+                else:
+                    save_dict_to_h5(h5file, {extp: to_h5file[extp]})
             h5file.close()
             logging.info("Saved hlm data.")
 
@@ -363,10 +378,14 @@ class Waveform_SXS(Waveform):
                     to_h5file[extp][mode_string] = wav[mode_string]
 
             # create the h5 file
-            h5file = h5py.File(
-                os.path.join(out_dir, f"rMPsi4_Asymptotic_GeometricUnits_CoM.h5"), "w"
-            )
-            save_dict_to_h5(h5file, to_h5file)
+            # h5file = h5py.File(os.path.join(out_dir, f"rMPsi4_Asymptotic_GeometricUnits_CoM.h5"), "w")
+            # save_dict_to_h5(h5file, to_h5file)
+            filename = os.path.join(out_dir, f"rMPsi4_Asymptotic_GeometricUnits_CoM.h5")
+            with h5py.File(filename, "a") as h5file:
+                if extp in h5file:
+                    logging.info(f"{extp} already present, skipping.")
+                else:
+                    save_dict_to_h5(h5file, {extp: to_h5file[extp]})
             h5file.close()
             logging.info("Saved psi4lm data.")
 
