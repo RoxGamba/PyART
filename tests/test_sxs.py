@@ -12,17 +12,19 @@ def test_sxs():
     """
     Test the SXS download function.
     """
-    wf = sxs.Waveform_SXS(
-        ID="0180",
-        path="./",
-        download=True,
-        downloads=["hlm", "metadata", "horizons"],
-        load=["hlm", "metadata", "horizons"],
-        ignore_deprecation=True,
-        level=4,
-        order=2,
-        nu_rescale=False,
-    )
+    opts = {
+        "ID": "0180",
+        "path": "./",
+        "download": True,
+        "downloads": ["hlm", "metadata", "horizons"],
+        "load": ["hlm", "metadata", "horizons"],
+        "level": 4,
+        "order": 2,
+        "nu_rescale": False,
+        "ignore_deprecation": True,
+    }
+    wf = sxs.Waveform_SXS(**opts)
+
     # check attributes
     assert wf.ID == "0180"
     assert wf.level == 4
@@ -53,6 +55,10 @@ def test_sxs():
             assert key in wf.hlm[mode].keys()
         # check length
         assert len(wf.hlm[mode]["A"]) == len(wf.u)
+
+    # get also order=3
+    opts["order"] = 3
+    wf = sxs.Waveform_SXS(**opts)
 
     # check that conversion to LVKNR works
     wf.to_lvk(modes=[(2, 2)])

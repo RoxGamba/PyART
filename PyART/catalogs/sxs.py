@@ -135,9 +135,11 @@ class Waveform_SXS(Waveform):
             order_group = f"Extrapolated_N{self.order}.dir"
             if self.level is None:
                 level = int(lev_dirs[-1].replace("Lev", ""))
-                fname = self.get_lev_fname(basename=self.basename, level=level)
-                with h5py.File(fname, "r") as f:
-                    needs_download = order_group not in f
+            else:
+                level = self.level
+            fname = self.get_lev_fname(basename=self.basename, level=level)
+            with h5py.File(fname, "r") as f:
+                needs_download = order_group not in f
             if needs_download:
                 logging.info(
                     f"{levpath} found, but not the requested N={self.order} order. Download needed."
