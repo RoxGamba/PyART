@@ -6,6 +6,7 @@ import h5py
 import json
 from ..waveform import Waveform
 from ..utils import cat_utils as cat_ut
+from ..utils.utils import LoggerWriter
 
 
 class Waveform_SXS(Waveform):
@@ -284,9 +285,9 @@ class Waveform_SXS(Waveform):
         # based on the logging level, redirect stdout to null
         # This is because the sxs module prints a lot of information to stdout
         original_stdout = sys.stdout
-        original_stderr = sys.stderr
-        sys.stdout = open(os.devnull, "w")
-        sys.stderr = open(os.devnull, "w")
+        sys.stdout = LoggerWriter(logging.getLogger(__name__))
+        # sys.stdout = open(os.devnull, "w")
+
         sxs_sim = sxsmod.load(
             name_level,
             extrapolation_order=extrapolation_order,
@@ -408,9 +409,8 @@ class Waveform_SXS(Waveform):
             if ":" in fld:
                 shutil.rmtree(os.path.join(os.environ["SXSCACHEDIR"], fld))
 
-        # Restore stdout/stderr
+        # Restore stdout
         sys.stdout = original_stdout
-        sys.stderr = original_stderr
 
         pass
 

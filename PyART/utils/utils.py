@@ -791,7 +791,7 @@ def D02(xp, yp, pad=True):
     return dyp
 
 
-def D1(f, x, order=4, uniform_check=True):
+def D1(f, x, order=4, uniform_check=True, uc_atol=1e-4, uc_rtol=1e-4):
     """
     Computes the first derivative of function f(x)
 
@@ -804,9 +804,12 @@ def D1(f, x, order=4, uniform_check=True):
     order : int, optional
        finite differencing order (default is 4)
     uniform_check: bool, optional
-       check that the arrayr has uniform spacing
+       check that the array has uniform spacing
        (default is true)
-
+    uc_atol : float, optional
+        atol to use in np.allclose if uniform_check is True
+    uc_rtol : float, optional
+        rtol to use in np.allclose if uniform_check is True
     Returns
     -------
     df : list (or numpy array)
@@ -815,7 +818,7 @@ def D1(f, x, order=4, uniform_check=True):
 
     if uniform_check:
         dx = np.diff(x)
-        is_constant = np.allclose(dx, dx[0])
+        is_constant = np.allclose(dx, dx[0], rtol=uc_rtol, atol=uc_atol)
         if not is_constant:
             raise RuntimeError("Array not uniformly spaced")
 
@@ -1322,3 +1325,23 @@ def get_radial_turning_points(t, r, window=5):
     tap = refine_local(idxap, find_max=True)
     tpe = refine_local(idxpe, find_max=False)
     return tap, tpe
+
+
+class LoggerWriter:
+    """
+    Small class to redirect stdout to logging like:
+    original_stdout = sys.stdout
+    sys.stdout = LoggerWriter(logger)
+    """
+
+    def __init__(self, logger, level=logging.INFO):
+        self.logger = logger
+        self.level = level
+
+    def write(self, message):
+        message = message.rstrip()
+        if message:
+            self.logger.log(self.level, message)
+
+    def flush(self):
+        pass  # Needed because sys.stdout expects it
