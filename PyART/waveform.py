@@ -232,13 +232,15 @@ class Waveform(object):
             height = np.mean(Alm) / 2
         peaks, props = find_peaks(Alm, height=height)
 
+        if len(peaks) == 0:
+            raise ValueError("No peaks found")
+
         if kind == "first-max-after-t":
-            for i in range(len(peaks)):
-                if t[peaks[i]] > umin:
-                    break
+            after_umin = np.where(t[peaks] > umin)[0]
+            if len(after_umin) == 0:
+                raise ValueError(f"No peak found after umin={umin}")
+            i = after_umin[0]
         elif kind == "last-peak":
-            if len(peaks) == 0:
-                raise ValueError("No peaks found")
             i = len(peaks) - 1
         elif kind == "global":
             Alms = props["peak_heights"]
@@ -551,25 +553,33 @@ class Waveform(object):
             if True, apply a tapering window to the time-domain waveform
         pad: bool
             if True, pad the time-domain waveform to the next power of 2
+
         Returns
         -------
-        out: (f, hp, hc)
+        out: None
+            sets the f, hp, hc and domain attributes in place
         """
 
         dt = self.u[1] - self.u[0]
         # window
         if taper:
-            self._hp = ut.windowing(self.hp, alpha=0.1)
-            self._hc = ut.windowing(self.hc, alpha=0.1)
+            self._hp, _ = ut.windowing(self.hp, alpha=0.1)
+            self._hc, _ = ut.windowing(self.hc, alpha=0.1)
 
         if pad:
-            srate = 1.0 / dt
             seglen = ut.nextpow2(self.u[-1])
-            dN = int((seglen - len(self.u) * srate) / srate)
             self._u = np.arange(0.0, seglen, dt)
             self._t = np.arange(0.0, seglen, dt)
-            self._hp = ut.zero_pad_before(self.hp, dN, return_column=False)
-            self._hc = ut.zero_pad_before(self.hp, dN, return_column=False)
+            # zero_pad_before wants the final number of samples, not the
+            # number of zeroes to prepend
+            N = len(self.u)
+            if N < len(self.hp):
+                raise ValueError(
+                    f"Cannot pad to {N} samples: waveform is already {len(self.hp)} "
+                    "samples long. Is the time array starting at t=0?"
+                )
+            self._hp = ut.zero_pad_before(self.hp, N, return_column=False)
+            self._hc = ut.zero_pad_before(self.hc, N, return_column=False)
             assert len(self.u) == len(self.hp)
             assert len(self.u) == len(self.hc)
 
@@ -604,7 +614,7 @@ class Waveform(object):
         self,
         t_psi4,
         radius,
-        integr_opts={"method": "FFI", "f0": 0.01, "integrand": "psi4"},
+        integr_opts=None,
         modes=None,
         M=1.0,
     ):
@@ -617,12 +627,13 @@ class Waveform(object):
             time array for psi4lm
         radius: float
             extraction radius
-        integr_opts: dict
+        integr_opts: dict or None
             dictionary with integration options
             method: 'FFI' or 'trapezoid'
             f0: frequency cutoff for FFI
             deg: degree of the polynomial for trapezoid
             integrand: 'psi4' or 'news'
+            if None, use {'method': 'FFI', 'f0': 0.01, 'integrand': 'psi4'}
         modes: list
             list of (l,m) modes to integrate
         M: float
@@ -632,6 +643,11 @@ class Waveform(object):
         out: dict
             dictionary with integration options used
         """
+        if integr_opts is None:
+            integr_opts = {"method": "FFI", "f0": 0.01}
+        else:
+            # copy: the defaults filled in below must not leak back to the caller
+            integr_opts = dict(integr_opts)
         if modes is None:
             modes = self.psi4lm.keys()
         if "integrand" not in integr_opts:
@@ -677,7 +693,7 @@ class Waveform(object):
         D_sec = distance * ut.consts["DMpc"]
         M_sec = M * ut.consts["Msun"]
 
-        time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
+        time_attrs = ["_u", "_t", "_t_psi4", "u_pc"]
         for time_attr in time_attrs:
             val = getattr(self, time_attr, None)
             if val is not None:
@@ -728,7 +744,7 @@ class Waveform(object):
         D_sec = distance * ut.consts["DMpc"]
         M_sec = M * ut.consts["Msun"]
 
-        time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
+        time_attrs = ["_u", "_t", "_t_psi4", "u_pc"]
         for time_attr in time_attrs:
             val = getattr(self, time_attr, None)
             if val is not None:
@@ -1065,7 +1081,7 @@ class WaveIntegrated(Waveform):
         r_extr=1,
         M=1,
         modes=[(2, 2)],
-        integr_opts={},
+        integr_opts=None,
         fmt="etk",
         fname="mp_psi4_l@L@_m@M@_r100.00.asc",
         integrand="psi4",
@@ -1086,8 +1102,9 @@ class WaveIntegrated(Waveform):
             total mass
         modes: list
             list of (l,m) modes to load
-        integr_opts: dict
-            dictionary with integration options
+        integr_opts: dict or None
+            dictionary with integration options; missing entries are filled
+            in with defaults, and the caller's dictionary is left untouched
             method: 'FFI' or 'trapezoid'
             f0: frequency cutoff for FFI
             deg: degree of the polynomial for trapezoid
@@ -1114,6 +1131,8 @@ class WaveIntegrated(Waveform):
         self.integrand = integrand.lower()
         self.norm = norm
 
+        # copy: the defaults filled in below must not leak back to the caller
+        integr_opts = {} if integr_opts is None else dict(integr_opts)
         if "method" not in integr_opts:
             integr_opts["method"] = "FFI"
         if "f0" not in integr_opts:
