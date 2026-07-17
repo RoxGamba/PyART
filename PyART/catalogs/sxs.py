@@ -293,9 +293,19 @@ class Waveform_SXS(Waveform):
         import sxs as sxsmod
         import shutil
 
-        if path is not None:
-            logging.info(f"Setting the download (cache) directory to {path}")
-            os.environ["SXSCACHEDIR"] = path
+        if path is None:
+            raise ValueError(
+                "download_simulation needs a path: it is both where the data is "
+                "written and the cache directory handed to the sxs module."
+            )
+
+        # The sxs module reads SXSCACHEDIR to decide where to download. Keep the
+        # directory in a local variable too, and use that below: reading the
+        # environment back would couple this call to whatever a previous one
+        # left there, and rmtree is run against it.
+        cache_dir = path
+        logging.info(f"Setting the download (cache) directory to {cache_dir}")
+        os.environ["SXSCACHEDIR"] = cache_dir
 
         # Define the simulation ID and load it
         name = f"SXS:{self.src}:{ID}"
@@ -427,11 +437,13 @@ class Waveform_SXS(Waveform):
                     json.dump(sxs_sim.metadata, file, indent=2)
                 logging.info("Saved metadata.")
 
-            # find old SXS download foders and remove them
-            flds = [f for f in os.listdir(os.environ["SXSCACHEDIR"]) if ID in f]
+            # find old SXS download folders and remove them. Only the
+            # colon-named ones the sxs module creates, and only in the directory
+            # this call actually downloaded into.
+            flds = [f for f in os.listdir(cache_dir) if ID in f]
             for fld in flds:
                 if ":" in fld:
-                    shutil.rmtree(os.path.join(os.environ["SXSCACHEDIR"], fld))
+                    shutil.rmtree(os.path.join(cache_dir, fld))
         finally:
             # Restore stdout
             sys.stdout = original_stdout

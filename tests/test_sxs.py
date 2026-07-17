@@ -43,13 +43,15 @@ def test_sxs():
     assert os.path.exists(f"SXS_BBH_0180/Lev{wf.level}/metadata.json")
     assert os.path.exists(f"SXS_BBH_0180/Lev{wf.level}/Horizons.h5")
 
-    # check that the old folder was removed
-    cache_dir = os.environ.get("SXSCACHEDIR")
-    assert cache_dir, "SXSCACHEDIR environment variable is not set."
-    flds = os.listdir(cache_dir)
-    for fld in flds:
-        if fld.startswith("SXS:BBH:0180"):
-            assert False, f"Old folder {fld} still exists."
+    # Check that the colon-named folder the sxs module downloads into was
+    # cleaned up, leaving only SXS_BBH_0180. Look in the directory we asked to
+    # download into rather than at SXSCACHEDIR: that variable is only set when a
+    # download actually happens, so asserting on it made this test pass on a
+    # clean tree and fail on every rerun, once the data is already there.
+    for fld in os.listdir(opts["path"]):
+        assert not fld.startswith(
+            "SXS:BBH:0180"
+        ), f"Old folder {fld} still exists in {opts['path']}."
 
     # check that the modes loaded make sense
     for mode in wf.hlm.keys():
@@ -454,3 +456,18 @@ def test_load_horizon_without_remnant(tmp_path):
     assert "chi1" in d  # the binary is still loaded
     assert "m_remnant" not in d
     assert "chi_remnant" not in d
+
+
+def test_download_simulation_requires_a_path():
+    """
+    path is both the download destination and the sxs cache directory. It
+    defaults to None, which used to die further down with a cryptic
+    "'NoneType' object has no attribute 'endswith'".
+    """
+    wf = sxs.Waveform_SXS.__new__(sxs.Waveform_SXS)
+    wf.src = "BBH"
+    wf.level = 4
+    wf.order = 2
+
+    with pytest.raises(ValueError, match="needs a path"):
+        wf.download_simulation(ID="0001", path=None)

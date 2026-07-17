@@ -122,8 +122,12 @@ class Matcher(object):
             )
 
         if self.settings["cut_second_waveform"] or self.settings["cut_longer"]:
-            tmrg1, _, _, _ = WaveForm1.find_max() - WaveForm1.u[0]
-            tmrg2, _, _, _ = WaveForm2.find_max() - WaveForm2.u[0]
+            # merger time measured from the start of each waveform. find_max
+            # returns (t_mrg, A_mrg, omg_mrg, domg_mrg), so only the first entry
+            # is wanted: subtracting u[0] from the whole tuple relies on numpy
+            # broadcasting it, which holds only while the entries are np.float64
+            tmrg1 = WaveForm1.find_max()[0] - WaveForm1.u[0]
+            tmrg2 = WaveForm2.find_max()[0] - WaveForm2.u[0]
             DeltaT = tmrg2 - tmrg1
             if DeltaT > 0:
                 WaveForm2.cut(DeltaT)
@@ -529,7 +533,9 @@ class Matcher(object):
         out = {
             "h1f": h1f,
             "h2f": h2f,
-            "j_shift": j_shift * h2.delta_t,
+            # take the time step from h2f: h2 only exists when wf2 is in the
+            # time domain and was not served from the cache
+            "j_shift": j_shift * h2f.delta_t,
             "ph_shift": ph_shift,
         }
         return m, out
@@ -801,7 +807,9 @@ class Matcher(object):
                 )
                 mms.append(mm)
         out = {}  # FIXME: just for consistency with compute_mm_single_mode
-        return np.average(mm), out
+        # average over the whole coa_phase x eff_pols grid, not just the last
+        # entry, which is what the loop above accumulates mms for
+        return np.average(mms), out
 
     def skymax_match(
         self, s, wf, inc, psd, modes, dT=1.0 / 4096, fmin_mm=20.0, fmax=2048.0
