@@ -7,6 +7,7 @@ import json
 from ..waveform import Waveform
 from ..utils import cat_utils as cat_ut
 from ..utils.utils import LoggerWriter
+from ..utils.wf_utils import get_multipole_dict
 
 
 class Waveform_SXS(Waveform):
@@ -814,17 +815,13 @@ class Waveform_SXS(Waveform):
             h = hlm[:, 1] + 1j * hlm[:, 2]
             if self.nu_rescale:
                 h /= self.metadata["nu"]
-            # amp and phase
-            Alm = abs(h)[self.cut_N :]
-            plm = -np.unwrap(np.angle(h))[self.cut_N :]
-            # save in dictionary
+            # Build the mode dict with the shared helper, so that the sign
+            # conventions match every other producer. It is applied to the whole
+            # mode and the junk is cut afterwards: the phase must be unwrapped
+            # before the cut, or it would be offset by a multiple of 2pi.
             key = (l, m)
             dict_hlm[key] = {
-                "real": Alm * np.cos(plm),
-                "imag": Alm * np.sin(plm),
-                "A": Alm,
-                "p": plm,
-                "z": h[self.cut_N :],
+                ky: val[self.cut_N :] for ky, val in get_multipole_dict(h).items()
             }
         self._hlm = dict_hlm
         pass
@@ -884,17 +881,10 @@ class Waveform_SXS(Waveform):
             psi4 = psi4lm[:, 1] + 1j * psi4lm[:, 2]
             if self.nu_rescale:
                 psi4 /= self.metadata["nu"]
-            # amp and phase
-            Alm = abs(psi4)[self.cut_N :]
-            plm = -np.unwrap(np.angle(psi4))[self.cut_N :]
-            # save in dictionary
+            # see load_hlm: shared helper first, junk cut afterwards
             key = (l, m)
             dict_psi4lm[key] = {
-                "real": Alm * np.cos(plm),
-                "imag": Alm * np.sin(plm),
-                "A": Alm,
-                "p": plm,
-                "z": psi4[self.cut_N :],
+                ky: val[self.cut_N :] for ky, val in get_multipole_dict(psi4).items()
             }
         self._psi4lm = dict_psi4lm
         pass
