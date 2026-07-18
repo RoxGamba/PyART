@@ -1,0 +1,12 @@
+# Extra dependencies for downloading/scraping NR catalogs. The catalog
+# loaders that need these (sxs.py, rit.py) already import them inside
+# try/except, so the base install works without this extra -- only those
+# two catalogs (and the tests that exercise them) need it.
+
+# SXS catalog support (needed for downloading SXS simulations)
+sxs>=2025.0
+romspline
+
+# RIT catalog support (needed for downloading/scraping RIT simulations)
+requests>=2.25
+beautifulsoup4>=4.9

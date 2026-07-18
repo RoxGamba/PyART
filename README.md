@@ -6,7 +6,7 @@
 <h3 align="center">Python Analytical Relativity Toolkit</h3>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3+-blue.svg" alt="License: GPLv3 or later"></a>
   <a href="https://github.com/RoxGamba/PyART/actions/workflows/tests.yml">
     <img src="https://github.com/RoxGamba/PyART/actions/workflows/tests.yml/badge.svg" alt="Build Status">
   </a>
