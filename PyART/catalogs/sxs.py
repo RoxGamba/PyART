@@ -99,7 +99,6 @@ class Waveform_SXS(Waveform):
         self.ellmax = ellmax
         self._kind = "SXS"
         self.src = src
-        self.nr = None
         self._domain = "Time"
         self.nu_rescale = nu_rescale
 
@@ -169,11 +168,14 @@ class Waveform_SXS(Waveform):
                     f"The path {self.sxs_data_path} does not exist or contains no 'Lev*' directory."
                 )
 
+        # Resolve the level from what is on disk. The data files are opened by
+        # the individual load_* methods (each in a `with` block), not kept as an
+        # attribute here: the handle is a read-only source, is only needed while
+        # loading, and an open h5py file would make the waveform un-deep-copyable
+        # (which the Matcher needs).
         if isinstance(self.level, int):
             fname = self.get_lev_fname(basename=self.basename)
-            if os.path.exists(fname):
-                self.nr = h5py.File(fname)
-            else:
+            if not os.path.exists(fname):
                 raise FileNotFoundError(
                     f"SXS path found, but the requested level ({self.level:d}) is not available!"
                 )
@@ -186,8 +188,6 @@ class Waveform_SXS(Waveform):
             for lvn in range(ref_lv_max, ref_lv_min - 1, -1):
                 fname = self.get_lev_fname(level=lvn, basename=self.basename)
                 if os.path.exists(fname):
-                    if "hlm" in load:
-                        self.nr = h5py.File(fname)
                     self.level = lvn
                     break
                 elif lvn == ref_lv_min:
@@ -206,9 +206,6 @@ class Waveform_SXS(Waveform):
             self.load_horizon()
         if "psi4lm" in load:
             self.load_psi4lm(load_m0=load_m0)
-
-        if self.nr is not None:
-            self.nr.close()
         pass
 
     def check_cut_consistency(self):
@@ -796,33 +793,36 @@ class Waveform_SXS(Waveform):
             if (m != 0 or load_m0) and l >= np.abs(m)
         ]
 
-        tmp_u = self.nr[order]["Y_l2_m2.dat"][:, 0]
-        # self.check_cut_consistency()
-        if self.cut_N is None:
-            self.cut_N = np.argwhere(tmp_u >= self.cut_U)[0][0]
-        if self.cut_U is None:
-            self.cut_U = tmp_u[self.cut_N]
+        fname = self.get_lev_fname(basename=self.basename)
+        with h5py.File(fname, "r") as nr:
+            tmp_u = nr[order]["Y_l2_m2.dat"][:, 0]
+            # self.check_cut_consistency()
+            if self.cut_N is None:
+                self.cut_N = np.argwhere(tmp_u >= self.cut_U)[0][0]
+            if self.cut_U is None:
+                self.cut_U = tmp_u[self.cut_N]
 
-        self._u = tmp_u[self.cut_N :]
-        self._t = self._u  # FIXME: should we use another time?
+            self._u = tmp_u[self.cut_N :]
+            self._t = self._u  # FIXME: should we use another time?
 
-        dict_hlm = {}
-        for mode in modes:
-            l = mode[0]
-            m = mode[1]
-            mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
-            hlm = self.nr[order][mode]
-            h = hlm[:, 1] + 1j * hlm[:, 2]
-            if self.nu_rescale:
-                h /= self.metadata["nu"]
-            # Build the mode dict with the shared helper, so that the sign
-            # conventions match every other producer. It is applied to the whole
-            # mode and the junk is cut afterwards: the phase must be unwrapped
-            # before the cut, or it would be offset by a multiple of 2pi.
-            key = (l, m)
-            dict_hlm[key] = {
-                ky: val[self.cut_N :] for ky, val in get_multipole_dict(h).items()
-            }
+            dict_hlm = {}
+            for mode in modes:
+                l = mode[0]
+                m = mode[1]
+                mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
+                hlm = nr[order][mode]
+                h = hlm[:, 1] + 1j * hlm[:, 2]
+                if self.nu_rescale:
+                    h /= self.metadata["nu"]
+                # Build the mode dict with the shared helper, so that the sign
+                # conventions match every other producer. It is applied to the
+                # whole mode and the junk is cut afterwards: the phase must be
+                # unwrapped before the cut, or it would be offset by a multiple
+                # of 2pi.
+                key = (l, m)
+                dict_hlm[key] = {
+                    ky: val[self.cut_N :] for ky, val in get_multipole_dict(h).items()
+                }
         self._hlm = dict_hlm
         pass
 
@@ -841,7 +841,6 @@ class Waveform_SXS(Waveform):
         fname = self.get_lev_fname(level=self.level, basename=psi4_basename)
         if not os.path.exists(fname):
             raise FileNotFoundError(f"psi4 file not found: {fname}")
-        self.nr_psi = h5py.File(fname)
 
         if ellmax == None:
             ellmax = self.ellmax
@@ -858,34 +857,36 @@ class Waveform_SXS(Waveform):
             if (m != 0 or load_m0) and l >= np.abs(m)
         ]
 
-        tmp_u = self.nr_psi[order]["Y_l2_m2.dat"][:, 0]
+        with h5py.File(fname, "r") as nr_psi:
+            tmp_u = nr_psi[order]["Y_l2_m2.dat"][:, 0]
 
-        if self.cut_N is None:
-            self.cut_N = np.argwhere(tmp_u >= self.cut_U)[0][0]
-        if self.cut_U is None:
-            self.cut_U = tmp_u[self.cut_N]
+            if self.cut_N is None:
+                self.cut_N = np.argwhere(tmp_u >= self.cut_U)[0][0]
+            if self.cut_U is None:
+                self.cut_U = tmp_u[self.cut_N]
 
-        if self._u is None:
-            raise RuntimeError(
-                "psi4 times are taken from the hlm time array, but hlm was "
-                "never loaded: add 'hlm' to the load list."
-            )
-        self._t_psi4 = self._u  # FIXME: should we use another time?
+            if self._u is None:
+                raise RuntimeError(
+                    "psi4 times are taken from the hlm time array, but hlm was "
+                    "never loaded: add 'hlm' to the load list."
+                )
+            self._t_psi4 = self._u  # FIXME: should we use another time?
 
-        dict_psi4lm = {}
-        for mode in modes:
-            l = mode[0]
-            m = mode[1]
-            mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
-            psi4lm = self.nr_psi[order][mode]
-            psi4 = psi4lm[:, 1] + 1j * psi4lm[:, 2]
-            if self.nu_rescale:
-                psi4 /= self.metadata["nu"]
-            # see load_hlm: shared helper first, junk cut afterwards
-            key = (l, m)
-            dict_psi4lm[key] = {
-                ky: val[self.cut_N :] for ky, val in get_multipole_dict(psi4).items()
-            }
+            dict_psi4lm = {}
+            for mode in modes:
+                l = mode[0]
+                m = mode[1]
+                mode = "Y_l" + str(l) + "_m" + str(m) + ".dat"
+                psi4lm = nr_psi[order][mode]
+                psi4 = psi4lm[:, 1] + 1j * psi4lm[:, 2]
+                if self.nu_rescale:
+                    psi4 /= self.metadata["nu"]
+                # see load_hlm: shared helper first, junk cut afterwards
+                key = (l, m)
+                dict_psi4lm[key] = {
+                    ky: val[self.cut_N :]
+                    for ky, val in get_multipole_dict(psi4).items()
+                }
         self._psi4lm = dict_psi4lm
         pass
 

@@ -7,13 +7,13 @@ import os, numpy
 import pytest
 
 
-def test_icc_public_catalog():
+def test_icc_public_catalog(tmp_path):
     """
     Test the ICC public catalog waveform class.
     """
     try:
         waveform = icc_public.Waveform_ICC(
-            path="./",
+            path=str(tmp_path),
             ID="0004",
             download=True,
             load=["hlm", "metadata"],

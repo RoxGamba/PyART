@@ -8,6 +8,7 @@ except ImportError:
 
 import os
 import logging
+import subprocess
 import numpy as np
 import h5py
 
@@ -64,9 +65,6 @@ class Waveform_LVKNR(Waveform):
                 )
                 raise FileNotFoundError(f"The path {self.data_path} does not exist.")
 
-        # load the data
-        self.data = h5py.File(self.data_path, "r")
-
         self.load_metadata()
         self.load_hlm()
 
@@ -74,8 +72,14 @@ class Waveform_LVKNR(Waveform):
         """
         Load (some) metadata from the simulation"
         """
+        # opened locally rather than stored on self: an open h5py handle would
+        # make the waveform un-deep-copyable, which the Matcher needs, and
+        # load_hlm (called right after) does not need it, working instead
+        # through self.data_path via lalsimulation.
+        with h5py.File(self.data_path, "r") as f:
+            self._load_metadata_from_file(f)
 
-        f = self.data
+    def _load_metadata_from_file(self, f):
         M = 1  # set M = 1, always
         self.metadata = {}
 
@@ -187,7 +191,11 @@ class Waveform_LVKNR(Waveform):
         """
         Download the simulation from the LVCNR catalog.
         """
-        os.system(f"cd {self.lvcnr_path}/{self.catalog} && git lfs pull --include {ID}")
+        subprocess.run(
+            ["git", "lfs", "pull", "--include", ID],
+            cwd=os.path.join(self.lvcnr_path, self.catalog),
+            check=True,
+        )
         pass
 
     def _is_git_lfs_pointer(self, path):

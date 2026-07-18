@@ -9,8 +9,6 @@ from ..analysis.opt_ic import Optimizer
 from ..models.teob import CreateDict
 from ..models.teob import Waveform_EOB, get_pph_lso
 
-matplotlib.rc("text", usetex=True)
-
 
 class Cataloger(object):
     """
@@ -26,6 +24,10 @@ class Cataloger(object):
         json_file=None,  # file for mismatches. If None, use default name
         add_opts={},
     ):
+        # LaTeX-rendered plot labels: set here rather than at import time, so
+        # merely importing Cataloger does not break plotting for anyone
+        # without a LaTeX installation.
+        matplotlib.rc("text", usetex=True)
 
         self.path = path
         self.catalog = catalog
@@ -130,7 +132,8 @@ class Cataloger(object):
                     plt.plot(
                         wave.u - tmrg, wave.hlm[(2, 2)]["A"], c=colors[i], label=label
                     )
-                except:
+                except ValueError:
+                    # no peak found in this waveform: plot without merger-shift
                     plt.plot(wave.u, wave.hlm[(2, 2)]["A"], c=colors[i], label=label)
         if legend:
             plt.legend()

@@ -14,13 +14,14 @@ import pytest
 mode_keys = ["A", "p", "real", "imag", "z"]
 
 
-def test_sxs():
+def test_sxs(tmp_path):
     """
     Test the SXS download function.
     """
+    download_path = str(tmp_path)
     opts = {
         "ID": "0180",
-        "path": "./",
+        "path": download_path,
         "download": True,
         "downloads": ["hlm", "metadata", "horizons"],
         "load": ["hlm", "metadata", "horizons"],
@@ -36,22 +37,25 @@ def test_sxs():
     assert wf.level == 4
 
     # check that the files were downloaded
-    assert os.path.exists("SXS_BBH_0180")
+    sim_dir = os.path.join(download_path, "SXS_BBH_0180")
+    assert os.path.exists(sim_dir)
     assert os.path.exists(
-        f"SXS_BBH_0180/Lev{wf.level}/rhOverM_Asymptotic_GeometricUnits_CoM.h5"
+        os.path.join(
+            sim_dir, f"Lev{wf.level}", "rhOverM_Asymptotic_GeometricUnits_CoM.h5"
+        )
     )
-    assert os.path.exists(f"SXS_BBH_0180/Lev{wf.level}/metadata.json")
-    assert os.path.exists(f"SXS_BBH_0180/Lev{wf.level}/Horizons.h5")
+    assert os.path.exists(os.path.join(sim_dir, f"Lev{wf.level}", "metadata.json"))
+    assert os.path.exists(os.path.join(sim_dir, f"Lev{wf.level}", "Horizons.h5"))
 
     # Check that the colon-named folder the sxs module downloads into was
     # cleaned up, leaving only SXS_BBH_0180. Look in the directory we asked to
     # download into rather than at SXSCACHEDIR: that variable is only set when a
     # download actually happens, so asserting on it made this test pass on a
     # clean tree and fail on every rerun, once the data is already there.
-    for fld in os.listdir(opts["path"]):
+    for fld in os.listdir(download_path):
         assert not fld.startswith(
             "SXS:BBH:0180"
-        ), f"Old folder {fld} still exists in {opts['path']}."
+        ), f"Old folder {fld} still exists in {download_path}."
 
     # check that the modes loaded make sense
     for mode in wf.hlm.keys():

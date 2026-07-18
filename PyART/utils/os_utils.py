@@ -1,4 +1,6 @@
 import os
+import shlex
+import subprocess
 
 
 def runcmd(cmd, workdir, out=None):
@@ -12,13 +14,18 @@ def runcmd(cmd, workdir, out=None):
     workdir: str
         directory in which to execute the command
     out: str or None
-        if not None, redirect stdout and stderr to this file
+        if not None, redirect stdout and stderr to this file (relative to
+        workdir, matching where the command itself runs)
     """
-    base = os.getcwd()
     os.makedirs(workdir, exist_ok=True)
-    os.chdir(workdir)
-    os.system(cmd)
-    os.chdir(base)
+    args = shlex.split(cmd)
+    if out is not None:
+        with open(os.path.join(workdir, out), "w") as f:
+            subprocess.run(
+                args, cwd=workdir, check=True, stdout=f, stderr=subprocess.STDOUT
+            )
+    else:
+        subprocess.run(args, cwd=workdir, check=True)
     return
 
 

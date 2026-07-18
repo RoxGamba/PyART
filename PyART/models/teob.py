@@ -152,6 +152,7 @@ def CreateDict(
     a6c=None,
     use_flm_h="LO",
     use_nqc=True,
+    **kwargs,
 ):
     """
     Create the dictionary of parameters for EOBRunPy
@@ -294,6 +295,21 @@ def CreateDict(
 
     if use_tidal is not None:
         pardic["use_tidal"] = use_tidal
+
+    # Inject any arbitrary keyword arguments directly into the parameter
+    # dictionary, but never silently overwrite a key already set above: several
+    # named arguments are forwarded under a different key than their own name
+    # (e.g. iota -> "inclination", f0 -> "initial_frequency"), so a kwarg meant
+    # to add a genuinely new EOBRunPy option could otherwise clobber a value
+    # that was already derived from a named, validated argument.
+    collisions = set(kwargs) & set(pardic)
+    if collisions:
+        raise ValueError(
+            f"CreateDict() kwargs collide with parameters already set: "
+            f"{sorted(collisions)}"
+        )
+    pardic.update(kwargs)
+
     return pardic
 
 

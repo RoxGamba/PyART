@@ -4,12 +4,14 @@ from scipy import interpolate
 import matplotlib.pyplot as plt
 import h5py
 import glob
+import shutil
 import os, json, requests, time
 from bs4 import BeautifulSoup
 
 from ..waveform import Waveform
 from ..utils import os_utils as os_ut
 from ..utils import cat_utils as cat_ut
+from ..utils.wf_utils import get_multipole_dict
 
 
 # This class is used to load the RIT data and store it in a convenient way
@@ -105,10 +107,11 @@ class Waveform_RIT(Waveform):
             _, self.metadata_psi4 = self.load_metadata(self.mtdt_psi4)
             self.load_psi4lm()
 
-        # strain available
-        h_path = os_ut.find_fnames_with_token(self.sim_path, "ExtrapStrain")[0]
+        # strain available. The file is opened by load_hlm (in a `with` block),
+        # not kept as an attribute: an open h5py handle would make the waveform
+        # un-deep-copyable, which the Matcher needs.
+        self.h_path = os_ut.find_fnames_with_token(self.sim_path, "ExtrapStrain")[0]
         if h_load:
-            self.h_file = h5py.File(h_path, "r")
             self.load_hlm()
             if self.shorten_rng:
                 tmrg, _, _, _ = self.find_max(kind="last-peak", height=0.05)
@@ -221,9 +224,12 @@ class Waveform_RIT(Waveform):
                 subdirs_ExtrapPsi4 = os_ut.find_dirs_with_subdirs(path, "ExtrapPsi4")
                 subdir = subdirs_ExtrapPsi4[0]
                 if os_ut.is_subdir(path, subdir):  # if wrong level, move to upper one
-                    tomove = os.path.join(subdir, "ExtrapPsi4*")
-                    os_ut.runcmd(f"mv {tomove} .", workdir=path)
-                    os_ut.runcmd(f"rmdir {subdir}", workdir=path)
+                    # done in Python rather than a shelled-out "mv <glob> .":
+                    # the glob needs expanding ourselves anyway once the
+                    # command is no longer run through a shell
+                    for item in glob.glob(os.path.join(subdir, "ExtrapPsi4*")):
+                        shutil.move(item, path)
+                    os.rmdir(subdir)
         logging.info(">> Elapsed time: {:.3f} s\n".format(time.perf_counter() - tstart))
 
         pass
@@ -254,15 +260,16 @@ class Waveform_RIT(Waveform):
                 t, re, im, A, p, o = np.loadtxt(
                     ff, unpack=True, skiprows=4, usecols=(0, 1, 2, 3, 4)
                 )
+            # Build from the file's re/im columns (unambiguous ground truth),
+            # not from its own A/p columns: those use the opposite phase-sign
+            # convention from the rest of the package (verified: p_file ==
+            # -get_multipole_dict's p, exactly), so A*exp(-1j*p) silently
+            # produced conj(z) instead of z. This also fixes nu_rescale, which
+            # previously rescaled A but not real/imag/z.
+            z = re + 1j * im
             if self.nu_rescale:
-                A /= self.metadata["nu"]
-            d[(ell, emm)] = {
-                "real": re,
-                "imag": im,
-                "A": A,
-                "p": p,
-                "z": A * np.exp(-1j * p),
-            }
+                z = z / self.metadata["nu"]
+            d[(ell, emm)] = get_multipole_dict(z)
 
         self._psi4lm = d
         self._t_psi4 = t
@@ -273,35 +280,39 @@ class Waveform_RIT(Waveform):
         Load hlm from RIT data.
         """
         d = {}
-        f = self.h_file
-        th = f["NRTimes"][:]
-        if self.ell_emms == "all":
-            modes = [(ell, emm) for ell in range(2, 6) for emm in range(-ell, ell + 1)]
-        else:
-            modes = self.ell_emms
+        with h5py.File(self.h_path, "r") as f:
+            th = f["NRTimes"][:]
+            if self.ell_emms == "all":
+                modes = [
+                    (ell, emm) for ell in range(2, 6) for emm in range(-ell, ell + 1)
+                ]
+            else:
+                modes = self.ell_emms
 
-        for mm in modes:
-            ell, emm = mm
-            try:
-                A = f[f"amp_l{ell}_m{emm}"]["Y"][:]
-                A_u = f[f"amp_l{ell}_m{emm}"]["X"][:]
-                p = -f[f"phase_l{ell}_m{emm}"]["Y"][:]
-                p_u = f[f"phase_l{ell}_m{emm}"]["X"][:]
-                # interp to common time array
-                A = self.__interp_qnt__(A_u, A, th)
-                p = self.__interp_qnt__(p_u, p, th) + np.pi
-                if self.nu_rescale:
-                    A /= self.metadata["nu"]
-                d[(ell, emm)] = {
-                    "real": A * np.cos(p),
-                    "imag": -A * np.sin(p),
-                    "A": A,
-                    "p": p,
-                    "z": A * np.exp(-1j * p),
-                }
+            for mm in modes:
+                ell, emm = mm
+                try:
+                    A = f[f"amp_l{ell}_m{emm}"]["Y"][:]
+                    A_u = f[f"amp_l{ell}_m{emm}"]["X"][:]
+                    p = -f[f"phase_l{ell}_m{emm}"]["Y"][:]
+                    p_u = f[f"phase_l{ell}_m{emm}"]["X"][:]
+                    # interp to common time array
+                    A = self.__interp_qnt__(A_u, A, th)
+                    p = self.__interp_qnt__(p_u, p, th) + np.pi
+                    if self.nu_rescale:
+                        A /= self.metadata["nu"]
+                    # Build the mode dict with the shared helper, so real/imag/A/p
+                    # are always mutually consistent (see PyART.catalogs.sxs for
+                    # the same pattern, and the bug it fixed there). z = A*exp(-1j*p)
+                    # is this class's own convention; get_multipole_dict recovers
+                    # the same A/real/imag from it, and a p that agrees with the
+                    # original everywhere the amplitude is non-negligible (they
+                    # can differ by a multiple of 2*pi at the noise floor, which
+                    # does not affect cos(p)/sin(p)).
+                    d[(ell, emm)] = get_multipole_dict(A * np.exp(-1j * p))
 
-            except KeyError:
-                pass
+                except KeyError:
+                    pass
 
         self._hlm = d
         self.t_h = th.astype(np.float64)

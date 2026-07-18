@@ -237,3 +237,39 @@ def test_single_mode_with_cached_h2f():
 
     m = Matcher(wf1, wf2, settings=base_single_mode_settings(), cache=cache)
     assert np.isfinite(m.mismatch)
+
+
+##############################
+# 'fAM' initial_frequency_mm string parsing
+##############################
+
+
+def test_initial_frequency_mm_fAM_string():
+    """
+    'initial_frequency_mm' can be given as e.g. '2fAM' (a multiplier of the
+    frequency at the amplitude peak) or '2fAM20' (also floored at 20 Hz). This
+    used to be parsed with eval(); it is now float(), which is all a plain
+    numeric coefficient needs.
+    """
+    settings = base_single_mode_settings(initial_frequency_mm="1fAM")
+    m = Matcher(nr, nr_2, settings=settings)
+    assert np.isfinite(m.mismatch)
+    # Matcher.__init__ copies settings into self.settings (a separate dict),
+    # so the caller's dict is untouched; the resolved value lives on the
+    # Matcher instance.
+    assert isinstance(m.settings["initial_frequency_mm"], float)
+    assert isinstance(settings["initial_frequency_mm"], str)
+
+
+def test_initial_frequency_mm_fAM_string_with_floor():
+    settings = base_single_mode_settings(initial_frequency_mm="1fAM1")
+    m = Matcher(nr, nr_2, settings=settings)
+    assert np.isfinite(m.mismatch)
+    assert isinstance(m.settings["initial_frequency_mm"], float)
+
+
+def test_initial_frequency_mm_fAM_string_rejects_non_numeric():
+    """A malformed multiplier must fail loudly (ValueError), not execute code."""
+    settings = base_single_mode_settings(initial_frequency_mm="__import__('os')fAM")
+    with pytest.raises(ValueError):
+        Matcher(nr, nr_2, settings=settings)

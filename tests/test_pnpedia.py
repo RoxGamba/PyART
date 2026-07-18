@@ -1,12 +1,21 @@
+import os
+
 import pytest
 
 from PyART.analytic import MathematicaParser, pnpedia
 from PyART.analytic.expr import _get_x_exponent, _get_x_power_range
 
+# tests/PNPedia is a bundled clone of the PNPedia repo (3.4M, real content).
+# download_pnpedia() skips cloning when the path already exists, so pointing
+# at it means these tests neither hit the network nor write a fresh clone
+# into the repo root (the previous "./PNPedia" was relative to whatever the
+# process cwd happened to be when pytest ran).
+BUNDLED_PNPEDIA_PATH = os.path.join(os.path.dirname(__file__), "PNPedia")
+
 
 @pytest.fixture
 def pnpedia_instance():
-    return pnpedia.PNPedia(path="./PNPedia", download=True)
+    return pnpedia.PNPedia(path=BUNDLED_PNPEDIA_PATH, download=True)
 
 
 def test_pnpedia_get_dummy__quantity(tmp_path):

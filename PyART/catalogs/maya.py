@@ -27,7 +27,10 @@ class MAYA(Waveform):
                 "https://cgpstorage.ph.utexas.edu/maya_format/" + h5file, out=path
             )
         self.ell_emms = ell_emms
-        self.h_file = h5py.File(path, "r")
+        # path is kept so load_metadata can open the file locally rather than
+        # storing the handle on self: an open h5py handle would make the
+        # waveform un-deep-copyable, which the Matcher needs.
+        self.path = path
         self.coalescence = Coalescence(path)
 
         self.load_h()
@@ -63,7 +66,8 @@ class MAYA(Waveform):
 
     def load_metadata(self):
 
-        parfile = dict(self.h_file["parfile"].attrs.items())
+        with h5py.File(self.path, "r") as h_file:
+            parfile = dict(h_file["parfile"].attrs.items())
         f = parfile["par_content"]
         metadata = {}
 

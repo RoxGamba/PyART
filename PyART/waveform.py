@@ -177,6 +177,7 @@ class Waveform(object):
         wave="hlm",
         umin=0,
         height=None,
+        second_dvt=False,
         return_idx=False,
     ):
         """
@@ -220,12 +221,38 @@ class Waveform(object):
         p = wave[mode]["p"]
         Alm = wave[mode]["A"]
 
+        # D1 requires a uniform time grid, but the underlying data need not be
+        # (e.g. SXS-native output has adaptive time stepping). Interpolate onto
+        # a uniform grid for differentiation, then interpolate the derivatives
+        # back onto the original t, so they stay indexable alongside Alm/peaks
+        # (found on the original, possibly non-uniform, grid).
+        dt = np.diff(t)
+        if np.allclose(dt, dt[0]):
+            to_grid = from_grid = lambda x: x
+            t_grid = t
+        else:
+            t_grid = np.linspace(t[0], t[-1], len(t))
+            to_grid = lambda x: np.interp(t_grid, t, x)
+            from_grid = lambda x: np.interp(t, t_grid, x)
+
         # compute omega
-        omg = np.zeros_like(p)
-        omg[1:] = np.diff(p) / np.diff(t)
+        p_grid = to_grid(p)
+        omg_grid = ut.D1(p_grid, t_grid, 4)
+        omg = from_grid(omg_grid)
+
         # compute domega
-        domg = np.zeros_like(omg)
-        domg[1:] = np.diff(omg) / np.diff(t)
+        domg_grid = ut.D1(omg_grid, t_grid, 4)
+        domg = from_grid(domg_grid)
+
+        # compute second derivative of A, omega if requested
+        if second_dvt:
+            Alm_grid = to_grid(Alm)
+            dAlm_grid = ut.D1(Alm_grid, t_grid, 4)
+            d2Alm_grid = ut.D1(dAlm_grid, t_grid, 4)
+            domg2_grid = ut.D1(domg_grid, t_grid, 4)
+            dAlm = from_grid(dAlm_grid)
+            d2Alm = from_grid(d2Alm_grid)
+            domg2 = from_grid(domg2_grid)
 
         # find peaks
         if height is None:
@@ -252,11 +279,30 @@ class Waveform(object):
         A_mrg = Alm[peaks[i]]
         omg_mrg = omg[peaks[i]]
         domg_mrg = domg[peaks[i]]
+        if second_dvt:
+            dAlm_mrg = dAlm[peaks[i]]
+            d2Alm_mrg = d2Alm[peaks[i]]
+            domg2_mrg = domg2[peaks[i]]
 
         if return_idx:
-            return t_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
+            if second_dvt:
+                return (
+                    t_mrg,
+                    A_mrg,
+                    omg_mrg,
+                    domg_mrg,
+                    dAlm_mrg,
+                    d2Alm_mrg,
+                    domg2_mrg,
+                    peaks[i],
+                )
+            else:
+                return t_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
         else:
-            return t_mrg, A_mrg, omg_mrg, domg_mrg
+            if second_dvt:
+                return t_mrg, A_mrg, omg_mrg, domg_mrg, dAlm_mrg, d2Alm_mrg, domg2_mrg
+            else:
+                return t_mrg, A_mrg, omg_mrg, domg_mrg
 
     def _validate_uniform_u(self, quantity_name):
         """
@@ -903,6 +949,28 @@ class Waveform(object):
             plt.show()
         else:
             return axs
+
+    def extract_merger_ringdown_qts(self):
+        """
+        Extract quantities like the peak amplitude, frequency,
+        time_shifts between modes etc
+        """
+        out = {}
+
+        for lm in self.hlm.keys():
+            out[lm] = {}
+            _, Alm, omglm, domglm, dAlm, d2Alm, domg2, idx = self.find_max(
+                mode=lm, kind="global", return_idx=True, second_dvt=True
+            )
+            out[lm]["peak_amplitude"] = Alm
+            out[lm]["peak_amplitude_derivative"] = dAlm
+            out[lm]["peak_amplitude_second_derivative"] = d2Alm
+            out[lm]["peak_frequency"] = omglm
+            out[lm]["peak_frequency_derivative"] = domglm
+            out[lm]["peak_frequency_second_derivative"] = domg2
+            out[lm]["peak_time"] = self.u[idx]
+
+        return out
 
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):

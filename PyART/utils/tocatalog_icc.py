@@ -6,21 +6,11 @@ SA: 07/31/2024
 """
 
 import os, json
+import glob
+import shutil
 import logging
 import numpy as np
 from PyART.analysis.scattering_angle import ScatteringAngle
-
-
-def runcmd(cmd, workdir, out=None):
-    """
-    Execute cmd in workdir
-    """
-    base = os.getcwd()
-    os.makedirs(workdir, exist_ok=True)
-    os.chdir(workdir)
-    os.system(cmd)
-    os.chdir(base)
-    return
 
 
 def load_puncts(sim_path, fname="puncturetracker-pt_loc..asc"):
@@ -204,6 +194,11 @@ for i, sim in enumerate(all_sims):
 
     new_sim_dir = os.path.join(new_dir, meta["name"])
     os.makedirs(new_sim_dir, exist_ok=True)
-    cmd = f"cp -v {datasim}/* {new_sim_dir}"
-    runcmd(cmd, workdir=os.getcwd())
+    for item in glob.glob(os.path.join(datasim, "*")):
+        dest = os.path.join(new_sim_dir, os.path.basename(item))
+        if os.path.isdir(item):
+            shutil.copytree(item, dest, dirs_exist_ok=True)
+        else:
+            shutil.copy2(item, dest)
+        logging.info(f"Copied {item} -> {dest}")
     logging.info(" ")

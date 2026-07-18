@@ -5,8 +5,6 @@ import matplotlib
 from ..utils import utils
 from .hypfit import fit_quadratic, quadratic_to_canonical, plot_hypfit
 
-matplotlib.rc("text", usetex=True)
-
 
 class ScatteringAngle:
     """
@@ -107,6 +105,11 @@ class ScatteringAngle:
         After initialization, the object is prepared for scattering angle analysis,
         including setting up polynomial extrapolation parameters and computing initial values.
         """
+        # LaTeX-rendered plot labels: set here rather than at import time, so
+        # merely importing this module does not break plotting for anyone
+        # without a LaTeX installation.
+        matplotlib.rc("text", usetex=True)
+
         self.puncts = None
         self.use_single_punct = None  # None, 0, or 1
         self.verbose = True

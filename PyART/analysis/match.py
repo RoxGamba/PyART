@@ -30,6 +30,35 @@ from pycbc.psd import aLIGOZeroDetHighPower, sensitivity_curve_lisa_semi_analyti
 from pycbc.psd.read import from_txt
 
 
+def _copy_for_matching(waveform):
+    """
+    Return a copy of a waveform safe to mutate inside the Matcher.
+
+    The Matcher conditions its inputs in place -- it can cut them, shift their
+    time array, and rewrite ``hlm`` during pre-alignment -- and computing a
+    mismatch must not modify the caller's objects. A full ``deepcopy`` is not
+    used because catalog waveforms hold non-copyable state (open h5py handles,
+    an ``sxs.Coalescence`` object, ...). Instead the object is shallow-copied,
+    which shares that state harmlessly, and only the wave-data containers that
+    the conditioning mutates are duplicated:
+
+    - the mode dictionaries (``_hlm``/``_dothlm``/``_psi4lm``), whose inner
+      arrays are cut in place by ``Waveform.cut``;
+    - the time and polarization arrays, which are reassigned.
+
+    This is robust for any ``Waveform`` subclass regardless of what else it
+    carries.
+    """
+    wf = copy.copy(waveform)
+    for attr in ("_hlm", "_dothlm", "_psi4lm"):
+        wf.__dict__[attr] = copy.deepcopy(getattr(waveform, attr))
+    for attr in ("_u", "_t", "_t_psi4", "_hp", "_hc"):
+        val = getattr(waveform, attr, None)
+        if val is not None:
+            wf.__dict__[attr] = np.array(val, copy=True)
+    return wf
+
+
 class Matcher(object):
     """
     Matcher class for computing the mismatch (or match) between two gravitational waveforms.
@@ -100,6 +129,12 @@ class Matcher(object):
             self.settings.update(settings)
         self.modes = self.settings.get("modes", [])
         del settings
+
+        # Work on copies: the conditioning below (cut, pre-align, compute_hphc)
+        # mutates the waveform objects, and computing a mismatch must not modify
+        # the caller's inputs.
+        WaveForm1 = _copy_for_matching(WaveForm1)
+        WaveForm2 = _copy_for_matching(WaveForm2)
 
         # Choose the appropriate mismatch function
         if self.settings["kind"] == "single-mode":
@@ -246,7 +281,7 @@ class Matcher(object):
             if k[0] == 2 and k[1] == 2:
                 try:
                     umrg, _, _, _ = WaveForm.find_max()
-                except:
+                except ValueError:
                     logging.warning("merger time not found! Using u[-10]")
                     umrg = wf.u[-10]
                 C = wf.u[0]
@@ -485,10 +520,12 @@ class Matcher(object):
                 fAM = h1f.sample_frequencies[np.argmax(abs(h1f))]
                 fms = settings["initial_frequency_mm"]
                 if fms.split("fAM")[1] == "":
-                    settings["initial_frequency_mm"] = eval(fms.split("fAM")[0]) * fAM
+                    settings["initial_frequency_mm"] = (
+                        float(fms.split("fAM")[0]) * fAM
+                    )
                 else:
                     settings["initial_frequency_mm"] = max(
-                        eval(fms.split("fAM")[0]) * fAM, eval(fms.split("fAM")[1])
+                        float(fms.split("fAM")[0]) * fAM, float(fms.split("fAM")[1])
                     )
 
         if isinstance(settings["final_frequency_mm"], str):

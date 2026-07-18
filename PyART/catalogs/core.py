@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import h5py
 import glob
 import os
+import shutil
+import subprocess
 
 from ..waveform import Waveform
 from ..utils import os_utils
@@ -205,11 +207,11 @@ class Waveform_CoRe(Waveform):
             pre[protocol], server, sep[protocol], gitbase, ID
         )
         logging.info(f"git-clone {git_repo} ...")
-        os.system("git clone " + git_repo)
+        subprocess.run(["git", "clone", git_repo], check=True)
         self.core_data_path = os.path.join(path, ID)
-        os.system(f"mv {ID} {self.core_data_path}")
+        shutil.move(ID, self.core_data_path)
         # pull with lfs
-        os.system("cd {}; git lfs pull".format(self.core_data_path))
+        subprocess.run(["git", "lfs", "pull"], cwd=self.core_data_path, check=True)
 
     def cut_at_mrg(self):
         """
@@ -371,7 +373,8 @@ class Waveform_CoRe(Waveform):
                         aM = data[:, 6]
                         phi = data[:, 7]
 
-                    except:
+                    except IndexError:
+                        # older-format files have fewer columns
                         uM = data[:, 0]
                         RehM = data[:, 1]
                         ImhM = data[:, 2]
