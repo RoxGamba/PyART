@@ -9,7 +9,6 @@ from .expr import AnalyticExpression
 from .mathematica_parser import MathematicaParser
 from .analytic_catalog import AnalyticCatalog
 
-
 logger = logging.getLogger(__name__)
 
 

@@ -9,7 +9,6 @@ import h5py
 from ..waveform import Waveform
 from ..utils import wf_utils as wfu
 
-
 logger = logging.getLogger(__name__)
 
 matlab_setup_base = """

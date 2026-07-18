@@ -19,7 +19,6 @@ from .utils import load_nr_utils as nr_ut
 
 from .analysis.integrate_wave import IntegrateMultipole
 
-
 logger = logging.getLogger(__name__)
 
 

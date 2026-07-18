@@ -3,7 +3,6 @@ import numpy as np
 import ringdown_fits as rdf
 import ringdown_fits_noncirc as ncf
 
-
 logger = logging.getLogger(__name__)
 
 

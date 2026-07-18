@@ -20,7 +20,6 @@ import os
 import romspline
 import time
 
-
 logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
