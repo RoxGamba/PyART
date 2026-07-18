@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import h5py, wget, glob, os
 
 from ..waveform import Waveform
+from ..utils.wf_utils import get_multipole_dict
 
 try:
     from mayawaves.coalescence import Coalescence
@@ -52,12 +53,10 @@ class MAYA(Waveform):
             ell, emm = mm
             try:
                 t, re, im = self.coalescence.strain_for_mode(l=ell, m=emm)
-                A = np.sqrt(re**2 + im**2)
-                p = np.unwrap(np.angle(re + 1j * im))
             except KeyError:
-                pass
+                continue
 
-            d[(ell, emm)] = {"real": re, "imag": im, "A": A, "p": p}
+            d[(ell, emm)] = get_multipole_dict(re + 1j * im)
 
         self._hlm = d
         self._t = t

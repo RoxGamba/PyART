@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 import os
 
+import numpy as np
 import pytest
 
 from PyART.catalogs import gra
@@ -76,6 +77,19 @@ def test_gra(tmp_path):
             assert key in wf.hlm[mode].keys()
         # check length
         assert len(wf.hlm[mode]["A"]) == len(wf.u)
+
+        # 'imag' used to be built as A*sin(p), which is -Im(z) under this
+        # package's p = -angle(z) convention (the same bug #10 had for SXS):
+        # real + 1j*imag must reconstruct z exactly.
+        m = wf.hlm[mode]
+        assert np.allclose(m["real"] + 1j * m["imag"], m["z"])
+
+    # p = -unwrap(angle(z)) grows positive over an inspiral for m>0: checked
+    # on (2,2) only, since this system (q=1, non-spinning) suppresses every
+    # other m>0 mode to numerical noise by symmetry, where phase carries no
+    # physical meaning.
+    if (2, 2) in wf.hlm:
+        assert np.mean(wf.hlm[(2, 2)]["p"]) > 0
 
 
 if __name__ == "__main__":

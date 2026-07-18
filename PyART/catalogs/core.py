@@ -10,6 +10,7 @@ import subprocess
 
 from ..waveform import Waveform
 from ..utils import os_utils
+from ..utils.wf_utils import get_multipole_dict
 
 ## Conversion dictionary
 conversion_dict_floats = {
@@ -468,8 +469,12 @@ class Waveform_CoRe(Waveform):
             d[(ell, emm)] = {}
 
             # u/M:0 Reh/M:1 Imh/M:2 Momega:3 A/M:4 phi:5 t:6
-            u, re, im, Momg, A, phi, t = np.loadtxt(m, unpack=True, skiprows=3)
-            d[(ell, emm)] = {"A": A, "p": phi, "t": t, "real": re, "imag": im}
+            # A/phi (and Momega) are the file's own columns, in a convention
+            # that can't be checked (no test data exists for this loader);
+            # derive A/p/z from Reh/Imh instead, which are convention-free.
+            u, re, im, _Momg, _A, _phi, t = np.loadtxt(m, unpack=True, skiprows=3)
+            d[(ell, emm)] = get_multipole_dict(re + 1j * im)
+            d[(ell, emm)]["t"] = t
         self._t = t
         self._u = u
         self._hlm = d

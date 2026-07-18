@@ -310,13 +310,7 @@ class Waveform_EOBMatlab(Waveform):
                     ]
                 )
                 h *= np.sqrt((l + 3) * (l + 2) * (l + 1) * l)
-                self._hlm[(l + 1, m)] = {
-                    "real": h.real,
-                    "imag": h.imag,
-                    "A": abs(h),
-                    "p": -np.unwrap(np.angle(h)),
-                    "z": h,
-                }
+                self._hlm[(l + 1, m)] = wfu.get_multipole_dict(h)
         self._domain = "Time"
 
         self._hp, self._hc = wfu.compute_hphc(self._hlm, modes=list(self._hlm.keys()))
@@ -333,13 +327,7 @@ class Waveform_EOBMatlab(Waveform):
                         ]
                     )
                     h *= np.sqrt((l + 3) * (l + 2) * (l + 1) * l)
-                    self.hlm_inspl[(l + 1, m)] = {
-                        "real": h.real,
-                        "imag": h.imag,
-                        "A": abs(h),
-                        "p": -np.unwrap(np.angle(h)),
-                        "z": h,
-                    }
+                    self.hlm_inspl[(l + 1, m)] = wfu.get_multipole_dict(h)
 
             s = mat["s/inspl_mrg/ell/emm"]
             self.hlm_inspl_mrg = {}
@@ -352,13 +340,7 @@ class Waveform_EOBMatlab(Waveform):
                         ]
                     )
                     h *= np.sqrt((l + 3) * (l + 2) * (l + 1) * l)
-                    self.hlm_inspl_mrg[(l + 1, m)] = {
-                        "real": h.real,
-                        "imag": h.imag,
-                        "A": abs(h),
-                        "p": -np.unwrap(np.angle(h)),
-                        "z": h,
-                    }
+                    self.hlm_inspl_mrg[(l + 1, m)] = wfu.get_multipole_dict(h)
         pass
 
     def _load_dyn(self):

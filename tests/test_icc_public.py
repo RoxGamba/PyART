@@ -65,6 +65,13 @@ def test_icc_public_catalog(tmp_path):
         A, z = mode_data["A"], mode_data["z"]
         assert numpy.allclose(numpy.abs(z), A, rtol=1e-4, atol=1e-6)
 
+        # 'imag' used to be built as A*sin(p), which is -Im(z) under this
+        # package's p = -angle(z) convention (the same bug #10 had for SXS):
+        # real + 1j*imag must reconstruct z exactly.
+        assert numpy.allclose(
+            mode_data["real"] + 1j * mode_data["imag"], z
+        ), f"mode {mode}: real + 1j*imag != z"
+
     # Merger Sanity
     amplitude = waveform.hlm[(2, 2)]["A"]
     i_max = numpy.argmax(amplitude)
@@ -78,3 +85,6 @@ def test_icc_public_catalog(tmp_path):
     delta_phase = numpy.unwrap(phase)
     delta = numpy.max(numpy.abs(numpy.diff(delta_phase)))
     assert delta < numpy.pi  # no big jumps
+
+    # p = -unwrap(angle(z)) grows positive over an inspiral for m>0
+    assert numpy.mean(phase) > 0

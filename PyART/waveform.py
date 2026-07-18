@@ -518,7 +518,7 @@ class Waveform(object):
             iA = np.interp(new_u, self.u, np.abs(h))
             ip = np.interp(new_u, self.u, -np.unwrap(np.angle(h)))
             ih = iA * np.exp(-1j * ip)
-            hlm_i[k] = {"A": iA, "p": ip, "z": ih, "real": ih.real, "imag": ih.imag}
+            hlm_i[k] = wf_ut.get_multipole_dict(ih)
 
         return new_u, hlm_i
 

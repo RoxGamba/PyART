@@ -1,4 +1,5 @@
 from ..waveform import Waveform
+from ..utils.wf_utils import get_multipole_dict
 
 try:
     import lalsimulation as lalsim
@@ -164,21 +165,18 @@ class Waveform_LVKNR(Waveform):
         for i in range(len(modes)):
             l, m = hlms.l, hlms.m
             this_mode = hlms.mode.data.data
-            A = np.abs(this_mode)
-            p = np.unwrap(np.angle(this_mode))
 
-            # scale the amplitude
-            A *= 1e6 * lal.PC_SI / Msun_m
+            # scale the amplitude (a positive real factor, so it does not
+            # affect the phase); scale this_mode itself, not just A, so that
+            # z stays consistent with real/imag/A (get_multipole_dict derives
+            # everything from z, and previously z was left unscaled while
+            # A/real/imag were scaled, a mismatch of its own).
+            scale = 1e6 * lal.PC_SI / Msun_m
             if not self.nu_rescale:
-                A /= metadata["nu"]
+                scale /= metadata["nu"]
+            this_mode = this_mode * scale
 
-            self._hlm[(l, m)] = {
-                "real": A * np.cos(p),
-                "imag": A * np.sin(p),
-                "A": A,
-                "p": p,
-                "z": this_mode,
-            }
+            self._hlm[(l, m)] = get_multipole_dict(this_mode)
             hlms = hlms.next
 
         # get the time array, transfored to physical units

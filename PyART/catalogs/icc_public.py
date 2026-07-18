@@ -2,6 +2,7 @@ import os, json, re, requests, h5py, logging, numpy
 from pathlib import Path
 import urllib3
 from ..waveform import Waveform
+from ..utils.wf_utils import get_multipole_dict
 from itertools import product
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -184,15 +185,11 @@ class Waveform_ICC(Waveform):
                 h = f[name][:]
                 if self.nu_rescale:
                     h /= self.metadata["nu"]
-                # Amplitude and phase
-                amp, phase = abs(h), -numpy.unwrap(numpy.angle(h))
-                hlm[(l, m)] = {
-                    "real": amp * numpy.cos(phase),
-                    "imag": amp * numpy.sin(phase),
-                    "A": amp,
-                    "p": phase,
-                    "z": h,
-                }
+                # Build the mode dict with the shared helper, so real/imag/A/p
+                # are always mutually consistent (see PyART.catalogs.sxs's #10
+                # fix for the bug this hand-rolled A*sin(p) pattern caused
+                # there: it stored -Im(h) instead of Im(h)).
+                hlm[(l, m)] = get_multipole_dict(h)
         self._hlm = hlm
         pass
 
@@ -221,15 +218,8 @@ class Waveform_ICC(Waveform):
                 psi4 = f[name][:]
                 if self.nu_rescale:
                     psi4 = psi4 / self.metadata["nu"]
-                # amplitude and phase
-                amp, phase = abs(psi4), -numpy.unwrap(numpy.angle(psi4))
-                psi4lm[(l, m)] = {
-                    "real": amp * numpy.cos(phase),
-                    "imag": amp * numpy.sin(phase),
-                    "A": amp,
-                    "p": phase,
-                    "z": psi4,
-                }
+                # see load_hlm: shared helper, same bug it fixes
+                psi4lm[(l, m)] = get_multipole_dict(psi4)
         self._psi4lm = psi4lm
         pass
 

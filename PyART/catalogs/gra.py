@@ -2,6 +2,7 @@ import numpy as np
 import os
 import h5py
 from ..waveform import Waveform
+from ..utils.wf_utils import get_multipole_dict
 import json
 import logging
 import re
@@ -272,17 +273,15 @@ class Waveform_GRA(Waveform):
             h = hlm[:, 1] + 1j * hlm[:, 2]
             if self.nu_rescale:
                 h /= self.metadata["nu"]
-            # amp and phase
-            Alm = abs(h)[self.cut_N :]
-            plm = -np.unwrap(np.angle(h))[self.cut_N :]
-            # save in dictionary
+            # Build the mode dict with the shared helper, so real/imag/A/p are
+            # always mutually consistent (see PyART.catalogs.sxs's #10 fix for
+            # the bug this hand-rolled A*sin(p) pattern caused there). Applied
+            # to the whole mode and the junk cut afterwards: the phase must be
+            # unwrapped before the cut, or it would be offset by a multiple of
+            # 2pi.
             key = (l, m)
             dict_hlm[key] = {
-                "real": Alm * np.cos(plm),
-                "imag": Alm * np.sin(plm),
-                "A": Alm,
-                "p": plm,
-                "z": h[self.cut_N :],
+                ky: val[self.cut_N :] for ky, val in get_multipole_dict(h).items()
             }
         self._hlm = dict_hlm
         pass
@@ -399,15 +398,10 @@ class Waveform_GRA(Waveform):
             psi4 = psi4lm[:, 1] + 1j * psi4lm[:, 2]
             if self.nu_rescale:
                 psi4 /= self.metadata["nu"]
-            Alm = abs(psi4)[self.cut_N :]
-            plm = -np.unwrap(np.angle(psi4))[self.cut_N :]
+            # see load_hlm: shared helper first, junk cut afterwards
             key = (l, m)
             dict_psi4lm[key] = {
-                "real": Alm * np.cos(plm),
-                "imag": Alm * np.sin(plm),
-                "A": Alm,
-                "p": plm,
-                "z": psi4[self.cut_N :],
+                ky: val[self.cut_N :] for ky, val in get_multipole_dict(psi4).items()
             }
 
         self._psi4lm = dict_psi4lm

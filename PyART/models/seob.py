@@ -161,15 +161,7 @@ def convert_hlm(hlm):
     """
     hlm_conv = {}
     for key in hlm.keys():
-        A = np.abs(hlm[key])
-        p = -np.unwrap(np.angle(hlm[key]))
-        hlm_conv[key] = {
-            "real": A * np.cos(p),
-            "imag": -1 * A * np.sin(p),
-            "A": A,
-            "p": p,
-            "z": A * np.exp(-1j * p),
-        }
+        hlm_conv[key] = wfu.get_multipole_dict(hlm[key])
     return hlm_conv
 
 

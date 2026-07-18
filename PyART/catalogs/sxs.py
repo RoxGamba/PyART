@@ -900,13 +900,7 @@ class Waveform_SXS(Waveform):
         for ky in self.hlm.keys():
             h = self.hlm[ky]["z"]
             ddh = np.gradient(np.gradient(h, t), t)
-            dict_psi4lm[ky] = {
-                "A": abs(ddh),
-                "p": -np.unwrap(np.angle(ddh)),
-                "real": ddh.real,
-                "imag": ddh.imag,
-                "z": ddh,
-            }
+            dict_psi4lm[ky] = get_multipole_dict(ddh)
         self._psi4lm = dict_psi4lm
 
     def to_lvk(self, modes="all"):
