@@ -252,17 +252,24 @@ def taper_waveform(
 
     elif kind == "tukey":
         n = len(h)
-        idx1 = np.where(t > t1)[0][0]
-        if t2 is not None:
-            idx2 = np.where(t > t2)[0][0]
-            window = tukey(idx2 - idx1, alpha)
-            window = np.pad(window, (0, n - idx2), mode="constant")
+        if t1 is None and t2 is None:
+            # Symmetric Tukey window over the whole array, no anchors: both
+            # edges tapered equally. Used e.g. by Waveform.to_frequency,
+            # which (unlike Matcher) has no merger to protect from the
+            # taper and wants generic FFT-ready edges on both sides.
+            window = tukey(n, alpha)
         else:
-            window = tukey(n - idx1, alpha)
-            nby2 = int(n / 2)
-            window[nby2:] = np.ones_like(window[nby2:])
+            idx1 = np.where(t > t1)[0][0]
+            if t2 is not None:
+                idx2 = np.where(t > t2)[0][0]
+                window = tukey(idx2 - idx1, alpha)
+                window = np.pad(window, (0, n - idx2), mode="constant")
+            else:
+                window = tukey(n - idx1, alpha)
+                nby2 = int(n / 2)
+                window[nby2:] = np.ones_like(window[nby2:])
 
-        window = np.pad(window, (idx1, 0), mode="constant")
+            window = np.pad(window, (idx1, 0), mode="constant")
     else:
         raise ValueError("Unknown tapering method")
 
@@ -280,28 +287,6 @@ def taper_waveform(
             plt.axvline(t2)
         plt.show()
     return out
-
-
-def windowing(h, alpha=0.1):
-    """
-    Windowing with Tukey window on a given strain (time-domain)
-    h     : strain to be tapered
-    alpha : Tukey filter slope parameter. Suggested value: alpha = 1/4/seglen
-
-    Parameters
-    ----------
-    h: array-like
-        strain array
-    alpha: float
-        slope parameter for the tapering
-    Returns
-    -------
-    out: (array-like, float)
-        tapered strain and wfact = <w^2>
-    """
-    window = tukey(len(h), alpha)
-    wfact = np.mean(window**2)
-    return h * window, wfact
 
 
 def fft(h, dt):

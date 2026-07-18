@@ -8,6 +8,7 @@ Test Cataloger bookkeeping that does not require catalog data:
 
 import json
 import logging
+import os
 
 import matplotlib
 import numpy as np
@@ -151,6 +152,135 @@ def test_collect_mismatch_jsons_without_existing_base(tmp_path):
 
     assert set(merged["mismatches"]) == {"simA", "simB"}
     assert base.exists()
+
+
+##############################
+# optimize_mismatches parallel fan-out (Phase 5)
+##############################
+
+# collect_mismatch_jsons above only covers the merge step; the actual
+# multiprocessing.Process fan-out in optimize_mismatches (nproc > 1) had no
+# coverage at all. Real Optimizer instances run a genuine EOB optimization
+# (slow, needs TEOBResumS installed) so it is faked here with something that
+# only reproduces its JSON side effect -- this tests the fan-out/merge
+# plumbing, not the optimization itself.
+#
+# multiprocessing's default start method on Linux is "fork": child processes
+# are created by duplicating the parent's memory, so a monkeypatch applied
+# to PyART.catalogs.cataloger.Optimizer *before* spawning is inherited by
+# every child -- no spawn-safe/picklable fake is needed.
+
+
+class _FakeOptimizer:
+    """
+    Records that it ran (with its own PID) and appends a mismatch entry to
+    its json_file -- but, like the real Optimizer, only if the entry is not
+    already there and overwrite is off. This matters: Cataloger.optimize_mismatches'
+    final "read collated json" loop calls Optimizer(overwrite=False) again,
+    sequentially, for *every* sim in subset, regardless of what the parallel
+    batches did. The real Optimizer skips recomputing when it finds an
+    existing entry (see opt_ic.py's `run_optimization = False` when
+    `not overwrite`); a fake that always (re)writes would silently paper over
+    a broken fan-out (e.g. a batch that drops a sim) by recomputing it
+    serially in that final loop, and no test comparing only the *final*
+    merged JSON's keys could ever tell the difference.
+    """
+
+    def __init__(self, waveform, **optimizer_opts):
+        self.waveform = waveform
+        self.pid = os.getpid()
+        name = waveform.metadata["name"]
+        json_file = optimizer_opts["json_file"]
+        overwrite = optimizer_opts.get("overwrite", True)
+        if os.path.exists(json_file):
+            with open(json_file) as f:
+                data = json.load(f)
+        else:
+            data = {"mismatches": {}}
+        if overwrite or name not in data["mismatches"]:
+            data["mismatches"][name] = {"mm_min": 0.01, "pid": self.pid}
+            with open(json_file, "w") as f:
+                json.dump(data, f)
+
+
+def _fake_waveform(name, pph0=5.0):
+    return type("W", (), {"metadata": {"name": name, "pph0": pph0}})()
+
+
+def test_optimize_mismatches_parallel_fanout_covers_every_sim(monkeypatch, tmp_path):
+    """
+    With nproc=2 and 4 sims, each of the 2 temp JSONs -- captured here before
+    optimize_mismatches's own merge step deletes them -- must together cover
+    every sim exactly once, and at least two distinct PIDs must appear across
+    them, proving the batches genuinely ran in separate processes rather
+    than a fan-out that silently no-ops or falls back to serial execution
+    (which the self-healing final loop, see _FakeOptimizer's docstring,
+    would otherwise mask from a final-JSON-only check).
+    """
+    monkeypatch.chdir(tmp_path)  # process_with_redirect's logfile is cwd-relative
+    monkeypatch.setattr("PyART.catalogs.cataloger.Optimizer", _FakeOptimizer)
+
+    captured_temp_jsons = []
+    original_collect = Cataloger.collect_mismatch_jsons
+
+    def spying_collect(self, json_tmp_list):
+        for path in json_tmp_list:
+            with open(path) as f:
+                captured_temp_jsons.append(json.load(f))
+        return original_collect(self, json_tmp_list)
+
+    monkeypatch.setattr(Cataloger, "collect_mismatch_jsons", spying_collect)
+
+    names = ["simA", "simB", "simC", "simD"]
+    data = {
+        name: {"Waveform": _fake_waveform(name), "Optimizer": None} for name in names
+    }
+    cat = make_cataloger(data=data, json_file=str(tmp_path / "mismatches.json"))
+
+    cat.optimize_mismatches(ranges={"pph0": [1, 10]}, nproc=2)
+
+    assert len(captured_temp_jsons) == 2, "expected one temp JSON per process"
+
+    covered = set()
+    pids = set()
+    for temp_json in captured_temp_jsons:
+        for name, entry in temp_json["mismatches"].items():
+            assert name not in covered, f"{name} processed by more than one batch"
+            covered.add(name)
+            pids.add(entry["pid"])
+    assert covered == set(names), "the parallel batches did not cover every sim"
+    assert len(pids) > 1, "batches did not run in separate processes"
+
+    assert list(tmp_path.glob("mismatches_*.json")) == [], "temp JSONs not cleaned up"
+
+    with open(cat.json_file) as f:
+        on_disk = json.load(f)
+    assert set(on_disk["mismatches"]) == set(names)
+
+    for name in names:
+        assert isinstance(cat.data[name]["Optimizer"], _FakeOptimizer)
+
+
+def test_optimize_mismatches_reduces_nproc_to_subset_size(
+    monkeypatch, tmp_path, caplog
+):
+    """nproc > number of matching sims must be reduced, not spawn empty batches."""
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("PyART.catalogs.cataloger.Optimizer", _FakeOptimizer)
+
+    names = ["simA", "simB"]
+    data = {
+        name: {"Waveform": _fake_waveform(name), "Optimizer": None} for name in names
+    }
+    cat = make_cataloger(data=data, json_file=str(tmp_path / "mismatches.json"))
+
+    with caplog.at_level(logging.WARNING):
+        cat.optimize_mismatches(ranges={"pph0": [1, 10]}, nproc=5)
+
+    assert "reducing nproc" in caplog.text
+    with open(cat.json_file) as f:
+        on_disk = json.load(f)
+    assert set(on_disk["mismatches"]) == set(names)
 
 
 ##############################

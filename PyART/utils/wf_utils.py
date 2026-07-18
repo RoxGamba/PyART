@@ -165,34 +165,6 @@ def compute_hphc(hlm, phi=0, i=0, modes=[(2, 2)]):
     return hp, hc
 
 
-def taper(t, h, M, alpha, tau, Msuns=1.0):
-    """
-    Taper a waveform using an hyperbolic tangent
-
-    Parameters
-    ----------
-    t: ndarray
-        time array
-    h: ndarray
-        waveform array
-    M: float
-        total mass in solar masses
-    alpha: float
-        parameter that controls how fast the tapering is
-    tau: float
-        parameter that controls when the tapering starts
-    Msuns: float
-        mass of the sun in seconds (default 1.0)
-    Returns
-    -------
-    out: ndarray
-        tapered waveform
-    """
-    tm = t / (M * Msuns)
-    window = 0.5 * (1.0 + np.tanh(tm * alpha - tau))
-    return window * h
-
-
 def get_multipole_dict(wave):
     """
     Given a complex waveform, return a dictionary with

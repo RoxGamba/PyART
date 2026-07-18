@@ -607,10 +607,11 @@ class Waveform(object):
         """
 
         dt = self.u[1] - self.u[0]
-        # window
+        # window: symmetric Tukey, no anchors (unlike Matcher's tapering,
+        # to_frequency has no merger to protect and wants both edges tapered)
         if taper:
-            self._hp, _ = ut.windowing(self.hp, alpha=0.1)
-            self._hc, _ = ut.windowing(self.hc, alpha=0.1)
+            self._hp = ut.taper_waveform(self.u, self.hp, alpha=0.1, kind="tukey")
+            self._hc = ut.taper_waveform(self.u, self.hc, alpha=0.1, kind="tukey")
 
         if pad:
             seglen = ut.nextpow2(self.u[-1])

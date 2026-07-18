@@ -1,4 +1,4 @@
-import sys, os, json, logging, matplotlib, time, copy
+import sys, os, json, logging, matplotlib, time, copy, importlib
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -14,6 +14,20 @@ class Cataloger(object):
     """
     Class for catalogs
     """
+
+    # catalog name -> (submodule of PyART.catalogs, Waveform subclass name).
+    # Every entry is loaded via get_Waveform with the identical signature
+    # Class(path=self.path, ID=ID, **add_opts), so a single dict dispatch
+    # replaces what used to be an if/elif per catalog; adding a catalog is
+    # now a one-line registry entry instead of a new branch.
+    CATALOG_REGISTRY = {
+        "sxs": (".sxs", "Waveform_SXS"),
+        "rit": (".rit", "Waveform_RIT"),
+        "icc": (".icc", "Waveform_ICC"),
+        "core": (".core", "Waveform_CoRe"),
+        "grahyp": (".gra_hyp", "Waveform_GRAHyp"),
+        "sacra": (".sacra", "Waveform_SACRA"),
+    }
 
     def __init__(
         self,
@@ -61,39 +75,13 @@ class Cataloger(object):
         if verbose:
             logging.info(f"Loading {self.catalog} waveform with ID:{ID}")
 
-        if self.catalog == "sxs":
-            from .sxs import Waveform_SXS
-
-            wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "rit":
-
-            from .rit import Waveform_RIT
-
-            wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "icc":
-            from .icc import Waveform_ICC
-
-            wave = Waveform_ICC(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "core":
-            from .core import Waveform_CoRe
-
-            wave = Waveform_CoRe(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "grahyp":
-            from .gra_hyp import Waveform_GRAHyp
-
-            wave = Waveform_GRAHyp(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "sacra":
-            from .sacra import Waveform_SACRA
-
-            wave = Waveform_SACRA(path=self.path, ID=ID, **add_opts)
-
-        else:
+        if self.catalog not in self.CATALOG_REGISTRY:
             raise ValueError(f"Unknown catalog: {self.catalog}")
+
+        module_name, class_name = self.CATALOG_REGISTRY[self.catalog]
+        module = importlib.import_module(module_name, package=__package__)
+        WaveformClass = getattr(module, class_name)
+        wave = WaveformClass(path=self.path, ID=ID, **add_opts)
         return wave
 
     def get_model_waveform(self, name, model_opts={}, verbose=None):
