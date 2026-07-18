@@ -271,7 +271,7 @@ def CreateDict(
         "r_hyp": r_hyp,
         "H_hyp": H_hyp,
         "j_hyp": J_hyp,
-        "prs_sign_hyp": -1,
+        "prs_sign_hyp": prs_sign_hyp,
         "coalescence_angle": phi_ref,
         "df": df,
         "anomaly": anomaly,

@@ -670,7 +670,8 @@ def upoly_fits(
     nmax: int
         maximum polynomial order
     n_extract: int or None
-        if not None, extract the extrapolated value from this fit order
+        fit order to extract the extrapolated value from; must lie in
+        [nmin, nmax]. If None, defaults to nmax.
     r_cutoff_low: float or None
         if not None, only use data with r0 >= r_cutoff_low
     r_cutoff_high: float or None
@@ -684,7 +685,7 @@ def upoly_fits(
     -------
     out: dict
         dictionary with the following keys
-        'extrap': extrapolated value (mean over fit orders or from n_extract)
+        'extrap': extrapolated value, taken from the n_extract fit order
         'extrap_vec': extrapolated values for each fit order
         'fit_orders': list of fit orders
         'coeffs': polynomial coefficients for each fit order
@@ -700,6 +701,10 @@ def upoly_fits(
         r_cutoff_high = max(r0)
     if nmin > nmax:
         raise ValueError(f"nmin>nmax: {nmin}>{nmax} !")
+    if not nmin <= n_extract <= nmax:
+        raise ValueError(
+            f"n_extract must lie in [nmin, nmax]=[{nmin}, {nmax}], got {n_extract}!"
+        )
 
     i_rmin = np.argmin(r0)
     if direction == "in":
@@ -730,10 +735,8 @@ def upoly_fits(
         b[:, i] = zero_pad_before(b_tmp, nmax + 1)
         p[:, i] = np.polyval(b_tmp, u)
         ye_vec[i] = b[-1, i]
-        if n_extract is not None and fit_order == n_extract:
+        if fit_order == n_extract:
             ye = ye_vec[i]
-    if n_extract is None:
-        ye = np.mean(ye_vec)
     out = {
         "extrap": ye,
         "extrap_vec": ye_vec,
@@ -836,7 +839,7 @@ def D1(f, x, order=4, uniform_check=True, uc_atol=1e-4, uc_rtol=1e-4):
         i = np.arange(Nmin, Nmax)
         df[i] = (f[i + 1] - f[i]) * oodx
 
-        f[Nmax] = f[Nmax - 1]
+        df[Nmax] = df[Nmax - 1]
     elif order == 2:
         i = np.arange(Nmin + 1, Nmax)
         df[i] = 0.5 * (f[i + 1] - f[i - 1]) * oodx
@@ -1177,9 +1180,9 @@ def print_dict_comparison(
         if isinstance(value1, dict):
             dbool = are_dictionaries_equal(value1, value2, verbose=True)
             if dbool:
-                logging.info(f">> issues with {key:16s} (dictionary)")
+                logging.info(f">> {key:16s} is dict: no differences")
             else:
-                logging.info(f">> {key:16s} is dict:")
+                logging.info(f">> issues with {key:16s} (dictionary)")
         else:
             if value1 is None:
                 value1 = "None"
