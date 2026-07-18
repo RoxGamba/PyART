@@ -10,6 +10,9 @@ from .mathematica_parser import MathematicaParser
 from .analytic_catalog import AnalyticCatalog
 
 
+logger = logging.getLogger(__name__)
+
+
 @dataclass(slots=True)
 class BHPTEntry:
     """Parsed representation of a single BHPT series file.
@@ -118,13 +121,13 @@ class BHPTPN(AnalyticCatalog):
 
         # check if the path already exists
         if os.path.exists(self.path):
-            logging.info(
+            logger.info(
                 "BHPT repository already exists at %s. Skipping download.",
                 self.path,
             )
             return
 
-        logging.info("Cloning BHPT repository to %s...", self.path)
+        logger.info("Cloning BHPT repository to %s...", self.path)
         subprocess.run(
             [
                 "git",
@@ -138,7 +141,7 @@ class BHPTPN(AnalyticCatalog):
             ],
             check=True,
         )
-        logging.info("BHPT repository cloned to %s.", self.path)
+        logger.info("BHPT repository cloned to %s.", self.path)
 
     def __parse_bhptpn(self):
         """Index the BHPT Mathematica files available on disk.
@@ -165,7 +168,7 @@ class BHPTPN(AnalyticCatalog):
 
         self._set_index(self.series_root, (".m",))
         self.bhptpn_structure = self.indexed_paths
-        logging.info("BHPT structure parsed successfully.")
+        logger.info("BHPT structure parsed successfully.")
 
     def get_entry(self, name=None, path=None):
         """

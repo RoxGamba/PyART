@@ -8,6 +8,9 @@ from ..waveform import Waveform
 from ..utils.wf_utils import get_multipole_dict
 
 
+logger = logging.getLogger(__name__)
+
+
 class Waveform_Teuk(Waveform):
     """
     Class to handle Teukode test-mass waveforms.
@@ -33,7 +36,7 @@ class Waveform_Teuk(Waveform):
         try:
             self.__read_sims__()
         except FileNotFoundError:
-            logging.warning("Either no simulations or old format")
+            logger.warning("Either no simulations or old format")
 
         if "dynamics" in load:
             self.load_dynamics()
@@ -141,7 +144,7 @@ class Waveform_Teuk(Waveform):
             mu = mtdt["mu"]
         else:
             mu = 1e-3  # fallback to default if not present
-            logging.warning(
+            logger.warning(
                 "Parameter 'mu' not found in parfile; using default value mu=1e-3. Please check your metadata file."
             )
         return mtdt, a, mu
@@ -233,7 +236,7 @@ class Waveform_Teuk(Waveform):
             try:
                 t, dyn[var] = np.loadtxt(dynf, unpack=True)
             except ValueError:
-                logging.warning(f"Error loading {var}.txt")
+                logger.warning(f"Error loading {var}.txt")
             if "t" not in dyn.keys():
                 dyn["t"] = t
         return dyn
@@ -326,7 +329,7 @@ class Waveform_Teuk(Waveform):
         """
         if nx is None:
             nx, ny = self.max_res
-            logging.warning(
+            logger.warning(
                 f"load_horizon: assuming highest resolution, (nx, ny) = ({nx}, {ny})"
             )
         if m is None:
@@ -350,7 +353,7 @@ class Waveform_Teuk(Waveform):
             for kind in ["E", "J"]:
                 fname = f"d{kind}dt_hrz_td_lsum_m{mv}_Poisson.dat"
                 if not os.path.exists(os.path.join(data_dir, fname)):
-                    logging.warning(
+                    logger.warning(
                         f"load_horizon: no {kind} flux file found for m = {mv}, (nx, ny, cfl) = ({nx}, {ny}, {cfl})"
                     )
                     continue
@@ -359,7 +362,7 @@ class Waveform_Teuk(Waveform):
                     res["t"] = t
                 else:
                     if len(t) != len(res["t"]):
-                        logging.warning(
+                        logger.warning(
                             f"load_horizon: time arrays do not match for m = {mv}, (nx, ny, cfl) = ({nx}, {ny}, {cfl}). Interpolating, but check consistency!"
                         )
                     dy = np.interp(res["t"], t, dy)

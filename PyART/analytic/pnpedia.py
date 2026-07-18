@@ -20,6 +20,9 @@ from .expr import AnalyticExpression
 from .mathematica_parser import MathematicaParser
 from .analytic_catalog import AnalyticCatalog
 
+
+logger = logging.getLogger(__name__)
+
 # These replacements encode PNPedia naming conventions only. They stay here so
 # the shared Mathematica parser remains generic across analytic sources.
 
@@ -261,13 +264,13 @@ class PNPedia(AnalyticCatalog):
 
         # check if the path already exists
         if os.path.exists(self.path):
-            logging.info(
+            logger.info(
                 "PNPedia repository already exists at %s. Skipping download.",
                 self.path,
             )
             return
 
-        logging.info("Cloning PNPedia repository from GitHub...")
+        logger.info("Cloning PNPedia repository from GitHub...")
         subprocess.run(
             [
                 "git",
@@ -277,7 +280,7 @@ class PNPedia(AnalyticCatalog):
             ],
             check=True,
         )
-        logging.info("PNPedia repository cloned to %s", self.path)
+        logger.info("PNPedia repository cloned to %s", self.path)
 
     def __parse_pnpedia(self):
         """Index the available PNPedia quantity files.
@@ -290,7 +293,7 @@ class PNPedia(AnalyticCatalog):
 
         self._set_index(self.path, (".txt",))
         self.pnpedia_structure = self.indexed_paths
-        logging.info("PNPedia structure parsed successfully.")
+        logger.info("PNPedia structure parsed successfully.")
 
     def _resolve_entry(self, name=None, path=None):
         """Resolve a quantity request to a canonical key and file path.
@@ -312,7 +315,7 @@ class PNPedia(AnalyticCatalog):
             key = self._path_to_key.get(resolved_path)
             if key is None:
                 key = os.path.splitext(os.path.basename(resolved_path))[0].lower()
-            logging.info("Loading PN quantity from %s...", resolved_path)
+            logger.info("Loading PN quantity from %s...", resolved_path)
             return key, resolved_path
 
         key, resolved_path = self._resolve_name(
@@ -381,7 +384,7 @@ class PNPedia(AnalyticCatalog):
         try:
             return parse_mathematica(prepared_content)
         except _PNPEDIA_PARSE_FALLBACK_EXCEPTIONS as exc:
-            logging.warning(
+            logger.warning(
                 (
                     "Mathematica parse failed for %s; "
                     "falling back to sympy.sympify: %s"
@@ -417,7 +420,7 @@ class PNPedia(AnalyticCatalog):
             dict.fromkeys(re.findall(r"arXiv:\d{4}\.\d{4,5}(?:v\d+)?", readme_content))
         )
         if not arxiv_refs:
-            logging.warning("No arXiv references found in README.md at %s", path)
+            logger.warning("No arXiv references found in README.md at %s", path)
 
         # Look for notation, in the section starting with "Notations"
         notation = {}
@@ -448,7 +451,7 @@ class PNPedia(AnalyticCatalog):
                 if match:
                     endorsers.append(match.group(1).strip())
         if not endorsers:
-            logging.warning("No endorsers found in README.md at %s", path)
+            logger.warning("No endorsers found in README.md at %s", path)
 
         return {
             "arxiv_references": arxiv_refs,
@@ -505,7 +508,7 @@ class PNPedia(AnalyticCatalog):
             with open(readme_path, "r", encoding="utf-8") as readme_file:
                 readme_content = readme_file.read()
         else:
-            logging.warning("README.md not found for %s", resolved_path)
+            logger.warning("README.md not found for %s", resolved_path)
             readme_content = ""
 
         pn_quantity = self._parse_quantity_expression(content, resolved_path)

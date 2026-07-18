@@ -14,10 +14,12 @@ from scipy.optimize import minimize_scalar, dual_annealing
 from ..utils import utils as ut
 from ..utils import wf_utils as wf_ut
 
+logger = logging.getLogger(__name__)
+
 try:
     import lal
 except ModuleNotFoundError:
-    logging.warning("lal not installed.")
+    logger.warning("lal not installed.")
 
 # PyCBC imports
 from pycbc.filter import (
@@ -326,7 +328,7 @@ class Matcher(object):
                 try:
                     umrg, _, _, _ = WaveForm.find_max()
                 except ValueError:
-                    logging.warning("merger time not found! Using u[-10]")
+                    logger.warning("merger time not found! Using u[-10]")
                     umrg = wf.u[-10]
                 C = wf.u[0]
                 D = wf.u[-1]
@@ -406,7 +408,7 @@ class Matcher(object):
         tN = ut.nextpow2(resize_factor * tl)
         tlen = int(tN / dT)
         if tlen < LM:
-            logging.debug(f"tlen={tlen}, LM={LM}")
+            logger.debug(f"tlen={tlen}, LM={LM}")
         return tlen if tlen > LM else LM
 
     def __default_parameters__(self):
@@ -564,9 +566,7 @@ class Matcher(object):
                 fAM = h1f.sample_frequencies[np.argmax(abs(h1f))]
                 fms = settings["initial_frequency_mm"]
                 if fms.split("fAM")[1] == "":
-                    settings["initial_frequency_mm"] = (
-                        float(fms.split("fAM")[0]) * fAM
-                    )
+                    settings["initial_frequency_mm"] = float(fms.split("fAM")[0]) * fAM
                 else:
                     settings["initial_frequency_mm"] = max(
                         float(fms.split("fAM")[0]) * fAM, float(fms.split("fAM")[1])
@@ -778,7 +778,7 @@ class Matcher(object):
         if "save" not in settings.keys():
             plt.show()
         else:
-            logging.info(f"Saving to {settings['save']}")
+            logger.info(f"Saving to {settings['save']}")
             plt.savefig(f"{settings['save']}", dpi=100, bbox_inches="tight")
 
     def _compute_overlap_skymax(self, wf1, wf2, settings):

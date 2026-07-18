@@ -1,10 +1,12 @@
 import logging
 import numpy as np
 
+logger = logging.getLogger(__name__)
+
 try:
     import bajes.obs.gw as gwb
 except ModuleNotFoundError:
-    logging.warning("bajes not installed.")
+    logger.warning("bajes not installed.")
 
 from ..waveform import Waveform
 from ..utils.wf_utils import get_multipole_dict

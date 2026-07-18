@@ -23,6 +23,9 @@ except ImportError as e:
     ) from e
 
 
+logger = logging.getLogger(__name__)
+
+
 class Waveform_GRA(Waveform):
     """
     Class to handle GRAthena++ waveforms.
@@ -91,7 +94,7 @@ class Waveform_GRA(Waveform):
 
         session = make_session()
 
-        logging.info("Fetching catalog...")
+        logger.info("Fetching catalog...")
         id_map = get_id_to_item_url(session)
 
         if ID not in id_map:
@@ -102,28 +105,28 @@ class Waveform_GRA(Waveform):
         soup = get_item_soup(session, item_url)
 
         if "hlm" in downloads:
-            logging.info("Downloading hlm data...")
+            logger.info("Downloading hlm data...")
             if res is None:
                 res = "128"
                 self.res = res
-                logging.warning("No resolution specified, defaulting to res=128")
+                logger.warning("No resolution specified, defaulting to res=128")
 
             filename, tar_url = find_tar_for_resolution(soup, res)
-            logging.info(f"Found .tar: {filename}")
-            logging.info(f"Downloading from: {tar_url}")
+            logger.info(f"Found .tar: {filename}")
+            logger.info(f"Downloading from: {tar_url}")
             download_safe(session, tar_url, filename)
             extract_path = os.path.join(path, f"GRA_BHBH_{ID}")
             os.makedirs(extract_path, exist_ok=True)
-            logging.info(f"Extracting to: {extract_path}")
+            logger.info(f"Extracting to: {extract_path}")
             with tarfile.open(filename) as tar:
                 tar.extractall(path=extract_path)
             os.remove(filename)
 
         if "metadata" in downloads:
-            logging.info("Downloading metadata...")
+            logger.info("Downloading metadata...")
             filename, meta_url = find_metadata_file(soup)
-            logging.info(f"Found metadata file: {filename}")
-            logging.info(f"Downloading from: {meta_url}")
+            logger.info(f"Found metadata file: {filename}")
+            logger.info(f"Downloading from: {meta_url}")
             download_safe(session, meta_url, filename)
             # move to correct location
             extract_path = os.path.join(path, f"GRA_BHBH_{ID}", "metadata.json")
@@ -553,7 +556,7 @@ def download_safe(session, url, filename, chunk_size=1024 * 1024):
         downloaded = 0
         if os.path.exists(tmp_file):
             downloaded = os.path.getsize(tmp_file)
-            logging.info(f"Resuming download from byte {downloaded}")
+            logger.info(f"Resuming download from byte {downloaded}")
 
         headers = {}
         if downloaded > 0:
@@ -589,7 +592,7 @@ def download_safe(session, url, filename, chunk_size=1024 * 1024):
                         ):
                             resume_supported = True
                     else:
-                        logging.info(
+                        logger.info(
                             "Server did not honor Range header (status %s); "
                             "restarting full download",
                             r.status_code,
@@ -600,7 +603,7 @@ def download_safe(session, url, filename, chunk_size=1024 * 1024):
                     # to avoid corrupting the file when the server sends the full
                     # content.
                     if downloaded > 0:
-                        logging.info(
+                        logger.info(
                             "Discarding existing partial download and restarting"
                         )
                     mode = "wb"
@@ -613,13 +616,13 @@ def download_safe(session, url, filename, chunk_size=1024 * 1024):
                             f.write(chunk)
 
             os.rename(tmp_file, filename)
-            logging.info("Download completed")
+            logger.info("Download completed")
             return
         except (requests.RequestException, RuntimeError) as exc:
             last_error = exc
             if attempt == max_attempts:
                 raise
-            logging.warning(
+            logger.warning(
                 "Download attempt %s/%s for %s failed: %s. Retrying with a "
                 "fresh session.",
                 attempt,

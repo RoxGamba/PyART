@@ -10,6 +10,9 @@ from ..utils.utils import LoggerWriter
 from ..utils.wf_utils import get_multipole_dict
 
 
+logger = logging.getLogger(__name__)
+
+
 class Waveform_SXS(Waveform):
     """
     Class to handle SXS waveforms
@@ -141,17 +144,17 @@ class Waveform_SXS(Waveform):
             with h5py.File(fname, "r") as f:
                 needs_download = order_group not in f
             if needs_download:
-                logging.info(
+                logger.info(
                     f"{levpath} found, but not the requested N={self.order} order. Download needed."
                 )
 
         if needs_download:
             if download:
-                logging.info(
+                logger.info(
                     f"The path {self.sxs_data_path} does not exist, contains no 'Lev*'"
                     + "directory, or does not contain the requested order."
                 )
-                logging.info("Downloading the simulation from the SXS catalog.")
+                logger.info("Downloading the simulation from the SXS catalog.")
                 self.download_simulation(
                     ID=self.ID,
                     path=path,
@@ -161,7 +164,7 @@ class Waveform_SXS(Waveform):
                     extrapolation_order=order,
                 )
             else:
-                logging.warning(
+                logger.warning(
                     "Use download=True to download the simulation from the SXS catalog."
                 )
                 raise FileNotFoundError(
@@ -302,7 +305,7 @@ class Waveform_SXS(Waveform):
         # environment back would couple this call to whatever a previous one
         # left there, and rmtree is run against it.
         cache_dir = path
-        logging.info(f"Setting the download (cache) directory to {cache_dir}")
+        logger.info(f"Setting the download (cache) directory to {cache_dir}")
         os.environ["SXSCACHEDIR"] = cache_dir
 
         # Define the simulation ID and load it
@@ -317,7 +320,7 @@ class Waveform_SXS(Waveform):
         # try/finally: an exception in between must not leave stdout redirected
         # for good.
         original_stdout = sys.stdout
-        sys.stdout = LoggerWriter(logging.getLogger(__name__))
+        sys.stdout = LoggerWriter(logger)
         try:
             sxs_sim = sxsmod.load(
                 name_level,
@@ -326,7 +329,7 @@ class Waveform_SXS(Waveform):
                 ignore_deprecation=ignore_deprecation,
                 progress=True,
             )
-            logging.info(f"Loaded SXS simulation {name_level}.")
+            logger.info(f"Loaded SXS simulation {name_level}.")
 
             # Set Level if not already set
             self.level = self.level or int(
@@ -358,7 +361,7 @@ class Waveform_SXS(Waveform):
                         )
                         to_h5file[extp][mode_string] = data
                     except ValueError:
-                        logging.warning(
+                        logger.warning(
                             f"Mode Y_l{ell}_m{m} not found in the waveform data! Skipping."
                         )
                         continue
@@ -368,10 +371,10 @@ class Waveform_SXS(Waveform):
                 )
                 with h5py.File(filename, "a") as h5file:
                     if extp in h5file:
-                        logging.info(f"{extp} already present, skipping.")
+                        logger.info(f"{extp} already present, skipping.")
                     else:
                         save_dict_to_h5(h5file, {extp: to_h5file[extp]})
-                logging.info("Saved hlm data.")
+                logger.info("Saved hlm data.")
 
             # Save psi4lm data if requested
             if "psi4lm" in downloads:
@@ -397,10 +400,10 @@ class Waveform_SXS(Waveform):
                 )
                 with h5py.File(filename, "a") as h5file:
                     if extp in h5file:
-                        logging.info(f"{extp} already present, skipping.")
+                        logger.info(f"{extp} already present, skipping.")
                     else:
                         save_dict_to_h5(h5file, {extp: to_h5file[extp]})
-                logging.info("Saved psi4lm data.")
+                logger.info("Saved psi4lm data.")
 
             # Save horizons if requested
             if "horizons" in downloads:
@@ -417,7 +420,7 @@ class Waveform_SXS(Waveform):
                         try:
                             to_h5file[object][key] = hrz[f"{object}/{key}"]
                         except KeyError:
-                            logging.warning(
+                            logger.warning(
                                 f"{object}/{key} not found in horizons data! Skipping."
                             )
                             continue
@@ -425,7 +428,7 @@ class Waveform_SXS(Waveform):
                 h5file = h5py.File(os.path.join(out_dir, f"Horizons.h5"), "w")
                 save_dict_to_h5(h5file, to_h5file)
                 h5file.close()
-                logging.info("Saved horizons data.")
+                logger.info("Saved horizons data.")
 
             # Save metadata if requested
             if "metadata" in downloads:
@@ -433,7 +436,7 @@ class Waveform_SXS(Waveform):
 
                 with open(os.path.join(out_dir, "metadata.json"), "w") as file:
                     json.dump(sxs_sim.metadata, file, indent=2)
-                logging.info("Saved metadata.")
+                logger.info("Saved metadata.")
 
             # find old SXS download folders and remove them. Only the
             # colon-named ones the sxs module creates, and only in the directory
@@ -476,9 +479,7 @@ class Waveform_SXS(Waveform):
         if is_valid("reference_mass2", vtype=float):
             M2 = ometa["reference_mass2"]
         else:
-            logging.warning(
-                "reference_mass2 not found or invalid! Using initial masses"
-            )
+            logger.warning("reference_mass2 not found or invalid! Using initial masses")
             M1 = ometa["initial_mass1"]
             M2 = ometa["initial_mass2"]
 
@@ -515,7 +516,7 @@ class Waveform_SXS(Waveform):
         hS2, skey2 = read_spin_variable(2)
 
         if not skey1 == skey2:
-            logging.warning(f"using different spin-entries! {skey1} and {skey2}")
+            logger.warning(f"using different spin-entries! {skey1} and {skey2}")
 
         pos1 = np.array(ometa["reference_position1"])
         pos2 = np.array(ometa["reference_position2"])
@@ -531,7 +532,7 @@ class Waveform_SXS(Waveform):
                 raise ValueError("Unknown key for remnant's spin or invalid value")
             afz = afv[2]
         except Exception as e:
-            logging.warning(f"Failed in reading remnant properties: {e}")
+            logger.warning(f"Failed in reading remnant properties: {e}")
             Mf = None
             afv = None
             afz = None
@@ -564,7 +565,7 @@ class Waveform_SXS(Waveform):
             Lz = J0 - hS1 * M1 * M1 - hS2 * M2 * M2
             pph0 = Lz[2] / (M * M * nu)
         else:
-            logging.warning("No angular momentum found")
+            logger.warning("No angular momentum found")
             J0 = None
             J0z = None
             Lz = None
@@ -683,7 +684,7 @@ class Waveform_SXS(Waveform):
 
             def dset(name, vector=False):
                 if name not in grp:
-                    logging.warning(f"{obj}/{name} not found in horizons data!")
+                    logger.warning(f"{obj}/{name} not found in horizons data!")
                     return None
                 return grp[name][:, 1:] if vector else grp[name][:, 1]
 
@@ -720,7 +721,7 @@ class Waveform_SXS(Waveform):
             self._dyn["S_remnant_mag"] = C["S_mag"]
             self._dyn["x_remnant"] = C["x"]
         else:
-            logging.info(
+            logger.info(
                 "No common horizon (AhC.dir) in the horizons data: "
                 "remnant quantities not loaded."
             )
@@ -920,14 +921,14 @@ class Waveform_SXS(Waveform):
         """
         from ..utils import convert_sxs_to_lvc as conv
 
-        logging.info("Converting SXS data to LVK format...")
+        logger.info("Converting SXS data to LVK format...")
         # Path to Horizons file
         horizons_file = os.path.join(
             self.sxs_data_path, f"Lev{self.level}", "Horizons.h5"
         )
 
         if not os.path.isfile(horizons_file):
-            logging.info(f"Horizons file not found: {horizons_file}. Downloading it...")
+            logger.info(f"Horizons file not found: {horizons_file}. Downloading it...")
             self.download_simulation(
                 ID=self.ID,
                 path=self.sxs_data_path,

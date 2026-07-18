@@ -14,6 +14,9 @@ from ..utils import cat_utils as cat_ut
 from ..utils.wf_utils import get_multipole_dict
 
 
+logger = logging.getLogger(__name__)
+
+
 # This class is used to load the RIT data and store it in a convenient way
 class Waveform_RIT(Waveform):
     """
@@ -84,11 +87,11 @@ class Waveform_RIT(Waveform):
         sim_path = os.path.join(path, f"RIT_BBH_{ID}")
         if not os.path.exists(sim_path):
             if download:
-                logging.info(f"The path {sim_path} does not exist.")
-                logging.info("Downloading the simulation from the RIT catalog.")
+                logger.info(f"The path {sim_path} does not exist.")
+                logger.info("Downloading the simulation from the RIT catalog.")
                 self.download_data(ID=ID, path=sim_path, urls_json=urls_json)
             else:
-                logging.warning(
+                logger.warning(
                     "Use download=True to download the simulation from the SXS catalog."
                 )
                 raise FileNotFoundError(f"The path {sim_path} does not exist.")
@@ -163,12 +166,12 @@ class Waveform_RIT(Waveform):
             raise RuntimeError("Invalid value for urls_json: {urls_json}")
 
         if os.path.exists(urls_json):
-            logging.info(f"Loading urls from {urls_json}")
+            logger.info(f"Loading urls from {urls_json}")
             with open(urls_json, "r") as file:
                 urls_dict = json.load(file)
         else:
             catalog_url = "https://ccrgpages.rit.edu/~RITCatalog/"
-            logging.info(
+            logger.info(
                 f"JSON file with RIT urls not found, fetching and parsing catalog webpage: {catalog_url}"
             )
             # fetch and parse catalog webpage
@@ -197,11 +200,11 @@ class Waveform_RIT(Waveform):
             if dump_urls:
                 with open(urls_json, "w") as json_file:
                     json.dump(urls_dict, json_file, indent=4)
-                logging.info(f"Created JSON file with RIT urls: {urls_json}")
+                logger.info(f"Created JSON file with RIT urls: {urls_json}")
 
-        logging.info("-" * 50)
-        logging.info(f"\tDownloading RIT:BBH:{ID}")
-        logging.info("-" * 50)
+        logger.info("-" * 50)
+        logger.info(f"\tDownloading RIT:BBH:{ID}")
+        logger.info("-" * 50)
         tstart = time.perf_counter()
         # ensure that the ID corresponds to an existing simulation
         if not ID in urls_dict:
@@ -209,12 +212,12 @@ class Waveform_RIT(Waveform):
         # if everything fine, creat simulation-dir and download data
         os.makedirs(path, exist_ok=True)
         for href in urls_dict[ID]:
-            logging.info(f"wget-ing {href} ...")
+            logger.info(f"wget-ing {href} ...")
             os_ut.runcmd("wget -q " + href, workdir=path)
             if "tar.gz" in href:  # if compressed, untar
                 elems = href.split("/")
                 fname = elems[-1]
-                logging.info(f"Extracting {fname} ...")
+                logger.info(f"Extracting {fname} ...")
                 os_ut.runcmd("tar -xzf " + fname, workdir=path)
                 os_ut.runcmd(
                     "rm -r " + fname, workdir=path
@@ -230,7 +233,7 @@ class Waveform_RIT(Waveform):
                     for item in glob.glob(os.path.join(subdir, "ExtrapPsi4*")):
                         shutil.move(item, path)
                     os.rmdir(subdir)
-        logging.info(">> Elapsed time: {:.3f} s\n".format(time.perf_counter() - tstart))
+        logger.info(">> Elapsed time: {:.3f} s\n".format(time.perf_counter() - tstart))
 
         pass
 
@@ -460,7 +463,7 @@ class Waveform_RIT(Waveform):
         elif self.metadata_psi4 is not None:
             mtdt = self.metadata_psi4
         elif self.metadata is None and self.metadata_psi4 is None:
-            logging.warning("No metadata loaded")
+            logger.warning("No metadata loaded")
             raise FileNotFoundError("No metadata read. Please load metadata first.")
 
         try:
@@ -615,7 +618,7 @@ class Catalog(object):
             this_id = f.split("/")[-1].split("_")[1].split("-")[2]
             this_n = f.split("/")[-1].split("_")[1].split("-")[3].split(".")[0]
             if verbose:
-                logging.info(f"Processing: {this_id} {this_n}")
+                logger.info(f"Processing: {this_id} {this_n}")
             if eccentric:
                 h_path = "Data/ExtrapStrain_RIT-eBBH-" + this_id + "-" + this_n + ".h5"
                 mtdt_path = (

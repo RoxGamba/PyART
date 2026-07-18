@@ -12,6 +12,9 @@ from ..waveform import Waveform
 from ..utils import os_utils
 from ..utils.wf_utils import get_multipole_dict
 
+
+logger = logging.getLogger(__name__)
+
 ## Conversion dictionary
 conversion_dict_floats = {
     "database_key": "name",
@@ -115,11 +118,11 @@ class Waveform_CoRe(Waveform):
 
         if os.path.exists(self.core_data_path) == False:
             if download:
-                logging.info(f"The path {self.core_data_path} does not exist.")
-                logging.info("Downloading the simulation from the CoRe database.")
+                logger.info(f"The path {self.core_data_path} does not exist.")
+                logger.info("Downloading the simulation from the CoRe database.")
                 self.download_simulation(ID=self.ID, path=path)
             else:
-                logging.warning(
+                logger.warning(
                     "Use download=True to download the simulation from the CoRe database."
                 )
                 raise FileNotFoundError(
@@ -146,7 +149,7 @@ class Waveform_CoRe(Waveform):
                 try:
                     dx = float(value_str)
                 except Exception as e:
-                    logging.error(
+                    logger.error(
                         f"Error while reading grid_spacing_min from {meta_Rfile}: {e}"
                     )
                 if dx is None:
@@ -207,7 +210,7 @@ class Waveform_CoRe(Waveform):
         git_repo = "{}{}{}{}/{}.git".format(
             pre[protocol], server, sep[protocol], gitbase, ID
         )
-        logging.info(f"git-clone {git_repo} ...")
+        logger.info(f"git-clone {git_repo} ...")
         subprocess.run(["git", "clone", git_repo], check=True)
         self.core_data_path = os.path.join(path, ID)
         shutil.move(ID, self.core_data_path)
@@ -262,7 +265,7 @@ class Waveform_CoRe(Waveform):
                         metadata[conversion_dict_floats[key]] = float(val.strip())
                     except ValueError:
                         if key == "id_eccentricity":
-                            logging.warning("Invalid id_eccentricity! Setting ecc=0.")
+                            logger.warning("Invalid id_eccentricity! Setting ecc=0.")
                             metadata[conversion_dict_floats[key]] = 0.0
                         else:
                             metadata[conversion_dict_floats[key]] = val.strip()

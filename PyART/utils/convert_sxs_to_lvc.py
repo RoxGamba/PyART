@@ -20,6 +20,9 @@ import os
 import romspline
 import time
 
+
+logger = logging.getLogger(__name__)
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Convert SXS data to LVC format")
     p.add_argument(
@@ -72,7 +75,7 @@ history = ""
 def log(string):
     global history
     history += string + "\n"
-    logging.info(string)
+    logger.info(string)
 
 
 ########################################################

@@ -10,6 +10,9 @@ from ..models.teob import PotentialMinimum
 from ..utils import utils as ut
 
 
+logger = logging.getLogger(__name__)
+
+
 class Optimizer(object):
     """
     Class to compute EOB initial data that minimize mismatch
@@ -130,11 +133,11 @@ class Optimizer(object):
         if isinstance(objective_settings, dict):
             self.objective_settings = {**self.objective_settings, **objective_settings}
         if self.mm_settings["cut_longer"] and self.verbose:
-            logging.warning(
+            logger.warning(
                 "using the option 'cut_longer' during optimization should be avoided!"
             )
         if not self.mm_settings["cut_second_waveform"] and self.verbose:
-            logging.warning(
+            logger.warning(
                 "using the option 'cut_second_waveform' during optimization is strongly suggested!"
             )
 
@@ -144,8 +147,8 @@ class Optimizer(object):
             if self.map_function is None:
                 self.map_function = map_function
             else:
-                logging.warning('map_function is not None, but kind_ic is not "choose"')
-                logging.warning("         user-input map_function will be ignored.")
+                logger.warning('map_function is not None, but kind_ic is not "choose"')
+                logger.warning("         user-input map_function will be ignored.")
 
         if self.opt_bounds is None:
             self.opt_bounds = {var: [None, None] for var in self.opt_vars}
@@ -163,14 +166,14 @@ class Optimizer(object):
             if ky_bounds[0] is not None and ky_bounds[1] is not None:
                 self._bounds_reference[ky] = 0.5 * (ky_bounds[0] + ky_bounds[1])
                 if self.verbose:
-                    logging.warning(
+                    logger.warning(
                         f"update bounds, {ky} not found in metadata. "
                         f"Using bound center {self._bounds_reference[ky]:.5f} as reference."
                     )
             else:
                 self._bounds_reference[ky] = 1.0
                 if self.verbose:
-                    logging.warning(
+                    logger.warning(
                         f"update bounds, {ky} not found in metadata and no explicit bounds center is available. "
                         "Using 1.0 as reference."
                     )
@@ -204,23 +207,23 @@ class Optimizer(object):
                 for flag in ref_Waveform.metadata["flags"]:
                     flags_str += flag + ", "
                 flags_str = flags_str[:-2]
-            logging.info("###########################################")
-            logging.info(f"###          Running Optimizer          ###")
-            logging.info("###########################################\n")
-            logging.info(f'Reference waveform : {ref_Waveform.metadata["name"]}')
-            logging.info(f"(q, chi1z, chi2z)  : ({q:.2f}, {chi1:.2f}, {chi2:.2f})")
-            logging.info(f"binary type        : {flags_str}")
-            logging.info(f"Variables for ICs  : {self.opt_vars}")
-            logging.info(f"Objective metric   : {self.objective_settings['metric']}")
+            logger.info("###########################################")
+            logger.info(f"###          Running Optimizer          ###")
+            logger.info("###########################################\n")
+            logger.info(f'Reference waveform : {ref_Waveform.metadata["name"]}')
+            logger.info(f"(q, chi1z, chi2z)  : ({q:.2f}, {chi1:.2f}, {chi2:.2f})")
+            logger.info(f"binary type        : {flags_str}")
+            logger.info(f"Variables for ICs  : {self.opt_vars}")
+            logger.info(f"Objective metric   : {self.objective_settings['metric']}")
             if self.objective_settings["metric"] == "mass_range":
                 m0, m1 = self.objective_settings["mass_range"]
                 nm = self.objective_settings["num_masses"]
                 agg = self.objective_settings["aggregate"]
-                logging.info(
+                logger.info(
                     f"Objective mass span: [{m0:.3f}, {m1:.3f}] with {nm:d} points"
                 )
-                logging.info(f"Objective aggregate: {agg}")
-            logging.info(" ")
+                logger.info(f"Objective aggregate: {agg}")
+            logger.info(" ")
 
         mm_data = self.load_or_create_mismatches()
         ref_name = self.ref_Waveform.metadata["name"]
@@ -233,14 +236,12 @@ class Optimizer(object):
             if not overwrite or opt_data["mm_opt"] < self.bounds_iter["bad_mm"]:
                 run_optimization = False
             if verbose:
-                logging.info(f"Loading mismatch from {self.json_file}")
-                logging.info("Optimal ICs  :")
+                logger.info(f"Loading mismatch from {self.json_file}")
+                logger.info("Optimal ICs  :")
                 for ky in self.opt_vars:
-                    logging.info(
-                        f'                {ky:5s} : {opt_data[ky+"_opt"]:.15f}'
-                    )
-                logging.info("Original mm  : {:.3e}".format(opt_data["mm0"]))
-                logging.info("Optimized mm : {:.3e}\n".format(opt_data["mm_opt"]))
+                    logger.info(f'                {ky:5s} : {opt_data[ky+"_opt"]:.15f}')
+                logger.info("Original mm  : {:.3e}".format(opt_data["mm0"]))
+                logger.info("Optimized mm : {:.3e}\n".format(opt_data["mm_opt"]))
 
         if run_optimization:
             random.seed(self.minimizer["opt_seed"])
@@ -254,14 +255,14 @@ class Optimizer(object):
             # i-loop on different search bounds
             for i in range(1, self.bounds_iter["max_iter"] + 1):
                 if self.bounds_iter["max_iter"] > 1 and self.verbose:
-                    logging.info(
+                    logger.info(
                         f"\n{asterisks}\nSearch bounds (eps) iteration  #{i:d}\n{asterisks}"
                     )
 
                 # j-loop on different initial gueses
                 for j in range(1, self.opt_max_iter + 1):
                     if self.verbose:
-                        logging.info(
+                        logger.info(
                             f"{dashes}\nOptimization iteration #{j:d}\n{dashes}"
                         )
                     if (
@@ -300,27 +301,27 @@ class Optimizer(object):
                             for ky in kys
                         ]
                     )
-                    logging.info(f"\nIncreasing search bounds: {old_bounds_str}")
-                    logging.info(f"                  ----> : {new_bounds_str}")
+                    logger.info(f"\nIncreasing search bounds: {old_bounds_str}")
+                    logger.info(f"                  ----> : {new_bounds_str}")
 
                 else:
                     mm_opt = opt_data["mm_opt"]
-                    logging.info("\n++++++++++++++++++++++++++++++++++++++")
-                    logging.info(
+                    logger.info("\n++++++++++++++++++++++++++++++++++++++")
+                    logger.info(
                         f'+++  Reached eps_max_iter : {self.bounds_iter["max_iter"]:2d}     +++'
                     )
-                    logging.info(
+                    logger.info(
                         f'+++  mm_opt : {mm_opt:.2e} > {self.bounds_iter["bad_mm"]:.2e}  +++'
                     )
-                    logging.info("++++++++++++++++++++++++++++++++++++++")
+                    logger.info("++++++++++++++++++++++++++++++++++++++")
 
             mm_data["mismatches"][ref_name] = opt_data
 
             if verbose:
-                logging.info(
+                logger.info(
                     "\n>> Best mismatch found : {:.3e}".format(opt_data["mm_opt"])
                 )
-                logging.info(
+                logger.info(
                     ">> Total elapsed time  : {:.1f} s\n".format(
                         time.perf_counter() - t0
                     )
@@ -564,11 +565,11 @@ class Optimizer(object):
 
             creating_new_file = False
             if sim_name in json_data["mismatches"]:
-                logging.info(
+                logger.info(
                     f"   ---> File {json_file} alreay exists and contains {sim_name}, but overwriting is off."
                 )
                 json_file = json_file.replace(".json", "_new.json")
-                logging.info(f"   ---> writing on file: {json_file}")
+                logger.info(f"   ---> writing on file: {json_file}")
                 creating_new_file = True
 
         with open(json_file, "w") as file:
@@ -576,7 +577,7 @@ class Optimizer(object):
 
         if verbose:
             action = "Created" if creating_new_file else "Updated"
-            logging.info(f"{action} {json_file}\n")
+            logger.info(f"{action} {json_file}\n")
         pass
 
     def generate_EOB(self, ICs={"f0": None, "e0": None}, model_opts={}):
@@ -641,10 +642,10 @@ class Optimizer(object):
             else:
                 if self.r0_eob is not None:
                     if self.r0_eob < ref_meta["r0"]:
-                        logging.warning(
+                        logger.warning(
                             f'r0_eob={self.r0_eob} is smaller than the NR value r0={ref_meta["r0"]}'
                         )
-                        logging.warning("         Setting r0_eob to NR value")
+                        logger.warning("         Setting r0_eob to NR value")
                         mapped_ids["r_hyp"] = ref_meta["r0"]
                     else:
                         mapped_ids["r_hyp"] = self.r0_eob
@@ -660,7 +661,7 @@ class Optimizer(object):
             pars = pars | self.model_opts | model_opts
             eob_wave = Waveform_EOB(pars=pars)
         except Exception as e:
-            logging.warning(f"Error occurred in EOB wave generation:\n{e}")
+            logger.warning(f"Error occurred in EOB wave generation:\n{e}")
             eob_wave = None
         return eob_wave
 
@@ -714,7 +715,7 @@ class Optimizer(object):
         logger = logging.getLogger()
         handlers = list(logger.handlers)
         if not handlers:
-            logging.info(message)
+            logger.info(message)
             return
 
         original_terminators = []
@@ -841,7 +842,7 @@ class Optimizer(object):
                 )
                 mm = matcher.mismatch
             except Exception as e:
-                logging.warning("Error while computing match: ", e)
+                logger.warning("Error while computing match: ", e)
                 matcher = None
                 mm = 1.0
         else:
@@ -913,7 +914,7 @@ class Optimizer(object):
         for ky in kys_ref:
             vv = vs_ref[ky]
             if vv < bounds[ky][0] or vv > bounds[ky][1]:
-                logging.warning(
+                logger.warning(
                     "Reference value for {:s} is outside searching interval: {:.2e} not in [{:.2e},{:.2e}]".format(
                         ky, vv, bounds[ky][0], bounds[ky][1]
                     )
@@ -940,20 +941,20 @@ class Optimizer(object):
             mm0 = self.objective_mismatch(eob0, iter_loop=False)
             matcher0 = None
         if verbose:
-            logging.info(f"Original  mismatch    : {mm0:.3e}")
-            logging.info("Optimization interval :")
+            logger.info(f"Original  mismatch    : {mm0:.3e}")
+            logger.info("Optimization interval :")
             for ky in kys:
-                logging.info(
+                logger.info(
                     f"                        {ky:5s} : [{bounds[ky][0]:.3e},{bounds[ky][1]:.3e}]"
                 )
-            logging.info(f"Initial guess         :")
+            logger.info(f"Initial guess         :")
             for ky in kys:
-                logging.info(f"                        {ky:5s} : {vs0[ky]:.15f}")
+                logger.info(f"                        {ky:5s} : {vs0[ky]:.15f}")
 
         if self.use_matcher_cache and metric == "reference":
             if matcher0 is None:
                 if verbose:
-                    logging.info("+++ First mm-computation failed! Not using cache +++")
+                    logger.info("+++ First mm-computation failed! Not using cache +++")
                 cache = {}
             else:
                 cache = {"h1f": matcher0.h1f, "M": matcher0.settings["M"]}
@@ -974,11 +975,11 @@ class Optimizer(object):
                     mm_opt, self.annealing_counter
                 )
             )
-            logging.info(f"Optimized mismatch    : {mm_opt:.3e}")
-            logging.info(f"Optimal ICs           :")
+            logger.info(f"Optimized mismatch    : {mm_opt:.3e}")
+            logger.info(f"Optimal ICs           :")
             for ky in kys:
-                logging.info(f"                        {ky:5s} : {opts[ky]:.15f}")
-            logging.info(
+                logger.info(f"                        {ky:5s} : {opts[ky]:.15f}")
+            logger.info(
                 "Minimization time        : {:.1f} s".format(
                     time.perf_counter() - t0_annealing
                 )

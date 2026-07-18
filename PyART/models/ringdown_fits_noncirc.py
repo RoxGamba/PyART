@@ -12,6 +12,9 @@ import logging
 import numpy as np
 import os
 
+
+logger = logging.getLogger(__name__)
+
 fit_dim = 4  # Number of free coefficient for each fitting variable
 
 
@@ -194,15 +197,15 @@ def eval_fit(
 
     # Find the independent vars allowed
     if verbose:
-        logging.info(f"Fitting quantity:\t\t {quantity_to_fit}")
+        logger.info(f"Fitting quantity:\t\t {quantity_to_fit}")
         fitting_qs = select_fitting_quantities(dataset, quantity_to_fit)
-        logging.info(f"Possible independent vars:\t {fitting_qs}")
-        logging.info(f"Chosen independent vars:\t {list(fitting_qs_d.keys())}")
+        logger.info(f"Possible independent vars:\t {fitting_qs}")
+        logger.info(f"Chosen independent vars:\t {list(fitting_qs_d.keys())}")
 
     # select template
     template_model = select_template_model(dataset)
     if verbose:
-        logging.info(f"Template model:\t\t\t {template_model}")
+        logger.info(f"Template model:\t\t\t {template_model}")
 
     try:
         coeffs = read_fit_coefficients(

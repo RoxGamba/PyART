@@ -13,6 +13,9 @@ import subprocess
 import numpy as np
 import h5py
 
+
+logger = logging.getLogger(__name__)
+
 # TODO: read them from utils
 Msun_m = 1.4766250614046494e3
 Msun_s = 4.9254910255435759e-6
@@ -57,11 +60,11 @@ class Waveform_LVKNR(Waveform):
 
         if self._is_git_lfs_pointer(self.data_path):
             if download == True:
-                logging.info(f"The path {self.lvcnr_path} does not exist.")
-                logging.info("Downloading the simulation from the LVCNR catalog.")
+                logger.info(f"The path {self.lvcnr_path} does not exist.")
+                logger.info("Downloading the simulation from the LVCNR catalog.")
                 self.download_simulation(ID=ID)
             else:
-                logging.warning(
+                logger.warning(
                     "Use download=True to download the simulation from the LVCNR catalog."
                 )
                 raise FileNotFoundError(f"The path {self.data_path} does not exist.")

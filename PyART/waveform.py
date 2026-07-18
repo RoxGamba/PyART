@@ -20,6 +20,9 @@ from .utils import load_nr_utils as nr_ut
 from .analysis.integrate_wave import IntegrateMultipole
 
 
+logger = logging.getLogger(__name__)
+
+
 class Waveform(object):
     """
     Parent class to handle waveforms
@@ -340,7 +343,7 @@ class Waveform(object):
         if not self.hlm:
             msg = "dothlm cannot be computed if hlm is not loaded"
             if only_warn:
-                logging.warning(msg)
+                logger.warning(msg)
             else:
                 raise RuntimeError(msg)
 
@@ -377,7 +380,7 @@ class Waveform(object):
         if not self.dothlm:
             msg = "psi4lm cannot be computed if dothlm is not computed"
             if only_warn:
-                logging.warning(msg)
+                logger.warning(msg)
             else:
                 raise RuntimeError(msg)
 
@@ -457,7 +460,7 @@ class Waveform(object):
                 if cut_dothlm:
                     self._dothlm = cut_all_modes(self.dothlm, tslice)
                 else:
-                    logging.warning(
+                    logger.warning(
                         "dothlm is stored, but cut_dothlm==False when calling self.cut"
                     )
 
@@ -469,7 +472,7 @@ class Waveform(object):
 
         if cut_psi4lm:
             if self.t_psi4 is None:
-                logging.warning("No psi4-time found! Avoiding psi4-cutting")
+                logger.warning("No psi4-time found! Avoiding psi4-cutting")
             else:
                 tslice_psi4 = get_slice(self.t_psi4 - self.t_psi4[0])
                 self._psi4lm = cut_all_modes(self.psi4lm, tslice_psi4)
@@ -1006,14 +1009,14 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
     if lmin < 2:
         raise ValueError("l>2")
     if lmin != 2:
-        logging.warning("lmin > 2")
+        logger.warning("lmin > 2")
 
     mnfactor = np.ones_like(mmodes)
     if mnegative:
         mnfactor = [1 if m == 0 else 2 for m in mmodes]
     else:
         if all(m >= 0 for m in mmodes):
-            logging.warning("m>=0 but not accounting for it!")
+            logger.warning("m>=0 but not accounting for it!")
 
     # set up dictionaries
     kys = [

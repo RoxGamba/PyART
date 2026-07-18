@@ -10,6 +10,9 @@ from ..utils import cat_utils as cat_ut
 from ..utils import utils as ut
 
 
+logger = logging.getLogger(__name__)
+
+
 class Waveform_ICC(Waveform):
     """
     Class to handle ICC waveforms
@@ -159,7 +162,7 @@ class Waveform_ICC(Waveform):
                 "z1": zeros,
             }
         else:
-            logging.warning("no punctures' tracks found!")
+            logger.warning("no punctures' tracks found!")
             pdict = None
         self.puncts = pdict
         return
@@ -173,7 +176,7 @@ class Waveform_ICC(Waveform):
             if raise_error:
                 raise RuntimeError(msg)
             else:
-                logging.warning(f"{msg}. Returning empty vars")
+                logger.warning(f"{msg}. Returning empty vars")
                 return {}, None, []
         tmp = ut.safe_loadtxt(files[0])
         t = tmp[:, 0]
@@ -211,7 +214,7 @@ class Waveform_ICC(Waveform):
                 tmax_psi4, _, _, _ = self.find_max(wave="psi4lm", height=1e-04)
                 DeltaT_end = self.t_psi4[-1] - (tmax_psi4 + tmax_after_peak)
             except Exception as e:
-                logging.error(f"Error while searching max of psi4 time: {e}")
+                logger.error(f"Error while searching max of psi4 time: {e}")
                 DeltaT_end = 0
             if DeltaT_end > 0:
                 self.cut(DeltaT_end, from_the_end=True, cut_psi4lm=True)

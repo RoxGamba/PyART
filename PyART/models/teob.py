@@ -1,13 +1,16 @@
 import os, subprocess
+import logging
 import numpy as np
 from scipy.optimize import brentq
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
 
+logger = logging.getLogger(__name__)
+
 try:
     import EOBRun_module as EOB
 except ModuleNotFoundError:
-    print("WARNING: TEOBResumS not installed.")
+    logger.warning("TEOBResumS not installed.")
 
 from ..waveform import Waveform
 from ..utils.wf_utils import get_multipole_dict, mode_to_k

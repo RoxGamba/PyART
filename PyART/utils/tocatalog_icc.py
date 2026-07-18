@@ -13,6 +13,9 @@ import numpy as np
 from PyART.analysis.scattering_angle import ScatteringAngle
 
 
+logger = logging.getLogger(__name__)
+
+
 def load_puncts(sim_path, fname="puncturetracker-pt_loc..asc"):
     full_name = os.path.join(sim_path, fname)
     if os.path.exists(full_name):
@@ -190,7 +193,7 @@ for i, sim in enumerate(all_sims):
     fname = os.path.join(datasim, "metadata.json")
     with open(fname, "w") as file:
         file.write(json.dumps(meta, indent=2))
-    logging.info(f"#{ID:04} created file: {fname}")
+    logger.info(f"#{ID:04} created file: {fname}")
 
     new_sim_dir = os.path.join(new_dir, meta["name"])
     os.makedirs(new_sim_dir, exist_ok=True)
@@ -200,5 +203,5 @@ for i, sim in enumerate(all_sims):
             shutil.copytree(item, dest, dirs_exist_ok=True)
         else:
             shutil.copy2(item, dest)
-        logging.info(f"Copied {item} -> {dest}")
-    logging.info(" ")
+        logger.info(f"Copied {item} -> {dest}")
+    logger.info(" ")

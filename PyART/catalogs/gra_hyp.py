@@ -8,6 +8,9 @@ from ..utils import wf_utils as wf_ut
 from ..utils import cat_utils as cat_ut
 
 
+logger = logging.getLogger(__name__)
+
+
 class Waveform_GRAHyp(Waveform):
     """
     Class to handle GRAthena++ wafeforms
@@ -148,7 +151,7 @@ class Waveform_GRAHyp(Waveform):
                 "z1": z1,
             }
         else:
-            logging.warning("no punctures' tracks found!")
+            logger.warning("no punctures' tracks found!")
             pdict = None
         self.puncts = pdict
         return

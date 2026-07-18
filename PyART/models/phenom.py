@@ -9,6 +9,9 @@ except ImportError:
     raise ImportError("WARNING: phenomxpy not installed.")
 
 
+logger = logging.getLogger(__name__)
+
+
 class Waveform_IMRPhenomT(Waveform):
     """
     Interface for IMRPhenomT via phenomxpy
@@ -47,7 +50,7 @@ class Waveform_IMRPhenomT(Waveform):
         }
         if "f_max" in pp:
             if "dt" in pp:
-                logging.warning("If f_max is provided, dt is ignored")
+                logger.warning("If f_max is provided, dt is ignored")
             params["f_max"] = pp["f_max"]
             params["delta_t"] = 0.5 / pp["f_max"]
         else:

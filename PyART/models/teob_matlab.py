@@ -9,6 +9,9 @@ import h5py
 from ..waveform import Waveform
 from ..utils import wf_utils as wfu
 
+
+logger = logging.getLogger(__name__)
+
 matlab_setup_base = """
 addpath('${code_dir}TEOBRun/');
 addpath('${code_dir}TEOBRun/parfiles/');
@@ -90,7 +93,7 @@ class Waveform_EOBMatlab(Waveform):
         if self.hyp and self.pars["j_hyp"] is None:
             raise ValueError("For hyperbolic orbits, H_hyp and j_hyp must be provided.")
         if self.hyp and not self.load_insp:
-            logging.warning("Inspiral-only waveform is needed for hyperbolic orbits.")
+            logger.warning("Inspiral-only waveform is needed for hyperbolic orbits.")
 
         if self.hyp:
             self.template = Template(matlab_base_hyp)
@@ -288,8 +291,8 @@ class Waveform_EOBMatlab(Waveform):
             capture_output=True,
         )
         if self.verbose:
-            logging.info(out.stdout.decode("UTF-8"))
-            logging.info(out.stderr.decode("UTF-8"))
+            logger.info(out.stdout.decode("UTF-8"))
+            logger.info(out.stderr.decode("UTF-8"))
         return 0
 
     def _load_hlm(self):
@@ -605,7 +608,7 @@ def CreateDict(
 
     if leob:
         if r0 is not None and f0 is not None:
-            logging.warning("both r0 and f0 provided for LEOB; using r0.")
+            logger.warning("both r0 and f0 provided for LEOB; using r0.")
             pardic["initial_frequency"] = None
 
     return pardic
