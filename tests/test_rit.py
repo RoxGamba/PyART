@@ -57,7 +57,7 @@ def test_rit_psi4lm_z_matches_real_imag():
     wf = rit.Waveform_RIT(
         ID="1362",
         path=BUNDLED_PATH,
-        download=False,
+        download=True,
         nu_rescale=False,
         shorten_rng=False,
     )
@@ -77,14 +77,14 @@ def test_rit_psi4lm_nu_rescale_scales_real_and_imag():
     wf = rit.Waveform_RIT(
         ID="1362",
         path=BUNDLED_PATH,
-        download=False,
+        download=True,
         nu_rescale=False,
         shorten_rng=False,
     )
     wf_nu = rit.Waveform_RIT(
         ID="1362",
         path=BUNDLED_PATH,
-        download=False,
+        download=True,
         nu_rescale=True,
         shorten_rng=False,
     )
@@ -106,7 +106,7 @@ def test_rit_hlm_via_get_multipole_dict_matches_original_amplitude_and_phase():
     wf = rit.Waveform_RIT(
         ID="1362",
         path=BUNDLED_PATH,
-        download=False,
+        download=True,
         nu_rescale=False,
         shorten_rng=False,
     )
