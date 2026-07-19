@@ -7,7 +7,6 @@ from ..utils.wf_utils import get_multipole_dict
 from scipy.linalg import eig, norm
 from scipy.interpolate import InterpolatedUnivariateSpline as IUS
 
-
 logger = logging.getLogger(__name__)
 
 

@@ -5,7 +5,6 @@ from ..waveform import Waveform
 from ..utils.wf_utils import get_multipole_dict
 from itertools import product
 
-
 logger = logging.getLogger(__name__)
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

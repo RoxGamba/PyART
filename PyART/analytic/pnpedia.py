@@ -20,7 +20,6 @@ from .expr import AnalyticExpression
 from .mathematica_parser import MathematicaParser
 from .analytic_catalog import AnalyticCatalog
 
-
 logger = logging.getLogger(__name__)
 
 # These replacements encode PNPedia naming conventions only. They stay here so

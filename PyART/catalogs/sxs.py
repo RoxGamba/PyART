@@ -9,7 +9,6 @@ from ..utils import cat_utils as cat_ut
 from ..utils.utils import LoggerWriter
 from ..utils.wf_utils import get_multipole_dict
 
-
 logger = logging.getLogger(__name__)
 
 

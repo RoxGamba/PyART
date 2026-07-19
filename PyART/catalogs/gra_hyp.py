@@ -7,7 +7,6 @@ from ..waveform import Waveform
 from ..utils import wf_utils as wf_ut
 from ..utils import cat_utils as cat_ut
 
-
 logger = logging.getLogger(__name__)
 
 

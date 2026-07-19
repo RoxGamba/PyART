@@ -7,7 +7,6 @@ from glob import glob
 from ..waveform import Waveform
 from ..utils.wf_utils import get_multipole_dict
 
-
 logger = logging.getLogger(__name__)
 
 

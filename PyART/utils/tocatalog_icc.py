@@ -12,7 +12,6 @@ import logging
 import numpy as np
 from PyART.analysis.scattering_angle import ScatteringAngle
 
-
 logger = logging.getLogger(__name__)
 
 

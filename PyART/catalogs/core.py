@@ -12,7 +12,6 @@ from ..waveform import Waveform
 from ..utils import os_utils
 from ..utils.wf_utils import get_multipole_dict
 
-
 logger = logging.getLogger(__name__)
 
 ## Conversion dictionary

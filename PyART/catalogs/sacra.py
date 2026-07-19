@@ -10,7 +10,6 @@ from ..utils import cat_utils, wf_utils, utils
 from ..analysis.match import condition_td_waveform
 from pycbc.types.timeseries import TimeSeries
 
-
 logger = logging.getLogger(__name__)
 
 

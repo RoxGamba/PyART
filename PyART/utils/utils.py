@@ -8,7 +8,6 @@ from math import factorial as fact
 from math import ceil
 import matplotlib.pyplot as plt
 
-
 logger = logging.getLogger(__name__)
 
 ## Misc

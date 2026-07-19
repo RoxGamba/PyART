@@ -9,7 +9,6 @@ from ..models.teob import CreateDict
 from ..models.teob import PotentialMinimum
 from ..utils import utils as ut
 
-
 logger = logging.getLogger(__name__)
 
 

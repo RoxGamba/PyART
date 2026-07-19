@@ -12,7 +12,6 @@ import logging
 import numpy as np
 import os
 
-
 logger = logging.getLogger(__name__)
 
 fit_dim = 4  # Number of free coefficient for each fitting variable
