@@ -150,6 +150,16 @@ class Optimizer(object):
                 logging.warning('map_function is not None, but kind_ic is not "choose"')
                 logging.warning("         user-input map_function will be ignored.")
 
+        shadowed = set(self.opt_vars) & set(self.model_opts)
+        if shadowed:
+            raise ValueError(
+                f"model_opts contains key(s) also being optimized: {sorted(shadowed)}. "
+                "generate_EOB merges 'pars = pars | self.model_opts | model_opts', so "
+                "self.model_opts always wins over the trial value produced by "
+                "map_function -- the objective would be silently constant in that "
+                "variable. Remove it from model_opts, or drop it from vrs/opt_bounds."
+            )
+
         if self.opt_bounds is None:
             self.opt_bounds = {var: [None, None] for var in self.opt_vars}
 
@@ -294,10 +304,36 @@ class Optimizer(object):
                     # otherwise, increase the bound search (if we are not at the last iter)
                     kys = self.opt_vars
                     old_bounds = {ky: list(self.opt_bounds[ky]) for ky in kys}
-                    self.opt_bounds = {ky: [None, None] for ky in kys}
                     for ky in eps:
                         eps[ky] *= self.bounds_iter["eps_factors"][ky]
-                    self.__update_bounds(eps=eps)
+
+                    if self.bounds_iter.get("expand_mode", "legacy") == "monotone":
+                        # Re-seat the reference for non-metadata variables onto the
+                        # current optimum, so growth is centred on where the search
+                        # actually is rather than a value frozen at construction.
+                        for ky in kys:
+                            opt_key = f"{ky}_opt"
+                            if ky not in self.ref_Waveform.metadata and opt_key in opt_data:
+                                self._bounds_reference[ky] = opt_data[opt_key]
+
+                        candidate_bounds = {}
+                        for ky in kys:
+                            ref_val = self._bounds_reference[ky]
+                            delta = abs(ref_val) * eps[ky]
+                            if delta == 0:
+                                delta = eps[ky]
+                            candidate_bounds[ky] = [ref_val - delta, ref_val + delta]
+
+                        # Union with the previous bounds: expansion never shrinks
+                        # the interval the user (or a prior iteration) already had.
+                        for ky in kys:
+                            self.opt_bounds[ky] = [
+                                min(old_bounds[ky][0], candidate_bounds[ky][0]),
+                                max(old_bounds[ky][1], candidate_bounds[ky][1]),
+                            ]
+                    else:
+                        self.opt_bounds = {ky: [None, None] for ky in kys}
+                        self.__update_bounds(eps=eps)
                     old_bounds_str = ", ".join(
                         [
                             f"{ky}:[{old_bounds[ky][0]:.3f},{old_bounds[ky][1]:.3f}]"
@@ -1135,6 +1171,14 @@ class Optimizer(object):
             "eps_factors": {},  # increase-factor for eps at each eps-iter
             "max_iter": 1,  # If true, iterate on eps-bounds
             "bad_mm": 0.1,  # if after opt_max_iter(s) we are still above this threshold
+            "expand_mode": "legacy",  # "legacy" (default, unchanged) or "monotone"
+            # legacy: bounds are discarded and rebuilt from scratch each expansion,
+            #   from a reference frozen at construction time -- this can *shrink*
+            #   the search interval below what the user originally asked for.
+            # monotone: bounds only ever grow (union with the previous interval),
+            #   and for variables not present in ref_Waveform.metadata the
+            #   reference point is re-seated onto the current optimum at each
+            #   expansion, so growth is centred on where the search actually is.
         }
         for ky in self.opt_vars:
             self.bounds_iter["eps_initial"][ky] = 1e-2
