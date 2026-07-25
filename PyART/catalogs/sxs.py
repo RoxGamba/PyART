@@ -117,11 +117,15 @@ class Waveform_SXS(Waveform):
         else:
             levpath = self.sxs_data_path
             if os.path.exists(levpath):
-                lev_dirs = [
-                    d
-                    for d in os.listdir(levpath)
-                    if os.path.isdir(os.path.join(levpath, d)) and d.startswith("Lev")
-                ]
+                lev_dirs = sorted(
+                    (
+                        d
+                        for d in os.listdir(levpath)
+                        if os.path.isdir(os.path.join(levpath, d))
+                        and d.startswith("Lev")
+                    ),
+                    key=lambda d: int(d.replace("Lev", "")),
+                )
                 if not lev_dirs:
                     levpath = None
             else:

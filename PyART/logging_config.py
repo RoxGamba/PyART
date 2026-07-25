@@ -48,5 +48,8 @@ def setup_logging(level="INFO", format_string=None, datefmt=None):
         datefmt = "%Y-%m-%d %H:%M:%S"
 
     logging.basicConfig(
-        level=getattr(logging, level.upper()), format=format_string, datefmt=datefmt
+        level=getattr(logging, level.upper()),
+        format=format_string,
+        datefmt=datefmt,
+        force=True,
     )
