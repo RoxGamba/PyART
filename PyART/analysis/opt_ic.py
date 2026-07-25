@@ -11,6 +11,80 @@ from ..models.teob import PotentialMinimum
 from ..utils import utils as ut
 
 
+def log_likelihood_from_mismatch(mm, settings):
+    """Turn a mismatch into a log-likelihood for Bayesian sampling.
+
+    `settings` (typically Optimizer.likelihood_settings) selects the form via
+    settings["kind"]:
+
+      linear (default): logL = -rho^2 * mm
+          Leading-order matched-filter result once time/phase are maximized
+          over (which Matcher already does). One physically interpretable
+          knob (rho, a reference SNR). Linear in mm, so unlike the Gaussian
+          forms below it cannot collapse to an artificially narrow spike.
+
+      gauss_nr: logL = -0.5*(mm/sigma)^2, sigma = settings["mm_nr"]
+          Directly encodes "differences below the NR resolution floor are
+          meaningless". CAUTION: if the irreducible model mismatch is >>
+          mm_nr, this collapses the posterior to a fictitiously narrow spike
+          around the minimum -- compare mm_opt to mm_nr before trusting this
+          option (see calibration upgrade plan, Stage 2/3 notes).
+
+      distinguish: sigma = D / (2*rho^2)  [Lindblom-Owen-Brown]
+          A fixed, NR-independent distinguishability scale. Convention
+          ambiguity: Baird et al. use a chi^2_k quantile instead of this
+          flat D/2rho^2 form -- this implements the LOB form. D is the
+          dimension of the *intrinsic waveform parameter space*, not the
+          number of parameters currently being calibrated; pass it
+          explicitly via settings["D"], never inferred from kys.
+
+      quadrature: sigma^2 = mm_nr^2 + (D/(2*rho^2))^2
+          Combines the two Gaussian scales above; never claims precision
+          better than either the NR resolution or the detector's ability to
+          distinguish waveforms. Robust to gauss_nr's collapse mode and to
+          an anomalously small mm_nr from a badly-converged Lev pair.
+
+    Returns -inf for missing/non-finite/negative mm (e.g. a failed EOB
+    generation should be mapped to -inf by the caller before ever reaching
+    here -- see Optimizer._sampler_log_likelihood).
+    """
+    if mm is None or not np.isfinite(mm) or mm < 0:
+        return -np.inf
+
+    kind = settings.get("kind", "linear")
+    rho = settings.get("rho", 30.0)
+
+    if kind == "linear":
+        return -(rho**2) * mm
+
+    if kind == "gauss_nr":
+        sigma = settings.get("mm_nr")
+        if not sigma or sigma <= 0:
+            raise ValueError(
+                "likelihood kind='gauss_nr' requires a positive settings['mm_nr']"
+            )
+        return -0.5 * (mm / sigma) ** 2
+
+    if kind == "distinguish":
+        D = settings.get("D")
+        if D is None:
+            raise ValueError("likelihood kind='distinguish' requires settings['D']")
+        sigma = D / (2.0 * rho**2)
+        return -0.5 * (mm / sigma) ** 2
+
+    if kind == "quadrature":
+        D = settings.get("D")
+        mm_nr = settings.get("mm_nr")
+        if D is None or not mm_nr:
+            raise ValueError(
+                "likelihood kind='quadrature' requires settings['D'] and settings['mm_nr']"
+            )
+        sigma = np.sqrt(mm_nr**2 + (D / (2.0 * rho**2)) ** 2)
+        return -0.5 * (mm / sigma) ** 2
+
+    raise ValueError(f"Unknown likelihood kind: {kind!r}")
+
+
 class Optimizer(object):
     """
     Class to compute EOB initial data that minimize mismatch
@@ -41,6 +115,7 @@ class Optimizer(object):
         json_save_dyn=False,
         mm_settings=None,
         objective_settings=None,
+        likelihood_settings=None,
         verbose=True,
         debug=False,
     ):
@@ -111,6 +186,18 @@ class Optimizer(object):
         self.opt_max_iter = opt_max_iter
         self.opt_good_mm = opt_good_mm
         self.opt_data = None
+        # Populated by sampler backends (e.g. nessai, dynesty) with anything
+        # beyond the (opts, mm_opt) contract -- posterior samples, evidence,
+        # etc. -- merged into opt_data after optimize_mismatch's minimize()
+        # call. Existing point-estimate backends leave this empty.
+        self.sampler_extras = {}
+        # Matcher cache for the sampler likelihood path. The point-estimate
+        # backends receive the cache through __func_to_minimize's `cache`
+        # argument, but sampler backends call _sampler_log_likelihood
+        # directly and would otherwise re-condition and re-FFT the (fixed)
+        # reference waveform on every single evaluation. Populated by
+        # optimize_mismatch under the same guard as that `cache`.
+        self._sampler_cache = {}
 
         self.opt_bounds = opt_bounds
 
@@ -132,6 +219,16 @@ class Optimizer(object):
         self.__objective__defaults__()
         if isinstance(objective_settings, dict):
             self.objective_settings = {**self.objective_settings, **objective_settings}
+
+        # likelihood settings (Bayesian sampler backends only)
+        self.__likelihood__defaults__()
+        if isinstance(likelihood_settings, dict):
+            self.likelihood_settings = {
+                **self.likelihood_settings,
+                **likelihood_settings,
+            }
+        self._n_failed_likelihood_evals = 0
+
         if self.mm_settings["cut_longer"] and self.verbose:
             logging.warning(
                 "using the option 'cut_longer' during optimization should be avoided!"
@@ -205,6 +302,12 @@ class Optimizer(object):
             self.minimize = self.__minimize_differential_evo_
         elif minimizer["kind"] == "minimize_scalar":
             self.minimize = self.__minimize_scalar_
+        elif minimizer["kind"] == "nessai":
+            self.minimize = self.__minimize_nessai__
+        elif minimizer["kind"] == "zeus":
+            self.minimize = self.__minimize_zeus__
+        elif minimizer["kind"] == "pocomc":
+            self.minimize = self.__minimize_pocomc__
         else:
             raise ValueError(f'Unknown minimizer kind: {minimizer["kind"]}')
 
@@ -735,6 +838,36 @@ class Optimizer(object):
             "rescale_initial_frequency": True,
         }
 
+    def __likelihood__defaults__(self):
+        """Set default likelihood options (Bayesian sampler backends only;
+        point-estimate backends -- minimize_scalar, dual_annealing,
+        differential_evolution -- ignore this entirely)."""
+        self.likelihood_settings = {
+            "kind": "linear",  # linear | gauss_nr | distinguish | quadrature
+            "rho": 30.0,
+            "D": None,  # required for distinguish/quadrature; see log_likelihood_from_mismatch
+            "mm_nr": None,  # required for gauss_nr/quadrature; the NR error floor
+        }
+
+    def _sampler_log_likelihood(self, x, kys):
+        """Shared likelihood evaluation for Bayesian sampler backends
+        (dynesty, nessai). Builds the EOB waveform directly -- not via
+        __func_to_minimize, which returns a flat mm=1.0 on generation
+        failure so point-estimate minimizers see a defined (if bad) value.
+        A sampler would instead model that flat value as a plausible
+        likelihood plateau, so failures are mapped to -inf here explicitly
+        and counted in self._n_failed_likelihood_evals.
+        """
+        vs = {kys[i]: x[i] for i in range(len(kys))}
+        eob_Waveform = self.generate_EOB(model=self.model, ICs=vs)
+        if eob_Waveform is None:
+            self._n_failed_likelihood_evals += 1
+            return -np.inf
+        mm = self.objective_mismatch(
+            eob_Waveform, verbose=False, iter_loop=False, cache=self._sampler_cache
+        )
+        return log_likelihood_from_mismatch(mm, self.likelihood_settings)
+
     def _objective_mass_grid(self):
         """Return the mass grid used by the mass-range objective."""
         mass_range = self.objective_settings.get("mass_range", None)
@@ -1032,6 +1165,8 @@ class Optimizer(object):
         """
         if verbose is None:
             verbose = self.verbose
+        self.sampler_extras = {}
+        self._n_failed_likelihood_evals = 0
         kys = self.opt_vars
         bounds = self.opt_bounds
         meta = self.ref_Waveform.metadata
@@ -1090,6 +1225,10 @@ class Optimizer(object):
                 cache = {"h1f": matcher0.h1f, "M": matcher0.settings["M"]}
         else:
             cache = {}
+
+        # Same cache, reached by the sampler backends (which bypass
+        # __func_to_minimize and call _sampler_log_likelihood directly).
+        self._sampler_cache = cache
 
         # prepare for minimization
         x0 = [vs0[ky] for ky in kys]
@@ -1151,6 +1290,9 @@ class Optimizer(object):
         for ky in kys:
             opt_data[ky] = vs_ref[ky] if ky in vs_ref else None
             opt_data[ky + "_opt"] = opts[ky]
+
+        if self.sampler_extras:
+            opt_data.update(self.sampler_extras)
 
         if eob_opt is not None and self.json_save_dyn:
             dyn0 = eob_opt.dyn
@@ -1327,6 +1469,53 @@ class Optimizer(object):
         mm_opt = opt_result.fun
         return opts, mm_opt
 
+    def _summarize_posterior(
+        self,
+        kys,
+        samples,
+        sampler_name,
+        output_dir=None,
+        log_evidence=None,
+        log_evidence_err=None,
+        n_likelihood_evaluations=None,
+    ):
+        """Build the sampler_extras payload shared by Bayesian backends:
+        per-variable summary statistics plus a thinned copy of the posterior
+        (<=2000 rows, JSON-safe), with the full chain written to a sidecar
+        .npz file when output_dir is given.
+        """
+        samples = np.asarray(samples)
+        extras = {"sampler": sampler_name}
+        if log_evidence is not None:
+            extras["log_evidence"] = float(log_evidence)
+        if log_evidence_err is not None:
+            extras["log_evidence_err"] = float(log_evidence_err)
+        if n_likelihood_evaluations is not None:
+            extras["n_likelihood_evaluations"] = int(n_likelihood_evaluations)
+
+        n = samples.shape[0]
+        thin = max(1, n // 2000)
+        thinned = samples[::thin]
+
+        param_samples = {}
+        for i, ky in enumerate(kys):
+            col = samples[:, i]
+            param_samples[ky] = thinned[:, i].tolist()
+            extras[f"{ky}_median"] = float(np.median(col))
+            extras[f"{ky}_mean"] = float(np.mean(col))
+            extras[f"{ky}_sigma"] = float(np.std(col))
+            for q, label in [(5, "q05"), (16, "q16"), (84, "q84"), (95, "q95")]:
+                extras[f"{ky}_{label}"] = float(np.percentile(col, q))
+        extras["param_samples"] = param_samples
+
+        if output_dir is not None:
+            os.makedirs(output_dir, exist_ok=True)
+            samples_path = os.path.join(output_dir, "posterior.npz")
+            np.savez(samples_path, samples=samples, kys=np.array(kys))
+            extras["param_samples_file"] = samples_path
+
+        return extras
+
     def __minimize__dynesty__(self, f, x0, bounds_array, kys):
         """
         Minimize with dynesty.
@@ -1356,16 +1545,33 @@ class Optimizer(object):
         ndim = len(kys)
         progress = self.minimizer.get("print_progress", True)
         nlive = self.minimizer.get("nlive", 1024)
-        maxiter = self.minimizer.get("maxiter", 10000)
-        maxcall = self.minimizer.get("maxcall", 10000)
+        # Configurable rather than hardcoded, but default stays "rwalk":
+        # dynesty's own dimensionality heuristic recommends 'unif' for
+        # ndim<10 (cheaper in principle -- no fixed evals-per-point cost the
+        # way rwalk's `walks=25` has), but measured head-to-head on this
+        # calibration problem, 'unif' was slightly worse at rho=30 (22:14 vs
+        # ~16-18min, 2672 vs ~2450 evals) and much worse at rho=100 (stalled,
+        # projected far worse than rwalk's 40:37) -- 'unif's rejection
+        # efficiency depends on the bounding ellipsoid fitting the
+        # constrained region well, which this mm(a6c) surface apparently
+        # does not give it. See calibration upgrade plan, Stage 3.E.
+        sample = self.minimizer.get("sample", "rwalk")
+        bound = self.minimizer.get("bound", "multi")
+        # maxiter/maxcall scale off nlive rather than a fixed constant --
+        # a hardcoded maxcall=10000 silently truncates a converged-looking
+        # but not-actually-converged run once nlive grows past a couple
+        # hundred, with no error raised (run_nested just returns early).
+        maxiter = self.minimizer.get("maxiter", max(10000, 50 * nlive))
+        maxcall = self.minimizer.get("maxcall", max(10000, 200 * nlive))
 
         def loglike(x):
-            """
-            The log-likelihood function.
-            We use the mismatch weighted over the min_thrs, squared
-            """
-            logl = -0.5 * (f(x) / 0.001) ** 2
-            if np.isnan(logl) or np.isinf(logl):
+            """Log-likelihood via log_likelihood_from_mismatch(mm,
+            self.likelihood_settings) -- see that function for the
+            available forms. Uses _sampler_log_likelihood so a failed EOB
+            generation maps to -inf explicitly rather than the flat mm=1.0
+            __func_to_minimize (and hence `f`) would otherwise return."""
+            logl = self._sampler_log_likelihood(x, kys)
+            if np.isnan(logl):
                 return -np.inf
             return logl
 
@@ -1385,17 +1591,26 @@ class Optimizer(object):
             prior_transform,
             ndim,
             nlive=nlive,
-            sample="rwalk",  # Specify rwalk as the sampling method
-            bound="multi",  # Use a multi-ellipsoid bound
+            sample=sample,
+            bound=bound,
         )
         sampler.run_nested(
             maxiter=maxiter, maxcall=maxcall, print_progress=progress, dlogz=0.1
         )
 
+        if sampler.results.ncall.sum() >= maxcall or sampler.it >= maxiter:
+            logging.warning(
+                f"dynesty run_nested stopped by maxcall={maxcall}/maxiter={maxiter}, "
+                f"not by reaching dlogz -- the posterior is likely under-converged. "
+                f"Raise these (or nlive) if this is unexpected."
+            )
+
         # return just the maxL point
         maxL = sampler.results.logl.argmax()
         opts = {kys[i]: sampler.results.samples[maxL][i] for i in range(len(kys))}
         mm_opt = f(sampler.results.samples[maxL])
+
+        output_dir = self.minimizer.get("output_dir")
 
         # make the traceplot
         if self.verbose:
@@ -1404,6 +1619,300 @@ class Optimizer(object):
             fig, _ = dyplot.traceplot(
                 sampler.results, show_titles=True, trace_cmap="viridis"
             )
-            fig.savefig("traceplot.png")
+            traceplot_path = (
+                os.path.join(output_dir, "traceplot.png")
+                if output_dir
+                else "traceplot.png"
+            )
+            if output_dir:
+                os.makedirs(output_dir, exist_ok=True)
+            fig.savefig(traceplot_path)
+
+        # Nested sampling's raw sample trace is *unequally weighted* -- early
+        # samples span the whole prior before the run has converged, and
+        # carry negligible posterior mass. Naive statistics over the raw
+        # trace are dominated by that early, wide exploration and badly
+        # overstate the posterior width. Resample to equal weight first.
+        from dynesty.utils import resample_equal
+
+        posterior_samples = resample_equal(
+            sampler.results.samples, sampler.results.importance_weights()
+        )
+
+        self.sampler_extras = self._summarize_posterior(
+            kys,
+            posterior_samples,
+            "dynesty",
+            output_dir=output_dir,
+            log_evidence=sampler.results.logz[-1],
+            log_evidence_err=sampler.results.logzerr[-1],
+            n_likelihood_evaluations=sampler.results.ncall.sum(),
+        )
+        self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
+        self.sampler_extras["n_failed_likelihood_evals"] = self._n_failed_likelihood_evals
+
+        return opts, mm_opt
+
+    def __minimize_nessai__(self, f, x0, bounds_array, kys):
+        """Minimize with nessai (nested sampling with normalising-flow
+        proposals).
+
+        nessai raises OneDimensionalModelError for single-variable models --
+        its flow-based proposals are not designed for 1-D problems. Use the
+        'dynesty' backend for single-parameter Bayesian fits (e.g. a6c or
+        cN3LO alone); reserve nessai for joint fits (e.g. a6c together with
+        d_delta_t_nqc).
+
+        Parameters/Returns: same (opts, mm_opt) contract as the other
+        backends; the full posterior lives in self.sampler_extras (see
+        _summarize_posterior) after this returns.
+        """
+        if len(kys) < 2:
+            raise ValueError(
+                f"The 'nessai' backend requires at least 2 optimization "
+                f"variables (got {len(kys)}: {kys}) -- nessai's normalising-"
+                f"flow proposals are not designed for one-dimensional models. "
+                f"Use 'dynesty' for single-parameter Bayesian fits."
+            )
+
+        from nessai.model import Model as NessaiModel
+        from nessai.flowsampler import FlowSampler
+        import nessai.posterior as nessai_posterior
+
+        optimizer_self = self
+        bounds_dict = {
+            ky: [float(bounds_array[i][0]), float(bounds_array[i][1])]
+            for i, ky in enumerate(kys)
+        }
+
+        class _MismatchModel(NessaiModel):
+            def __init__(self):
+                self.names = list(kys)
+                self.bounds = bounds_dict
+                # No parallelism / vectorisation: f (and hence the EOB model)
+                # is not guaranteed picklable, and TEOB is a C extension
+                # underneath -- see calibration upgrade plan, Stage 3.D.
+                self.allow_vectorised = False
+                self.n_pool = None
+                super().__init__()
+
+            def log_prior(self, x):
+                return np.log(self.in_bounds(x), dtype=float)
+
+            def log_likelihood(self, x):
+                vs = [x[ky] for ky in self.names]
+                return optimizer_self._sampler_log_likelihood(vs, self.names)
+
+        model = _MismatchModel()
+
+        output_dir = self.minimizer.get("output_dir")
+        if not output_dir:
+            raise ValueError(
+                "The 'nessai' backend requires minimizer['output_dir'] -- "
+                "nessai writes checkpoints/results to disk and must never "
+                "default to CWD (shared under Condor initialdir)."
+            )
+        nlive = self.minimizer.get("nlive", 500)
+        seed = self.minimizer.get("opt_seed", 190521)
+        resume = self.minimizer.get("resume", True)
+
+        sampler = FlowSampler(
+            model,
+            output=output_dir,
+            nlive=nlive,
+            seed=seed,
+            resume=resume,
+            resume_file="nessai_resume.pkl",
+        )
+        sampler.run()
+
+        ns = sampler.nested_samples
+        maxL_idx = ns["logL"].argmax()
+        opts = {ky: float(ns[ky][maxL_idx]) for ky in kys}
+        # mm_opt must be a real mismatch (not a log-likelihood) for
+        # comparability with the other backends -- recompute it directly at
+        # the maxL point rather than trying to invert the likelihood.
+        eob_opt = self.generate_EOB(model=self.model, ICs=opts)
+        mm_opt = (
+            self.objective_mismatch(eob_opt, verbose=False, iter_loop=False)
+            if eob_opt is not None
+            else 1.0
+        )
+
+        posterior_samples = nessai_posterior.draw_posterior_samples(ns, nlive=nlive)
+        posterior_array = np.column_stack([posterior_samples[ky] for ky in kys])
+
+        self.sampler_extras = self._summarize_posterior(
+            kys,
+            posterior_array,
+            "nessai",
+            output_dir=output_dir,
+            log_evidence=sampler.log_evidence,
+            log_evidence_err=sampler.log_evidence_error,
+            n_likelihood_evaluations=model.likelihood_evaluations,
+        )
+        self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
+        self.sampler_extras["n_failed_likelihood_evals"] = self._n_failed_likelihood_evals
+
+        return opts, mm_opt
+
+    def __minimize_zeus__(self, f, x0, bounds_array, kys):
+        """Minimize with zeus (ensemble slice sampling MCMC).
+
+        Unlike the nested samplers (dynesty/nessai), which must explore the
+        full prior volume from scratch, zeus is warm-started directly:
+        walkers are initialized in a small ball around the box center
+        (self._bounds_reference, which fit_parameter.py's warm-start pass
+        already centers on a cheap point estimate) rather than drawn
+        uniformly across the whole prior box. See calibration upgrade plan,
+        Stage 3 prototype notes -- this is the intended fix for nested
+        sampling paying to re-discover a mode we already located cheaply.
+        No evidence estimate (ensemble MCMC doesn't produce one); use
+        dynesty/nessai/pocomc if evidence is needed.
+        """
+        import zeus
+
+        ndim = len(kys)
+        nwalkers = self.minimizer.get("nwalkers", max(4 * ndim, 8))
+        nsteps = self.minimizer.get("nsteps", 3000)
+        nburn = self.minimizer.get("nburn", nsteps // 2)
+        init_frac = self.minimizer.get("init_frac", 0.1)
+        seed = self.minimizer.get("opt_seed", 190521)
+        progress = self.minimizer.get("print_progress", True)
+        rng = np.random.default_rng(seed)
+
+        lo = bounds_array[:, 0]
+        hi = bounds_array[:, 1]
+        center = np.array(
+            [self._bounds_reference.get(ky, x0[i]) for i, ky in enumerate(kys)]
+        )
+        spread = init_frac * (hi - lo)
+
+        def logpost(x):
+            if np.any(x < lo) or np.any(x > hi):
+                return -np.inf
+            logl = self._sampler_log_likelihood(x, kys)
+            return logl if np.isfinite(logl) else -np.inf
+
+        p0 = center + spread * rng.standard_normal((nwalkers, ndim))
+        p0 = np.clip(p0, lo, hi)
+
+        sampler = zeus.EnsembleSampler(nwalkers, ndim, logpost, verbose=progress)
+        sampler.run_mcmc(p0, nsteps)
+
+        chain = sampler.get_chain(discard=nburn, flat=True)
+        logprob = sampler.get_log_prob(discard=nburn, flat=True)
+
+        maxL_idx = int(np.argmax(logprob))
+        opts = {kys[i]: float(chain[maxL_idx][i]) for i in range(ndim)}
+        eob_opt = self.generate_EOB(model=self.model, ICs=opts)
+        mm_opt = (
+            self.objective_mismatch(eob_opt, verbose=False, iter_loop=False)
+            if eob_opt is not None
+            else 1.0
+        )
+
+        output_dir = self.minimizer.get("output_dir")
+        self.sampler_extras = self._summarize_posterior(
+            kys,
+            chain,
+            "zeus",
+            output_dir=output_dir,
+            log_evidence=None,
+            log_evidence_err=None,
+            n_likelihood_evaluations=int(getattr(sampler, "ncall", nwalkers * nsteps)),
+        )
+        self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
+        self.sampler_extras["n_failed_likelihood_evals"] = self._n_failed_likelihood_evals
+        self.sampler_extras["nwalkers"] = nwalkers
+        self.sampler_extras["nburn"] = nburn
+
+        return opts, mm_opt
+
+    def __minimize_pocomc__(self, f, x0, bounds_array, kys):
+        """Minimize with pocoMC (preconditioned Monte Carlo / sequential
+        Monte Carlo with normalising-flow preconditioning).
+
+        Purpose-built for expensive likelihoods, and unlike zeus still
+        produces an evidence estimate. Initial particles are drawn from the
+        uniform prior over bounds_array (already the warm-started box from
+        fit_parameter.py) -- pocoMC's SMC annealing schedule adapts from
+        there rather than needing an explicit x0 seed the way zeus does.
+        """
+        import pocomc as pc
+        from scipy.stats import uniform as scipy_uniform
+
+        ndim = len(kys)
+        lo = bounds_array[:, 0]
+        hi = bounds_array[:, 1]
+
+        prior = pc.Prior(
+            [scipy_uniform(loc=lo[i], scale=hi[i] - lo[i]) for i in range(ndim)]
+        )
+
+        def loglike(x):
+            logl = self._sampler_log_likelihood(x, kys)
+            return logl if np.isfinite(logl) else -np.inf
+
+        n_effective = self.minimizer.get("n_effective", 64)
+        n_active = self.minimizer.get("n_active", 32)
+        n_total = self.minimizer.get("n_total", 1024)
+        # n_evidence=0 skips pocoMC's dedicated importance-sampling evidence
+        # refinement step -- measured at exactly half the total likelihood
+        # calls in a real run (1024 of 2176). Calibration wants posterior
+        # width, not model comparison, so this is off by default; evidence()
+        # still returns a (less precise, no error bar) SMC-based logz even
+        # with n_evidence=0 -- see calibration upgrade plan, Stage 3.E.
+        n_evidence = self.minimizer.get("n_evidence", 0)
+        seed = self.minimizer.get("opt_seed", 190521)
+        progress = self.minimizer.get("print_progress", True)
+        output_dir = self.minimizer.get("output_dir")
+        # Normalising-flow preconditioning exists to remove parameter
+        # correlations; with a single parameter (or few, uncorrelated ones)
+        # there is nothing for it to remove, so it plausibly only costs CPU
+        # -- exposed for testing, library default (True) unchanged for now.
+        precondition = self.minimizer.get("precondition", True)
+
+        sampler = pc.Sampler(
+            prior=prior,
+            likelihood=loglike,
+            n_dim=ndim,
+            n_effective=n_effective,
+            n_active=n_active,
+            vectorize=False,
+            precondition=precondition,
+            random_state=seed,
+            output_dir=output_dir,
+        )
+        sampler.run(n_total=n_total, n_evidence=n_evidence, progress=progress)
+
+        # resample=True already returns equal-weight samples (no weights
+        # array) -- resample=False would instead give (samples, weights,
+        # logl, logp) with importance weights still attached.
+        samples, logl, logp = sampler.posterior(resample=True)
+        samples = np.asarray(samples)
+
+        maxL_idx = int(np.argmax(logl))
+        opts = {kys[i]: float(samples[maxL_idx][i]) for i in range(ndim)}
+        eob_opt = self.generate_EOB(model=self.model, ICs=opts)
+        mm_opt = (
+            self.objective_mismatch(eob_opt, verbose=False, iter_loop=False)
+            if eob_opt is not None
+            else 1.0
+        )
+
+        log_evidence, log_evidence_err = sampler.evidence()
+
+        self.sampler_extras = self._summarize_posterior(
+            kys,
+            samples,
+            "pocomc",
+            output_dir=output_dir,
+            log_evidence=log_evidence,
+            log_evidence_err=log_evidence_err,
+            n_likelihood_evaluations=int(getattr(sampler, "calls", n_total)),
+        )
+        self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
+        self.sampler_extras["n_failed_likelihood_evals"] = self._n_failed_likelihood_evals
 
         return opts, mm_opt
