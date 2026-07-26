@@ -150,6 +150,7 @@ def CreateDict(
     ode_tmax=1e7,
     cN3LO=None,
     a6c=None,
+    d_delta_t_nqc=None,
     use_flm_h="LO",
     use_nqc=True,
 ):
@@ -217,6 +218,11 @@ def CreateDict(
         cN3LO parameter (default is None).
     a6c : float, optional
         a6c parameter (default is None).
+    d_delta_t_nqc : float, optional
+        Rigid shift of the NQC-matching time DeltaT_nqc
+        (TEOBResumSFits.c: `DeltaT_nqc += d_delta_t_nqc`). Zero shift, i.e.
+        the ordinary NQC alignment, unless a value is given (default is
+        None).
     use_flm_h : str, optional
         Use higher multipoles in the waveform ("LO", "NLO", "NNLO", default is "LO").
     use_nqc : bool, optional
@@ -291,6 +297,9 @@ def CreateDict(
 
     if cN3LO is not None:
         pardic["cN3LO"] = cN3LO
+
+    if d_delta_t_nqc is not None:
+        pardic["d_delta_t_nqc"] = d_delta_t_nqc
 
     if use_tidal is not None:
         pardic["use_tidal"] = use_tidal
