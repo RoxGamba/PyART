@@ -1,4 +1,4 @@
-import os, json, random, time, copy
+import os, json, random, time, copy, tempfile
 import numpy as np
 from scipy import optimize
 from scipy.signal import hilbert
@@ -28,12 +28,10 @@ def log_likelihood_from_mismatch(mm, settings):
           meaningless". CAUTION: if the irreducible model mismatch is >>
           mm_nr, this collapses the posterior to a fictitiously narrow spike
           around the minimum -- compare mm_opt to mm_nr before trusting this
-          option (see calibration upgrade plan, Stage 2/3 notes).
+          option.
 
       distinguish: sigma = D / (2*rho^2)  [Lindblom-Owen-Brown]
-          A fixed, NR-independent distinguishability scale. Convention
-          ambiguity: Baird et al. use a chi^2_k quantile instead of this
-          flat D/2rho^2 form -- this implements the LOB form. D is the
+          A fixed, NR-independent distinguishability scale. D is the
           dimension of the *intrinsic waveform parameter space*, not the
           number of parameters currently being calibrated; pass it
           explicitly via settings["D"], never inferred from kys.
@@ -94,7 +92,7 @@ class Optimizer(object):
     def __init__(
         self,
         ref_Waveform,
-        model='teob',
+        model="teob",
         kind_ic="E0pph0",
         vrs=[
             "H_hyp",
@@ -308,6 +306,12 @@ class Optimizer(object):
             self.minimize = self.__minimize_zeus__
         elif minimizer["kind"] == "pocomc":
             self.minimize = self.__minimize_pocomc__
+        elif minimizer["kind"] == "grid":
+            self.minimize = self.__minimize_grid__
+        elif minimizer["kind"] == "gp_surrogate":
+            self.minimize = self.__minimize_gp_surrogate__
+        elif minimizer["kind"] == "nautilus":
+            self.minimize = self.__minimize_nautilus__
         else:
             raise ValueError(f'Unknown minimizer kind: {minimizer["kind"]}')
 
@@ -416,7 +420,10 @@ class Optimizer(object):
                         # actually is rather than a value frozen at construction.
                         for ky in kys:
                             opt_key = f"{ky}_opt"
-                            if ky not in self.ref_Waveform.metadata and opt_key in opt_data:
+                            if (
+                                ky not in self.ref_Waveform.metadata
+                                and opt_key in opt_data
+                            ):
                                 self._bounds_reference[ky] = opt_data[opt_key]
 
                         candidate_bounds = {}
@@ -729,7 +736,7 @@ class Optimizer(object):
             logging.info(f"{action} {json_file}\n")
         pass
 
-    def generate_EOB(self, model='teob', ICs={"f0": None, "e0": None}, model_opts={}):
+    def generate_EOB(self, model="teob", ICs={"f0": None, "e0": None}, model_opts={}):
         """
         Generate an EOB waveform with given initial conditions (ICs).
         TODO: generalise this to any model
@@ -768,9 +775,9 @@ class Optimizer(object):
         ]
         if model == "teob":
             default_intrinsic += [
-                "LambdaAl2", 
+                "LambdaAl2",
                 "LambdaBl2",
-                ]
+            ]
         for ic in ICs:
             if ic in default_intrinsic:
                 default_intrinsic.remove(ic)
@@ -849,24 +856,34 @@ class Optimizer(object):
             "mm_nr": None,  # required for gauss_nr/quadrature; the NR error floor
         }
 
-    def _sampler_log_likelihood(self, x, kys):
-        """Shared likelihood evaluation for Bayesian sampler backends
-        (dynesty, nessai). Builds the EOB waveform directly -- not via
-        __func_to_minimize, which returns a flat mm=1.0 on generation
-        failure so point-estimate minimizers see a defined (if bad) value.
-        A sampler would instead model that flat value as a plausible
-        likelihood plateau, so failures are mapped to -inf here explicitly
-        and counted in self._n_failed_likelihood_evals.
+    def _eval_mm_and_logl(self, x, kys):
+        """Generate the trial waveform at x and return (mismatch, log-likelihood).
+
+        Used directly by every posterior-producing method (dynesty, nessai,
+        pocomc, zeus, grid), rather than through __func_to_minimize, which
+        reports a flat mm=1.0 when the ODE integration fails, so a plain
+        minimizer still has a well-defined value to descend away from. For a
+        posterior that flat value would instead read as ordinary, merely
+        low, support -- a point where the integration never produced a
+        waveform at all should carry zero probability, not a small one, so
+        it is mapped to (nan, -inf) here and tallied in
+        self._n_failed_likelihood_evals.
         """
         vs = {kys[i]: x[i] for i in range(len(kys))}
         eob_Waveform = self.generate_EOB(model=self.model, ICs=vs)
         if eob_Waveform is None:
             self._n_failed_likelihood_evals += 1
-            return -np.inf
+            return np.nan, -np.inf
         mm = self.objective_mismatch(
             eob_Waveform, verbose=False, iter_loop=False, cache=self._sampler_cache
         )
-        return log_likelihood_from_mismatch(mm, self.likelihood_settings)
+        logl = log_likelihood_from_mismatch(mm, self.likelihood_settings)
+        return mm, logl
+
+    def _sampler_log_likelihood(self, x, kys):
+        """Log-likelihood alone, for the samplers that never need the mismatch itself."""
+        _, logl = self._eval_mm_and_logl(x, kys)
+        return logl
 
     def _objective_mass_grid(self):
         """Return the mass grid used by the mass-range objective."""
@@ -1292,6 +1309,12 @@ class Optimizer(object):
             opt_data[ky + "_opt"] = opts[ky]
 
         if self.sampler_extras:
+            # Keep an untouched copy alongside the flattened merge below: a
+            # caller wanting everything a given backend measured (not just
+            # the fields calibration_core.py's reader already knows to look
+            # for) can read this instead of having to name each key twice --
+            # once here, once in that reader -- as the set of backends grows.
+            opt_data["sampler_extras_raw"] = dict(self.sampler_extras)
             opt_data.update(self.sampler_extras)
 
         if eob_opt is not None and self.json_save_dyn:
@@ -1649,7 +1672,9 @@ class Optimizer(object):
             n_likelihood_evaluations=sampler.results.ncall.sum(),
         )
         self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
-        self.sampler_extras["n_failed_likelihood_evals"] = self._n_failed_likelihood_evals
+        self.sampler_extras["n_failed_likelihood_evals"] = (
+            self._n_failed_likelihood_evals
+        )
 
         return opts, mm_opt
 
@@ -1752,7 +1777,9 @@ class Optimizer(object):
             n_likelihood_evaluations=model.likelihood_evaluations,
         )
         self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
-        self.sampler_extras["n_failed_likelihood_evals"] = self._n_failed_likelihood_evals
+        self.sampler_extras["n_failed_likelihood_evals"] = (
+            self._n_failed_likelihood_evals
+        )
 
         return opts, mm_opt
 
@@ -1823,7 +1850,9 @@ class Optimizer(object):
             n_likelihood_evaluations=int(getattr(sampler, "ncall", nwalkers * nsteps)),
         )
         self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
-        self.sampler_extras["n_failed_likelihood_evals"] = self._n_failed_likelihood_evals
+        self.sampler_extras["n_failed_likelihood_evals"] = (
+            self._n_failed_likelihood_evals
+        )
         self.sampler_extras["nwalkers"] = nwalkers
         self.sampler_extras["nburn"] = nburn
 
@@ -1913,6 +1942,430 @@ class Optimizer(object):
             n_likelihood_evaluations=int(getattr(sampler, "calls", n_total)),
         )
         self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
-        self.sampler_extras["n_failed_likelihood_evals"] = self._n_failed_likelihood_evals
+        self.sampler_extras["n_failed_likelihood_evals"] = (
+            self._n_failed_likelihood_evals
+        )
+
+        return opts, mm_opt
+
+    def __minimize_grid__(self, f, x0, bounds_array, kys):
+        """
+        Minimization via Grid/quadrature backend.
+
+        This backend is designed for low-dimensional problems where a full grid evaluation is computationally feasible.
+
+
+        Only `ndim==1` is handled by the quadrature below; a joint (2-D)
+        posterior is left to the `gp_surrogate` backend -- interpolating a
+        2-D scattered node set correctly needs a triangulation or a GP, not
+        the 1-D trapezoid rule used here.
+        """
+        ndim = len(kys)
+        lo = np.asarray(bounds_array[:, 0], dtype=float)
+        hi = np.asarray(bounds_array[:, 1], dtype=float)
+
+        # we first run a scalar minimization to find the best internal estimate of the optimum.
+        if ndim == 1:
+            opts_scalar, mm_opt = self.__minimize_scalar_(f, x0, bounds_array, kys)
+            p_best = np.array([opts_scalar[kys[0]]])
+            mm_opt = float(mm_opt)
+        else:
+            raise NotImplementedError("For the moment, only ndim==1 is implemented.")
+
+        opts = {kys[i]: float(p_best[i]) for i in range(ndim)}
+        _, logl_best = self._eval_mm_and_logl(p_best, kys)
+
+        # Set up the coarse and fine grid parameters.
+        n_coarse = int(self.minimizer.get("n_coarse", 64))
+        n_fine = int(self.minimizer.get("n_fine", 32))
+        adapt = self.minimizer.get("adapt", True)
+        expand_below = float(self.minimizer.get("delta_logl_expand", 10.0))
+        contract_above = float(self.minimizer.get("delta_logl_contract", 50.0))
+        max_adapt_iter = int(self.minimizer.get("max_adapt_iter", 8))
+
+        # Determine the initial core half-width for the fine grid around the optimum.
+        half_box = 0.5 * (hi - lo)
+        init_frac = float(self.minimizer.get("core_half_width_frac", 0.1))
+        core_init = self.minimizer.get("core_half_width_init")
+        if core_init is None:
+            core_half = init_frac * half_box
+        else:
+            core_half = np.full(ndim, float(core_init))
+        core_half = np.minimum(core_half, half_box)
+
+        # Adapt the core half-width based on the log-likelihood drop at the edges.
+        if adapt:
+            for _ in range(max_adapt_iter):
+                changed = False
+                for d in range(ndim):
+                    probe_lo = p_best.copy()
+                    probe_lo[d] = np.clip(p_best[d] - core_half[d], lo[d], hi[d])
+                    probe_hi = p_best.copy()
+                    probe_hi[d] = np.clip(p_best[d] + core_half[d], lo[d], hi[d])
+                    _, logl_lo = self._eval_mm_and_logl(probe_lo, kys)
+                    _, logl_hi = self._eval_mm_and_logl(probe_hi, kys)
+                    d_logl = logl_best - min(logl_lo, logl_hi)
+                    if not np.isfinite(d_logl):
+                        d_logl = np.inf
+                    if d_logl < expand_below and core_half[d] < half_box[d]:
+                        core_half[d] = min(core_half[d] * 1.5, half_box[d])
+                        changed = True
+                    elif d_logl > contract_above and core_half[d] > 0:
+                        core_half[d] = core_half[d] / 1.5
+                        changed = True
+                if not changed:
+                    break
+
+        # Warn if the core half-width has been capped at the level-0 box.
+        capped = core_half >= half_box - 1e-12 * np.maximum(half_box, 1.0)
+        if np.any(capped):
+            logging.warning(
+                "grid backend: core half-width capped at the level-0 box on "
+                f"axis(es) {[kys[d] for d in range(ndim) if capped[d]]} -- the "
+                "posterior is prior-box-dominated, not resolved by this box."
+            )
+
+        coarse_axes = [np.linspace(lo[d], hi[d], n_coarse) for d in range(ndim)]
+        fine_axes = [
+            np.linspace(p_best[d] - core_half[d], p_best[d] + core_half[d], n_fine)
+            for d in range(ndim)
+        ]
+
+        # Construct the full tensor grid for both coarse and fine levels.
+        def _tensor_grid(axes):
+            mesh = np.meshgrid(*axes, indexing="ij")
+            return np.stack([m.ravel() for m in mesh], axis=-1)
+
+        level0_points = _tensor_grid(coarse_axes)
+        level1_points = _tensor_grid(fine_axes)
+        all_points_raw = np.concatenate([level0_points, level1_points], axis=0)
+        grid_level_raw = np.concatenate(
+            [np.zeros(len(level0_points)), np.ones(len(level1_points))]
+        )
+
+        all_points, unique_idx = np.unique(all_points_raw, axis=0, return_index=True)
+        grid_level = grid_level_raw[unique_idx]
+
+        n_points = all_points.shape[0]
+        grid_mm = np.full(n_points, np.nan)
+        grid_logl = np.full(n_points, -np.inf)
+        for i in range(n_points):
+            grid_mm[i], grid_logl[i] = self._eval_mm_and_logl(all_points[i], kys)
+
+        argmax_idx = int(np.nanargmax(grid_logl))
+        grid_argmax = all_points[argmax_idx]
+        fine_spacing = np.array(
+            [
+                (fine_axes[d][-1] - fine_axes[d][0]) / max(n_fine - 1, 1)
+                for d in range(ndim)
+            ]
+        )
+        if np.any(np.abs(grid_argmax - p_best) > fine_spacing):
+            logging.warning(
+                "grid backend: grid argmax %s disagrees with the internal "
+                "point estimate %s by more than one fine-grid spacing %s -- "
+                "check point-estimate convergence and grid coverage.",
+                grid_argmax.tolist(),
+                p_best.tolist(),
+                fine_spacing.tolist(),
+            )
+
+        # Sort the grid points by the first dimension to prepare for trapezoidal integration.
+        order = np.argsort(all_points[:, 0])
+        x_sorted = all_points[order, 0]
+        logl_sorted = grid_logl[order]
+        finite = np.isfinite(logl_sorted)
+        if not np.any(finite):
+            raise RuntimeError(
+                "grid backend: every node had -inf log-likelihood (EOB failed "
+                "everywhere in the box) -- cannot build a posterior."
+            )
+        logl_max = np.max(logl_sorted[finite])
+        density = np.where(finite, np.exp(logl_sorted - logl_max), 0.0)
+
+        box_evidence = np.trapz(density, x_sorted)
+        log_evidence = float(logl_max + np.log(box_evidence))
+
+        cdf = np.concatenate(
+            [[0.0], np.cumsum(0.5 * (density[1:] + density[:-1]) * np.diff(x_sorted))]
+        )
+        cdf = cdf / cdf[-1]
+        # Draw posterior samples by inverting the CDF.
+        n_samples = int(self.minimizer.get("n_posterior_samples", 5000))
+        u = np.random.default_rng(self.minimizer.get("opt_seed", 190521)).uniform(
+            0.0, 1.0, size=n_samples
+        )
+        posterior_samples = np.interp(u, cdf, x_sorted).reshape(-1, 1)
+
+        output_dir = self.minimizer.get("output_dir")
+        self.sampler_extras = self._summarize_posterior(
+            kys,
+            posterior_samples,
+            "grid",
+            output_dir=output_dir,
+            log_evidence=log_evidence,
+            log_evidence_err=None,
+            n_likelihood_evaluations=n_points,
+        )
+        self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
+        self.sampler_extras["n_failed_likelihood_evals"] = (
+            self._n_failed_likelihood_evals
+        )
+        self.sampler_extras["grid_points"] = all_points[:, 0].tolist()
+        self.sampler_extras["grid_mm"] = grid_mm.tolist()
+        self.sampler_extras["grid_logl"] = grid_logl.tolist()
+        self.sampler_extras["grid_level"] = grid_level.tolist()
+        self.sampler_extras["grid_argmax"] = grid_argmax.tolist()
+        self.sampler_extras["grid_core_half_width"] = core_half.tolist()
+        self.sampler_extras["log_evidence_note"] = (
+            "integral over the grid box, not the prior -- not comparable to "
+            "dynesty's or pocomc's log_evidence"
+        )
+
+        # Generate & store the posterior density curve for visualization and further analysis.
+        n_curve_points = int(self.minimizer.get("n_curve_points", 400))
+        x_out = np.linspace(x_sorted[0], x_sorted[-1], n_curve_points)
+        pdf_exact_out = np.interp(x_out, x_sorted, density)
+        pdf_exact_out = pdf_exact_out / np.trapz(pdf_exact_out, x_out)
+
+        pdf_kde_out = None
+        kde = None
+        finite_weight = density > 0
+        if np.count_nonzero(finite_weight) >= 2 and np.ptp(x_sorted[finite_weight]) > 0:
+            try:
+                from scipy.stats import gaussian_kde
+
+                kde = gaussian_kde(
+                    x_sorted[finite_weight],
+                    weights=density[finite_weight],
+                    bw_method=self.minimizer.get("kde_bw_method"),
+                )
+            except Exception as exc:
+                logging.warning(
+                    f"grid backend: weighted-KDE construction failed ({exc}) -- "
+                    "posterior_density['pdf_kde'] will be null."
+                )
+                self.sampler_extras["kde_error"] = str(exc)
+        else:
+            logging.warning(
+                "grid backend: fewer than 2 finite-density nodes -- cannot build "
+                "a KDE; posterior_density['pdf_kde'] will be null."
+            )
+
+        if kde is not None:
+            pdf_kde_out = kde.evaluate(x_out)
+
+            n_kde_samples = int(self.minimizer.get("n_posterior_samples", 5000))
+            kde_samples = np.asarray(
+                kde.resample(n_kde_samples, seed=self.minimizer.get("opt_seed", 190521))
+            ).T
+
+            # Compare the standard deviation of the KDE samples to the exact quadrature samples to check for consistency.
+            exact_sigma_check = float(np.std(posterior_samples[:, 0]))
+            kde_sigma_check = float(np.std(kde_samples[:, 0]))
+            if exact_sigma_check > 0:
+                rel_diff = abs(kde_sigma_check - exact_sigma_check) / exact_sigma_check
+                if rel_diff > 0.2:
+                    logging.warning(
+                        f"grid backend: weighted-KDE sigma ({kde_sigma_check:.4g}) "
+                        f"disagrees with the exact quadrature sigma "
+                        f"({exact_sigma_check:.4g}) by {rel_diff:.0%} -- check "
+                        "minimizer['kde_bw_method'] before trusting kde_* outputs."
+                    )
+
+            kde_output_dir = os.path.join(output_dir, "kde") if output_dir else None
+            kde_extras = self._summarize_posterior(
+                kys, kde_samples, "grid_kde", output_dir=kde_output_dir
+            )
+            for ky, val in kde_extras.items():
+                if ky == "sampler":
+                    continue
+                self.sampler_extras[f"kde_{ky}"] = val
+            self.sampler_extras["kde_bandwidth_factor"] = float(kde.factor)
+            self.sampler_extras["kde_neff"] = float(kde.neff)
+
+        self.sampler_extras["posterior_density"] = {
+            "x": x_out.tolist(),
+            "pdf_exact": pdf_exact_out.tolist(),
+            "pdf_kde": pdf_kde_out.tolist() if pdf_kde_out is not None else None,
+        }
+
+        return opts, mm_opt
+
+    def __minimize_gp_surrogate__(self, f, x0, bounds_array, kys):
+        """
+        Minimize with a Gaussian Process surrogate using the GPry package.
+        This is an active-learning approach where a Gaussian Process surrogate is used to approximate the objective function, reducing the number of expensive true evaluations needed.
+        For more info see: https://gpry.readthedocs.io/en/latest/
+        """
+        try:
+            from gpry.run import Runner
+        except ImportError as exc:
+            raise ImportError(
+                "minimizer kind='gp_surrogate' requires the 'gpry' package "
+                "(pip install gpry) -- not installed in this environment."
+            ) from exc
+        from dynesty.utils import resample_equal
+
+        ndim = len(kys)
+        bounds = [
+            [float(bounds_array[i][0]), float(bounds_array[i][1])] for i in range(ndim)
+        ]
+
+        n_calls = 0
+        best = {"logl": -np.inf, "mm": None, "x": None}
+
+        def loglike(x):
+            nonlocal n_calls
+            n_calls += 1
+            # Ensure x is always at least 1-dimensional, even if GPry passes a scalar for ndim==1.
+            x_arr = np.atleast_1d(x)
+            mm, logl = self._eval_mm_and_logl(x_arr, kys)
+            if np.isfinite(logl) and logl > best["logl"]:
+                best["logl"], best["mm"], best["x"] = logl, mm, x_arr.copy()
+            return logl if np.isfinite(logl) else -np.inf
+
+        output_dir = self.minimizer.get("output_dir")
+        if output_dir is not None:
+            os.makedirs(output_dir, exist_ok=True)
+            mc_output = os.path.join(output_dir, "gpry_mc")
+        else:
+            # If no output_dir is specified, create a temporary directory for GPry's MC output.
+            mc_output = tempfile.mkdtemp(prefix="gpry_mc_")
+
+        seed = self.minimizer.get("opt_seed", 190521)
+        verbose = self.minimizer.get("gp_verbose", 1)
+        gp_options = self.minimizer.get("gp_options")
+
+        runner = Runner(
+            loglike=loglike,
+            bounds=bounds,
+            params=list(kys),
+            options=gp_options,
+            checkpoint=None,  # no checkpointing to avoid pickling issues with self
+            seed=seed,
+            plots=False,
+            verbose=verbose,
+        )
+        runner.run()
+
+        # The opts/mm_opt returned here correspond to the best true evaluation seen during the surrogate training, not the surrogate's own approximate optimum.
+        opts = {kys[i]: float(best["x"][i]) for i in range(ndim)}
+        mm_opt = float(best["mm"])
+        training_df = runner.surrogate.training_set_as_df()
+
+        # Generate Monte Carlo samples from the surrogate posterior using nested sampling.
+        # no further true likelihood evaluations are performed; all samples come from the surrogate.
+        runner.generate_mc_sample(sampler="nested", output=mc_output)
+        mc = runner.last_mc_samples()
+        mc_X = np.atleast_2d(mc["X"])
+        mc_w = mc["w"]
+        if mc_w is None:
+            posterior_samples = mc_X
+        else:
+            posterior_samples = resample_equal(mc_X, np.asarray(mc_w, dtype=float))
+
+        log_evidence, log_evidence_err = runner.last_mc_logZ()
+
+        self.sampler_extras = self._summarize_posterior(
+            kys,
+            posterior_samples,
+            "gp_surrogate",
+            output_dir=output_dir,
+            log_evidence=log_evidence,
+            log_evidence_err=log_evidence_err,
+            n_likelihood_evaluations=n_calls,
+        )
+        self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
+        self.sampler_extras["n_failed_likelihood_evals"] = (
+            self._n_failed_likelihood_evals
+        )
+        self.sampler_extras["n_gp_training_points"] = int(len(training_df))
+
+        return opts, mm_opt
+
+    def __minimize_nautilus__(self, f, x0, bounds_array, kys):
+        """
+        Minimise/characterise via nautilus (neural-network-boosted
+        importance nested sampling).
+        For more info: https://nautilus-sampler.readthedocs.io/en/latest/
+
+        NOTE: this doesn't work if the number of optimization variables is less than 2.
+        """
+        if len(kys) < 2:
+            raise ValueError(
+                "minimizer kind='nautilus' requires at least 2 optimization variables."
+            )
+        try:
+            from nautilus import Sampler, Prior
+        except ImportError as exc:
+            raise ImportError(
+                "Install the 'nautilus-sampler' package (pip install nautilus-sampler) -- not installed in this environment."
+            ) from exc
+        from dynesty.utils import resample_equal
+
+        ndim = len(kys)
+        prior = Prior()
+        for i, ky in enumerate(kys):
+            prior.add_parameter(
+                ky, dist=(float(bounds_array[i][0]), float(bounds_array[i][1]))
+            )
+
+        n_calls = 0
+
+        def loglike(d):
+            # pass_dict=True (forced below, since prior is a nautilus.Prior
+            # instance) -- d is {param_name: value}, not a positional array.
+            nonlocal n_calls
+            n_calls += 1
+            x = np.array([d[ky] for ky in kys])
+            logl = self._sampler_log_likelihood(x, kys)
+            return logl if np.isfinite(logl) else -np.inf
+
+        n_live = int(self.minimizer.get("n_live", 500))
+        n_eff = float(self.minimizer.get("n_eff", 1000.0))
+        seed = self.minimizer.get("opt_seed", 190521)
+        verbose = self.minimizer.get("print_progress", True)
+
+        sampler = Sampler(
+            prior,
+            loglike,
+            n_live=n_live,
+            vectorized=False,
+            pass_dict=True,
+            seed=seed,
+        )
+        sampler.run(n_eff=n_eff, verbose=verbose)
+
+        points, log_w, log_l = sampler.posterior()
+        maxL_idx = int(np.argmax(log_l))
+        opts = {kys[i]: float(points[maxL_idx, i]) for i in range(ndim)}
+        eob_opt = self.generate_EOB(model=self.model, ICs=opts)
+        mm_opt = (
+            self.objective_mismatch(eob_opt, verbose=False, iter_loop=False)
+            if eob_opt is not None
+            else 1.0
+        )
+
+        # posterior() returns importance-weighted samples (log_w), the same
+        # unequal-weight situation as raw dynesty output -- reuse the same
+        # resample_equal utility already used there rather than duplicating
+        # the equal-weighting logic.
+        weights = np.exp(log_w - np.max(log_w))
+        posterior_samples = resample_equal(points, weights)
+
+        self.sampler_extras = self._summarize_posterior(
+            kys,
+            posterior_samples,
+            "nautilus",
+            output_dir=self.minimizer.get("output_dir"),
+            log_evidence=float(sampler.log_z),
+            log_evidence_err=None,  # nautilus exposes no evidence error bar
+            n_likelihood_evaluations=n_calls,
+        )
+        self.sampler_extras["likelihood_settings"] = dict(self.likelihood_settings)
+        self.sampler_extras["n_failed_likelihood_evals"] = (
+            self._n_failed_likelihood_evals
+        )
 
         return opts, mm_opt
