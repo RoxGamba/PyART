@@ -20,6 +20,8 @@ import os
 import romspline
 import time
 
+logger = logging.getLogger(__name__)
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Convert SXS data to LVC format")
     p.add_argument(
@@ -72,7 +74,7 @@ history = ""
 def log(string):
     global history
     history += string + "\n"
-    logging.info(string)
+    logger.info(string)
 
 
 ########################################################
@@ -361,18 +363,6 @@ def derived_horizon_quantities_from_sxs(sxs_horizons, start_time, peak_time):
     omega_orbit_vs_time = np.c_[t_A[:-1], omega_orbit]
     LN_hat_vs_time = np.c_[t_A[:-1], LN_hat]
     return n_hat_vs_time, omega_orbit_vs_time, LN_hat_vs_time, t_A, t_B, t_C
-
-
-def spline_horizon_quantity(sxs_horizon_quantity, start_time, peak_time):
-    """Prepares sxs_horizon_quantity by passing it to
-    prepare_horizon_quantity() and then returns a spline of the result."""
-    times_AH, quantity_AH = prepare_horizon_quantity(
-        sxs_horizon_quantity, start_time, peak_time
-    )
-    spline_AH_list = []
-    for i in range(0, len(sxs_horizon_quantity[0]) - 1):
-        spline_AH_list.append(romspline.ReducedOrderSpline(times_AH, quantity_AH[i]))
-    return np.array(spline_AH_list)
 
 
 def insert_derived_spline(spline_dictionary, spline_keys, derived_quantity):

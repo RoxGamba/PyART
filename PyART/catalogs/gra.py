@@ -2,6 +2,7 @@ import numpy as np
 import os
 import h5py
 from ..waveform import Waveform
+from ..utils.wf_utils import get_multipole_dict
 import json
 import logging
 import re
@@ -20,6 +21,9 @@ except ImportError as e:
         "To use the GRA catalog, please install the required "
         "dependencies: requests, beautifulsoup4, urllib3"
     ) from e
+
+
+logger = logging.getLogger(__name__)
 
 
 class Waveform_GRA(Waveform):
@@ -90,7 +94,7 @@ class Waveform_GRA(Waveform):
 
         session = make_session()
 
-        logging.info("Fetching catalog...")
+        logger.info("Fetching catalog...")
         id_map = get_id_to_item_url(session)
 
         if ID not in id_map:
@@ -101,28 +105,28 @@ class Waveform_GRA(Waveform):
         soup = get_item_soup(session, item_url)
 
         if "hlm" in downloads:
-            logging.info("Downloading hlm data...")
+            logger.info("Downloading hlm data...")
             if res is None:
                 res = "128"
                 self.res = res
-                logging.warning("No resolution specified, defaulting to res=128")
+                logger.warning("No resolution specified, defaulting to res=128")
 
             filename, tar_url = find_tar_for_resolution(soup, res)
-            logging.info(f"Found .tar: {filename}")
-            logging.info(f"Downloading from: {tar_url}")
+            logger.info(f"Found .tar: {filename}")
+            logger.info(f"Downloading from: {tar_url}")
             download_safe(session, tar_url, filename)
             extract_path = os.path.join(path, f"GRA_BHBH_{ID}")
             os.makedirs(extract_path, exist_ok=True)
-            logging.info(f"Extracting to: {extract_path}")
+            logger.info(f"Extracting to: {extract_path}")
             with tarfile.open(filename) as tar:
                 tar.extractall(path=extract_path)
             os.remove(filename)
 
         if "metadata" in downloads:
-            logging.info("Downloading metadata...")
+            logger.info("Downloading metadata...")
             filename, meta_url = find_metadata_file(soup)
-            logging.info(f"Found metadata file: {filename}")
-            logging.info(f"Downloading from: {meta_url}")
+            logger.info(f"Found metadata file: {filename}")
+            logger.info(f"Downloading from: {meta_url}")
             download_safe(session, meta_url, filename)
             # move to correct location
             extract_path = os.path.join(path, f"GRA_BHBH_{ID}", "metadata.json")
@@ -272,17 +276,15 @@ class Waveform_GRA(Waveform):
             h = hlm[:, 1] + 1j * hlm[:, 2]
             if self.nu_rescale:
                 h /= self.metadata["nu"]
-            # amp and phase
-            Alm = abs(h)[self.cut_N :]
-            plm = -np.unwrap(np.angle(h))[self.cut_N :]
-            # save in dictionary
+            # Build the mode dict with the shared helper, so real/imag/A/p are
+            # always mutually consistent (see PyART.catalogs.sxs's #10 fix for
+            # the bug this hand-rolled A*sin(p) pattern caused there). Applied
+            # to the whole mode and the junk cut afterwards: the phase must be
+            # unwrapped before the cut, or it would be offset by a multiple of
+            # 2pi.
             key = (l, m)
             dict_hlm[key] = {
-                "real": Alm * np.cos(plm),
-                "imag": Alm * np.sin(plm),
-                "A": Alm,
-                "p": plm,
-                "z": h[self.cut_N :],
+                ky: val[self.cut_N :] for ky, val in get_multipole_dict(h).items()
             }
         self._hlm = dict_hlm
         pass
@@ -399,15 +401,10 @@ class Waveform_GRA(Waveform):
             psi4 = psi4lm[:, 1] + 1j * psi4lm[:, 2]
             if self.nu_rescale:
                 psi4 /= self.metadata["nu"]
-            Alm = abs(psi4)[self.cut_N :]
-            plm = -np.unwrap(np.angle(psi4))[self.cut_N :]
+            # see load_hlm: shared helper first, junk cut afterwards
             key = (l, m)
             dict_psi4lm[key] = {
-                "real": Alm * np.cos(plm),
-                "imag": Alm * np.sin(plm),
-                "A": Alm,
-                "p": plm,
-                "z": psi4[self.cut_N :],
+                ky: val[self.cut_N :] for ky, val in get_multipole_dict(psi4).items()
             }
 
         self._psi4lm = dict_psi4lm
@@ -559,7 +556,7 @@ def download_safe(session, url, filename, chunk_size=1024 * 1024):
         downloaded = 0
         if os.path.exists(tmp_file):
             downloaded = os.path.getsize(tmp_file)
-            logging.info(f"Resuming download from byte {downloaded}")
+            logger.info(f"Resuming download from byte {downloaded}")
 
         headers = {}
         if downloaded > 0:
@@ -595,7 +592,7 @@ def download_safe(session, url, filename, chunk_size=1024 * 1024):
                         ):
                             resume_supported = True
                     else:
-                        logging.info(
+                        logger.info(
                             "Server did not honor Range header (status %s); "
                             "restarting full download",
                             r.status_code,
@@ -606,7 +603,7 @@ def download_safe(session, url, filename, chunk_size=1024 * 1024):
                     # to avoid corrupting the file when the server sends the full
                     # content.
                     if downloaded > 0:
-                        logging.info(
+                        logger.info(
                             "Discarding existing partial download and restarting"
                         )
                     mode = "wb"
@@ -619,13 +616,13 @@ def download_safe(session, url, filename, chunk_size=1024 * 1024):
                             f.write(chunk)
 
             os.rename(tmp_file, filename)
-            logging.info("Download completed")
+            logger.info("Download completed")
             return
         except (requests.RequestException, RuntimeError) as exc:
             last_error = exc
             if attempt == max_attempts:
                 raise
-            logging.warning(
+            logger.warning(
                 "Download attempt %s/%s for %s failed: %s. Retrying with a "
                 "fresh session.",
                 attempt,

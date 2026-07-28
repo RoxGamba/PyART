@@ -1,10 +1,13 @@
 import logging
 import numpy as np
 from ..utils import utils as ut
+from ..utils.wf_utils import get_multipole_dict
 
 # Import useful routines
 from scipy.linalg import eig, norm
 from scipy.interpolate import InterpolatedUnivariateSpline as IUS
+
+logger = logging.getLogger(__name__)
 
 
 # Given dictionary of multipoles all with the same l, calculate the roated multipole with (l,mp)
@@ -50,13 +53,11 @@ def rotate_wfarrs_at_all_times(
         new_cross += b * p + a * c
 
     # Construct the new waveform array
-
-    return {
-        "real": new_plus,
-        "imag": new_cross,
-        "A": np.sqrt(new_plus**2 + new_cross**2),
-        "p": np.arctan2(new_cross, new_plus),
-    }
+    # (also fixes: "p" here used to be arctan2(...) with no np.unwrap, so it
+    # jumped by 2*pi at every wraparound, and had no leading minus, so its
+    # sign convention disagreed with get_multipole_dict's p=-unwrap(angle(z))
+    # used everywhere else; there is no "z" key here for the same reason.)
+    return get_multipole_dict(new_plus + 1j * new_cross)
 
 
 # Given a dictionary of multipole data, calculate the Euler angles corresponding to a co-precessing frame
@@ -244,7 +245,7 @@ def calc_coprecessing_angles(
         domain_vals <= max(safe_domain_range)
     )
     if 1 * (test_quantity[mask][0]) < 0:
-        logging.info("flipping manually for negative domain")
+        logger.info("flipping manually for negative domain")
         X = -X
         Y = -Y
         Z = -Z
@@ -325,7 +326,7 @@ def calc_Lab_tensor(multipole_dict):
     elif isinstance(y[2, 2], np.ndarray):
         L = np.zeros((3, 3, len(y[2, 2])), dtype=complex)
     else:
-        logging.error("Dictionary values of handled type; must be float or array")
+        logger.error("Dictionary values of handled type; must be float or array")
 
     # define lambda function for useful coeffs
     c = lambda l, m: np.sqrt(l * (l + 1) - m * (m + 1)) if abs(m) <= l else 0

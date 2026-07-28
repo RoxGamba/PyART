@@ -88,6 +88,7 @@ ipython_config.py
 *.json
 *.ASC
 *.txt
+!requirements*.txt
 
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
@@ -165,3 +166,17 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# PyART-specific
+results/
+
+# Several test suites (test_sxs.py, test_rit.py, test_icc_public.py, ...) can
+# still write catalog data into the repo root if run with an explicit path
+# instead of tmp_path (or by an older checkout). Their *contents* already
+# match the h5/json/txt patterns above, which made these directories
+# confusingly invisible to `git status` despite being on disk; ignore the
+# directories themselves too so that's no longer surprising.
+/SXS_BBH_*/
+/RIT_BBH_*/
+/ICCUB-*/
+/PNPedia/

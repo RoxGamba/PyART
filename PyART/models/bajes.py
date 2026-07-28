@@ -1,12 +1,15 @@
 import logging
 import numpy as np
 
+logger = logging.getLogger(__name__)
+
 try:
     import bajes.obs.gw as gwb
 except ModuleNotFoundError:
-    logging.warning("bajes not installed.")
+    logger.warning("bajes not installed.")
 
 from ..waveform import Waveform
+from ..utils.wf_utils import get_multipole_dict
 from bajes.obs.gw.approx.nrpm import NRPM
 from bajes.obs.gw.utils import lambda_2_kappa
 from bajes.obs.gw import __approx_dict__
@@ -146,10 +149,4 @@ class Waveform_NRPM(Waveform):
 
         self._u = tnew
         self._t = tnew
-        self._hlm[(2, 2)] = {
-            "A": np.abs(h),
-            "p": -np.unwrap(np.angle(h)),
-            "z": h,
-            "real": np.real(h),
-            "imag": np.imag(h),
-        }
+        self._hlm[(2, 2)] = get_multipole_dict(h)

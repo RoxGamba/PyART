@@ -5,11 +5,15 @@ import matplotlib.pyplot as plt
 import h5py, wget, glob, os
 
 from ..waveform import Waveform
+from ..utils.wf_utils import get_multipole_dict
 
 try:
     from mayawaves.coalescence import Coalescence
 except Exception:
     raise ImportError("Need mayawaves to handle the MAYA catalog")
+
+
+logger = logging.getLogger(__name__)
 
 
 # This class is used to load the RIT data and store it in a convenient way
@@ -22,12 +26,15 @@ class MAYA(Waveform):
         path = os.path.join(basepath, h5file)
         # Download file in Maya Format from repository
         if not glob.glob(path):
-            logging.info(f"Downloading NR file {h5file}...")
+            logger.info(f"Downloading NR file {h5file}...")
             wget.download(
                 "https://cgpstorage.ph.utexas.edu/maya_format/" + h5file, out=path
             )
         self.ell_emms = ell_emms
-        self.h_file = h5py.File(path, "r")
+        # path is kept so load_metadata can open the file locally rather than
+        # storing the handle on self: an open h5py handle would make the
+        # waveform un-deep-copyable, which the Matcher needs.
+        self.path = path
         self.coalescence = Coalescence(path)
 
         self.load_h()
@@ -49,12 +56,10 @@ class MAYA(Waveform):
             ell, emm = mm
             try:
                 t, re, im = self.coalescence.strain_for_mode(l=ell, m=emm)
-                A = np.sqrt(re**2 + im**2)
-                p = np.unwrap(np.angle(re + 1j * im))
             except KeyError:
-                pass
+                continue
 
-            d[(ell, emm)] = {"real": re, "imag": im, "A": A, "p": p}
+            d[(ell, emm)] = get_multipole_dict(re + 1j * im)
 
         self._hlm = d
         self._t = t
@@ -63,7 +68,8 @@ class MAYA(Waveform):
 
     def load_metadata(self):
 
-        parfile = dict(self.h_file["parfile"].attrs.items())
+        with h5py.File(self.path, "r") as h_file:
+            parfile = dict(h_file["parfile"].attrs.items())
         f = parfile["par_content"]
         metadata = {}
 
@@ -87,7 +93,7 @@ class MAYA(Waveform):
         if self.metadata is not None:
             mtdt = self.metadata
         else:
-            logging.warning("No metadata loaded")
+            logger.warning("No metadata loaded")
             raise FileNotFoundError("No metadata read. Please load metadata first.")
 
         try:
@@ -160,7 +166,7 @@ class MAYA(Waveform):
 if __name__ == "__main__":
     r = MAYA(id="MAYA1056")
     r.compute_initial_data()
-    logging.info(r.dyn["id"])
+    logger.info(r.dyn["id"])
 
     # plot h22
     plt.plot(r.t, r.hlm[(2, 2)]["real"])

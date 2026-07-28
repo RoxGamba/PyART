@@ -10,8 +10,6 @@ from PyART.models.teob import (
     SpinHamiltonian,
 )
 
-matplotlib.rc("text", usetex=True)
-
 
 def build_colormap(old_cmp_name, clr, peaks_list, continuous_cmap=False):
     """
@@ -249,6 +247,11 @@ class Spanner(object):
         outdir : str, optional
             Output directory for data and plots. If None, use the current working directory. Default is None.
         """
+        # LaTeX-rendered plot labels: set here rather than at import time, so
+        # merely importing this module does not break plotting for anyone
+        # without a LaTeX installation.
+        matplotlib.rc("text", usetex=True)
+
         self.q = q
         self.nu = q / (1 + q) ** 2
         self.chi1 = chi1

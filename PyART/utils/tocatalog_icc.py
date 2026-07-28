@@ -6,21 +6,13 @@ SA: 07/31/2024
 """
 
 import os, json
+import glob
+import shutil
 import logging
 import numpy as np
 from PyART.analysis.scattering_angle import ScatteringAngle
 
-
-def runcmd(cmd, workdir, out=None):
-    """
-    Execute cmd in workdir
-    """
-    base = os.getcwd()
-    os.makedirs(workdir, exist_ok=True)
-    os.chdir(workdir)
-    os.system(cmd)
-    os.chdir(base)
-    return
+logger = logging.getLogger(__name__)
 
 
 def load_puncts(sim_path, fname="puncturetracker-pt_loc..asc"):
@@ -200,10 +192,15 @@ for i, sim in enumerate(all_sims):
     fname = os.path.join(datasim, "metadata.json")
     with open(fname, "w") as file:
         file.write(json.dumps(meta, indent=2))
-    logging.info(f"#{ID:04} created file: {fname}")
+    logger.info(f"#{ID:04} created file: {fname}")
 
     new_sim_dir = os.path.join(new_dir, meta["name"])
     os.makedirs(new_sim_dir, exist_ok=True)
-    cmd = f"cp -v {datasim}/* {new_sim_dir}"
-    runcmd(cmd, workdir=os.getcwd())
-    logging.info(" ")
+    for item in glob.glob(os.path.join(datasim, "*")):
+        dest = os.path.join(new_sim_dir, os.path.basename(item))
+        if os.path.isdir(item):
+            shutil.copytree(item, dest, dirs_exist_ok=True)
+        else:
+            shutil.copy2(item, dest)
+        logger.info(f"Copied {item} -> {dest}")
+    logger.info(" ")

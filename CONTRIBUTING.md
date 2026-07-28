@@ -30,3 +30,20 @@ PyART and work on a dedicated branch. Once you are done:
 - We will only merge code for which all automatic [tests](https://github.com/RoxGamba/PyART/tree/main/tests) pass
 - If significant feaures are added or the logic of the code is modified, we will only merge code that is covered by tests.
 - We try to format our code according to `black`.
+
+### Development install
+
+Always install PyART in **editable** mode while developing:
+```
+pip install -e .
+```
+A regular (non-editable) install copies the package into your environment's
+`site-packages`, so any script run from outside the repo will silently import
+that stale copy instead of your working tree, and it can hijack the real
+package as a namespace package if it's later uninstalled and leaves debris
+behind (an empty directory with no `__init__.py`). If you suspect this is
+happening, check where a module actually resolves to:
+```
+python -c "import PyART.analysis.match as m; print(m.__file__)"
+```
+It should point inside your checkout, not into `site-packages`.

@@ -5,16 +5,21 @@ the precessing case and debug/test the code
 
 import copy
 import logging
+from dataclasses import dataclass, field
+from typing import Callable, Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize_scalar, dual_annealing
 from ..utils import utils as ut
 from ..utils import wf_utils as wf_ut
 
+logger = logging.getLogger(__name__)
+
 try:
     import lal
 except ModuleNotFoundError:
-    logging.warning("lal not installed.")
+    logger.warning("lal not installed.")
 
 # PyCBC imports
 from pycbc.filter import (
@@ -28,6 +33,59 @@ from pycbc.filter import (
 from pycbc.types.timeseries import TimeSeries, FrequencySeries
 from pycbc.psd import aLIGOZeroDetHighPower, sensitivity_curve_lisa_semi_analytical
 from pycbc.psd.read import from_txt
+
+
+def _copy_for_matching(waveform):
+    """
+    Return a copy of a waveform safe to mutate inside the Matcher.
+
+    The Matcher conditions its inputs in place -- it can cut them, shift their
+    time array, and rewrite ``hlm`` during pre-alignment -- and computing a
+    mismatch must not modify the caller's objects. A full ``deepcopy`` is not
+    used because catalog waveforms hold non-copyable state (open h5py handles,
+    an ``sxs.Coalescence`` object, ...). Instead the object is shallow-copied,
+    which shares that state harmlessly, and only the wave-data containers that
+    the conditioning mutates are duplicated:
+
+    - the mode dictionaries (``_hlm``/``_dothlm``/``_psi4lm``), whose inner
+      arrays are cut in place by ``Waveform.cut``;
+    - the time and polarization arrays, which are reassigned.
+
+    This is robust for any ``Waveform`` subclass regardless of what else it
+    carries.
+    """
+    wf = copy.copy(waveform)
+    for attr in ("_hlm", "_dothlm", "_psi4lm"):
+        wf.__dict__[attr] = copy.deepcopy(getattr(waveform, attr))
+    for attr in ("_u", "_t", "_t_psi4", "_hp", "_hc"):
+        val = getattr(waveform, attr, None)
+        if val is not None:
+            wf.__dict__[attr] = np.array(val, copy=True)
+    return wf
+
+
+@dataclass
+class _LocalWaveform:
+    """
+    Matcher's own working copy of a Waveform: mass-rescaled TimeSeries for
+    whichever of polarizations/modes it needs, built by _wave2locobj.
+
+    Replaces a `wf = lambda: None; wf.foo = ...` namespace hack with a typed
+    container -- every field here is exactly what _wave2locobj used to bolt
+    onto that lambda. hp/hc/u/mrg_idx stay optional because _wave2locobj only
+    fills them in when relevant (e.g. hp/hc are only set in "pol" mode).
+    """
+
+    domain: str
+    hlm: dict
+    t: np.ndarray
+    compute_hphc: Callable
+    f: Optional[np.ndarray] = None  # TD waveform assumed for now
+    hp: Optional[TimeSeries] = None
+    hc: Optional[TimeSeries] = None
+    u: Optional[np.ndarray] = None
+    modes: dict = field(default_factory=dict)
+    mrg_idx: Optional[int] = None
 
 
 class Matcher(object):
@@ -101,6 +159,12 @@ class Matcher(object):
         self.modes = self.settings.get("modes", [])
         del settings
 
+        # Work on copies: the conditioning below (cut, pre-align, compute_hphc)
+        # mutates the waveform objects, and computing a mismatch must not modify
+        # the caller's inputs.
+        WaveForm1 = _copy_for_matching(WaveForm1)
+        WaveForm2 = _copy_for_matching(WaveForm2)
+
         # Choose the appropriate mismatch function
         if self.settings["kind"] == "single-mode":
             self.match_f = self._compute_mm_single_mode
@@ -135,24 +199,7 @@ class Matcher(object):
                 WaveForm1.cut(-DeltaT)
 
         if self.settings["pre_align"]:
-            # pre-align
-            umrg1, _, _, _ = WaveForm1.find_max()
-            umrg2, _, _, _ = WaveForm2.find_max()
-
-            # shift time of second waveform
-            shift = umrg1 - umrg2
-            WaveForm2._u = WaveForm2._u + shift
-
-            # fix WaveForm2.hlm[(2,2)] with (approximate) phase difference
-            t0 = max(WaveForm1.u[0], WaveForm2.u[0]) + self.settings["pre_align_shift"]
-            i01 = np.where(WaveForm1.u >= t0)[0][0]
-            i02 = np.where(WaveForm2.u >= t0)[0][0]
-            dphi22 = WaveForm1.hlm[(2, 2)]["p"][i01] - WaveForm2.hlm[(2, 2)]["p"][i02]
-
-            for lm in self.settings["modes"]:
-
-                h = WaveForm2.hlm[lm]["z"] * np.exp(-1j * dphi22 / 2 * lm[1])
-                WaveForm2._hlm[lm] = wf_ut.get_multipole_dict(h)
+            self._pre_align(WaveForm1, WaveForm2)
 
         if self.settings["f0_from_merger"]:
             if self.settings["kind"] != "single-mode" or len(self.modes) > 1:
@@ -189,11 +236,49 @@ class Matcher(object):
             self.h2f = None
         pass
 
+    def _pre_align(self, WaveForm1, WaveForm2):
+        """
+        Align WaveForm2 onto WaveForm1: shift WaveForm2's time array so the
+        two mergers coincide, then apply an approximate phase correction to
+        every requested mode of WaveForm2, derived from the (2,2) mode's
+        phase difference at a single reference time. Mutates WaveForm2 in
+        place.
+
+        The reference time is the later of the two waveforms' start times,
+        offset by ``settings["pre_align_shift"]``. The (2,2) phase difference
+        there, dphi22, is assumed to be (twice) the underlying coalescence-
+        phase offset between the two waveforms, so mode (l, m) is corrected
+        by ``exp(-1j * dphi22 / 2 * m)`` -- exact for a pure rigid time and
+        coalescence-phase offset between two otherwise identical waveforms.
+
+        Parameters
+        ----------
+        WaveForm1 : Waveform
+            Reference waveform (not modified).
+        WaveForm2 : Waveform
+            Waveform to align onto WaveForm1 (modified in place).
+        """
+        umrg1, _, _, _ = WaveForm1.find_max()
+        umrg2, _, _, _ = WaveForm2.find_max()
+
+        # shift time of second waveform
+        shift = umrg1 - umrg2
+        WaveForm2._u = WaveForm2._u + shift
+
+        # fix WaveForm2.hlm[(2,2)] with (approximate) phase difference
+        t0 = max(WaveForm1.u[0], WaveForm2.u[0]) + self.settings["pre_align_shift"]
+        i01 = np.where(WaveForm1.u >= t0)[0][0]
+        i02 = np.where(WaveForm2.u >= t0)[0][0]
+        dphi22 = WaveForm1.hlm[(2, 2)]["p"][i01] - WaveForm2.hlm[(2, 2)]["p"][i02]
+
+        for lm in self.settings["modes"]:
+            h = WaveForm2.hlm[lm]["z"] * np.exp(-1j * dphi22 / 2 * lm[1])
+            WaveForm2._hlm[lm] = wf_ut.get_multipole_dict(h)
+
     def _wave2locobj(self, WaveForm, isgeom=True):
         """
         Converts a WaveForm object into a local waveform object with time series and mode data,
         optionally applying geometric rescaling. Updates polarization and mode information as needed.
-        TODO: get rid of lambda object
 
         Parameters
         ----------
@@ -203,7 +288,7 @@ class Matcher(object):
             If True, applies geometric rescaling to the time series (default: True).
         Returns
         -------
-        wf : object
+        wf : _LocalWaveform
             Local waveform object with updated time series, polarization, and mode data.
         Raises
         ------
@@ -213,12 +298,12 @@ class Matcher(object):
         if not hasattr(WaveForm, "hp"):
             raise RuntimeError("hp not found! Compute it before calling Matcher")
 
-        wf = lambda: None
-        wf.domain = WaveForm.domain
-        wf.f = None  # Assume TD waveform at the moment
-        wf.hlm = WaveForm.hlm
-        wf.t = WaveForm.u
-        wf.compute_hphc = WaveForm.compute_hphc
+        wf = _LocalWaveform(
+            domain=WaveForm.domain,
+            hlm=WaveForm.hlm,
+            t=WaveForm.u,
+            compute_hphc=WaveForm.compute_hphc,
+        )
 
         if self.settings["modes-or-pol"] == "pol":
             # Get updated time and hp/hc-TimeSeries
@@ -232,10 +317,6 @@ class Matcher(object):
             )
 
         # also update the modes in a TimeSeries
-        wf.modes = {}
-
-        # for k in WaveForm.hlm.keys():
-        wf.mrg_idx = None
         for k in self.settings["modes"]:
             re = WaveForm.hlm[k]["real"]
             im = WaveForm.hlm[k]["imag"]
@@ -246,8 +327,8 @@ class Matcher(object):
             if k[0] == 2 and k[1] == 2:
                 try:
                     umrg, _, _, _ = WaveForm.find_max()
-                except:
-                    logging.warning("merger time not found! Using u[-10]")
+                except ValueError:
+                    logger.warning("merger time not found! Using u[-10]")
                     umrg = wf.u[-10]
                 C = wf.u[0]
                 D = wf.u[-1]
@@ -327,7 +408,7 @@ class Matcher(object):
         tN = ut.nextpow2(resize_factor * tl)
         tlen = int(tN / dT)
         if tlen < LM:
-            logging.debug(f"tlen={tlen}, LM={LM}")
+            logger.debug(f"tlen={tlen}, LM={LM}")
         return tlen if tlen > LM else LM
 
     def __default_parameters__(self):
@@ -485,10 +566,10 @@ class Matcher(object):
                 fAM = h1f.sample_frequencies[np.argmax(abs(h1f))]
                 fms = settings["initial_frequency_mm"]
                 if fms.split("fAM")[1] == "":
-                    settings["initial_frequency_mm"] = eval(fms.split("fAM")[0]) * fAM
+                    settings["initial_frequency_mm"] = float(fms.split("fAM")[0]) * fAM
                 else:
                     settings["initial_frequency_mm"] = max(
-                        eval(fms.split("fAM")[0]) * fAM, eval(fms.split("fAM")[1])
+                        float(fms.split("fAM")[0]) * fAM, float(fms.split("fAM")[1])
                     )
 
         if isinstance(settings["final_frequency_mm"], str):
@@ -697,7 +778,7 @@ class Matcher(object):
         if "save" not in settings.keys():
             plt.show()
         else:
-            logging.info(f"Saving to {settings['save']}")
+            logger.info(f"Saving to {settings['save']}")
             plt.savefig(f"{settings['save']}", dpi=100, bbox_inches="tight")
 
     def _compute_overlap_skymax(self, wf1, wf2, settings):

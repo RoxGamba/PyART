@@ -10,6 +10,8 @@ from ..utils import cat_utils, wf_utils, utils
 from ..analysis.match import condition_td_waveform
 from pycbc.types.timeseries import TimeSeries
 
+logger = logging.getLogger(__name__)
+
 
 class Waveform_SACRA(Waveform):
     """
@@ -248,7 +250,7 @@ class Waveform_SACRA(Waveform):
 
         if self.metadata["f0"] is None:
             f0 = self.get_MOmega0_from_FFT(h, u)
-            logging.info(f"Updating f0 using estimate from FT: {f0:.5f}")
+            logger.info(f"Updating f0 using estimate from FT: {f0:.5f}")
             self.metadata["f0"] = f0
             self.metadata["f0v"] = np.array([0.0, 0.0, f0])
         pass

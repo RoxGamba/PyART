@@ -8,6 +8,8 @@ from math import factorial as fact
 from math import ceil
 import matplotlib.pyplot as plt
 
+logger = logging.getLogger(__name__)
+
 ## Misc
 consts = {
     "G_SI": 6.67429999999999937900e-11,
@@ -252,17 +254,24 @@ def taper_waveform(
 
     elif kind == "tukey":
         n = len(h)
-        idx1 = np.where(t > t1)[0][0]
-        if t2 is not None:
-            idx2 = np.where(t > t2)[0][0]
-            window = tukey(idx2 - idx1, alpha)
-            window = np.pad(window, (0, n - idx2), mode="constant")
+        if t1 is None and t2 is None:
+            # Symmetric Tukey window over the whole array, no anchors: both
+            # edges tapered equally. Used e.g. by Waveform.to_frequency,
+            # which (unlike Matcher) has no merger to protect from the
+            # taper and wants generic FFT-ready edges on both sides.
+            window = tukey(n, alpha)
         else:
-            window = tukey(n - idx1, alpha)
-            nby2 = int(n / 2)
-            window[nby2:] = np.ones_like(window[nby2:])
+            idx1 = np.where(t > t1)[0][0]
+            if t2 is not None:
+                idx2 = np.where(t > t2)[0][0]
+                window = tukey(idx2 - idx1, alpha)
+                window = np.pad(window, (0, n - idx2), mode="constant")
+            else:
+                window = tukey(n - idx1, alpha)
+                nby2 = int(n / 2)
+                window[nby2:] = np.ones_like(window[nby2:])
 
-        window = np.pad(window, (idx1, 0), mode="constant")
+            window = np.pad(window, (idx1, 0), mode="constant")
     else:
         raise ValueError("Unknown tapering method")
 
@@ -280,28 +289,6 @@ def taper_waveform(
             plt.axvline(t2)
         plt.show()
     return out
-
-
-def windowing(h, alpha=0.1):
-    """
-    Windowing with Tukey window on a given strain (time-domain)
-    h     : strain to be tapered
-    alpha : Tukey filter slope parameter. Suggested value: alpha = 1/4/seglen
-
-    Parameters
-    ----------
-    h: array-like
-        strain array
-    alpha: float
-        slope parameter for the tapering
-    Returns
-    -------
-    out: (array-like, float)
-        tapered strain and wfact = <w^2>
-    """
-    window = tukey(len(h), alpha)
-    wfact = np.mean(window**2)
-    return h * window, wfact
 
 
 def fft(h, dt):
@@ -1048,7 +1035,7 @@ def save_plot(figname, show=True, save=False, verbose=False):
     if save:
         plt.savefig(figname, dpi=200, bbox_inches="tight")
         if verbose:
-            logging.info(f"figure saved: {figname}")
+            logger.info(f"figure saved: {figname}")
     if show:
         # plt.show()
         plt.draw()
@@ -1119,7 +1106,7 @@ def are_dictionaries_equal(
     # if setk1-setke != setk2-setke:
     if setk1 != setk2:
         if verbose:
-            logging.info("+++ Different number of keys +++")
+            logger.info("+++ Different number of keys +++")
         return False
     for key in setk1:
         val1 = dict1[key]
@@ -1130,7 +1117,7 @@ def are_dictionaries_equal(
             kbool = val1 == val2
         if not kbool:
             if verbose:
-                logging.info(f"+++ Issues with key: {key} +++")
+                logger.info(f"+++ Issues with key: {key} +++")
             return False
     return True
 
@@ -1180,9 +1167,9 @@ def print_dict_comparison(
         if isinstance(value1, dict):
             dbool = are_dictionaries_equal(value1, value2, verbose=True)
             if dbool:
-                logging.info(f">> {key:16s} is dict: no differences")
+                logger.info(f">> {key:16s} is dict: no differences")
             else:
-                logging.info(f">> issues with {key:16s} (dictionary)")
+                logger.info(f">> issues with {key:16s} (dictionary)")
         else:
             if value1 is None:
                 value1 = "None"
@@ -1191,7 +1178,7 @@ def print_dict_comparison(
             if isinstance(value1, list) or isinstance(value2, list):
                 n1 = len(value1)
                 n2 = len(value2)
-                logging.info(f">> {key:22s} is list:")
+                logger.info(f">> {key:22s} is list:")
                 for i in range(max(n1, n2)):
                     elem1 = value1[i] if i < n1 else " "
                     elem2 = value2[i] if i < n2 else " "
@@ -1199,12 +1186,12 @@ def print_dict_comparison(
                         elem1 = list_to_str(elem1)
                     if isinstance(elem2, (list, tuple)):
                         elem2 = list_to_str(elem2)
-                    logging.info(
+                    logger.info(
                         " " * 26
                         + f"elem n.{i:d} ---> {dict1_name:10s}: {elem1:<10}   {dict2_name:10s}: {elem2:<10}"
                     )
             else:
-                logging.info(
+                logger.info(
                     f">> {key:22s} - {dict1_name:10s}: {value1:<22}   {dict2_name:10s}: {value2:<22}"
                 )
     pass

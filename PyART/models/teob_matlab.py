@@ -9,6 +9,8 @@ import h5py
 from ..waveform import Waveform
 from ..utils import wf_utils as wfu
 
+logger = logging.getLogger(__name__)
+
 matlab_setup_base = """
 addpath('${code_dir}TEOBRun/');
 addpath('${code_dir}TEOBRun/parfiles/');
@@ -90,7 +92,7 @@ class Waveform_EOBMatlab(Waveform):
         if self.hyp and self.pars["j_hyp"] is None:
             raise ValueError("For hyperbolic orbits, H_hyp and j_hyp must be provided.")
         if self.hyp and not self.load_insp:
-            logging.warning("Inspiral-only waveform is needed for hyperbolic orbits.")
+            logger.warning("Inspiral-only waveform is needed for hyperbolic orbits.")
 
         if self.hyp:
             self.template = Template(matlab_base_hyp)
@@ -288,8 +290,8 @@ class Waveform_EOBMatlab(Waveform):
             capture_output=True,
         )
         if self.verbose:
-            logging.info(out.stdout.decode("UTF-8"))
-            logging.info(out.stderr.decode("UTF-8"))
+            logger.info(out.stdout.decode("UTF-8"))
+            logger.info(out.stderr.decode("UTF-8"))
         return 0
 
     def _load_hlm(self):
@@ -310,13 +312,7 @@ class Waveform_EOBMatlab(Waveform):
                     ]
                 )
                 h *= np.sqrt((l + 3) * (l + 2) * (l + 1) * l)
-                self._hlm[(l + 1, m)] = {
-                    "real": h.real,
-                    "imag": h.imag,
-                    "A": abs(h),
-                    "p": -np.unwrap(np.angle(h)),
-                    "z": h,
-                }
+                self._hlm[(l + 1, m)] = wfu.get_multipole_dict(h)
         self._domain = "Time"
 
         self._hp, self._hc = wfu.compute_hphc(self._hlm, modes=list(self._hlm.keys()))
@@ -333,13 +329,7 @@ class Waveform_EOBMatlab(Waveform):
                         ]
                     )
                     h *= np.sqrt((l + 3) * (l + 2) * (l + 1) * l)
-                    self.hlm_inspl[(l + 1, m)] = {
-                        "real": h.real,
-                        "imag": h.imag,
-                        "A": abs(h),
-                        "p": -np.unwrap(np.angle(h)),
-                        "z": h,
-                    }
+                    self.hlm_inspl[(l + 1, m)] = wfu.get_multipole_dict(h)
 
             s = mat["s/inspl_mrg/ell/emm"]
             self.hlm_inspl_mrg = {}
@@ -352,13 +342,7 @@ class Waveform_EOBMatlab(Waveform):
                         ]
                     )
                     h *= np.sqrt((l + 3) * (l + 2) * (l + 1) * l)
-                    self.hlm_inspl_mrg[(l + 1, m)] = {
-                        "real": h.real,
-                        "imag": h.imag,
-                        "A": abs(h),
-                        "p": -np.unwrap(np.angle(h)),
-                        "z": h,
-                    }
+                    self.hlm_inspl_mrg[(l + 1, m)] = wfu.get_multipole_dict(h)
         pass
 
     def _load_dyn(self):
@@ -623,7 +607,7 @@ def CreateDict(
 
     if leob:
         if r0 is not None and f0 is not None:
-            logging.warning("both r0 and f0 provided for LEOB; using r0.")
+            logger.warning("both r0 and f0 provided for LEOB; using r0.")
             pardic["initial_frequency"] = None
 
     return pardic

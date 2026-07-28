@@ -1,4 +1,4 @@
-import sys, os, json, logging, matplotlib, time, copy
+import sys, os, json, logging, matplotlib, time, copy, importlib
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -9,13 +9,27 @@ from ..analysis.opt_ic import Optimizer
 from ..models.teob import CreateDict
 from ..models.teob import Waveform_EOB, get_pph_lso
 
-matplotlib.rc("text", usetex=True)
+logger = logging.getLogger(__name__)
 
 
 class Cataloger(object):
     """
     Class for catalogs
     """
+
+    # catalog name -> (submodule of PyART.catalogs, Waveform subclass name).
+    # Every entry is loaded via get_Waveform with the identical signature
+    # Class(path=self.path, ID=ID, **add_opts), so a single dict dispatch
+    # replaces what used to be an if/elif per catalog; adding a catalog is
+    # now a one-line registry entry instead of a new branch.
+    CATALOG_REGISTRY = {
+        "sxs": (".sxs", "Waveform_SXS"),
+        "rit": (".rit", "Waveform_RIT"),
+        "icc": (".icc", "Waveform_ICC"),
+        "core": (".core", "Waveform_CoRe"),
+        "grahyp": (".gra_hyp", "Waveform_GRAHyp"),
+        "sacra": (".sacra", "Waveform_SACRA"),
+    }
 
     def __init__(
         self,
@@ -26,6 +40,10 @@ class Cataloger(object):
         json_file=None,  # file for mismatches. If None, use default name
         add_opts={},
     ):
+        # LaTeX-rendered plot labels: set here rather than at import time, so
+        # merely importing Cataloger does not break plotting for anyone
+        # without a LaTeX installation.
+        matplotlib.rc("text", usetex=True)
 
         self.path = path
         self.catalog = catalog
@@ -48,7 +66,7 @@ class Cataloger(object):
                 name = wave.metadata["name"]
                 self.data[name] = {"Waveform": wave, "Optimizer": None}
             except Exception as e:
-                logging.error(f"Issues with {ID}: {e}")
+                logger.error(f"Issues with {ID}: {e}")
         self.nsims = len(self.data)
 
         pass
@@ -57,41 +75,15 @@ class Cataloger(object):
         if verbose is None:
             verbose = self.verbose
         if verbose:
-            logging.info(f"Loading {self.catalog} waveform with ID:{ID}")
+            logger.info(f"Loading {self.catalog} waveform with ID:{ID}")
 
-        if self.catalog == "sxs":
-            from .sxs import Waveform_SXS
-
-            wave = Waveform_SXS(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "rit":
-
-            from .rit import Waveform_RIT
-
-            wave = Waveform_RIT(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "icc":
-            from .icc import Waveform_ICC
-
-            wave = Waveform_ICC(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "core":
-            from .core import Waveform_CoRe
-
-            wave = Waveform_CoRe(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "grahyp":
-            from .gra_hyp import Waveform_GRAHyp
-
-            wave = Waveform_GRAHyp(path=self.path, ID=ID, **add_opts)
-
-        elif self.catalog == "sacra":
-            from .sacra import Waveform_SACRA
-
-            wave = Waveform_SACRA(path=self.path, ID=ID, **add_opts)
-
-        else:
+        if self.catalog not in self.CATALOG_REGISTRY:
             raise ValueError(f"Unknown catalog: {self.catalog}")
+
+        module_name, class_name = self.CATALOG_REGISTRY[self.catalog]
+        module = importlib.import_module(module_name, package=__package__)
+        WaveformClass = getattr(module, class_name)
+        wave = WaveformClass(path=self.path, ID=ID, **add_opts)
         return wave
 
     def get_model_waveform(self, name, model_opts={}, verbose=None):
@@ -130,7 +122,8 @@ class Cataloger(object):
                     plt.plot(
                         wave.u - tmrg, wave.hlm[(2, 2)]["A"], c=colors[i], label=label
                     )
-                except:
+                except ValueError:
+                    # no peak found in this waveform: plot without merger-shift
                     plt.plot(wave.u, wave.hlm[(2, 2)]["A"], c=colors[i], label=label)
         if legend:
             plt.legend()
@@ -195,7 +188,7 @@ class Cataloger(object):
         if nproc > 1:
             now_str = datetime.now().strftime("%Y%m%d_%H-%M-%S")
             log_file = f"{now_str:s}_cataloger_process_{process_id}.log"
-            logging.info(f"Logfile #{process_id:d}: {log_file}")
+            logger.info(f"Logfile #{process_id:d}: {log_file}")
             with open(log_file, "w") as file:
                 sys.stdout = file
                 sys.stderr = file
@@ -217,7 +210,7 @@ class Cataloger(object):
         subset = self.find_subset(ranges)
         nsubset = len(subset)
         if nsubset < nproc:
-            logging.warning(
+            logger.warning(
                 f"More processes than configurations, reducing nproc to {nsubset}"
             )
             nproc = nsubset
@@ -236,11 +229,11 @@ class Cataloger(object):
                 start += current_size
 
             for i in range(len(batches)):
-                logging.info(f"{batches[i][0]} {batches[i][-1]}")
+                logger.info(f"{batches[i][0]} {batches[i][-1]}")
 
             processes = []
             json_tmp_list = []
-            logging.info("Redirecting output in logfiles")
+            logger.info("Redirecting output in logfiles")
             for i in range(nproc):
                 # get name for temporary JSON file
                 json_file_tmp = optimizer_opts["json_file"]
@@ -490,13 +483,13 @@ class Cataloger(object):
             if mm_settings is None:
                 if self.data[name]["Optimizer"] is not None:
                     if self.verbose:
-                        logging.info(f"Using settings from {name} optimizer")
+                        logger.info(f"Using settings from {name} optimizer")
                     mm_settings = self.data[name]["Optimizer"].mm_settings
                 else:
                     raise ValueError(
                         "No mm_settings provided and no Optimizer available"
                     )
-            logging.info(f"mm for: {name}")
+            logger.info(f"mm for: {name}")
             mm = masses * 0
             eob = self.get_model_waveform(name, model_opts=model_opts)
             nr = self.data[name]["Waveform"]
@@ -548,12 +541,12 @@ class Cataloger(object):
 
         if figname is not None:
             plt.savefig(figname, dpi=200, bbox_inches="tight")
-            logging.info(f"Figure saved: {figname}")
+            logger.info(f"Figure saved: {figname}")
         plt.show()
 
         if isinstance(json_save, str):
             with open(json_save, "w") as file:
                 file.write(json.dumps(mm_data, indent=2))
-                logging.info(f"JSON file saved: {json_save}")
+                logger.info(f"JSON file saved: {json_save}")
 
         return

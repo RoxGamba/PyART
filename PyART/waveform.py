@@ -19,6 +19,8 @@ from .utils import load_nr_utils as nr_ut
 
 from .analysis.integrate_wave import IntegrateMultipole
 
+logger = logging.getLogger(__name__)
+
 
 class Waveform(object):
     """
@@ -177,6 +179,7 @@ class Waveform(object):
         wave="hlm",
         umin=0,
         height=None,
+        second_dvt=False,
         return_idx=False,
     ):
         """
@@ -220,12 +223,38 @@ class Waveform(object):
         p = wave[mode]["p"]
         Alm = wave[mode]["A"]
 
+        # D1 requires a uniform time grid, but the underlying data need not be
+        # (e.g. SXS-native output has adaptive time stepping). Interpolate onto
+        # a uniform grid for differentiation, then interpolate the derivatives
+        # back onto the original t, so they stay indexable alongside Alm/peaks
+        # (found on the original, possibly non-uniform, grid).
+        dt = np.diff(t)
+        if np.allclose(dt, dt[0]):
+            to_grid = from_grid = lambda x: x
+            t_grid = t
+        else:
+            t_grid = np.linspace(t[0], t[-1], len(t))
+            to_grid = lambda x: np.interp(t_grid, t, x)
+            from_grid = lambda x: np.interp(t, t_grid, x)
+
         # compute omega
-        omg = np.zeros_like(p)
-        omg[1:] = np.diff(p) / np.diff(t)
+        p_grid = to_grid(p)
+        omg_grid = ut.D1(p_grid, t_grid, 4)
+        omg = from_grid(omg_grid)
+
         # compute domega
-        domg = np.zeros_like(omg)
-        domg[1:] = np.diff(omg) / np.diff(t)
+        domg_grid = ut.D1(omg_grid, t_grid, 4)
+        domg = from_grid(domg_grid)
+
+        # compute second derivative of A, omega if requested
+        if second_dvt:
+            Alm_grid = to_grid(Alm)
+            dAlm_grid = ut.D1(Alm_grid, t_grid, 4)
+            d2Alm_grid = ut.D1(dAlm_grid, t_grid, 4)
+            domg2_grid = ut.D1(domg_grid, t_grid, 4)
+            dAlm = from_grid(dAlm_grid)
+            d2Alm = from_grid(d2Alm_grid)
+            domg2 = from_grid(domg2_grid)
 
         # find peaks
         if height is None:
@@ -252,11 +281,30 @@ class Waveform(object):
         A_mrg = Alm[peaks[i]]
         omg_mrg = omg[peaks[i]]
         domg_mrg = domg[peaks[i]]
+        if second_dvt:
+            dAlm_mrg = dAlm[peaks[i]]
+            d2Alm_mrg = d2Alm[peaks[i]]
+            domg2_mrg = domg2[peaks[i]]
 
         if return_idx:
-            return t_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
+            if second_dvt:
+                return (
+                    t_mrg,
+                    A_mrg,
+                    omg_mrg,
+                    domg_mrg,
+                    dAlm_mrg,
+                    d2Alm_mrg,
+                    domg2_mrg,
+                    peaks[i],
+                )
+            else:
+                return t_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
         else:
-            return t_mrg, A_mrg, omg_mrg, domg_mrg
+            if second_dvt:
+                return t_mrg, A_mrg, omg_mrg, domg_mrg, dAlm_mrg, d2Alm_mrg, domg2_mrg
+            else:
+                return t_mrg, A_mrg, omg_mrg, domg_mrg
 
     def _validate_uniform_u(self, quantity_name):
         """
@@ -294,7 +342,7 @@ class Waveform(object):
         if not self.hlm:
             msg = "dothlm cannot be computed if hlm is not loaded"
             if only_warn:
-                logging.warning(msg)
+                logger.warning(msg)
             else:
                 raise RuntimeError(msg)
 
@@ -331,7 +379,7 @@ class Waveform(object):
         if not self.dothlm:
             msg = "psi4lm cannot be computed if dothlm is not computed"
             if only_warn:
-                logging.warning(msg)
+                logger.warning(msg)
             else:
                 raise RuntimeError(msg)
 
@@ -411,7 +459,7 @@ class Waveform(object):
                 if cut_dothlm:
                     self._dothlm = cut_all_modes(self.dothlm, tslice)
                 else:
-                    logging.warning(
+                    logger.warning(
                         "dothlm is stored, but cut_dothlm==False when calling self.cut"
                     )
 
@@ -423,7 +471,7 @@ class Waveform(object):
 
         if cut_psi4lm:
             if self.t_psi4 is None:
-                logging.warning("No psi4-time found! Avoiding psi4-cutting")
+                logger.warning("No psi4-time found! Avoiding psi4-cutting")
             else:
                 tslice_psi4 = get_slice(self.t_psi4 - self.t_psi4[0])
                 self._psi4lm = cut_all_modes(self.psi4lm, tslice_psi4)
@@ -472,7 +520,7 @@ class Waveform(object):
             iA = np.interp(new_u, self.u, np.abs(h))
             ip = np.interp(new_u, self.u, -np.unwrap(np.angle(h)))
             ih = iA * np.exp(-1j * ip)
-            hlm_i[k] = {"A": iA, "p": ip, "z": ih, "real": ih.real, "imag": ih.imag}
+            hlm_i[k] = wf_ut.get_multipole_dict(ih)
 
         return new_u, hlm_i
 
@@ -561,10 +609,11 @@ class Waveform(object):
         """
 
         dt = self.u[1] - self.u[0]
-        # window
+        # window: symmetric Tukey, no anchors (unlike Matcher's tapering,
+        # to_frequency has no merger to protect and wants both edges tapered)
         if taper:
-            self._hp, _ = ut.windowing(self.hp, alpha=0.1)
-            self._hc, _ = ut.windowing(self.hc, alpha=0.1)
+            self._hp = ut.taper_waveform(self.u, self.hp, alpha=0.1, kind="tukey")
+            self._hc = ut.taper_waveform(self.u, self.hc, alpha=0.1, kind="tukey")
 
         if pad:
             seglen = ut.nextpow2(self.u[-1])
@@ -904,6 +953,28 @@ class Waveform(object):
         else:
             return axs
 
+    def extract_merger_ringdown_qts(self):
+        """
+        Extract quantities like the peak amplitude, frequency,
+        time_shifts between modes etc
+        """
+        out = {}
+
+        for lm in self.hlm.keys():
+            out[lm] = {}
+            _, Alm, omglm, domglm, dAlm, d2Alm, domg2, idx = self.find_max(
+                mode=lm, kind="global", return_idx=True, second_dvt=True
+            )
+            out[lm]["peak_amplitude"] = Alm
+            out[lm]["peak_amplitude_derivative"] = dAlm
+            out[lm]["peak_amplitude_second_derivative"] = d2Alm
+            out[lm]["peak_frequency"] = omglm
+            out[lm]["peak_frequency_derivative"] = domglm
+            out[lm]["peak_frequency_second_derivative"] = domg2
+            out[lm]["peak_time"] = self.u[idx]
+
+        return out
+
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
     """
@@ -937,14 +1008,14 @@ def waveform2energetics(h, doth, t, modes, mnegative=False):
     if lmin < 2:
         raise ValueError("l>2")
     if lmin != 2:
-        logging.warning("lmin > 2")
+        logger.warning("lmin > 2")
 
     mnfactor = np.ones_like(mmodes)
     if mnegative:
         mnfactor = [1 if m == 0 else 2 for m in mmodes]
     else:
         if all(m >= 0 for m in mmodes):
-            logging.warning("m>=0 but not accounting for it!")
+            logger.warning("m>=0 but not accounting for it!")
 
     # set up dictionaries
     kys = [

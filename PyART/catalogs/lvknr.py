@@ -1,4 +1,5 @@
 from ..waveform import Waveform
+from ..utils.wf_utils import get_multipole_dict
 
 try:
     import lalsimulation as lalsim
@@ -8,8 +9,11 @@ except ImportError:
 
 import os
 import logging
+import subprocess
 import numpy as np
 import h5py
+
+logger = logging.getLogger(__name__)
 
 # TODO: read them from utils
 Msun_m = 1.4766250614046494e3
@@ -55,17 +59,14 @@ class Waveform_LVKNR(Waveform):
 
         if self._is_git_lfs_pointer(self.data_path):
             if download == True:
-                logging.info(f"The path {self.lvcnr_path} does not exist.")
-                logging.info("Downloading the simulation from the LVCNR catalog.")
+                logger.info(f"The path {self.lvcnr_path} does not exist.")
+                logger.info("Downloading the simulation from the LVCNR catalog.")
                 self.download_simulation(ID=ID)
             else:
-                logging.warning(
+                logger.warning(
                     "Use download=True to download the simulation from the LVCNR catalog."
                 )
                 raise FileNotFoundError(f"The path {self.data_path} does not exist.")
-
-        # load the data
-        self.data = h5py.File(self.data_path, "r")
 
         self.load_metadata()
         self.load_hlm()
@@ -74,8 +75,14 @@ class Waveform_LVKNR(Waveform):
         """
         Load (some) metadata from the simulation"
         """
+        # opened locally rather than stored on self: an open h5py handle would
+        # make the waveform un-deep-copyable, which the Matcher needs, and
+        # load_hlm (called right after) does not need it, working instead
+        # through self.data_path via lalsimulation.
+        with h5py.File(self.data_path, "r") as f:
+            self._load_metadata_from_file(f)
 
-        f = self.data
+    def _load_metadata_from_file(self, f):
         M = 1  # set M = 1, always
         self.metadata = {}
 
@@ -160,21 +167,18 @@ class Waveform_LVKNR(Waveform):
         for i in range(len(modes)):
             l, m = hlms.l, hlms.m
             this_mode = hlms.mode.data.data
-            A = np.abs(this_mode)
-            p = np.unwrap(np.angle(this_mode))
 
-            # scale the amplitude
-            A *= 1e6 * lal.PC_SI / Msun_m
+            # scale the amplitude (a positive real factor, so it does not
+            # affect the phase); scale this_mode itself, not just A, so that
+            # z stays consistent with real/imag/A (get_multipole_dict derives
+            # everything from z, and previously z was left unscaled while
+            # A/real/imag were scaled, a mismatch of its own).
+            scale = 1e6 * lal.PC_SI / Msun_m
             if not self.nu_rescale:
-                A /= metadata["nu"]
+                scale /= metadata["nu"]
+            this_mode = this_mode * scale
 
-            self._hlm[(l, m)] = {
-                "real": A * np.cos(p),
-                "imag": A * np.sin(p),
-                "A": A,
-                "p": p,
-                "z": this_mode,
-            }
+            self._hlm[(l, m)] = get_multipole_dict(this_mode)
             hlms = hlms.next
 
         # get the time array, transfored to physical units
@@ -187,7 +191,11 @@ class Waveform_LVKNR(Waveform):
         """
         Download the simulation from the LVCNR catalog.
         """
-        os.system(f"cd {self.lvcnr_path}/{self.catalog} && git lfs pull --include {ID}")
+        subprocess.run(
+            ["git", "lfs", "pull", "--include", ID],
+            cwd=os.path.join(self.lvcnr_path, self.catalog),
+            check=True,
+        )
         pass
 
     def _is_git_lfs_pointer(self, path):

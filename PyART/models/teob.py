@@ -1,13 +1,16 @@
 import os, subprocess
+import logging
 import numpy as np
 from scipy.optimize import brentq
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
 
+logger = logging.getLogger(__name__)
+
 try:
     import EOBRun_module as EOB
 except ModuleNotFoundError:
-    print("WARNING: TEOBResumS not installed.")
+    logger.warning("TEOBResumS not installed.")
 
 from ..waveform import Waveform
 from ..utils.wf_utils import get_multipole_dict, mode_to_k
@@ -152,6 +155,7 @@ def CreateDict(
     a6c=None,
     use_flm_h="LO",
     use_nqc=True,
+    **kwargs,
 ):
     """
     Create the dictionary of parameters for EOBRunPy
@@ -294,6 +298,21 @@ def CreateDict(
 
     if use_tidal is not None:
         pardic["use_tidal"] = use_tidal
+
+    # Inject any arbitrary keyword arguments directly into the parameter
+    # dictionary, but never silently overwrite a key already set above: several
+    # named arguments are forwarded under a different key than their own name
+    # (e.g. iota -> "inclination", f0 -> "initial_frequency"), so a kwarg meant
+    # to add a genuinely new EOBRunPy option could otherwise clobber a value
+    # that was already derived from a named, validated argument.
+    collisions = set(kwargs) & set(pardic)
+    if collisions:
+        raise ValueError(
+            f"CreateDict() kwargs collide with parameters already set: "
+            f"{sorted(collisions)}"
+        )
+    pardic.update(kwargs)
+
     return pardic
 
 

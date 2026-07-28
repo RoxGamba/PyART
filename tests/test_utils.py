@@ -2,6 +2,7 @@
 Test the numerical helpers in PyART.utils.utils:
 - D1 finite differencing
 - upoly_fits polynomial extrapolation
+- taper_waveform windowing
 - print_dict_comparison reporting
 """
 
@@ -9,8 +10,9 @@ import logging
 
 import numpy as np
 import pytest
+from scipy.signal.windows import tukey
 
-from PyART.utils.utils import D1, print_dict_comparison, upoly_fits
+from PyART.utils.utils import D1, print_dict_comparison, taper_waveform, upoly_fits
 
 ##############################
 # D1
@@ -135,6 +137,42 @@ def test_upoly_fits_rejects_nmin_above_nmax():
     r, y = _upoly_data()
     with pytest.raises(ValueError, match="nmin>nmax"):
         upoly_fits(r, y, nmin=5, nmax=2, direction="in")
+
+
+##############################
+# taper_waveform
+##############################
+
+
+def test_taper_waveform_tukey_no_anchors_matches_symmetric_window():
+    """
+    kind='tukey' with t1=t2=None must apply a plain, symmetric Tukey window
+    over the whole array (this is the shape Waveform.to_frequency relies on;
+    it used to live in the now-removed utils.windowing/wf_utils.taper).
+    """
+    rng = np.random.default_rng(0)
+    h = rng.normal(size=256)
+    t = np.arange(len(h))
+    alpha = 0.1
+
+    out = taper_waveform(t, h, t1=None, t2=None, alpha=alpha, kind="tukey")
+
+    assert np.array_equal(out, h * tukey(len(h), alpha))
+
+
+def test_taper_waveform_tukey_with_start_anchor_only_leaves_tail_untouched():
+    """
+    Regression: the (t1, t2=None) branch must keep its existing asymmetric
+    shape (second half forced to 1, protecting e.g. a merger) -- the new
+    no-anchor branch must not affect this pre-existing behavior.
+    """
+    h = np.ones(200)
+    t = np.arange(len(h))
+
+    out = taper_waveform(t, h, t1=50.0, t2=None, alpha=0.1, kind="tukey")
+
+    assert np.array_equal(out[100:], h[100:]), "tail was tapered but should not be"
+    assert not np.array_equal(out[:100], h[:100]), "start was not tapered"
 
 
 ##############################

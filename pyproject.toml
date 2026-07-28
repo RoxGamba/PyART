@@ -1,3 +1,44 @@
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "PyART"
+description = "Python Analytical Relativity Toolkit"
+authors = [{ name = "The TEOBResumS team", email = "rgamba@berkeley.edu" }]
+license = { text = "GPL-3.0-or-later" }
+readme = "README.md"
+requires-python = ">=3.9,<3.13"
+dynamic = ["version", "dependencies", "optional-dependencies"]
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: MacOS",
+    "Operating System :: Unix",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Natural Language :: English",
+    "Intended Audience :: Science/Research",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "PyART.__version__" }
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.dynamic.optional-dependencies]
+catalogs = { file = ["requirements-catalogs.txt"] }
+docs = { file = ["requirements-docs.txt"] }
+
+[tool.setuptools.packages.find]
+include = ["PyART*"]
+
+[tool.setuptools.package-data]
+"PyART.numerical" = ["twopuncts.dummy"]
+"PyART.catalogs" = ["sacra.info"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

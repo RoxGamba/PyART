@@ -5,9 +5,14 @@ import matplotlib.pyplot as plt
 import h5py
 import glob
 import os
+import shutil
+import subprocess
 
 from ..waveform import Waveform
 from ..utils import os_utils
+from ..utils.wf_utils import get_multipole_dict
+
+logger = logging.getLogger(__name__)
 
 ## Conversion dictionary
 conversion_dict_floats = {
@@ -112,11 +117,11 @@ class Waveform_CoRe(Waveform):
 
         if os.path.exists(self.core_data_path) == False:
             if download:
-                logging.info(f"The path {self.core_data_path} does not exist.")
-                logging.info("Downloading the simulation from the CoRe database.")
+                logger.info(f"The path {self.core_data_path} does not exist.")
+                logger.info("Downloading the simulation from the CoRe database.")
                 self.download_simulation(ID=self.ID, path=path)
             else:
-                logging.warning(
+                logger.warning(
                     "Use download=True to download the simulation from the CoRe database."
                 )
                 raise FileNotFoundError(
@@ -143,7 +148,7 @@ class Waveform_CoRe(Waveform):
                 try:
                     dx = float(value_str)
                 except Exception as e:
-                    logging.error(
+                    logger.error(
                         f"Error while reading grid_spacing_min from {meta_Rfile}: {e}"
                     )
                 if dx is None:
@@ -204,12 +209,12 @@ class Waveform_CoRe(Waveform):
         git_repo = "{}{}{}{}/{}.git".format(
             pre[protocol], server, sep[protocol], gitbase, ID
         )
-        logging.info(f"git-clone {git_repo} ...")
-        os.system("git clone " + git_repo)
+        logger.info(f"git-clone {git_repo} ...")
+        subprocess.run(["git", "clone", git_repo], check=True)
         self.core_data_path = os.path.join(path, ID)
-        os.system(f"mv {ID} {self.core_data_path}")
+        shutil.move(ID, self.core_data_path)
         # pull with lfs
-        os.system("cd {}; git lfs pull".format(self.core_data_path))
+        subprocess.run(["git", "lfs", "pull"], cwd=self.core_data_path, check=True)
 
     def cut_at_mrg(self):
         """
@@ -259,7 +264,7 @@ class Waveform_CoRe(Waveform):
                         metadata[conversion_dict_floats[key]] = float(val.strip())
                     except ValueError:
                         if key == "id_eccentricity":
-                            logging.warning("Invalid id_eccentricity! Setting ecc=0.")
+                            logger.warning("Invalid id_eccentricity! Setting ecc=0.")
                             metadata[conversion_dict_floats[key]] = 0.0
                         else:
                             metadata[conversion_dict_floats[key]] = val.strip()
@@ -371,7 +376,8 @@ class Waveform_CoRe(Waveform):
                         aM = data[:, 6]
                         phi = data[:, 7]
 
-                    except:
+                    except IndexError:
+                        # older-format files have fewer columns
                         uM = data[:, 0]
                         RehM = data[:, 1]
                         ImhM = data[:, 2]
@@ -465,8 +471,12 @@ class Waveform_CoRe(Waveform):
             d[(ell, emm)] = {}
 
             # u/M:0 Reh/M:1 Imh/M:2 Momega:3 A/M:4 phi:5 t:6
-            u, re, im, Momg, A, phi, t = np.loadtxt(m, unpack=True, skiprows=3)
-            d[(ell, emm)] = {"A": A, "p": phi, "t": t, "real": re, "imag": im}
+            # A/phi (and Momega) are the file's own columns, in a convention
+            # that can't be checked (no test data exists for this loader);
+            # derive A/p/z from Reh/Imh instead, which are convention-free.
+            u, re, im, _Momg, _A, _phi, t = np.loadtxt(m, unpack=True, skiprows=3)
+            d[(ell, emm)] = get_multipole_dict(re + 1j * im)
+            d[(ell, emm)]["t"] = t
         self._t = t
         self._u = u
         self._hlm = d
