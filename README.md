@@ -45,6 +45,14 @@ Extras can be combined, e.g.:
 pip install ".[catalogs,models]"
 ```
 
+> **Note:** the `models` extra compiles C/Cython extensions (`teobresums`, and `pyseobnr`
+> via `pygsl_lite`) linked against the GNU Scientific Library. Install the GSL headers with
+> your system package manager *before* installing this extra:
+> ```
+> apt-get install libgsl-dev   # Debian/Ubuntu
+> brew install gsl             # macOS
+> ```
+
 > **Note:** PyART depends on `pycbc`, which currently has two incompatibilities with numpy 2.x.
 > After installing, apply the one-time patch:
 > ```

@@ -23,6 +23,10 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.12"
+    - name: Install GSL (required to build teobresums/pyseobnr)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgsl-dev
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip

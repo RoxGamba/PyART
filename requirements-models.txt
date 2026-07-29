@@ -1,6 +1,14 @@
 # Extra dependencies for optional analytical/semi-analytical waveform models.
 # Each model is imported inside try/except, so the base install works without
 # this extra -- only code that explicitly uses these models needs it.
+#
+# System prerequisite: teobresums and pyseobnr (via pygsl_lite) compile C/Cython
+# extensions linked against the GNU Scientific Library. Install the GSL headers
+# with your system package manager before installing this extra, e.g.:
+#   apt-get install libgsl-dev   (Debian/Ubuntu)
+#   brew install gsl             (macOS)
+# There is no installable "gsl" package on PyPI -- the name is taken by an
+# unrelated project -- so this cannot be expressed as a line in this file.
 
 # TEOBResumS from Dali branch; setup.py is in the Python/ subdirectory
 teobresums @ git+https://bitbucket.org/teobresums/teobresums.git@Dali#subdirectory=Python
