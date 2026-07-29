@@ -23,9 +23,26 @@
 
 ## Getting started
 
-Install with
+Install the base library with:
 ```
 pip install .
+```
+This covers the core `Waveform` interface, analysis tools (matched filtering, eccentricity,
+scattering angles, ...), and the PN/BHPT analytic expressions. Optional/soft dependencies (e.g.
+`EOBRun_module`, `lalsimulation`) are imported inside `try/except`, so a missing one only disables
+the specific model or catalog that needs it, without breaking the rest of the package.
+
+On top of the base install, three extras add optional functionality:
+
+| Extra | Install with | What it gives you |
+|---|---|---|
+| `catalogs` | `pip install ".[catalogs]"` | Downloading/scraping NR waveform catalogs — SXS (`sxs`, `romspline`) and RIT (`requests`, `beautifulsoup4`). Needed to run the test suite, which exercises SXS/RIT downloads. |
+| `models` | `pip install ".[models]"` | Optional analytical/semi-analytical waveform models — TEOBResumS (`teobresums`), IMRPhenomX/X_AS (`phenomxpy`), and SEOBNR (`pyseobnr`). |
+| `docs` | `pip install ".[docs]"` | Building the Sphinx documentation locally (`make -C docs html`) — Sphinx, MyST, `furo`, `sphinx-autoapi`, and `seaborn` for the executed tutorial notebooks. Not needed to install or use the library. |
+
+Extras can be combined, e.g.:
+```
+pip install ".[catalogs,models]"
 ```
 
 > **Note:** PyART depends on `pycbc`, which currently has two incompatibilities with numpy 2.x.
