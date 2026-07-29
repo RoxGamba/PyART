@@ -1,0 +1,58 @@
+PyART.logging_config
+====================
+
+.. py:module:: PyART.logging_config
+
+.. autoapi-nested-parse::
+
+   Logging configuration for PyART
+
+   This module provides a simple logging configuration that can be used throughout PyART.
+   Users can call setup_logging() to configure logging for the entire package.
+
+   Example usage:
+       import PyART
+       from PyART.logging_config import setup_logging
+
+       # Setup logging with default INFO level
+       setup_logging()
+
+       # Or setup with custom level
+       setup_logging(level='DEBUG')
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.logging_config.setup_logging
+
+
+Module Contents
+---------------
+
+.. py:function:: setup_logging(level='INFO', format_string=None, datefmt=None)
+
+   Setup logging configuration for PyART
+
+   :param level: Logging level. Can be 'DEBUG', 'INFO', 'WARNING', 'ERROR', or 'CRITICAL'.
+                 Default is 'INFO'.
+   :type level: str, optional
+   :param format_string: Custom format string for log messages.
+                         Default is '%(asctime)s %(message)s'
+   :type format_string: str, optional
+   :param datefmt: Date format for timestamps in log messages.
+                   Default is '%Y-%m-%d %H:%M:%S'
+   :type datefmt: str, optional
+
+   .. rubric:: Example
+
+   >>> from PyART.logging_config import setup_logging
+   >>> setup_logging(level='INFO')
+   >>> import logging
+   >>> logging.info("This is an info message")
+   2024-01-01 12:00:00 This is an info message
+
+

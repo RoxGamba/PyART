@@ -1,0 +1,104 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1323, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+# Load an SXS waveform
+catalog = 'sxs'
+sim_id = 180
+
+if catalog == 'sxs':
+    ebbh = Waveform_SXS(
+        path='./', 
+        download=True, 
+        ID=sim_id, 
+        order="Extrapolated_N3.dir", 
+        ellmax=7,
+        nu_rescale=True
+    )
+    # Remove junk radiation from the beginning
+    ebbh.cut(200)
+else:
+    # For RIT or other catalogs
+    ebbh = Waveform_RIT(
+        path='./local_data/rit/', 
+        download=True, 
+        ID=sim_id, 
+        nu_rescale=True
+    )
+
+# Display metadata
+print('Waveform Metadata:')
+print('=' * 50)
+for k, v in ebbh.metadata.items():
+    print(f'{k:15s} : {v}')
+print('=' * 50)
+------------------
+
+
+[31m---------------------------------------------------------------------------[39m
+[31mFileNotFoundError[39m                         Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[2][39m[32m, line 6[39m
+[32m      2[39m catalog = [33m'sxs'[39m
+[32m      3[39m sim_id = [32m180[39m
+[32m      4[39m 
+[32m      5[39m [38;5;28;01mif[39;00m catalog == [33m'sxs'[39m:
+[32m----> [39m[32m6[39m     ebbh = Waveform_SXS(
+[32m      7[39m         path=[33m'./'[39m,
+[32m      8[39m         download=[38;5;28;01mTrue[39;00m,
+[32m      9[39m         ID=sim_id,
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/PyART/catalogs/sxs.py:143[39m, in [36mWaveform_SXS.__init__[39m[34m(self, path, ID, order, level, cut_N, cut_U, ellmax, load, download, downloads, load_m0, nu_rescale, src, ignore_deprecation, basename)[39m
+[32m    141[39m     level = [38;5;28mself[39m.level
+[32m    142[39m fname = [38;5;28mself[39m.get_lev_fname(basename=[38;5;28mself[39m.basename, level=level)
+[32m--> [39m[32m143[39m [38;5;28;01mwith[39;00m [30;43mh5py[39;49m[30;43m.[39;49m[30;43mFile[39;49m[30;43m([39;49m[30;43mfname[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m"[39;49m[30;43mr[39;49m[30;43m"[39;49m[30;43m)[39;49m [38;5;28;01mas[39;00m f:
+[32m    144[39m     needs_download = order_group [38;5;129;01mnot[39;00m [38;5;129;01min[39;00m f
+[32m    145[39m [38;5;28;01mif[39;00m needs_download:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/h5py/_hl/files.py:555[39m, in [36mFile.__init__[39m[34m(self, name, mode, driver, libver, userblock_size, swmr, rdcc_nslots, rdcc_nbytes, rdcc_w0, track_order, fs_strategy, fs_persist, fs_threshold, fs_page_size, page_buf_size, min_meta_keep, min_raw_keep, locking, alignment_threshold, alignment_interval, meta_block_size, track_times, **kwds)[39m
+[32m    546[39m     fapl = make_fapl(driver, libver, rdcc_nslots, rdcc_nbytes, rdcc_w0,
+[32m    547[39m                      locking, page_buf_size, min_meta_keep, min_raw_keep,
+[32m    548[39m                      alignment_threshold=alignment_threshold,
+[32m    549[39m                      alignment_interval=alignment_interval,
+[32m    550[39m                      meta_block_size=meta_block_size,
+[32m    551[39m                      **kwds)
+[32m    552[39m     fcpl = make_fcpl(track_order=track_order, track_times=track_times,
+[32m    553[39m                      fs_strategy=fs_strategy, fs_persist=fs_persist,
+[32m    554[39m                      fs_threshold=fs_threshold, fs_page_size=fs_page_size)
+[32m--> [39m[32m555[39m     fid = [30;43mmake_fid[39;49m[30;43m([39;49m[30;43mname[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mmode[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43muserblock_size[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mfapl[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mfcpl[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mswmr[39;49m[30;43m=[39;49m[30;43mswmr[39;49m[30;43m)[39;49m
+[32m    557[39m [38;5;28;01mif[39;00m [38;5;28misinstance[39m(libver, [38;5;28mtuple[39m):
+[32m    558[39m     [38;5;28mself[39m._libver = libver
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/h5py/_hl/files.py:232[39m, in [36mmake_fid[39m[34m(name, mode, userblock_size, fapl, fcpl, swmr)[39m
+[32m    230[39m     [38;5;28;01mif[39;00m swmr:
+[32m    231[39m         flags |= h5f.ACC_SWMR_READ
+[32m--> [39m[32m232[39m     fid = [30;43mh5f[39;49m[30;43m.[39;49m[30;43mopen[39;49m[30;43m([39;49m[30;43mname[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mflags[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mfapl[39;49m[30;43m=[39;49m[30;43mfapl[39;49m[30;43m)[39;49m
+[32m    233[39m [38;5;28;01melif[39;00m mode == [33m'[39m[33mr+[39m[33m'[39m:
+[32m    234[39m     fid = h5f.open(name, h5f.ACC_RDWR, fapl=fapl)
+
+[36mFile [39m[32mh5py/_objects.pyx:54[39m, in [36mh5py._objects.with_phil.wrapper[39m[34m()[39m
+[32m---> [39m[32m54[39m [33m'Could not get source, probably due dynamically evaluated source code.'[39m
+
+[36mFile [39m[32mh5py/_objects.pyx:55[39m, in [36mh5py._objects.with_phil.wrapper[39m[34m()[39m
+[32m---> [39m[32m55[39m [33m'Could not get source, probably due dynamically evaluated source code.'[39m
+
+[36mFile [39m[32mh5py/h5f.pyx:106[39m, in [36mh5py.h5f.open[39m[34m()[39m
+[32m--> [39m[32m106[39m [33m'Could not get source, probably due dynamically evaluated source code.'[39m
+
+[31mFileNotFoundError[39m: [Errno 2] Unable to synchronously open file (unable to open file: name = './SXS_BBH_0180/Lev4/rhOverM_Asymptotic_GeometricUnits_CoM.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+

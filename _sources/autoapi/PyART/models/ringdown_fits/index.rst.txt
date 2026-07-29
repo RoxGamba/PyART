@@ -1,0 +1,203 @@
+PyART.models.ringdown_fits
+==========================
+
+.. py:module:: PyART.models.ringdown_fits
+
+.. autoapi-nested-parse::
+
+   Pure python implementation of the (old) TEOBResumS ringdown.
+   Copy-paste of PyRing, with minor mods.
+   https://git.ligo.org/lscsoft/pyring/-/blob/master/pyRing/eob_utils.pyx?ref_type=heads
+   https://bitbucket.org/eob_ihes/teobresums/src/master/C/src/TEOBResumSFits.c
+
+   TODO: it would be better to have all fixed coefficients called/computed only once, and then stored
+   in e.g. a dictionary. Now, they are evaluated every time the function is called, which is suboptimal.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.models.ringdown_fits.Y
+   PyART.models.ringdown_fits._Y
+   PyART.models.ringdown_fits._alpha1
+   PyART.models.ringdown_fits._alpha21
+   PyART.models.ringdown_fits._omega1
+   PyART.models.ringdown_fits._c3_A
+   PyART.models.ringdown_fits._c3_phi
+   PyART.models.ringdown_fits._c4_phi
+   PyART.models.ringdown_fits._dOmega
+   PyART.models.ringdown_fits._amplitude_peak
+   PyART.models.ringdown_fits._omega_peak
+   PyART.models.ringdown_fits._JimenezFortezaRemnantMass
+   PyART.models.ringdown_fits._JimenezFortezaRemnantSpin
+   PyART.models.ringdown_fits._DeltaT
+   PyART.models.ringdown_fits._DeltaPhi
+
+
+Module Contents
+---------------
+
+.. py:function:: Y(Y_0, b_1, b_2, b_3, c_1, c_2, c_3, af, af2, af3)
+
+.. py:function:: _Y(Y_0, b_1, b_2, b_3, c_1, c_2, c_3, af, af2, af3)
+
+   Function implementing eq. 5.21 of arXiv:1904.09550v2.
+   It is the same fitting equation for the three coefficients alpha1, alpha21, omega1.
+
+
+.. py:function:: _alpha1(af, l, m)
+
+   Function returning the value of alpha1 for each mode, following appendix C.2 of arXiv:2001.09082v2.
+   It is called in function EOBPM_SetupFitCoefficients of waveform.pyx.
+   ---------------------------------------------------------------------------------------
+   The fitting coefficients and equations are implemented from:
+   (2,2) (2,1) (3,3) (3,2) (3,1) (4,4) (4,3) (4,2) (4,1) - arXiv:1904.09550v2, section V.D
+   ---------------------------------------------------------------------------------------
+   Note that, as outlined in appendix C.1 of arXiv:2001.09082v2, we use the non-spinning values (i.e.
+   taken from arXiv:1904.09550v2) for the post-peak coefficients also for the spinning case.
+
+
+.. py:function:: _alpha21(af, l, m)
+
+   Function returning the value of alpha21 for each mode, following appendix C.2 of arXiv:2001.09082v2.
+   It is called in function EOBPM_SetupFitCoefficients of waveform.pyx.
+   ---------------------------------------------------------------------------------------
+   The fitting coefficients and equations are implemented from:
+   (2,2) (2,1) (3,3) (3,2) (3,1) (4,4) (4,3) (4,2) (4,1) - arXiv:1904.09550v2, section V.D
+   ---------------------------------------------------------------------------------------
+   Note that, as outlined in appendix C.1 of arXiv:2001.09082v2, we use the non-spinning values (i.e.
+   taken from arXiv:1904.09550v2) for the post-peak coefficients also for the spinning case.
+
+
+.. py:function:: _omega1(af, l, m)
+
+   Function returning the value of omega1 for each mode, following appendix C.2 of arXiv:2001.09082v2.
+   It is called in function EOBPM_SetupFitCoefficients of waveform.pyx.
+   ---------------------------------------------------------------------------------------
+   The fitting coefficients and equations are implemented from:
+   (2,2) (2,1) (3,3) (3,2) (3,1) (4,4) (4,3) (4,2) (4,1) - arXiv:1904.09550v2, section V.D
+   ---------------------------------------------------------------------------------------
+   Note that, as outlined in appendix C.1 of arXiv:2001.09082v2, we use the non-spinning values (i.e.
+   taken from arXiv:1904.09550v2) for the post-peak coefficients also for the spinning case.
+
+
+.. py:function:: _c3_A(nu, X12, S_hat, a12, l, m)
+
+   Function returning the coefficient c3_A of the ringdown model in section V.A of arXiv:1904.09550v2.
+   It is called in function EOBPM_SetupFitCoefficients of waveform.pyx.
+   -----------------------------------------------------------------------------------
+   The fitting coefficients and equations are implemented from:
+   (2,2) (3,3) (4,4) (5,5) - arXiv:2001.09082v2, appendix C.3
+   (2,1) (3,2) (3,1) (4,3) (4,2) (4,1) - arXiv:1904.09550v2, section V.D
+   -----------------------------------------------------------------------------------
+   Note that paper arXiv:1904.09550v2 refers to the non-spinning case, while arXiv:2001.09082v2 includes spin effects.
+
+
+.. py:function:: _c3_phi(nu, X12, S_hat, l, m)
+
+   Function returning the coefficient c3_phi of the ringdown model in section V.A of arXiv:1904.09550v2.
+   It is called in function EOBPM_SetupFitCoefficients of waveform.pyx.
+   -----------------------------------------------------------------------------------
+   The fitting coefficients and equations are implemented from:
+   (2,2) (3,3) (4,4) (5,5) - arXiv:2001.09082v2, appendix C.3
+   (2,1) (3,2) (3,1) (4,3) (4,2) (4,1) - arXiv:1904.09550v2, section V.D
+   -----------------------------------------------------------------------------------
+   Note that paper arXiv:1904.09550v2 refers to the non-spinning case, while arXiv:2001.09082v2 includes spin effects.
+
+
+.. py:function:: _c4_phi(nu, X12, S_hat, l, m)
+
+   Function returning the coefficient c4_phi of the ringdown model in section V.A of arXiv:1904.09550v2.
+   It is called in function EOBPM_SetupFitCoefficients of waveform.pyx.
+   -----------------------------------------------------------------------------------
+   The fitting coefficients and equations are implemented from:
+   (2,2) (3,3) (4,4) (5,5) - arXiv:2001.09082v2, appendix C.3
+   (2,1) (3,2) (3,1) (4,3) (4,2) (4,1) - arXiv:1904.09550v2, section V.D
+   -----------------------------------------------------------------------------------
+   Note that paper arXiv:1904.09550v2 refers to the non-spinning case, while arXiv:2001.09082v2 includes spin effects.
+
+
+.. py:function:: _dOmega(omega1, Mf, omega_peak)
+
+   In the papers is referred to as Delta_omega, e.g. see in section V.A of arXiv:1904.09550v2
+
+
+.. py:function:: _amplitude_peak(nu, X12, S_hat, a12, S_bar, a0, omega_peak, l, m)
+
+   Function returning the value of A at the peak, following appendix C.2 of arXiv:2001.09082v2.
+   It is called in function EOBPM_SetupFitCoefficients of waveform.pyx.
+   -----------------------------------------------------------------------------------
+   The fitting coefficients and equations are implemented from:
+   (2,2) (2,1) (3,3) (3,2) (4,4) (4,3) (4,2) (5,5) - arXiv:2001.09082v2, appendix C.3
+   (3,1) (4,1) - arXiv:1904.09550v2, section V.D
+   -----------------------------------------------------------------------------------
+   Note that paper arXiv:1904.09550v2 refers to the non-spinning case, while arXiv:2001.09082v2 includes spin effects.
+   -----------------------------------------------------------------------------------
+   Note: To fit the amplitude peak, the waveform is scaled as in eqs. C6-C12 of arXiv:2001.09082v2,
+         but the amplitude peak in eqs. 7-8 of arXiv:1406.0401v2 is just nu-rescaled (see eq. (1) of arXiv:1606.03952v4).
+
+
+.. py:function:: _omega_peak(nu, X12, S_hat, a0, l, m)
+
+   Function returning the value of Omega at the peak of the strain, following appendix C.2 of arXiv:2001.09082v2.
+   It is called in function EOBPM_SetupFitCoefficients of waveform.pyx.
+   -----------------------------------------------------------------------------------
+   The fitting coefficients and equations are implemented from:
+   (2,2) (2,1) (3,3) (3,2) (4,4) (4,3) (4,2) (5,5) - arXiv:2001.09082v2, appendix C.3
+   (3,1) (4,1) - arXiv:1904.09550v2, section V.D
+   -----------------------------------------------------------------------------------
+   Note that paper arXiv:1904.09550v2 refers to the non-spinning case, while arXiv:2001.09082v2 includes spin effects.
+
+
+.. py:function:: _JimenezFortezaRemnantMass(nu, X1, X2, chi1, chi2, M)
+
+   Compute the BH final mass with the aligned-spin NR fit by Xisco Jimenez Forteza,
+   David Keitel, Sascha Husa et al.: see arXiv:1611.00332v2
+   -----------------------------------------------------------------------------------
+   m1, m2: component masses. chi1, chi2: dimensionless spins
+   Note that it is assumed m1>m2
+   -----------------------------------------------------------------------------------
+   Note: In arXiv:1611.00332v2 the symmetric mass ratio is called 'eta', contrary to
+         the rest of our implementation where is 'nu'.
+         For clarity, we continue to use the symbol 'nu' also for the
+         functions JimenezFortezaRemnantMass and JimenezFortezaRemnantSpin
+   Note: In arXiv:1611.00332v2, S_hat has a slighly different definition wrt the
+         rest of the implementation
+
+
+.. py:function:: _JimenezFortezaRemnantSpin(nu, X1, X2, chi1, chi2)
+
+   Compute the BH final spin with the aligned-spin NR fit by Xisco Jimenez Forteza,
+   David Keitel, Sascha Husa et al.: see arXiv:1611.00332v2
+   -----------------------------------------------------------------------------------
+   m1, m2: component masses. chi1, chi2: dimensionless spins
+   Note that it is assumed m1>m2
+   -----------------------------------------------------------------------------------
+   Note: In arXiv:1611.00332v2 the symmetric mass ratio is called 'eta', contrary to
+         the rest of the implementation where is 'nu'.
+         For clarity, we continue to use the symbol 'nu' also for the
+         functions JimenezFortezaRemnantMass and JimenezFortezaRemnantSpin
+   Note: In arXiv:1611.00332v2, S_hat has a slighly different definition wrt the
+       rest of the implementation
+
+
+.. py:function:: _DeltaT(nu, X12, S_hat, a0, l, m)
+
+   Function returning the value of Delta_t, following appendix C.2 of arXiv:2001.09082v2.
+   It is called in function EOBPM_SetupFitCoefficients of waveform.pyx.
+   -----------------------------------------------------------------------------------
+   The fitting coefficients and equations are implemented from:
+   (2,2) (2,1) (3,3) (3,2) (4,4) (4,3) (4,2) - arXiv:2001.09082v2, appendix C.3
+   (3,1) (4,1) (5,5) - arXiv:1904.09550v2, section V.D
+   -----------------------------------------------------------------------------------
+   Note that paper arXiv:1904.09550v2 refers to the non-spinning case, while arXiv:2001.09082v2 includes spin effects.
+
+
+.. py:function:: _DeltaPhi(nu, X12, S_hat, l, m)
+
+   Not implemented
+
+

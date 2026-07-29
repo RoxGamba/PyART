@@ -1,0 +1,97 @@
+PyART.utils.load_nr_utils
+=========================
+
+.. py:module:: PyART.utils.load_nr_utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.utils.load_nr_utils.x
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.utils.load_nr_utils.LoadWave
+
+
+Module Contents
+---------------
+
+.. py:class:: LoadWave(path='./', fmt='etk', modes=[(2, 2)], fname='wave.txt', resize=False)
+
+   Bases: :py:obj:`object`
+
+
+   .. py:attribute:: path
+      :value: './'
+
+
+
+   .. py:attribute:: fmt
+      :value: 'etk'
+
+
+
+   .. py:attribute:: modes
+      :value: [(2, 2)]
+
+
+
+   .. py:attribute:: fname
+      :value: 'wave.txt'
+
+
+
+   .. py:attribute:: resize
+      :value: False
+
+
+
+   .. py:attribute:: t
+
+
+   .. py:attribute:: wave
+
+
+   .. py:method:: wave_lm_name(l, m)
+
+      Construct the filename for given l,m
+      :param l: l of the multipole
+      :type l: int
+      :param m: m of the multipole
+      :type m: int
+
+      :returns: **out** -- filename with l,m replaced
+      :rtype: str
+
+
+
+   .. py:method:: load_file(fname, safe=False)
+
+      Load a file
+      :param fname: filename to load
+      :type fname: str
+      :param safe: if True, skip lines that do not have the right number of columns
+      :type safe: bool
+
+      :returns: **out** -- data loaded from file
+      :rtype: ndarray
+
+
+
+   .. py:method:: get_indices_dict()
+
+      Get the indices dict for the given format
+      :returns: **out** -- dictionary with indices for t, re, im for each mode
+      :rtype: dict
+
+
+
+.. py:data:: x
+

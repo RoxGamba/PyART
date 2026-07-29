@@ -1,0 +1,320 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1323, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+plt.figure(figsize=(12,9))
+
+for conf in configurations:
+    eob  = conf['eob']
+    scat = conf['scat']
+    
+    if scat is None:
+        continue
+    
+    # Plot waveform
+    plt.subplot(2,2,1)
+    plt.plot(eob.u, eob.hlm[(2,2)]['real'])
+    plt.xlim([-100, 100])
+    plt.xlabel('Time (M)')
+    plt.ylabel(r'Re[$h_{22}$]')
+    plt.title('Waveform (2,2) mode')
+    plt.grid(True, alpha=0.3)
+
+    # Plot psi4
+    dh   = D1(eob.hlm[(2,2)]['z'], eob.u, 4)
+    psi4 = D1(dh, eob.u, 4)
+    b      = conf['b']
+    chi_BH = conf['chi1']
+    
+    plt.subplot(2,2,2)
+    plt.plot(eob.u, -psi4.real, label=f'b={b:.3f}, χ={chi_BH}')
+    plt.xlim([-100, 100])
+    plt.xlabel('Time (M)')
+    plt.ylabel(r'Re[$-\psi_4$]')
+    plt.title('Weyl scalar')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+
+    # Plot radial distance
+    x = eob.dyn['r']*np.cos(eob.dyn['phi'])
+    y = eob.dyn['r']*np.sin(eob.dyn['phi'])
+    r = np.sqrt(x**2 + y**2)
+    
+    plt.subplot(2,2,3)
+    plt.plot(eob.dyn['t'], r)
+    plt.xlabel('Time (M)')
+    plt.ylabel('Radial distance r (M)')
+    plt.title('Radial distance vs time')
+    plt.grid(True, alpha=0.3)
+
+    # Plot trajectory
+    plt.subplot(2,2,4)
+    plt.plot(x, y, label=f'χ={scat.chi:.2f}°')
+    plt.xlabel('x (M)')
+    plt.ylabel('y (M)')
+    plt.title('Trajectories with scattering angles')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.axis('equal')
+
+plt.tight_layout()
+plt.show()
+------------------
+
+----- stdout -----
+Error in callback <function _draw_all_if_interactive at 0x7fc694f9f880> (for post_execute), with arguments args (),kwargs {}:
+------------------
+
+[31m---------------------------------------------------------------------------[39m
+[31mFileNotFoundError[39m                         Traceback (most recent call last)
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/texmanager.py:258[39m, in [36mTexManager._run_checked_subprocess[39m[34m(cls, command, tex, cwd)[39m
+[32m    257[39m [38;5;28;01mtry[39;00m:
+[32m--> [39m[32m258[39m     report = [30;43msubprocess[39;49m[30;43m.[39;49m[30;43mcheck_output[39;49m[30;43m([39;49m
+[32m    259[39m [30;43m        [39;49m[30;43mcommand[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mcwd[39;49m[30;43m=[39;49m[30;43mcwd[39;49m[30;43m [39;49m[30;43;01mif[39;49;00m[30;43m [39;49m[30;43mcwd[39;49m[30;43m [39;49m[30;43;01mis[39;49;00m[30;43m [39;49m[30;43;01mnot[39;49;00m[30;43m [39;49m[30;43;01mNone[39;49;00m[30;43m [39;49m[30;43;01melse[39;49;00m[30;43m [39;49m[30;43mcls[39;49m[30;43m.[39;49m[30;43m_cache_dir[39;49m[30;43m,[39;49m
+[32m    260[39m [30;43m        [39;49m[30;43mstderr[39;49m[30;43m=[39;49m[30;43msubprocess[39;49m[30;43m.[39;49m[30;43mSTDOUT[39;49m[30;43m)[39;49m
+[32m    261[39m [38;5;28;01mexcept[39;00m subprocess.CalledProcessError [38;5;28;01mas[39;00m exc:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/subprocess.py:466[39m, in [36mcheck_output[39m[34m(timeout, *popenargs, **kwargs)[39m
+[32m    464[39m     kwargs[[33m'[39m[33minput[39m[33m'[39m] = empty
+[32m--> [39m[32m466[39m [38;5;28;01mreturn[39;00m [30;43mrun[39;49m[30;43m([39;49m[30;43m*[39;49m[30;43mpopenargs[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mstdout[39;49m[30;43m=[39;49m[30;43mPIPE[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mtimeout[39;49m[30;43m=[39;49m[30;43mtimeout[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mcheck[39;49m[30;43m=[39;49m[30;43;01mTrue[39;49;00m[30;43m,[39;49m
+[32m    467[39m [30;43m           [39;49m[30;43m*[39;49m[30;43m*[39;49m[30;43mkwargs[39;49m[30;43m)[39;49m.stdout
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/subprocess.py:548[39m, in [36mrun[39m[34m(input, capture_output, timeout, check, *popenargs, **kwargs)[39m
+[32m    546[39m     kwargs[[33m'[39m[33mstderr[39m[33m'[39m] = PIPE
+[32m--> [39m[32m548[39m [38;5;28;01mwith[39;00m [30;43mPopen[39;49m[30;43m([39;49m[30;43m*[39;49m[30;43mpopenargs[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m*[39;49m[30;43m*[39;49m[30;43mkwargs[39;49m[30;43m)[39;49m [38;5;28;01mas[39;00m process:
+[32m    549[39m     [38;5;28;01mtry[39;00m:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/subprocess.py:1026[39m, in [36mPopen.__init__[39m[34m(self, args, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags, restore_signals, start_new_session, pass_fds, user, group, extra_groups, encoding, errors, text, umask, pipesize, process_group)[39m
+[32m   1023[39m             [38;5;28mself[39m.stderr = io.TextIOWrapper([38;5;28mself[39m.stderr,
+[32m   1024[39m                     encoding=encoding, errors=errors)
+[32m-> [39m[32m1026[39m     [30;43mself[39;49m[30;43m.[39;49m[30;43m_execute_child[39;49m[30;43m([39;49m[30;43margs[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mexecutable[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mpreexec_fn[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mclose_fds[39;49m[30;43m,[39;49m
+[32m   1027[39m [30;43m                        [39;49m[30;43mpass_fds[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mcwd[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43menv[39;49m[30;43m,[39;49m
+[32m   1028[39m [30;43m                        [39;49m[30;43mstartupinfo[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mcreationflags[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mshell[39;49m[30;43m,[39;49m
+[32m   1029[39m [30;43m                        [39;49m[30;43mp2cread[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mp2cwrite[39;49m[30;43m,[39;49m
+[32m   1030[39m [30;43m                        [39;49m[30;43mc2pread[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mc2pwrite[39;49m[30;43m,[39;49m
+[32m   1031[39m [30;43m                        [39;49m[30;43merrread[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43merrwrite[39;49m[30;43m,[39;49m
+[32m   1032[39m [30;43m                        [39;49m[30;43mrestore_signals[39;49m[30;43m,[39;49m
+[32m   1033[39m [30;43m                        [39;49m[30;43mgid[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mgids[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43muid[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mumask[39;49m[30;43m,[39;49m
+[32m   1034[39m [30;43m                        [39;49m[30;43mstart_new_session[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mprocess_group[39;49m[30;43m)[39;49m
+[32m   1035[39m [38;5;28;01mexcept[39;00m:
+[32m   1036[39m     [38;5;66;03m# Cleanup if the child failed starting.[39;00m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/subprocess.py:1955[39m, in [36mPopen._execute_child[39m[34m(self, args, executable, preexec_fn, close_fds, pass_fds, cwd, env, startupinfo, creationflags, shell, p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite, restore_signals, gid, gids, uid, umask, start_new_session, process_group)[39m
+[32m   1954[39m [38;5;28;01mif[39;00m err_filename [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m [38;5;28;01mNone[39;00m:
+[32m-> [39m[32m1955[39m     [38;5;28;01mraise[39;00m child_exception_type(errno_num, err_msg, err_filename)
+[32m   1956[39m [38;5;28;01melse[39;00m:
+
+[31mFileNotFoundError[39m: [Errno 2] No such file or directory: 'latex'
+
+The above exception was the direct cause of the following exception:
+
+[31mRuntimeError[39m                              Traceback (most recent call last)
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/backend_bases.py:2257[39m, in [36mFigureCanvasBase.print_figure[39m[34m(self, filename, dpi, facecolor, edgecolor, orientation, format, bbox_inches, pad_inches, bbox_extra_artists, backend, **kwargs)[39m
+[32m   2254[39m     [38;5;66;03m# we do this instead of `self.figure.draw_without_rendering`[39;00m
+[32m   2255[39m     [38;5;66;03m# so that we can inject the orientation[39;00m
+[32m   2256[39m     [38;5;28;01mwith[39;00m [38;5;28mgetattr[39m(renderer, [33m"[39m[33m_draw_disabled[39m[33m"[39m, nullcontext)():
+[32m-> [39m[32m2257[39m         [30;43mself[39;49m[30;43m.[39;49m[30;43mfigure[39;49m[30;43m.[39;49m[30;43mdraw[39;49m[30;43m([39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m   2258[39m [38;5;28;01melse[39;00m:
+[32m   2259[39m     renderer = [38;5;28;01mNone[39;00m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/artist.py:94[39m, in [36m_finalize_rasterization.<locals>.draw_wrapper[39m[34m(artist, renderer, *args, **kwargs)[39m
+[32m     92[39m [38;5;129m@wraps[39m(draw)
+[32m     93[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mdraw_wrapper[39m(artist, renderer, *args, **kwargs):
+[32m---> [39m[32m94[39m     result = [30;43mdraw[39;49m[30;43m([39;49m[30;43martist[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mrenderer[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m*[39;49m[30;43margs[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m*[39;49m[30;43m*[39;49m[30;43mkwargs[39;49m[30;43m)[39;49m
+[32m     95[39m     [38;5;28;01mif[39;00m renderer._rasterizing:
+[32m     96[39m         renderer.stop_rasterizing()
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/artist.py:71[39m, in [36mallow_rasterization.<locals>.draw_wrapper[39m[34m(artist, renderer)[39m
+[32m     68[39m     [38;5;28;01mif[39;00m artist.get_agg_filter() [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m [38;5;28;01mNone[39;00m:
+[32m     69[39m         renderer.start_filter()
+[32m---> [39m[32m71[39m     [38;5;28;01mreturn[39;00m [30;43mdraw[39;49m[30;43m([39;49m[30;43martist[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m     72[39m [38;5;28;01mfinally[39;00m:
+[32m     73[39m     [38;5;28;01mif[39;00m artist.get_agg_filter() [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m [38;5;28;01mNone[39;00m:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/figure.py:3282[39m, in [36mFigure.draw[39m[34m(self, renderer)[39m
+[32m   3279[39m             [38;5;66;03m# ValueError can occur when resizing a window.[39;00m
+[32m   3281[39m     [38;5;28mself[39m.patch.draw(renderer)
+[32m-> [39m[32m3282[39m     [30;43mmimage[39;49m[30;43m.[39;49m[30;43m_draw_list_compositing_images[39;49m[30;43m([39;49m
+[32m   3283[39m [30;43m        [39;49m[30;43mrenderer[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mself[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43martists[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mself[39;49m[30;43m.[39;49m[30;43msuppressComposite[39;49m[30;43m)[39;49m
+[32m   3285[39m     renderer.close_group([33m'[39m[33mfigure[39m[33m'[39m)
+[32m   3286[39m [38;5;28;01mfinally[39;00m:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/image.py:133[39m, in [36m_draw_list_compositing_images[39m[34m(renderer, parent, artists, suppress_composite)[39m
+[32m    131[39m [38;5;28;01mif[39;00m not_composite [38;5;129;01mor[39;00m [38;5;129;01mnot[39;00m has_images:
+[32m    132[39m     [38;5;28;01mfor[39;00m a [38;5;129;01min[39;00m artists:
+[32m--> [39m[32m133[39m         [30;43ma[39;49m[30;43m.[39;49m[30;43mdraw[39;49m[30;43m([39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m    134[39m [38;5;28;01melse[39;00m:
+[32m    135[39m     [38;5;66;03m# Composite any adjacent images together[39;00m
+[32m    136[39m     image_group = []
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/artist.py:71[39m, in [36mallow_rasterization.<locals>.draw_wrapper[39m[34m(artist, renderer)[39m
+[32m     68[39m     [38;5;28;01mif[39;00m artist.get_agg_filter() [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m [38;5;28;01mNone[39;00m:
+[32m     69[39m         renderer.start_filter()
+[32m---> [39m[32m71[39m     [38;5;28;01mreturn[39;00m [30;43mdraw[39;49m[30;43m([39;49m[30;43martist[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m     72[39m [38;5;28;01mfinally[39;00m:
+[32m     73[39m     [38;5;28;01mif[39;00m artist.get_agg_filter() [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m [38;5;28;01mNone[39;00m:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/axes/_base.py:3331[39m, in [36m_AxesBase.draw[39m[34m(self, renderer)[39m
+[32m   3328[39m     [38;5;28;01mfor[39;00m spine [38;5;129;01min[39;00m [38;5;28mself[39m.spines.values():
+[32m   3329[39m         artists.remove(spine)
+[32m-> [39m[32m3331[39m [30;43mself[39;49m[30;43m.[39;49m[30;43m_update_title_position[39;49m[30;43m([39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m   3333[39m [38;5;28;01mif[39;00m [38;5;129;01mnot[39;00m [38;5;28mself[39m.axison:
+[32m   3334[39m     [38;5;28;01mfor[39;00m _axis [38;5;129;01min[39;00m [38;5;28mself[39m._axis_map.values():
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/axes/_base.py:3270[39m, in [36m_AxesBase._update_title_position[39m[34m(self, renderer)[39m
+[32m   3268[39m [38;5;28;01mif[39;00m title.get_text():
+[32m   3269[39m     [38;5;28;01mfor[39;00m ax [38;5;129;01min[39;00m axs:
+[32m-> [39m[32m3270[39m         [30;43max[39;49m[30;43m.[39;49m[30;43myaxis[39;49m[30;43m.[39;49m[30;43mget_tightbbox[39;49m[30;43m([39;49m[30;43mrenderer[39;49m[30;43m)[39;49m  [38;5;66;03m# update offsetText[39;00m
+[32m   3271[39m         [38;5;66;03m# A hidden offset text (e.g. on the shared y axis of an[39;00m
+[32m   3272[39m         [38;5;66;03m# inner subplot) is not drawn, so it must not move the[39;00m
+[32m   3273[39m         [38;5;66;03m# title: its tight bbox is non-finite and would otherwise[39;00m
+[32m   3274[39m         [38;5;66;03m# push the title to infinity.[39;00m
+[32m   3275[39m         [38;5;28;01mif[39;00m (ax.yaxis.offsetText.get_visible()
+[32m   3276[39m                 [38;5;129;01mand[39;00m ax.yaxis.offsetText.get_text()):
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/axis.py:1427[39m, in [36mAxis.get_tightbbox[39m[34m(self, renderer, for_layout_only)[39m
+[32m   1424[39m     renderer = [38;5;28mself[39m.get_figure(root=[38;5;28;01mTrue[39;00m)._get_renderer()
+[32m   1425[39m ticks_to_draw = [38;5;28mself[39m._update_ticks()
+[32m-> [39m[32m1427[39m [30;43mself[39;49m[30;43m.[39;49m[30;43m_update_label_position[39;49m[30;43m([39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m   1429[39m [38;5;66;03m# go back to just this axis's tick labels[39;00m
+[32m   1430[39m tlb1, tlb2 = [38;5;28mself[39m._get_ticklabel_bboxes(ticks_to_draw, renderer)
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/axis.py:2842[39m, in [36mYAxis._update_label_position[39m[34m(self, renderer)[39m
+[32m   2838[39m     [38;5;28;01mreturn[39;00m
+[32m   2840[39m [38;5;66;03m# get bounding boxes for this axis and any siblings[39;00m
+[32m   2841[39m [38;5;66;03m# that have been set by `fig.align_ylabels()`[39;00m
+[32m-> [39m[32m2842[39m bboxes, bboxes2 = [30;43mself[39;49m[30;43m.[39;49m[30;43m_get_tick_boxes_siblings[39;49m[30;43m([39;49m[30;43mrenderer[39;49m[30;43m=[39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m   2843[39m x, y = [38;5;28mself[39m.label.get_position()
+[32m   2845[39m [38;5;28;01mif[39;00m [38;5;28mself[39m.label_position == [33m'[39m[33mleft[39m[33m'[39m:
+[32m   2846[39m     [38;5;66;03m# Union with extents of the left spine if present, of the axes otherwise.[39;00m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/axis.py:2403[39m, in [36mAxis._get_tick_boxes_siblings[39m[34m(self, renderer)[39m
+[32m   2401[39m axis = ax._axis_map[name]
+[32m   2402[39m ticks_to_draw = axis._update_ticks()
+[32m-> [39m[32m2403[39m tlb, tlb2 = [30;43maxis[39;49m[30;43m.[39;49m[30;43m_get_ticklabel_bboxes[39;49m[30;43m([39;49m[30;43mticks_to_draw[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m   2404[39m bboxes.extend(tlb)
+[32m   2405[39m bboxes2.extend(tlb2)
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/axis.py:1404[39m, in [36mAxis._get_ticklabel_bboxes[39m[34m(self, ticks, renderer)[39m
+[32m   1402[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34m_get_ticklabel_bboxes[39m([38;5;28mself[39m, ticks, renderer):
+[32m   1403[39m [38;5;250m    [39m[33;03m"""Return lists of bboxes for ticks' label1's and label2's."""[39;00m
+[32m-> [39m[32m1404[39m     [38;5;28;01mreturn[39;00m ([30;43m[[39;49m[30;43mtick[39;49m[30;43m.[39;49m[30;43mlabel1[39;49m[30;43m.[39;49m[30;43mget_window_extent[39;49m[30;43m([39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m   1405[39m [30;43m             [39;49m[30;43;01mfor[39;49;00m[30;43m [39;49m[30;43mtick[39;49m[30;43m [39;49m[30;43;01min[39;49;00m[30;43m [39;49m[30;43mticks[39;49m
+[32m   1406[39m [30;43m             [39;49m[30;43;01mif[39;49;00m[30;43m [39;49m[30;43mtick[39;49m[30;43m.[39;49m[30;43mlabel1[39;49m[30;43m.[39;49m[30;43mget_visible[39;49m[30;43m([39;49m[30;43m)[39;49m[30;43m [39;49m[30;43;01mand[39;49;00m[30;43m [39;49m[30;43mtick[39;49m[30;43m.[39;49m[30;43mlabel1[39;49m[30;43m.[39;49m[30;43mget_in_layout[39;49m[30;43m([39;49m[30;43m)[39;49m[30;43m][39;49m,
+[32m   1407[39m             [tick.label2.get_window_extent(renderer)
+[32m   1408[39m              [38;5;28;01mfor[39;00m tick [38;5;129;01min[39;00m ticks
+[32m   1409[39m              [38;5;28;01mif[39;00m tick.label2.get_visible() [38;5;129;01mand[39;00m tick.label2.get_in_layout()])
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/axis.py:1404[39m, in [36m<listcomp>[39m[34m(.0)[39m
+[32m   1402[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34m_get_ticklabel_bboxes[39m([38;5;28mself[39m, ticks, renderer):
+[32m   1403[39m [38;5;250m    [39m[33;03m"""Return lists of bboxes for ticks' label1's and label2's."""[39;00m
+[32m-> [39m[32m1404[39m     [38;5;28;01mreturn[39;00m ([[30;43mtick[39;49m[30;43m.[39;49m[30;43mlabel1[39;49m[30;43m.[39;49m[30;43mget_window_extent[39;49m[30;43m([39;49m[30;43mrenderer[39;49m[30;43m)[39;49m
+[32m   1405[39m              [38;5;28;01mfor[39;00m tick [38;5;129;01min[39;00m ticks
+[32m   1406[39m              [38;5;28;01mif[39;00m tick.label1.get_visible() [38;5;129;01mand[39;00m tick.label1.get_in_layout()],
+[32m   1407[39m             [tick.label2.get_window_extent(renderer)
+[32m   1408[39m              [38;5;28;01mfor[39;00m tick [38;5;129;01min[39;00m ticks
+[32m   1409[39m              [38;5;28;01mif[39;00m tick.label2.get_visible() [38;5;129;01mand[39;00m tick.label2.get_in_layout()])
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/text.py:1076[39m, in [36mText.get_window_extent[39m[34m(self, renderer, dpi)[39m
+[32m   1071[39m     [38;5;28;01mraise[39;00m [38;5;167;01mRuntimeError[39;00m(
+[32m   1072[39m         [33m"[39m[33mCannot get window extent of text w/o renderer. You likely [39m[33m"[39m
+[32m   1073[39m         [33m"[39m[33mwant to call [39m[33m'[39m[33mfigure.draw_without_rendering()[39m[33m'[39m[33m first.[39m[33m"[39m)
+[32m   1075[39m [38;5;28;01mwith[39;00m cbook._setattr_cm(fig, dpi=dpi):
+[32m-> [39m[32m1076[39m     bbox, _, _ = [30;43mself[39;49m[30;43m.[39;49m[30;43m_get_layout[39;49m[30;43m([39;49m[30;43mself[39;49m[30;43m.[39;49m[30;43m_renderer[39;49m[30;43m)[39;49m
+[32m   1077[39m     x, y = [38;5;28mself[39m.get_unitless_position()
+[32m   1078[39m     x, y = [38;5;28mself[39m.get_transform().transform((x, y))
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/text.py:465[39m, in [36mText._get_layout[39m[34m(self, renderer)[39m
+[32m    462[39m             [38;5;28;01mbreak[39;00m
+[32m    463[39m [38;5;28;01mif[39;00m [38;5;28;01mNone[39;00m [38;5;129;01min[39;00m (min_ascent, min_descent):
+[32m    464[39m     [38;5;66;03m# Fallback to font measurement.[39;00m
+[32m--> [39m[32m465[39m     _, h, min_descent = [30;43m_get_text_metrics_with_cache[39;49m[30;43m([39;49m
+[32m    466[39m [30;43m        [39;49m[30;43mrenderer[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m"[39;49m[30;43mlp[39;49m[30;43m"[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mself[39;49m[30;43m.[39;49m[30;43m_fontproperties[39;49m[30;43m,[39;49m
+[32m    467[39m [30;43m        [39;49m[30;43mismath[39;49m[30;43m=[39;49m[30;43m"[39;49m[30;43mTeX[39;49m[30;43m"[39;49m[30;43m [39;49m[30;43;01mif[39;49;00m[30;43m [39;49m[30;43mself[39;49m[30;43m.[39;49m[30;43mget_usetex[39;49m[30;43m([39;49m[30;43m)[39;49m[30;43m [39;49m[30;43;01melse[39;49;00m[30;43m [39;49m[30;43;01mFalse[39;49;00m[30;43m,[39;49m
+[32m    468[39m [30;43m        [39;49m[30;43mdpi[39;49m[30;43m=[39;49m[30;43mdpi[39;49m[30;43m)[39;49m
+[32m    469[39m     min_ascent = h - min_descent
+[32m    470[39m     line_gap = [32m0[39m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/text.py:59[39m, in [36m_get_text_metrics_with_cache[39m[34m(renderer, text, fontprop, ismath, dpi)[39m
+[32m     52[39m get_text_metrics = _get_text_metrics_function(renderer)
+[32m     53[39m [38;5;66;03m# call the function to compute the metrics and return[39;00m
+[32m     54[39m [38;5;66;03m#[39;00m
+[32m     55[39m [38;5;66;03m# We pass a copy of the fontprop because FontProperties is both mutable and[39;00m
+[32m     56[39m [38;5;66;03m# has a `__hash__` that depends on that mutable state.  This is not ideal[39;00m
+[32m     57[39m [38;5;66;03m# as it means the hash of an object is not stable over time which leads to[39;00m
+[32m     58[39m [38;5;66;03m# very confusing behavior when used as keys in dictionaries or hashes.[39;00m
+[32m---> [39m[32m59[39m [38;5;28;01mreturn[39;00m [30;43mget_text_metrics[39;49m[30;43m([39;49m[30;43mtext[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mfontprop[39;49m[30;43m.[39;49m[30;43mcopy[39;49m[30;43m([39;49m[30;43m)[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mismath[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mdpi[39;49m[30;43m)[39;49m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/text.py:125[39m, in [36m_get_text_metrics_function.<locals>._text_metrics[39m[34m(text, fontprop, ismath, dpi)[39m
+[32m    120[39m     [38;5;28;01mraise[39;00m [38;5;167;01mRuntimeError[39;00m(
+[32m    121[39m         [33m"[39m[33mTrying to get text metrics for a renderer that no longer exists.  [39m[33m"[39m
+[32m    122[39m         [33m"[39m[33mThis should never happen and is evidence of a bug elsewhere.[39m[33m"[39m
+[32m    123[39m         )
+[32m    124[39m [38;5;66;03m# do the actual method call we need and return the result[39;00m
+[32m--> [39m[32m125[39m [38;5;28;01mreturn[39;00m [30;43mlocal_renderer[39;49m[30;43m.[39;49m[30;43mget_text_width_height_descent[39;49m[30;43m([39;49m[30;43mtext[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mfontprop[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mismath[39;49m[30;43m)[39;49m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/backends/backend_agg.py:256[39m, in [36mRendererAgg.get_text_width_height_descent[39m[34m(self, s, prop, ismath)[39m
+[32m    254[39m _api.check_in_list([[33m"[39m[33mTeX[39m[33m"[39m, [38;5;28;01mTrue[39;00m, [38;5;28;01mFalse[39;00m], ismath=ismath)
+[32m    255[39m [38;5;28;01mif[39;00m ismath == [33m"[39m[33mTeX[39m[33m"[39m:
+[32m--> [39m[32m256[39m     [38;5;28;01mreturn[39;00m [30;43msuper[39;49m[30;43m([39;49m[30;43m)[39;49m[30;43m.[39;49m[30;43mget_text_width_height_descent[39;49m[30;43m([39;49m[30;43ms[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mprop[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mismath[39;49m[30;43m)[39;49m
+[32m    258[39m [38;5;28;01mif[39;00m ismath:
+[32m    259[39m     parse = [38;5;28mself[39m.mathtext_parser.parse(s, [38;5;28mself[39m.dpi, prop)
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/backend_bases.py:589[39m, in [36mRendererBase.get_text_width_height_descent[39m[34m(self, s, prop, ismath)[39m
+[32m    585[39m fontsize = prop.get_size_in_points()
+[32m    587[39m [38;5;28;01mif[39;00m ismath == [33m'[39m[33mTeX[39m[33m'[39m:
+[32m    588[39m     [38;5;66;03m# todo: handle properties[39;00m
+[32m--> [39m[32m589[39m     [38;5;28;01mreturn[39;00m [30;43mself[39;49m[30;43m.[39;49m[30;43mget_texmanager[39;49m[30;43m([39;49m[30;43m)[39;49m[30;43m.[39;49m[30;43mget_text_width_height_descent[39;49m[30;43m([39;49m
+[32m    590[39m [30;43m        [39;49m[30;43ms[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mfontsize[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mrenderer[39;49m[30;43m=[39;49m[30;43mself[39;49m[30;43m)[39;49m
+[32m    592[39m dpi = [38;5;28mself[39m.points_to_pixels([32m72[39m)
+[32m    593[39m [38;5;28;01mif[39;00m ismath:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/texmanager.py:369[39m, in [36mTexManager.get_text_width_height_descent[39m[34m(cls, tex, fontsize, renderer)[39m
+[32m    367[39m [38;5;28;01mif[39;00m tex.strip() == [33m'[39m[33m'[39m:
+[32m    368[39m     [38;5;28;01mreturn[39;00m [32m0[39m, [32m0[39m, [32m0[39m
+[32m--> [39m[32m369[39m dvipath = [30;43mcls[39;49m[30;43m.[39;49m[30;43mmake_dvi[39;49m[30;43m([39;49m[30;43mtex[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mfontsize[39;49m[30;43m)[39;49m
+[32m    370[39m dpi_fraction = renderer.points_to_pixels([32m1.[39m) [38;5;28;01mif[39;00m renderer [38;5;28;01melse[39;00m [32m1[39m
+[32m    371[39m [38;5;28;01mwith[39;00m dviread.Dvi(dvipath, [32m72[39m * dpi_fraction) [38;5;28;01mas[39;00m dvi:
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/texmanager.py:301[39m, in [36mTexManager.make_dvi[39m[34m(cls, tex, fontsize)[39m
+[32m    298[39m [38;5;28;01mwith[39;00m TemporaryDirectory([38;5;28mdir[39m=dvipath.parent) [38;5;28;01mas[39;00m tmpdir:
+[32m    299[39m     Path(tmpdir, [33m"[39m[33mfile.tex[39m[33m"[39m).write_text(
+[32m    300[39m         [38;5;28mcls[39m._get_tex_source(tex, fontsize), encoding=[33m'[39m[33mutf-8[39m[33m'[39m)
+[32m--> [39m[32m301[39m     [30;43mcls[39;49m[30;43m.[39;49m[30;43m_run_checked_subprocess[39;49m[30;43m([39;49m
+[32m    302[39m [30;43m        [39;49m[30;43m[[39;49m[30;43m"[39;49m[30;43mlatex[39;49m[30;43m"[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m"[39;49m[30;43m-interaction=nonstopmode[39;49m[30;43m"[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m"[39;49m[30;43m-halt-on-error[39;49m[30;43m"[39;49m[30;43m,[39;49m
+[32m    303[39m [30;43m         [39;49m[30;43m"[39;49m[30;43m-no-shell-escape[39;49m[30;43m"[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43m"[39;49m[30;43mfile.tex[39;49m[30;43m"[39;49m[30;43m][39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mtex[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mcwd[39;49m[30;43m=[39;49m[30;43mtmpdir[39;49m[30;43m)[39;49m
+[32m    304[39m     Path(tmpdir, [33m"[39m[33mfile.dvi[39m[33m"[39m).replace(dvipath)
+[32m    305[39m     [38;5;66;03m# Also move the tex source to the main cache directory, but[39;00m
+[32m    306[39m     [38;5;66;03m# only for backcompat.[39;00m
+
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/matplotlib/texmanager.py:274[39m, in [36mTexManager._run_checked_subprocess[39m[34m(cls, command, tex, cwd)[39m
+[32m    262[39m     [38;5;28;01mraise[39;00m [38;5;167;01mRuntimeError[39;00m(
+[32m    263[39m         [33m'[39m[38;5;132;01m{prog}[39;00m[33m was not able to process the following string:[39m[38;5;130;01m\n[39;00m[33m'[39m
+[32m    264[39m         [33m'[39m[38;5;132;01m{tex!r}[39;00m[38;5;130;01m\n[39;00m[38;5;130;01m\n[39;00m[33m'[39m
+[32m   (...)[39m[32m    271[39m             exc=exc.output.decode([33m'[39m[33mutf-8[39m[33m'[39m, [33m'[39m[33mbackslashreplace[39m[33m'[39m))
+[32m    272[39m         ) [38;5;28;01mfrom[39;00m[38;5;250m [39m[38;5;28;01mNone[39;00m
+[32m    273[39m [38;5;28;01mexcept[39;00m ([38;5;167;01mFileNotFoundError[39;00m, [38;5;167;01mOSError[39;00m) [38;5;28;01mas[39;00m exc:
+[32m--> [39m[32m274[39m     [38;5;28;01mraise[39;00m [38;5;167;01mRuntimeError[39;00m(
+[32m    275[39m         [33mf[39m[33m'[39m[33mFailed to process string with tex because [39m[38;5;132;01m{[39;00mcommand[[32m0[39m][38;5;132;01m}[39;00m[33m [39m[33m'[39m
+[32m    276[39m         [33m'[39m[33mcould not be found[39m[33m'[39m) [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mexc[39;00m
+[32m    277[39m _log.debug(report)
+[32m    278[39m [38;5;28;01mreturn[39;00m report
+
+[31mRuntimeError[39m: Failed to process string with tex because latex could not be found
+

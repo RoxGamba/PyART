@@ -1,0 +1,352 @@
+PyART.analysis.integrate_wave
+=============================
+
+.. py:module:: PyART.analysis.integrate_wave
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.integrate_wave.IntegrateMultipole
+
+
+Module Contents
+---------------
+
+.. py:class:: IntegrateMultipole(l, m, t, data, mass, radius, integrand='psi4', method='FFI', f0=0.001, deg=0, poly_int=None, extrap_psi4=False, window=None, patch_opts={}, walpha=3)
+
+   Bases: :py:obj:`object`
+
+
+   Class for integrating gravitational wave multipole data using either
+   fixed-frequency (FFI) or time-domain (TDI) integration methods.
+   :param l: Spherical harmonic index l.
+   :type l: int
+   :param m: Spherical harmonic index m.
+   :type m: int
+   :param t: Time array.
+   :type t: array_like
+   :param data: Input data array (psi4 or news).
+   :type data: array_like
+   :param mass: Mass parameter (typically ADM mass).
+   :type mass: float
+   :param radius: Extraction radius.
+   :type radius: float
+   :param integrand: Type of integrand ("psi4" or "news"), default "psi4".
+   :type integrand: str, optional
+   :param method: Integration method ("FFI" or "TDI"), default "FFI".
+   :type method: str, optional
+   :param f0: Low-frequency cutoff for FFI, default 0.001.
+   :type f0: float, optional
+   :param deg: Degree of polynomial for drift removal in TDI, default 0.
+   :type deg: int, optional
+   :param poly_int: Interval for polynomial drift removal, default None.
+   :type poly_int: tuple or None, optional
+   :param extrap_psi4: If True, apply extrapolation to psi4, default False.
+   :type extrap_psi4: bool, optional
+   :param window: Windowing parameters [t1, t2], default None.
+   :type window: list or None, optional
+   :param patch_opts: Options for patching psi4, default {}.
+   :type patch_opts: dict, optional
+   :param walpha: Window sharpness parameter, default 3.
+   :type walpha: float, optional
+
+   .. attribute:: l, m, mass, radius, integrand, method, f0, deg, poly_int, extrap_psi4,
+
+
+
+   .. attribute:: window, walpha, patch_opts
+
+
+
+      :type: see Parameters
+
+   .. attribute:: t
+
+      Time array.
+
+      :type: array_like
+
+   .. attribute:: psi4
+
+      Psi4 data (after windowing/patching/extrapolation if applicable).
+
+      :type: array_like
+
+   .. attribute:: dh
+
+      First integral of psi4 (news).
+
+      :type: array_like
+
+   .. attribute:: h
+
+      Second integral of psi4 (strain).
+
+      :type: array_like
+
+   .. attribute:: u
+
+      Retarded time.
+
+      :type: array_like
+
+   .. attribute:: integr_opts
+
+      Dictionary of integration options.
+
+      :type: dict
+
+   .. method:: areal_radius()
+
+      Compute areal radius from extraction radius and mass.
+
+   .. method:: retarded_time()
+
+      Compute retarded time using areal radius and mass.
+
+   .. method:: patch_psi4(psi4, t0, t1, t2, debug=False)
+
+      Patch psi4 before t1 and after t2 using power-laws of (t-t0).
+
+   .. method:: extrapolate_psi4()
+
+      Apply extrapolation to psi4 using mass and radius.
+
+   .. method:: apply_window(signal, window=[10, -10], walpha=3)
+
+      Apply window function to signal.
+
+   .. method:: freq_interval(signal)
+
+      Compute frequency interval for FFI.
+
+   .. method:: fixed_freq_int(signal, steps=1)
+
+      Perform fixed-frequency integration.
+
+   .. method:: remove_time_drift(signal)
+
+      Remove polynomial drift from time-domain integration.
+
+   .. method:: time_domain_int(signal, steps=1)
+
+      Perform time-domain integration with polynomial correction.
+
+   .. method:: integrate(signal, steps=1)
+
+      Integrate signal using selected method (FFI or TDI).
+
+
+
+   .. py:attribute:: l
+
+
+   .. py:attribute:: m
+
+
+   .. py:attribute:: mass
+
+
+   .. py:attribute:: radius
+
+
+   .. py:attribute:: integrand
+      :value: 'psi4'
+
+
+
+   .. py:attribute:: method
+      :value: 'FFI'
+
+
+
+   .. py:attribute:: f0
+      :value: 0.001
+
+
+
+   .. py:attribute:: deg
+      :value: 0
+
+
+
+   .. py:attribute:: poly_int
+      :value: None
+
+
+
+   .. py:attribute:: extrap_psi4
+      :value: False
+
+
+
+   .. py:attribute:: window
+      :value: None
+
+
+
+   .. py:attribute:: walpha
+      :value: 3
+
+
+
+   .. py:attribute:: patch_opts
+
+
+   .. py:attribute:: t
+
+
+   .. py:attribute:: u
+
+
+   .. py:attribute:: integr_opts
+
+
+   .. py:method:: areal_radius()
+
+      Calculate the areal radius of the object.
+      The areal radius is defined as:
+          r_areal = r * (1 + M / (2 * r)) ** 2
+      where `r` is the radius and `M` is the mass.
+      :returns: The areal radius.
+      :rtype: float
+
+
+
+   .. py:method:: retarded_time()
+
+      Computes the retarded time for the current object.
+      If the radius is non-positive,
+      returns the current time `t` directly.
+      :returns: The retarded time value.
+      :rtype: float
+
+
+
+   .. py:method:: patch_psi4(psi4, t0, t1, t2, debug=False)
+
+      Patch psi4 before t1 and after t2 using power-laws of (t-t0).
+      To be tested on high energy simulations.
+
+      :param psi4: Complex waveform data to be patched.
+      :type psi4: array_like
+      :param t0: Reference time for the power-law extrapolation.
+      :type t0: float
+      :param t1: Time before which the waveform is patched using a (t-t0)^-3 and (t-t0)^-4 power-law.
+      :type t1: float
+      :param t2: Time after which the waveform is patched using a (t-t0)^-3 power-law.
+      :type t2: float
+      :param debug: If True, plot the patched waveform and intermediate results for debugging.
+      :type debug: bool, optional
+
+      :returns: **new_psi4** -- The patched complex waveform.
+      :rtype: ndarray
+
+
+
+   .. py:method:: extrapolate_psi4()
+
+      Extrapolates the psi4 waveform to infinity using the formula
+      from https://arxiv.org/pdf/1008.4360
+      The extrapolated psi4 is stored in self.psi4.
+      :rtype: None
+
+
+
+   .. py:method:: apply_window(signal, window=[10, -10], walpha=3)
+
+      Applies a smooth window to the input signal using sigmoid functions.
+      :param signal: The input signal array to be windowed.
+      :type signal: np.ndarray
+      :param window: Window specification as [start, end]. The start and end values define the window region.
+                     Default is [10, -10].
+      :type window: list or tuple, optional
+      :param walpha: The sharpness parameter for the sigmoid window edges. Default is 3.
+      :type walpha: float, optional
+
+      :returns: The windowed signal.
+      :rtype: np.ndarray
+
+      :raises RuntimeError: If the window specification is invalid.
+
+      .. rubric:: Notes
+
+      The window is applied smoothly using sigmoid functions to avoid sharp edges.
+
+
+
+   .. py:method:: freq_interval(signal)
+
+      Computes the frequency array for the given signal, limiting frequencies to the cutoff value.
+      :param signal: Input signal array for which the frequency interval is computed.
+      :type signal: ndarray
+
+      :returns: **f** -- Frequency array with values limited to +/- self.fcut.
+      :rtype: ndarray
+
+
+
+   .. py:method:: fixed_freq_int(signal, steps=1)
+
+      Fixed frequency integration
+      steps is the number of integrations performed
+      :param signal: Input signal to be integrated.
+      :type signal: array_like
+      :param steps: Number of integration steps to perform (default is 1).
+      :type steps: int, optional
+
+      :returns: **integrals** -- List containing the integrated signal(s) after each step.
+      :rtype: list of ndarray
+
+
+
+   .. py:method:: remove_time_drift(signal)
+
+      Removes polynomial time drift from the input signal.
+      Fits a polynomial of degree `self.deg` to the signal over the specified interval
+      (`self.poly_int`) or the entire time array (`self.t`) if no interval is set.
+      Subtracts the fitted polynomial from the signal to remove drift.
+      :param signal: Input signal array to be corrected for time drift.
+      :type signal: np.ndarray
+
+      :returns: **out** -- Signal with polynomial time drift removed.
+      :rtype: np.ndarray
+
+      :raises RuntimeError: If the polynomial interval ends after the simulation's end time.
+
+
+
+   .. py:method:: time_domain_int(signal, steps=1)
+
+      Time domain integration with polynomial correction
+      The polynomial is obtained fitting the whole signal if poly_int is none,
+      otherwise consider only the interval specified; see remove_time_drift
+      :param signal: The input signal to be integrated.
+      :type signal: array_like
+      :param steps: Number of integration steps to perform (default is 1).
+      :type steps: int, optional
+
+      :returns: **integrals** -- List containing the integrated signal(s) after polynomial drift correction
+                for each step.
+      :rtype: list of ndarray
+
+
+
+   .. py:method:: integrate(signal, steps=1)
+
+      Integrate the input signal using the specified method (FFI or TDI).
+      :param signal: The input signal to be integrated.
+      :type signal: array_like
+      :param steps: Number of integration steps to perform (default is 1).
+      :type steps: int, optional
+
+      :returns: The integrated signal if `steps` is 1, otherwise a list of integrated signals.
+      :rtype: ndarray or list of ndarray
+
+      :raises RuntimeError: If an unknown integration method is specified.
+
+
+
