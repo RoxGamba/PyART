@@ -9,7 +9,7 @@ teobresums @ git+https://bitbucket.org/teobresums/teobresums.git@Dali#subdirecto
 phenomxpy @ git+https://gitlab.com/imrphenom-dev/phenomxpy.git
 
 # SEOBNR (Spinning Effective One-Body) approximants
-pyseobnr
+# pyseobnr
 
 # Other optional models (commented; uncomment to use)
 # gw-eccentricity>=1.0.4
