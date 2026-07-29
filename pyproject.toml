@@ -32,6 +32,7 @@ dependencies = { file = ["requirements.txt"] }
 [tool.setuptools.dynamic.optional-dependencies]
 catalogs = { file = ["requirements-catalogs.txt"] }
 docs = { file = ["requirements-docs.txt"] }
+models = { file = ["requirements-models.txt"] }
 
 [tool.setuptools.packages.find]
 include = ["PyART*"]

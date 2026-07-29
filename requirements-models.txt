@@ -1,0 +1,15 @@
+# Extra dependencies for optional analytical/semi-analytical waveform models.
+# Each model is imported inside try/except, so the base install works without
+# this extra -- only code that explicitly uses these models needs it.
+
+# TEOBResumS from Dali branch; setup.py is in the Python/ subdirectory
+teobresums @ git+https://bitbucket.org/teobresums/teobresums.git@Dali#subdirectory=Python
+
+# PhenomX (IMRPhenomX/X_AS) approximants
+phenomxpy @ git+https://gitlab.com/imrphenom-dev/phenomxpy.git
+
+# SEOBNR (Spinning Effective One-Body) approximants
+pyseobnr
+
+# Other optional models (commented; uncomment to use)
+# gw-eccentricity>=1.0.4
