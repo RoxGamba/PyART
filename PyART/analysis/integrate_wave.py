@@ -379,17 +379,16 @@ class IntegrateMultipole(object):
         clip_val = np.log(1e20)
         # FIXME : this if-statement is error-prone, to improve
         if window[0] >= 0 and window[1] <= 0:
-            w_t1 = window[0]
+            w_t1 = t[0] + window[0]
             w_t2 = t[-1] + window[1]
             sig1 = safe_sigmoid(t - w_t1, alpha=walpha, clip=clip_val)
             sig2 = safe_sigmoid(w_t2 - t, alpha=walpha, clip=clip_val)
-            signal *= sig1
-            signal *= sig2
+            signal = signal * sig1 * sig2
         elif window[1] > window[0]:
             sig = safe_sigmoid(
                 window[0] - t, alpha=walpha, clip=clip_val
             ) + safe_sigmoid(t - window[1], alpha=walpha, clip=clip_val)
-            signal *= sig
+            signal = signal * sig
         else:
             raise RuntimeError("Invalid window option:: [{:f} {:f}]".format(*window))
 

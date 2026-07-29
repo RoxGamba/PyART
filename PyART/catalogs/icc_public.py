@@ -124,7 +124,7 @@ class Waveform_ICC(Waveform):
             return
 
         outdir = Path(f"{self.sim_path}")
-        outdir.mkdir(exist_ok=True)
+        outdir.mkdir(exist_ok=True, parents=True)
 
         for key in ["metadata", "partfile", "h5"]:
             url = match.get(key)
@@ -214,7 +214,7 @@ class Waveform_ICC(Waveform):
         psi4lm = {}
         waveform_file = os.path.join(self.sim_path, f"{self.ID}_wf.h5")
         with h5py.File(waveform_file, "r") as f:
-            self.u = f[f"t_r{self.extraction}"][:]
+            self._t_psi4 = f[f"t_r{self.extraction}"][:]
             for l, m in modes:
                 name = f"psi4_l{l}_m{m}_r{self.extraction}"
                 psi4 = f[name][:]
