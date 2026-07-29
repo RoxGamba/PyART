@@ -3,6 +3,7 @@ Test the Matcher class with a NR waveform
 """
 
 import numpy as np
+import pytest
 import matplotlib.pyplot as plt
 from PyART.catalogs import sxs
 from PyART.analysis.match import Matcher
@@ -89,3 +90,150 @@ def test_self_match_pol():
             test_self_match_pol_helper(cp, ep)
 
     pass
+
+
+def test_skymax_averages_over_the_whole_grid(monkeypatch):
+    """
+    _compute_mm_skymax loops over coa_phase x eff_pols and accumulates the
+    matches in `mms`, but used to return np.average(mm) -- the last scalar --
+    throwing the loop away. The result must be the average over the grid.
+    """
+    fake_matches = [0.90, 0.92, 0.94, 0.98]
+    calls = []
+
+    def fake_skymax_match(self, s, wf, inc, psd, modes, **kwargs):
+        calls.append(1)
+        return fake_matches[len(calls) - 1]
+
+    monkeypatch.setattr(Matcher, "skymax_match", fake_skymax_match)
+
+    settings = {
+        "kind": "hm",
+        "initial_frequency_mm": fmin,
+        "final_frequency_mm": fmax,
+        "tlen": len(nr.u),
+        "dt": 1 / srate,
+        "M": M,
+        "resize_factor": 4,
+        "pad_end_frac": 0.5,
+        "taper_alpha": 0.2,
+        "taper_start": 0.05,
+        "taper": "sigmoid",
+        "debug": False,
+        "coa_phase": [0.0, np.pi / 2],
+        "eff_pols": [0.0, np.pi / 3],
+    }
+
+    m = Matcher(nr, nr_2, settings=settings)
+
+    assert len(calls) == 4, "the grid should be 2 coa_phase x 2 eff_pols"
+    # mismatch = 1 - <match>, averaged over the whole grid
+    assert m.mismatch == pytest.approx(1 - np.mean(fake_matches))
+    # and specifically not just the last entry
+    assert m.mismatch != pytest.approx(1 - fake_matches[-1])
+
+
+def test_skymax_single_point_grid(monkeypatch):
+    """With one coa_phase and one eff_pol the average is that single value."""
+
+    def fake_skymax_match(self, s, wf, inc, psd, modes, **kwargs):
+        return 0.75
+
+    monkeypatch.setattr(Matcher, "skymax_match", fake_skymax_match)
+
+    settings = {
+        "kind": "hm",
+        "initial_frequency_mm": fmin,
+        "final_frequency_mm": fmax,
+        "tlen": len(nr.u),
+        "dt": 1 / srate,
+        "M": M,
+        "resize_factor": 4,
+        "pad_end_frac": 0.5,
+        "taper_alpha": 0.2,
+        "taper_start": 0.05,
+        "taper": "sigmoid",
+        "debug": False,
+        "coa_phase": [0.3],
+        "eff_pols": [0.4],
+    }
+
+    m = Matcher(nr, nr_2, settings=settings)
+    assert m.mismatch == pytest.approx(0.25)
+
+
+def base_single_mode_settings(**overrides):
+    settings = {
+        "kind": "single-mode",
+        "modes-or-pol": "modes",
+        "modes": [(2, 2)],
+        "initial_frequency_mm": fmin,
+        "final_frequency_mm": fmax,
+        "tlen": len(nr.u),
+        "dt": 1 / srate,
+        "M": M,
+        "resize_factor": 4,
+        "pad_end_frac": 0.5,
+        "taper_alpha": 0.2,
+        "taper_start": 0.05,
+        "taper": "sigmoid",
+        "debug": False,
+    }
+    settings.update(overrides)
+    return settings
+
+
+@pytest.mark.parametrize("option", ["cut_longer", "cut_second_waveform"])
+def test_cut_options_run(option):
+    """
+    These options had no coverage at all.
+
+    They used to read 'tmrg, _, _, _ = WaveForm.find_max() - WaveForm.u[0]',
+    which survives only because find_max returns np.float64 entries: numpy
+    broadcasts the tuple and subtracts u[0] from all four, the last three being
+    discarded. The merger time is now taken explicitly, which is equivalent for
+    a numpy time array and does not depend on that accident.
+    """
+    wf1 = sxs.Waveform_SXS(ID=sxs_id, download=False, ignore_deprecation=True)
+    wf2 = sxs.Waveform_SXS(ID=sxs_id, download=False, ignore_deprecation=True)
+    wf1.cut(300)
+    wf2.cut(500)  # different start -> non-zero DeltaT
+
+    m = Matcher(wf1, wf2, settings=base_single_mode_settings(**{option: True}))
+    assert np.isfinite(m.mismatch)
+
+
+def test_cut_options_are_mutually_exclusive():
+    wf1 = sxs.Waveform_SXS(ID=sxs_id, download=False, ignore_deprecation=True)
+    wf2 = sxs.Waveform_SXS(ID=sxs_id, download=False, ignore_deprecation=True)
+    wf1.cut(300)
+    wf2.cut(300)
+
+    with pytest.raises(RuntimeError, match="cannot be used together"):
+        Matcher(
+            wf1,
+            wf2,
+            settings=base_single_mode_settings(
+                cut_longer=True, cut_second_waveform=True
+            ),
+        )
+
+
+def test_single_mode_with_cached_h2f():
+    """
+    The output dict referenced h2.delta_t, but h2 only exists when wf2 is in the
+    time domain and was not served from the cache -> NameError.
+    """
+    settings = base_single_mode_settings()
+
+    # first pass: populate the cache the way callers are meant to
+    m0 = Matcher(nr, nr_2, settings=settings)
+    cache = {"h1f": m0.h1f, "h2f": m0.h2f, "M": M}
+
+    wf1 = sxs.Waveform_SXS(ID=sxs_id, download=False, ignore_deprecation=True)
+    wf2 = sxs.Waveform_SXS(ID=sxs_id, download=False, ignore_deprecation=True)
+    wf1.cut(300)
+    wf2.cut(300)
+
+    m = Matcher(wf1, wf2, settings=base_single_mode_settings(), cache=cache)
+    assert np.isfinite(m.mismatch)

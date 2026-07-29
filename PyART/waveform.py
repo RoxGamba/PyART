@@ -153,7 +153,7 @@ class Waveform(object):
 
     def __add_to__(self, var=None, factor=0.0):
         """
-        Add factor to specified variable
+        Add factor to specified complex modes (hlm, dothlm, psi4lm)
         Parameters
         ----------
         var: list
@@ -232,13 +232,15 @@ class Waveform(object):
             height = np.mean(Alm) / 2
         peaks, props = find_peaks(Alm, height=height)
 
+        if len(peaks) == 0:
+            raise ValueError("No peaks found")
+
         if kind == "first-max-after-t":
-            for i in range(len(peaks)):
-                if t[peaks[i]] > umin:
-                    break
+            after_umin = np.where(t[peaks] > umin)[0]
+            if len(after_umin) == 0:
+                raise ValueError(f"No peak found after umin={umin}")
+            i = after_umin[0]
         elif kind == "last-peak":
-            if len(peaks) == 0:
-                raise ValueError("No peaks found")
             i = len(peaks) - 1
         elif kind == "global":
             Alms = props["peak_heights"]
@@ -474,7 +476,7 @@ class Waveform(object):
 
         return new_u, hlm_i
 
-    def dynamics_from_hlm(self, modes, warning=False):
+    def dynamics_from_hlm(self, modes, warning=False, mnegative=False):
         """
         Compute GW energy and angular momentum fluxes from multipolar waveform
 
@@ -484,6 +486,8 @@ class Waveform(object):
             list of (l,m) modes to consider
         warning: bool
             if True, warn if dothlm is not found and needs to be computed
+        mnegative: bool
+            if True, account for the factor 2 due to m<0 modes
         Returns
         -------
         out: dict
@@ -502,6 +506,7 @@ class Waveform(object):
             self.dothlm,
             self.t,
             modes,
+            mnegative=mnegative,
         )
 
         self._dyn = {**self._dyn, **dynamicsdict}
@@ -548,25 +553,33 @@ class Waveform(object):
             if True, apply a tapering window to the time-domain waveform
         pad: bool
             if True, pad the time-domain waveform to the next power of 2
+
         Returns
         -------
-        out: (f, hp, hc)
+        out: None
+            sets the f, hp, hc and domain attributes in place
         """
 
         dt = self.u[1] - self.u[0]
         # window
         if taper:
-            self._hp = ut.windowing(self.hp, alpha=0.1)
-            self._hc = ut.windowing(self.hc, alpha=0.1)
+            self._hp, _ = ut.windowing(self.hp, alpha=0.1)
+            self._hc, _ = ut.windowing(self.hc, alpha=0.1)
 
         if pad:
-            srate = 1.0 / dt
             seglen = ut.nextpow2(self.u[-1])
-            dN = int((seglen - len(self.u) * srate) / srate)
             self._u = np.arange(0.0, seglen, dt)
             self._t = np.arange(0.0, seglen, dt)
-            self._hp = ut.zero_pad_before(self.hp, dN, return_column=False)
-            self._hc = ut.zero_pad_before(self.hp, dN, return_column=False)
+            # zero_pad_before wants the final number of samples, not the
+            # number of zeroes to prepend
+            N = len(self.u)
+            if N < len(self.hp):
+                raise ValueError(
+                    f"Cannot pad to {N} samples: waveform is already {len(self.hp)} "
+                    "samples long. Is the time array starting at t=0?"
+                )
+            self._hp = ut.zero_pad_before(self.hp, N, return_column=False)
+            self._hc = ut.zero_pad_before(self.hc, N, return_column=False)
             assert len(self.u) == len(self.hp)
             assert len(self.u) == len(self.hc)
 
@@ -601,7 +614,7 @@ class Waveform(object):
         self,
         t_psi4,
         radius,
-        integr_opts={"method": "FFI", "f0": 0.01, "integrand": "psi4"},
+        integr_opts=None,
         modes=None,
         M=1.0,
     ):
@@ -614,12 +627,13 @@ class Waveform(object):
             time array for psi4lm
         radius: float
             extraction radius
-        integr_opts: dict
+        integr_opts: dict or None
             dictionary with integration options
             method: 'FFI' or 'trapezoid'
             f0: frequency cutoff for FFI
             deg: degree of the polynomial for trapezoid
             integrand: 'psi4' or 'news'
+            if None, use {'method': 'FFI', 'f0': 0.01, 'integrand': 'psi4'}
         modes: list
             list of (l,m) modes to integrate
         M: float
@@ -629,6 +643,11 @@ class Waveform(object):
         out: dict
             dictionary with integration options used
         """
+        if integr_opts is None:
+            integr_opts = {"method": "FFI", "f0": 0.01}
+        else:
+            # copy: the defaults filled in below must not leak back to the caller
+            integr_opts = dict(integr_opts)
         if modes is None:
             modes = self.psi4lm.keys()
         if "integrand" not in integr_opts:
@@ -674,7 +693,7 @@ class Waveform(object):
         D_sec = distance * ut.consts["DMpc"]
         M_sec = M * ut.consts["Msun"]
 
-        time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
+        time_attrs = ["_u", "_t", "_t_psi4", "u_pc"]
         for time_attr in time_attrs:
             val = getattr(self, time_attr, None)
             if val is not None:
@@ -725,7 +744,7 @@ class Waveform(object):
         D_sec = distance * ut.consts["DMpc"]
         M_sec = M * ut.consts["Msun"]
 
-        time_attrs = ["_u", "_t", "t_psi4", "u_pc"]
+        time_attrs = ["_u", "_t", "_t_psi4", "u_pc"]
         for time_attr in time_attrs:
             val = getattr(self, time_attr, None)
             if val is not None:
@@ -756,6 +775,134 @@ class Waveform(object):
 
         self._units = "SI"
         pass
+
+    def plot(self, quantity, show=False, ax=None, labels_on=True, **kwargs):
+        """
+        Plot the specified quantity for rapid visualization.
+
+        Parameters
+        ----------
+        quantity: str
+            quantity to plot, e.g. 'hp', 'hc', 'hlm', 'dothlm', 'psi4lm', 'dyn'
+
+        show: bool
+            if True, show the plot immediately, otherwise return the axes object for further customization.
+
+        ax: matplotlib.axes.Axes
+            If provided, the plot will be drawn on this axes object. If not provided, a new figure and axes will be created.
+
+        labels_on: bool or str
+            If True, set both x and y labels. If 'x', set only x label. If 'y', set only y label. If False, do not set any labels.
+
+        kwargs: dict
+            additional keyword arguments to pass to the plotting function.
+            The following special keyword arguments are also recognized:
+            - mode: tuple
+                For 'hlm', 'dothlm', or 'psi4lm', specify the (l,m) mode to plot. Default is (2,2).
+            - dyn_quantities: list
+                For 'dyn', specify the dynamics quantities to plot. Can be one or two quantities. If two are provided,
+                the first will be plotted against the second. If one is provided, it will be plotted against time.
+                Default is to plot r vs t
+
+        Returns
+        -------
+        If show is False, returns the matplotlib.axes.Axes object containing the plot. Otherwise, nothing is returned and the plot is displayed.
+
+        """
+
+        if ax is None:
+            _, ax = plt.subplots(figsize=(8, 6))
+        if quantity in ["hp", "hc"]:
+            if getattr(self, quantity) is None:
+                raise RuntimeError(f"{quantity} is not defined! Cannot plot.")
+            ax.plot(self.u, getattr(self, quantity), **kwargs)
+            xlabel = r"$t~[M]$"
+            ylabel = r"$h_{+}$" if quantity == "hp" else "$h_{\\times}$"
+        elif quantity in ["hlm", "dothlm", "psi4lm"]:
+            wave_dict = getattr(self, quantity)
+            if not wave_dict:
+                raise RuntimeError(f"{quantity} is not defined! Cannot plot.")
+            # check if a mode is provided
+            if "mode" in kwargs:
+                mode = kwargs.pop("mode")
+                if mode not in wave_dict:
+                    raise ValueError(f"Mode {mode} not found in {quantity}.")
+            else:
+                # default to 22
+                mode = (2, 2)
+            ax.plot(
+                self.u, wave_dict[mode]["real"], label=f"({mode[0]}{mode[1]})", **kwargs
+            )
+            xlabel = r"$t~[M]$"
+            ylabel = f"$h_{{{mode[0]}{mode[1]}}}$"
+
+        elif quantity == "dyn":
+            if not self.dyn:
+                raise RuntimeError("dyn is not defined! Cannot plot.")
+            # check if a quantity is provided
+            if "dyn_quantities" in kwargs:
+                dyn_quantities = kwargs.pop("dyn_quantities")
+                if len(dyn_quantities) == 1:
+                    y = self.dyn[dyn_quantities[0]]
+                    x = self.dyn["t"]
+                    xlabel = r"$t~[M]$"
+                elif len(dyn_quantities) == 2:
+                    y = self.dyn[dyn_quantities[0]]
+                    x = self.dyn[dyn_quantities[1]]
+                    xlabel = f"${dyn_quantities[1]}$"
+                else:
+                    raise ValueError("too many dyn_quantities provided, max 2 allowed")
+                ax.plot(x, y, **kwargs)
+                ylabel = f"${dyn_quantities[0]}$"
+            else:
+                # assume we want to plot t vs r
+                ax.plot(self.dyn["t"], self.dyn["r"], **kwargs)
+                xlabel = r"$t~[M]$"
+                ylabel = r"$r~[M]$"
+        else:
+            raise ValueError(f"Quantity {quantity} not recognized for plotting.")
+
+        # labels_on can be True, False, x or y
+        # if x, only set x label, if y, only set y label
+        if labels_on:
+            if labels_on in [True, "x"]:
+                ax.set_xlabel(xlabel)
+            if labels_on in [True, "y"]:
+                ax.set_ylabel(ylabel)
+        if show:
+            plt.show()
+        else:
+            return ax
+
+    def plot_modes(self, modes=None, show=False, **kwargs):
+        """
+        Plot the waveform modes.
+        If none are specified, plot all of them.
+
+        Parameters
+        ----------
+        modes: list of tuples
+            List of (l,m) modes to plot. If None, all modes will be plotted
+        show: bool
+            If True, display the plot. If False, return the axes object for further customization.
+        kwargs: dict
+            Additional keyword arguments to pass to the plotting function.
+        """
+        if modes is None:
+            modes = self.hlm.keys()
+        # setup ax depending on the number of modes, 2 cols, nrows = ceil(nmodes/2)
+        nrows = int(np.ceil(len(modes) / 2))
+
+        _, axs = plt.subplots(
+            nrows=nrows, ncols=2, figsize=(10, 3 * nrows), sharex=True
+        )
+        axs = axs.flatten()
+        for i, lm in enumerate(modes):
+            self.plot("hlm", mode=lm, ax=axs[i], labels_on="y", **kwargs)
+        if show:
+            plt.show()
+        else:
+            return axs
 
 
 def waveform2energetics(h, doth, t, modes, mnegative=False):
@@ -934,7 +1081,7 @@ class WaveIntegrated(Waveform):
         r_extr=1,
         M=1,
         modes=[(2, 2)],
-        integr_opts={},
+        integr_opts=None,
         fmt="etk",
         fname="mp_psi4_l@L@_m@M@_r100.00.asc",
         integrand="psi4",
@@ -955,8 +1102,9 @@ class WaveIntegrated(Waveform):
             total mass
         modes: list
             list of (l,m) modes to load
-        integr_opts: dict
-            dictionary with integration options
+        integr_opts: dict or None
+            dictionary with integration options; missing entries are filled
+            in with defaults, and the caller's dictionary is left untouched
             method: 'FFI' or 'trapezoid'
             f0: frequency cutoff for FFI
             deg: degree of the polynomial for trapezoid
@@ -983,6 +1131,8 @@ class WaveIntegrated(Waveform):
         self.integrand = integrand.lower()
         self.norm = norm
 
+        # copy: the defaults filled in below must not leak back to the caller
+        integr_opts = {} if integr_opts is None else dict(integr_opts)
         if "method" not in integr_opts:
             integr_opts["method"] = "FFI"
         if "f0" not in integr_opts:

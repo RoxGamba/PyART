@@ -48,7 +48,7 @@ class Cataloger(object):
                 name = wave.metadata["name"]
                 self.data[name] = {"Waveform": wave, "Optimizer": None}
             except Exception as e:
-                logging.error(f"Issues with {ID:04}: {e}")
+                logging.error(f"Issues with {ID}: {e}")
         self.nsims = len(self.data)
 
         pass
@@ -57,7 +57,7 @@ class Cataloger(object):
         if verbose is None:
             verbose = self.verbose
         if verbose:
-            logging.info(f"Loading {self.catalog} waveform with ID:{ID:04}")
+            logging.info(f"Loading {self.catalog} waveform with ID:{ID}")
 
         if self.catalog == "sxs":
             from .sxs import Waveform_SXS
@@ -147,6 +147,45 @@ class Cataloger(object):
             # store on JSON
             Optimizer(self.data[name]["Waveform"], **optimizer_opts)
         pass
+
+    def collect_mismatch_jsons(self, json_tmp_list):
+        """
+        Merge the per-process temporary JSON files produced by a parallel run
+        into self.json_file, then delete them.
+
+        Mismatches already known to the base file are kept: each process starts
+        from a copy of it and only adds its own batch, so the temporary files
+        overlap on everything but the entries they computed themselves.
+
+        Parameters
+        ----------
+        json_tmp_list: list of str
+            paths of the temporary JSON files to merge
+
+        Returns
+        -------
+        json_data: dict
+            the merged content, as written to self.json_file
+        """
+        # 1) load original json file if it exists, otherwise load first temp file
+        if os.path.exists(self.json_file):
+            json_base = self.json_file
+        else:
+            json_base = json_tmp_list[0]
+        with open(json_base, "r") as file:
+            json_data = json.loads(file.read())
+        # 2) add info from temporary json, delete temporary json
+        for json_tmp in json_tmp_list:
+            with open(json_tmp, "r") as file:
+                json_data_tmp = json.loads(file.read())
+            mismatches = json_data_tmp["mismatches"]
+            for key in mismatches:
+                if key not in json_data["mismatches"]:
+                    json_data["mismatches"][key] = mismatches[key]
+            os.remove(json_tmp)
+        with open(self.json_file, "w") as file:
+            file.write(json.dumps(json_data, indent=2))
+        return json_data
 
     def process_with_redirect(self, process_id, nproc, opts={}):
         """
@@ -238,24 +277,7 @@ class Cataloger(object):
                 process.join()
 
             # info stored in the temporary JSONs, collect info
-            # 1) load original json file if it exists, otherwise load first temp file
-            if os.path.exists(self.json_file):
-                json_base = self.json_file
-            else:
-                json_base = json_tmp_list[0]
-            with open(json_base, "r") as file:
-                json_data = json.loads(file.read())
-            # 2) add info from temporary json, delete temporary json
-            for json_tmp in json_tmp_list:
-                with open(json_tmp, "r") as file:
-                    json_data_tmp = json.loads(file.read())
-                mismatches = json_data_tmp["mismatches"]
-                for key in mismatches:
-                    if key not in json_data:
-                        json_data["mismatches"][key] = mismatches[key]
-                os.remove(json_tmp)
-            with open(self.json_file, "w") as file:
-                file.write(json.dumps(json_data, indent=2))
+            self.collect_mismatch_jsons(json_tmp_list)
 
         # read collated json
         optimizer_opts["json_file"] = self.json_file
@@ -403,6 +425,9 @@ class Cataloger(object):
 
         eob = self.get_model_waveform(name, model_opts=model_opts)
         nr = self.data[name]["Waveform"]
+        # copy: the mass is specific to this call, and the caller usually reuses
+        # the same settings dict across masses
+        mm_settings = {} if mm_settings is None else dict(mm_settings)
         mm_settings["M"] = M
         matcher = Matcher(nr, eob, settings=mm_settings)
         return matcher.mismatch
@@ -423,9 +448,6 @@ class Cataloger(object):
         ylim=None,
         figname=None,  # save if not None
     ):
-        if figname is not None:
-            savepng = True
-
         # select waveforms and get colors
         subset = self.find_subset(ranges=ranges)
         colors_dict = self.get_colors_for_subset(
@@ -524,8 +546,7 @@ class Cataloger(object):
         if ylim is not None:
             plt.ylim(ylim)
 
-        if figname is None:
-            figname = f"mismatches_{self.catalog}_{cmap_var}.png"
+        if figname is not None:
             plt.savefig(figname, dpi=200, bbox_inches="tight")
             logging.info(f"Figure saved: {figname}")
         plt.show()

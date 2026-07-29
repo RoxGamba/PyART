@@ -6,6 +6,8 @@ import h5py
 import json
 from ..waveform import Waveform
 from ..utils import cat_utils as cat_ut
+from ..utils.utils import LoggerWriter
+from ..utils.wf_utils import get_multipole_dict
 
 
 class Waveform_SXS(Waveform):
@@ -110,26 +112,49 @@ class Waveform_SXS(Waveform):
                 raise ValueError("basename is None, but unknown src!")
         self.basename = basename
 
-        if self.level is not None and isinstance(self.level, int):
+        if isinstance(self.level, int):
             levpath = f"{self.sxs_data_path}/Lev{self.level}"
         else:
             levpath = self.sxs_data_path
             if os.path.exists(levpath):
-                lev_dirs = [
-                    d
-                    for d in os.listdir(levpath)
-                    if os.path.isdir(os.path.join(levpath, d)) and d.startswith("Lev")
-                ]
+                lev_dirs = sorted(
+                    (
+                        d
+                        for d in os.listdir(levpath)
+                        if os.path.isdir(os.path.join(levpath, d))
+                        and d.startswith("Lev")
+                    ),
+                    key=lambda d: int(d.replace("Lev", "")),
+                )
                 if not lev_dirs:
                     levpath = None
             else:
                 levpath = None
-
         self.check_cut_consistency()
-        if levpath is None or not os.path.exists(levpath):
+
+        needs_download = levpath is None or not os.path.exists(levpath)
+        if not needs_download:
+            # if files are already  downloaded, additionally check that N-order
+            # is there as well. Note: if we enter here, levpath is not None
+            # and the path exists, and thus lev_dirs not empty
+            order_group = f"Extrapolated_N{self.order}.dir"
+            if self.level is None:
+                level = int(lev_dirs[-1].replace("Lev", ""))
+            else:
+                level = self.level
+            fname = self.get_lev_fname(basename=self.basename, level=level)
+            with h5py.File(fname, "r") as f:
+                needs_download = order_group not in f
+            if needs_download:
+                logging.info(
+                    f"{levpath} found, but not the requested N={self.order} order. Download needed."
+                )
+
+        if needs_download:
             if download:
                 logging.info(
-                    f"The path {self.sxs_data_path} does not exist or contains no 'Lev*' directory."
+                    f"The path {self.sxs_data_path} does not exist, contains no 'Lev*'"
+                    + "directory, or does not contain the requested order."
                 )
                 logging.info("Downloading the simulation from the SXS catalog.")
                 self.download_simulation(
@@ -185,6 +210,9 @@ class Waveform_SXS(Waveform):
             self.load_horizon()
         if "psi4lm" in load:
             self.load_psi4lm(load_m0=load_m0)
+
+        if self.nr is not None:
+            self.nr.close()
         pass
 
     def check_cut_consistency(self):
@@ -270,9 +298,19 @@ class Waveform_SXS(Waveform):
         import sxs as sxsmod
         import shutil
 
-        if path is not None:
-            logging.info(f"Setting the download (cache) directory to {path}")
-            os.environ["SXSCACHEDIR"] = path
+        if path is None:
+            raise ValueError(
+                "download_simulation needs a path: it is both where the data is "
+                "written and the cache directory handed to the sxs module."
+            )
+
+        # The sxs module reads SXSCACHEDIR to decide where to download. Keep the
+        # directory in a local variable too, and use that below: reading the
+        # environment back would couple this call to whatever a previous one
+        # left there, and rmtree is run against it.
+        cache_dir = path
+        logging.info(f"Setting the download (cache) directory to {cache_dir}")
+        os.environ["SXSCACHEDIR"] = cache_dir
 
         # Define the simulation ID and load it
         name = f"SXS:{self.src}:{ID}"
@@ -281,135 +319,139 @@ class Waveform_SXS(Waveform):
         else:
             name_level = name
 
-        # based on the logging level, redirect stdout to null
-        # This is because the sxs module prints a lot of information to stdout
+        # based on the logging level, redirect stdout to the logger. This is
+        # because the sxs module prints a lot of information to stdout.
+        # try/finally: an exception in between must not leave stdout redirected
+        # for good.
         original_stdout = sys.stdout
-        original_stderr = sys.stderr
-        sys.stdout = open(os.devnull, "w")
-        sys.stderr = open(os.devnull, "w")
-        sxs_sim = sxsmod.load(
-            name_level,
-            extrapolation_order=extrapolation_order,
-            ignore_deprecation=ignore_deprecation,
-            progress=True,
-        )
-        logging.info(f"Loaded SXS simulation {name_level}.")
-
-        # Set Level if not already set
-        self.level = self.level or int(
-            sxs_sim.Lev.replace("Lev", "")
-        )  # Guarantees int(self.level)
-        lev = f"Lev{self.level}"
-
-        # Create the output directory
-        sxs_dir = f"SXS_{self.src}_{ID}"
-        # Only add sxs_dir if it's not already the last part of the path
-        if not path.endswith(sxs_dir):
-            full_path = os.path.join(path, sxs_dir)
-        else:
-            full_path = path
-
-        out_dir = os.path.join(full_path, lev)
-        os.makedirs(out_dir, exist_ok=True)
-
-        # Save hlm data if requested
-        if "hlm" in downloads:
-            wav = sxs_sim.h
-            extp = f"Extrapolated_N{extrapolation_order}.dir"
-            to_h5file = {extp: {}}
-            ellmax = 8  # wav.ellmax
-            modes = [
-                (l, m)
-                for l, m in product(range(2, ellmax + 1), range(-ellmax, ellmax + 1))
-                if l >= np.abs(m)
-            ]
-            for ell, m in modes:
-                try:
-                    idx = wav.index(ell, m)
-                    mode_string = f"Y_l{ell}_m{m}.dat"
-                    data = np.column_stack(
-                        (wav.time, wav[:, idx].real, wav[:, idx].imag)
-                    )
-                    to_h5file[extp][mode_string] = data
-                except ValueError:
-                    logging.warning(
-                        f"Mode Y_l{ell}_m{m} not found in the waveform data! Skipping."
-                    )
-                    continue
-            # create the h5 file
-            h5file = h5py.File(
-                os.path.join(out_dir, f"rhOverM_Asymptotic_GeometricUnits_CoM.h5"), "w"
+        sys.stdout = LoggerWriter(logging.getLogger(__name__))
+        try:
+            sxs_sim = sxsmod.load(
+                name_level,
+                extrapolation_order=extrapolation_order,
+                extrapolation=f"N{extrapolation_order}",
+                ignore_deprecation=ignore_deprecation,
+                progress=True,
             )
-            save_dict_to_h5(h5file, to_h5file)
-            h5file.close()
-            logging.info("Saved hlm data.")
+            logging.info(f"Loaded SXS simulation {name_level}.")
 
-        # Save psi4lm data if requested
-        if "psi4lm" in downloads:
-            wav = sxs_sim.psi4
-            extp = f"Extrapolated_N{extrapolation_order}.dir"
-            to_h5file = {extp: {}}
-            ellmax = 8  # wav.ellmax
-            modes = [
-                (l, m)
-                for l, m in product(range(2, ellmax + 1), range(-ellmax, ellmax + 1))
-                if l >= np.abs(m)
-            ]
-            for mode in modes:
-                mode_string = "Y_l" + str(mode[0]) + "_m" + str(mode[1]) + ".dat"
-                if mode_string in wav:
-                    to_h5file[extp][mode_string] = wav[mode_string]
+            # Set Level if not already set
+            self.level = self.level or int(
+                sxs_sim.Lev.replace("Lev", "")
+            )  # Guarantees int(self.level)
 
-            # create the h5 file
-            h5file = h5py.File(
-                os.path.join(out_dir, f"rMPsi4_Asymptotic_GeometricUnits_CoM.h5"), "w"
-            )
-            save_dict_to_h5(h5file, to_h5file)
-            h5file.close()
-            logging.info("Saved psi4lm data.")
+            out_dir = self.get_lev_fname(level=self.level, basename="")
+            os.makedirs(out_dir, exist_ok=True)
 
-        # Save horizons if requested
-        if "horizons" in downloads:
-            hrz = sxs_sim.horizons
-            to_h5file = {}
-            for object in ["AhA.dir", "AhB.dir", "AhC.dir"]:
-                to_h5file[object] = {}
-                for key in [
-                    "CoordCenterInertial.dat",
-                    "ChristodoulouMass.dat",
-                    "DimensionfulInertialSpinMag.dat",
-                    "chiInertial.dat",
-                ]:
+            # Save hlm data if requested
+            if "hlm" in downloads:
+                wav = sxs_sim.h
+                extp = f"Extrapolated_N{extrapolation_order}.dir"
+                to_h5file = {extp: {}}
+                ellmax = 8  # wav.ellmax
+                modes = [
+                    (l, m)
+                    for l, m in product(
+                        range(2, ellmax + 1), range(-ellmax, ellmax + 1)
+                    )
+                    if l >= np.abs(m)
+                ]
+                for ell, m in modes:
                     try:
-                        to_h5file[object][key] = hrz[f"{object}/{key}"]
-                    except KeyError:
+                        idx = wav.index(ell, m)
+                        mode_string = f"Y_l{ell}_m{m}.dat"
+                        data = np.column_stack(
+                            (wav.time, wav[:, idx].real, wav[:, idx].imag)
+                        )
+                        to_h5file[extp][mode_string] = data
+                    except ValueError:
                         logging.warning(
-                            f"{object}/{key} not found in horizons data! Skipping."
+                            f"Mode Y_l{ell}_m{m} not found in the waveform data! Skipping."
                         )
                         continue
-            # create the h5 file
-            h5file = h5py.File(os.path.join(out_dir, f"Horizons.h5"), "w")
-            save_dict_to_h5(h5file, to_h5file)
-            h5file.close()
-            logging.info("Saved horizons data.")
+                # create/update the h5 file
+                filename = os.path.join(
+                    out_dir, f"rhOverM_Asymptotic_GeometricUnits_CoM.h5"
+                )
+                with h5py.File(filename, "a") as h5file:
+                    if extp in h5file:
+                        logging.info(f"{extp} already present, skipping.")
+                    else:
+                        save_dict_to_h5(h5file, {extp: to_h5file[extp]})
+                logging.info("Saved hlm data.")
 
-        # Save metadata if requested
-        if "metadata" in downloads:
-            import json
+            # Save psi4lm data if requested
+            if "psi4lm" in downloads:
+                wav = sxs_sim.psi4
+                extp = f"Extrapolated_N{extrapolation_order}.dir"
+                to_h5file = {extp: {}}
+                ellmax = 8  # wav.ellmax
+                modes = [
+                    (l, m)
+                    for l, m in product(
+                        range(2, ellmax + 1), range(-ellmax, ellmax + 1)
+                    )
+                    if l >= np.abs(m)
+                ]
+                for mode in modes:
+                    mode_string = "Y_l" + str(mode[0]) + "_m" + str(mode[1]) + ".dat"
+                    if mode_string in wav:
+                        to_h5file[extp][mode_string] = wav[mode_string]
 
-            with open(os.path.join(out_dir, "metadata.json"), "w") as file:
-                json.dump(sxs_sim.metadata, file, indent=2)
-            logging.info("Saved metadata.")
+                # create/update the h5 file
+                filename = os.path.join(
+                    out_dir, f"rMPsi4_Asymptotic_GeometricUnits_CoM.h5"
+                )
+                with h5py.File(filename, "a") as h5file:
+                    if extp in h5file:
+                        logging.info(f"{extp} already present, skipping.")
+                    else:
+                        save_dict_to_h5(h5file, {extp: to_h5file[extp]})
+                logging.info("Saved psi4lm data.")
 
-        # find old SXS download foders and remove them
-        flds = [f for f in os.listdir(os.environ["SXSCACHEDIR"]) if ID in f]
-        for fld in flds:
-            if ":" in fld:
-                shutil.rmtree(os.path.join(os.environ["SXSCACHEDIR"], fld))
+            # Save horizons if requested
+            if "horizons" in downloads:
+                hrz = sxs_sim.horizons
+                to_h5file = {}
+                for object in ["AhA.dir", "AhB.dir", "AhC.dir"]:
+                    to_h5file[object] = {}
+                    for key in [
+                        "CoordCenterInertial.dat",
+                        "ChristodoulouMass.dat",
+                        "DimensionfulInertialSpinMag.dat",
+                        "chiInertial.dat",
+                    ]:
+                        try:
+                            to_h5file[object][key] = hrz[f"{object}/{key}"]
+                        except KeyError:
+                            logging.warning(
+                                f"{object}/{key} not found in horizons data! Skipping."
+                            )
+                            continue
+                # create the h5 file
+                h5file = h5py.File(os.path.join(out_dir, f"Horizons.h5"), "w")
+                save_dict_to_h5(h5file, to_h5file)
+                h5file.close()
+                logging.info("Saved horizons data.")
 
-        # Restore stdout/stderr
-        sys.stdout = original_stdout
-        sys.stderr = original_stderr
+            # Save metadata if requested
+            if "metadata" in downloads:
+                import json
+
+                with open(os.path.join(out_dir, "metadata.json"), "w") as file:
+                    json.dump(sxs_sim.metadata, file, indent=2)
+                logging.info("Saved metadata.")
+
+            # find old SXS download folders and remove them. Only the
+            # colon-named ones the sxs module creates, and only in the directory
+            # this call actually downloaded into.
+            flds = [f for f in os.listdir(cache_dir) if ID in f]
+            for fld in flds:
+                if ":" in fld:
+                    shutil.rmtree(os.path.join(cache_dir, fld))
+        finally:
+            # Restore stdout
+            sys.stdout = original_stdout
 
         pass
 
@@ -463,13 +505,18 @@ class Waveform_SXS(Waveform):
                 key = attempt + str(spin_idx)
                 if is_valid(key):
                     hS = np.array(ometa[key])
-                    if attempt == "reference_":
+                    # 'reference_spin' is dimensionful, unlike the two
+                    # '*_dimensionless_spin' entries: normalize it by the mass
+                    # squared, as done for the remnant spin below
+                    if attempt == "reference_spin":
                         if spin_idx == 1:
                             hS = hS / M1**2
                         elif spin_idx == 2:
                             hS = hS / M2**2
-                    break
-            return hS, attempt
+                    return hS, attempt
+            raise KeyError(
+                f"No valid spin entry found for body {spin_idx}, tried: {attempts}"
+            )
 
         hS1, skey1 = read_spin_variable(1)
         hS2, skey2 = read_spin_variable(2)
@@ -507,7 +554,9 @@ class Waveform_SXS(Waveform):
 
         ecc = ometa["reference_eccentricity"]
         if isinstance(ecc, str):
-            if "<" in ecc and "e+00":  # there are things like '<1.7e+00' in meta
+            # there are things like '<1.7e+00' in meta: an upper bound of order
+            # unity carries no information, while a small one means circular
+            if "<" in ecc and "e+00" in ecc:
                 ecc = None
             else:
                 ecc = 1e-5
@@ -617,24 +666,71 @@ class Waveform_SXS(Waveform):
     def load_horizon(self):
         """
         Load the horizon data from Horizons.h5 file.
-        Store the data in self._dyn dictionary
+        Store the data in self._dyn dictionary.
+
+        The datasets are stored with the time in the first column:
+        ChristodoulouMass.dat and DimensionfulInertialSpinMag.dat are (N,2),
+        while CoordCenterInertial.dat and chiInertial.dat are (N,4). Here the
+        time is stored once, in dyn["t"], and the vectors are stored without
+        it, i.e. with shape (N,3).
+
+        AhA/AhB are the two individual horizons; AhC is the common horizon,
+        which only forms at merger and therefore lives on its own, shorter time
+        array (dyn["t_remnant"]) and is absent for runs that do not merge.
         """
         horizon = h5py.File(self.get_lev_fname(basename="Horizons.h5"))
 
-        mA = horizon["AhA.dir"]["ChristodoulouMass.dat"]
-        mB = horizon["AhB.dir"]["ChristodoulouMass.dat"]
-        chiA = horizon["AhA.dir/DimensionfulInertialSpinMag.dat"]
-        chiB = horizon["AhB.dir/DimensionfulInertialSpinMag.dat"]
-        xA = horizon["AhA.dir/CoordCenterInertial.dat"]
-        xB = horizon["AhB.dir/CoordCenterInertial.dat"]
+        def read_horizon(obj):
+            """
+            Read one apparent horizon, dropping the leading time column from
+            the vectors. Datasets that the download skipped are returned as
+            None rather than raising.
+            """
+            grp = horizon[obj]
 
-        self._dyn["t"] = chiA[:, 0]
-        self._dyn["m1"] = mA[:, 1]
-        self._dyn["m2"] = mB[:, 1]
-        self._dyn["chi1"] = chiA[:, 1]
-        self._dyn["chi2"] = chiB[:, 1]
-        self._dyn["x1"] = xA[:, 1:]
-        self._dyn["x2"] = xB[:, 1:]
+            def dset(name, vector=False):
+                if name not in grp:
+                    logging.warning(f"{obj}/{name} not found in horizons data!")
+                    return None
+                return grp[name][:, 1:] if vector else grp[name][:, 1]
+
+            return {
+                "t": grp["ChristodoulouMass.dat"][:, 0],
+                "m": dset("ChristodoulouMass.dat"),
+                # chiInertial is the dimensionless spin vector, which is what
+                # dyn["chi"] is meant to hold. DimensionfulInertialSpinMag is
+                # |S|: dimensionful (chi = S/m^2) and a magnitude, so it has no
+                # direction to project on L.
+                "chi": dset("chiInertial.dat", vector=True),
+                "S_mag": dset("DimensionfulInertialSpinMag.dat"),
+                "x": dset("CoordCenterInertial.dat", vector=True),
+            }
+
+        A = read_horizon("AhA.dir")
+        B = read_horizon("AhB.dir")
+
+        self._dyn["t"] = A["t"]
+        self._dyn["m1"] = A["m"]
+        self._dyn["m2"] = B["m"]
+        self._dyn["chi1"] = A["chi"]
+        self._dyn["chi2"] = B["chi"]
+        self._dyn["S1_mag"] = A["S_mag"]
+        self._dyn["S2_mag"] = B["S_mag"]
+        self._dyn["x1"] = A["x"]
+        self._dyn["x2"] = B["x"]
+
+        if "AhC.dir" in horizon:
+            C = read_horizon("AhC.dir")
+            self._dyn["t_remnant"] = C["t"]
+            self._dyn["m_remnant"] = C["m"]
+            self._dyn["chi_remnant"] = C["chi"]
+            self._dyn["S_remnant_mag"] = C["S_mag"]
+            self._dyn["x_remnant"] = C["x"]
+        else:
+            logging.info(
+                "No common horizon (AhC.dir) in the horizons data: "
+                "remnant quantities not loaded."
+            )
 
         pass
 
@@ -655,19 +751,20 @@ class Waveform_SXS(Waveform):
         """
         d = self.dyn
 
-        # find the index of the reference time
+        # find the index of the reference time. The dyn vectors carry no time
+        # column, so they are indexed by time only.
         idx = np.argmin(np.abs(d["t"] - tref))
-        chi1_ref = d["chi1"][idx][1:]
-        chi2_ref = d["chi2"][idx][1:]
-        x1_ref = d["x1"][idx][1:]
-        x2_ref = d["x2"][idx][1:]
+        chi1_ref = d["chi1"][idx]
+        chi2_ref = d["chi2"][idx]
+        x1_ref = d["x1"][idx]
+        x2_ref = d["x2"][idx]
 
         # time derivative of x1 and x2
-        x1_dot = np.transpose([np.gradient(d["x1"][:, i], d["t"]) for i in range(1, 4)])
-        x2_dot = np.transpose([np.gradient(d["x2"][:, i], d["t"]) for i in range(1, 4)])
+        x1_dot = np.transpose([np.gradient(d["x1"][:, i], d["t"]) for i in range(3)])
+        x2_dot = np.transpose([np.gradient(d["x2"][:, i], d["t"]) for i in range(3)])
         x = x1_ref - x2_ref
 
-        x_dot = [x1_dot[idx][i] - x2_dot[idx][i] for i in range(3)]
+        x_dot = x1_dot[idx] - x2_dot[idx]
         L_hat_ref = np.cross(x, x_dot) / np.linalg.norm(np.cross(x, x_dot))
 
         # compute the spins projected on L_hat_ref
@@ -722,17 +819,13 @@ class Waveform_SXS(Waveform):
             h = hlm[:, 1] + 1j * hlm[:, 2]
             if self.nu_rescale:
                 h /= self.metadata["nu"]
-            # amp and phase
-            Alm = abs(h)[self.cut_N :]
-            plm = -np.unwrap(np.angle(h))[self.cut_N :]
-            # save in dictionary
+            # Build the mode dict with the shared helper, so that the sign
+            # conventions match every other producer. It is applied to the whole
+            # mode and the junk is cut afterwards: the phase must be unwrapped
+            # before the cut, or it would be offset by a multiple of 2pi.
             key = (l, m)
             dict_hlm[key] = {
-                "real": Alm * np.cos(plm),
-                "imag": Alm * np.sin(plm),
-                "A": Alm,
-                "p": plm,
-                "z": h[self.cut_N :],
+                ky: val[self.cut_N :] for ky, val in get_multipole_dict(h).items()
             }
         self._hlm = dict_hlm
         pass
@@ -750,8 +843,9 @@ class Waveform_SXS(Waveform):
         """
         psi4_basename = self.basename.replace("rhOverM", "rMPsi4")
         fname = self.get_lev_fname(level=self.level, basename=psi4_basename)
-        if os.path.exists(fname):
-            self.nr_psi = h5py.File(fname)
+        if not os.path.exists(fname):
+            raise FileNotFoundError(f"psi4 file not found: {fname}")
+        self.nr_psi = h5py.File(fname)
 
         if ellmax == None:
             ellmax = self.ellmax
@@ -775,6 +869,11 @@ class Waveform_SXS(Waveform):
         if self.cut_U is None:
             self.cut_U = tmp_u[self.cut_N]
 
+        if self._u is None:
+            raise RuntimeError(
+                "psi4 times are taken from the hlm time array, but hlm was "
+                "never loaded: add 'hlm' to the load list."
+            )
         self._t_psi4 = self._u  # FIXME: should we use another time?
 
         dict_psi4lm = {}
@@ -786,17 +885,10 @@ class Waveform_SXS(Waveform):
             psi4 = psi4lm[:, 1] + 1j * psi4lm[:, 2]
             if self.nu_rescale:
                 psi4 /= self.metadata["nu"]
-            # amp and phase
-            Alm = abs(psi4)[self.cut_N :]
-            plm = -np.unwrap(np.angle(psi4))[self.cut_N :]
-            # save in dictionary
+            # see load_hlm: shared helper first, junk cut afterwards
             key = (l, m)
             dict_psi4lm[key] = {
-                "real": Alm * np.cos(plm),
-                "imag": Alm * np.sin(plm),
-                "A": Alm,
-                "p": plm,
-                "z": psi4[self.cut_N :],
+                ky: val[self.cut_N :] for ky, val in get_multipole_dict(psi4).items()
             }
         self._psi4lm = dict_psi4lm
         pass
