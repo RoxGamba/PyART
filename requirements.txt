@@ -13,11 +13,7 @@ sympy
 
 # GW package dependencies
 pycbc>=2.4.0
-# teobresums>=4.4.0
-# gw-eccentricity>=1.0.4
-# mayawaves>=2024.4.25
 lalsuite>=7.22
-phenomxpy @ git+https://gitlab.com/imrphenom-dev/phenomxpy.git
 
 # h5py is used throughout the catalog loaders (sxs, rit, core, maya, lvknr);
 # it was previously undeclared, relying on pycbc pulling it in transitively.
