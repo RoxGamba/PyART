@@ -26,6 +26,11 @@ jobs:
         with:
           python-version: 3.11
  
+      - name: Install GSL (required to build teobresums/pyseobnr)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgsl-dev
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt -r requirements-docs.txt -r requirements-catalogs.txt -r requirements-models.txt
