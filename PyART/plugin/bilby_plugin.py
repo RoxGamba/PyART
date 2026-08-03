@@ -261,22 +261,6 @@ def trim_nr_junk_and_drift(u, hlm, mode_array, peak_u, t_final=None, t_after_pea
 
 
 def compute_polarisations_from_modes(hlm, mode_array, iota, phase):
-    """
-    Sum the modes into polarisations.
-
-    The sum runs over *all* loaded modes, positive and negative m, so no
-    aligned-spin symmetry between h_lm and h_l-m is assumed (unlike
-    PyART.utils.wf_utils.compute_hphc, which does assume it and iterates
-    positive m only). That matters for precessing simulations.
-
-    The azimuthal angle is `phase` itself. Note that LAL uses pi/2 - phase
-    (SimInspiralChooseTDModes, and bilby.gw.source on top of it), as does PyART
-    in wf_utils.compute_hphc, so this convention differs from theirs by a
-    constant m*pi/2 per mode. That is immaterial when `phase` is sampled -- an NR
-    simulation carries its own arbitrary orbital phase anyway, so there is
-    already a constant offset from LAL's phiRef -- but it does mean this model
-    cannot be compared against a LAL approximant at fixed `phase`.
-    """
     signal = 0.0 + 0.0j
     for mode in mode_array:
         ell, emm = int(mode[0]), int(mode[1])
