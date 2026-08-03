@@ -49,7 +49,9 @@ parser.add_argument(
     "--sxs-id", default=None, help="SXS ID (default: the partner of --gra-id)"
 )
 parser.add_argument("--res", default="128", help="GRAthena++ resolution")
-parser.add_argument("--ext", default="CCE", help="GRAthena++ extraction: ext, CCE or finite")
+parser.add_argument(
+    "--ext", default="CCE", help="GRAthena++ extraction: ext, CCE or finite"
+)
 parser.add_argument("--r-ext", default="50.00", help="GRAthena++ extraction radius")
 parser.add_argument(
     "--total_mass",

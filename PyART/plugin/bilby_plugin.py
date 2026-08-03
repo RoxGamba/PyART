@@ -264,7 +264,9 @@ def compute_polarisations_from_modes(hlm, mode_array, iota, phase):
     signal = 0.0 + 0.0j
     for mode in mode_array:
         ell, emm = int(mode[0]), int(mode[1])
-        ylm = lal.SpinWeightedSphericalHarmonic(iota, numpy.pi/2 - phase, -2, ell, emm)
+        ylm = lal.SpinWeightedSphericalHarmonic(
+            iota, numpy.pi / 2 - phase, -2, ell, emm
+        )
         signal = signal + ylm * hlm[(ell, emm)]
     return numpy.real(signal), -numpy.imag(signal)
 
@@ -384,11 +386,13 @@ def component_masses_and_spins(metadata, total_mass):
     m1, m2 = float(metadata["m1"]), float(metadata["m2"])
     mass_1 = total_mass * m1 / (m1 + m2)
     mass_2 = total_mass * m2 / (m1 + m2)
-    spin_1x, spin_1y, spin_1z = (float(metadata["chi1x"]),
+    spin_1x, spin_1y, spin_1z = (
+        float(metadata["chi1x"]),
         float(metadata["chi1y"]),
         float(metadata["chi1z"]),
     )
-    spin_2x, spin_2y, spin_2z = (float(metadata["chi2x"]),
+    spin_2x, spin_2y, spin_2z = (
+        float(metadata["chi2x"]),
         float(metadata["chi2y"]),
         float(metadata["chi2z"]),
     )
