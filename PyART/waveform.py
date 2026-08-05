@@ -99,6 +99,32 @@ class Waveform(object):
     def domain(self):
         return self._domain
 
+    def copy(self):
+        """
+        Return a copy of the waveform that is safe to mutate.
+
+        The full deepcopy is not used because catalog waveforms hold non-copyable
+        state (open h5py handles, an ``sxs.Coalescence`` object, ...). Instead
+        the object is shallow-copied.
+
+        - the mode dictionaries (``_hlm``/``_dothlm``/``_psi4lm``), whose inner
+          arrays are sliced in place by ``cut``;
+        - the time/frequency and polarization arrays, which are reassigned.
+
+        Returns
+        -------
+        out: Waveform
+            a copy that can be mutated without affecting self
+        """
+        wf = copy.copy(self)
+        for attr in ("_hlm", "_dothlm", "_psi4lm"):
+            wf.__dict__[attr] = copy.deepcopy(getattr(self, attr))
+        for attr in ("_u", "_t", "_t_psi4", "_hp", "_hc", "_f", "u_pc", "flm"):
+            val = getattr(self, attr, None)
+            if val is not None:
+                wf.__dict__[attr] = np.array(val, copy=True)
+        return wf
+
     # define multiplication and division by a factor
     # both methods return a new waveform object, without modifying the original one
     def __mul__(self, factor):
@@ -181,6 +207,9 @@ class Waveform(object):
         height=None,
         second_dvt=False,
         return_idx=False,
+        modes=None,
+        refine=False,
+        refine_window=5,
     ):
         """
         Find peak time, amplitude, frequency and frequency derivative
@@ -189,11 +218,16 @@ class Waveform(object):
         Parameters
         ----------
         mode: tuple
-            (l,m) mode to consider
+            (l,m) mode to consider. Also selects the multipole whose phase
+            gives omg/domg when `modes` is used (see below).
         kind: str
             'first-max-after-t': first maximum after umin
             'last-peak': last peak in the waveform
             'global': global maximum
+            'argmax': global maximum, taken directly with argmax rather than
+                      through scipy's find_peaks. Use this when the peak may sit
+                      at (or very near) an endpoint of the record, where
+                      find_peaks sees no peak at all and raises.
         wave: str
             'hlm' or 'psi4lm'
         umin: float
@@ -203,6 +237,17 @@ class Waveform(object):
             if None, set to mean(Alm)/2
         return_idx: bool
             if True, return also the index of the peak
+        modes: list or None
+            if None (default), the peak is searched on the amplitude of `mode`.
+            if a list of (l,m), it is searched on the frame-invariant amplitude
+            sqrt(sum_lm |h_lm|^2) instead, which is what LAL uses to define the
+            merger time. 
+        refine: bool
+            if True, refine the peak to sub-sample accuracy with a local cubic
+            spline (see utils.refine_extremum). The returned index, if
+            requested, stays the integer grid index.
+        refine_window: int
+            number of points on each side of the peak used by the refinement
         Returns
         -------
         out: (t_mrg, A_mrg, omg_mrg, domg_mrg[, idx])
@@ -220,8 +265,13 @@ class Waveform(object):
             t = self.u
 
         wave = getattr(self, wave)
+        if modes is None:
+            Alm = wave[mode]["A"]
+        else:
+            Alm = wf_ut.invariant_amplitude(wave, modes)
+            if mode not in wave:
+                mode = tuple(modes[0])
         p = wave[mode]["p"]
-        Alm = wave[mode]["A"]
 
         # D1 requires a uniform time grid, but the underlying data need not be
         # (e.g. SXS-native output has adaptive time stepping). Interpolate onto
@@ -256,35 +306,49 @@ class Waveform(object):
             d2Alm = from_grid(d2Alm_grid)
             domg2 = from_grid(domg2_grid)
 
-        # find peaks
-        if height is None:
-            height = np.mean(Alm) / 2
-        peaks, props = find_peaks(Alm, height=height)
-
-        if len(peaks) == 0:
-            raise ValueError("No peaks found")
-
-        if kind == "first-max-after-t":
-            after_umin = np.where(t[peaks] > umin)[0]
-            if len(after_umin) == 0:
-                raise ValueError(f"No peak found after umin={umin}")
-            i = after_umin[0]
-        elif kind == "last-peak":
-            i = len(peaks) - 1
-        elif kind == "global":
-            Alms = props["peak_heights"]
-            i = np.argmax(Alms)
+        # find the peak
+        if kind == "argmax":
+            i_peak = int(np.argmax(Alm))
         else:
-            raise ValueError("`kind' for merger not found")
+            if height is None:
+                height = np.mean(Alm) / 2
+            peaks, props = find_peaks(Alm, height=height)
 
-        t_mrg = t[peaks[i]]
-        A_mrg = Alm[peaks[i]]
-        omg_mrg = omg[peaks[i]]
-        domg_mrg = domg[peaks[i]]
-        if second_dvt:
-            dAlm_mrg = dAlm[peaks[i]]
-            d2Alm_mrg = d2Alm[peaks[i]]
-            domg2_mrg = domg2[peaks[i]]
+            if len(peaks) == 0:
+                raise ValueError("No peaks found")
+
+            if kind == "first-max-after-t":
+                after_umin = np.where(t[peaks] > umin)[0]
+                if len(after_umin) == 0:
+                    raise ValueError(f"No peak found after umin={umin}")
+                i = after_umin[0]
+            elif kind == "last-peak":
+                i = len(peaks) - 1
+            elif kind == "global":
+                Alms = props["peak_heights"]
+                i = np.argmax(Alms)
+            else:
+                raise ValueError("`kind' for merger not found")
+            i_peak = peaks[i]
+
+        if refine:
+            # sub-sample peak from a local cubic spline --- similar to pyseobnr
+            t_mrg, A_mrg = ut.refine_extremum(t, Alm, i_peak, window=refine_window)
+            omg_mrg = np.interp(t_mrg, t, omg)
+            domg_mrg = np.interp(t_mrg, t, domg)
+            if second_dvt:
+                dAlm_mrg = np.interp(t_mrg, t, dAlm)
+                d2Alm_mrg = np.interp(t_mrg, t, d2Alm)
+                domg2_mrg = np.interp(t_mrg, t, domg2)
+        else:
+            t_mrg = t[i_peak]
+            A_mrg = Alm[i_peak]
+            omg_mrg = omg[i_peak]
+            domg_mrg = domg[i_peak]
+            if second_dvt:
+                dAlm_mrg = dAlm[i_peak]
+                d2Alm_mrg = d2Alm[i_peak]
+                domg2_mrg = domg2[i_peak]
 
         if return_idx:
             if second_dvt:
@@ -296,10 +360,10 @@ class Waveform(object):
                     dAlm_mrg,
                     d2Alm_mrg,
                     domg2_mrg,
-                    peaks[i],
+                    i_peak,
                 )
             else:
-                return t_mrg, A_mrg, omg_mrg, domg_mrg, peaks[i]
+                return t_mrg, A_mrg, omg_mrg, domg_mrg, i_peak
         else:
             if second_dvt:
                 return t_mrg, A_mrg, omg_mrg, domg_mrg, dAlm_mrg, d2Alm_mrg, domg2_mrg
@@ -479,10 +543,10 @@ class Waveform(object):
 
         pass
 
-    def compute_hphc(self, phi=0, i=0, modes=[(2, 2)]):
+    def compute_hphc(self, phi=0, i=0, modes=[(2, 2)], assume_symmetry=True):
         """
-        For aligned spins, compute hp and hc
-        assuming usual symmetry between hlm and hl-m
+        Compute hp and hc from self.hlm
+
         Parameters
         ----------
         phi: float
@@ -491,34 +555,67 @@ class Waveform(object):
             inclination angle of the observer
         modes: list
             list of (l,m) modes to consider
+        assume_symmetry: bool
+            if True (default), assume the usual symmetry between hlm and hl-m,
+            valid for aligned spins: only the m>0 modes need to be passed.
+            if False, sum the requested modes as they are; the caller must then
+            pass both the m>0 and the m<0 modes. See wf_utils.compute_hphc.
         Returns
         -------
         out: (hp, hc)
             plus and cross polarizations
         """
-        self._hp, self._hc = wf_ut.compute_hphc(self.hlm, phi, i, modes)
+        self._hp, self._hc = wf_ut.compute_hphc(
+            self.hlm, phi, i, modes, assume_symmetry=assume_symmetry
+        )
         return self.hp, self.hc
 
-    def interpolate_hlm(self, dT):
+    def interpolate_hlm(self, dT=None, new_u=None, kind="linear", modes=None):
         """
-        Interpolate the hlm dictionary to a grid of uniform dT
+        Interpolate the hlm dictionary onto a new time grid.
+
+        Amplitude and phase are interpolated separately and recombined.
 
         Parameters
         ----------
-        dT: float
-            time step of the new grid
+        dT: float or None
+            time step of the new (uniform) grid, spanning self.u.
+            Exactly one of dT and new_u must be given.
+        new_u: array-like or None
+            explicit target grid, when it is not simply uniform in dT
+        kind: str
+            'linear' (default) uses np.interp; any other value is passed to
+            utils.spline (e.g. 'cubic'), which is more accurate on a coarse or
+            non-uniform source grid.
+        modes: list or None
+            (l,m) modes to interpolate. If None, every mode in self.hlm.
         Returns
         -------
         out: (new_u, hlm_i)
             new time array and interpolated hlm dictionary
         """
-        hlm_i = {}
-        new_u = np.arange(self.u[0], self.u[-1], dT)
+        if (dT is None) == (new_u is None):
+            raise ValueError("interpolate_hlm needs exactly one of dT and new_u")
 
-        for k in self.hlm.keys():
+        if new_u is None:
+            new_u = np.arange(self.u[0], self.u[-1], dT)
+        else:
+            new_u = np.asarray(new_u)
+
+        if modes is None:
+            modes = list(self.hlm.keys())
+
+        if kind == "linear":
+            resample = lambda y: np.interp(new_u, self.u, y)
+        else:
+            resample = lambda y: ut.spline(self.u, y, new_u, kind=kind)
+
+        hlm_i = {}
+        for k in modes:
+            k = tuple(k)
             h = self.hlm[k]["z"]
-            iA = np.interp(new_u, self.u, np.abs(h))
-            ip = np.interp(new_u, self.u, -np.unwrap(np.angle(h)))
+            iA = resample(np.abs(h))
+            ip = resample(-np.unwrap(np.angle(h)))
             ih = iA * np.exp(-1j * ip)
             hlm_i[k] = wf_ut.get_multipole_dict(ih)
 
@@ -723,7 +820,7 @@ class Waveform(object):
         self._psi4lm = psi4lm
         return mode.integr_opts
 
-    def to_geom(self, M, distance):
+    def to_geom(self, M, distance, inplace=True):
         """
         Convert waveform and time/freqs to geom units from SI
 
@@ -733,7 +830,16 @@ class Waveform(object):
             total mass of the system in Solar masses
         distance : float
             distance in Mpc
+        inplace : bool
+            if True (default), convert this object and return None.
+            if False, leave it untouched and return a converted copy -- use
+            this when the object is shared or cached (see Waveform.copy).
         """
+        if not inplace:
+            converted = self.copy()
+            converted.to_geom(M, distance)
+            return converted
+
         if self.units == "geom":
             raise RuntimeError("Already using geom units!")
 
@@ -774,7 +880,7 @@ class Waveform(object):
         self._units = "geom"
         pass
 
-    def to_SI(self, M, distance):
+    def to_SI(self, M, distance, inplace=True):
         """
         Convert waveform and time/freqs to SI units from geom
 
@@ -784,7 +890,16 @@ class Waveform(object):
             total mass of the system in Solar masses
         distance : float
             distance in Mpc
+        inplace : bool
+            if True (default), convert this object and return None.
+            if False, leave it untouched and return a converted copy -- use
+            this when the object is shared or cached (see Waveform.copy).
         """
+        if not inplace:
+            converted = self.copy()
+            converted.to_SI(M, distance)
+            return converted
+
         if self.units == "SI":
             raise RuntimeError("Already using SI units!")
 

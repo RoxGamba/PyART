@@ -18,16 +18,13 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize_scalar
 
 import lal
 
 from PyART.logging_config import setup_logging
-from PyART.utils.wf_utils import align_phase
+from PyART.utils.wf_utils import Align, compute_conditioning_parameters, remap
 from PyART.plugin.bilby_plugin import (
     component_masses_and_spins,
-    compute_conditioning_parameters,
-    estimate_time_of_maximum_amplitude,
     load_nr_waveform,
     nr_frequency_domain_source_model,
     nr_time_domain_polarisations,
@@ -202,13 +199,12 @@ def amplitude_and_phase(hplus, hcross):
     """
     A and phi of h = h+ - i hx, in PyART's convention (h = A exp(-i phi)).
 
-    Face-on this is exact: h is a circularly polarised chirp and A, phi are the
-    amplitude and phase of the (2, 2) mode. Off-axis the higher modes beat
-    against each other and A picks up a modulation -- still well defined, just
-    less clean to read.
+    This is just wf_utils.remap applied to the polarisations. Face-on it is
+    exact: h is a circularly polarised chirp and A, phi are the amplitude and
+    phase of the (2, 2) mode. Off-axis the higher modes beat against each other
+    and A picks up a modulation -- still well defined, just less clean to read.
     """
-    signal = hplus - 1j * hcross
-    return numpy.abs(signal), -numpy.unwrap(numpy.angle(signal))
+    return remap(hplus, -hcross)
 
 
 def align(window, time_a, phase_a, time_b, phase_b, tau_max):
@@ -217,29 +213,28 @@ def align(window, time_a, phase_a, time_b, phase_b, tau_max):
 
         chi2(tau) = int_window [ phi_a(t + tau) - phi_b(t) - dphi ]^2 dt
 
-    over the time shift tau and the phase offset dphi. dphi is solved
-    analytically at each tau by PyART.utils.wf_utils.align_phase; tau comes from
-    a bounded scalar minimisation, so it is sub-sample rather than limited to the
-    grid spacing (which is what PyART's own wf_utils.Align loop gives).
+    over the time shift tau and the phase offset dphi, with
+    PyART.utils.wf_utils.Align(refine=True): a scan on the grid to find the
+    global basin, then a bounded polish for a sub-sample tau.
 
     Returns (tau, dphi): evaluate a at t + tau and subtract dphi from its phase.
     """
-    # align_phase weights on (t >= 0) & (t < Tf), so hand it a shifted window
-    local = window - window[0]
+    # Align weights on (t >= 0) & (t < Tf), so shift everything by window[0] and
+    # let Tf run one sample past the end, which covers the whole window.
+    origin = window[0]
+    local = window - origin
     final = local[-1] + (local[1] - local[0])
-    resampled_b = numpy.interp(window, time_b, phase_b)
-
-    def chi2(tau):
-        shifted_a = numpy.interp(window, time_a + tau, phase_a)
-        offset = align_phase(local, final, shifted_a, resampled_b)
-        return float(numpy.sum((shifted_a - resampled_b - offset) ** 2))
-
-    solution = minimize_scalar(
-        chi2, bounds=(-tau_max, tau_max), method="bounded", options={"xatol": 1e-12}
+    tau, dphi, _ = Align(
+        local,
+        final,
+        tau_max,
+        time_a - origin,
+        phase_a,
+        time_b - origin,
+        phase_b,
+        refine=True,
     )
-    tau = float(solution.x)
-    shifted_a = numpy.interp(window, time_a + tau, phase_a)
-    return tau, float(align_phase(local, final, shifted_a, resampled_b))
+    return float(tau), float(dphi)
 
 
 def difference(
@@ -330,7 +325,7 @@ if abs(gra.metadata["q"] - sxs.metadata["q"]) > 1e-3:
 def record_geometry(waveform):
     """(u_start, u_peak, f_gw22 at the start) in geometric units."""
     modes = sorted(waveform.hlm.keys())
-    peak = estimate_time_of_maximum_amplitude(waveform.u, waveform.hlm, modes)
+    peak = waveform.find_max(kind="argmax", modes=modes, refine=True)[0]
     n_edge = min(64, len(waveform.u) // 4)
     frequency = numpy.abs(
         numpy.median(
@@ -396,11 +391,11 @@ def comparison_window(f_min):
     measuring the taper rather than the plugin. The taper length is the same
     quantity the source model hands to SimInspiralTDConditionStage1.
     """
-    mass_1, mass_2, spin_1z, spin_2z = component_masses_and_spins(
+    mass_1, mass_2, spin_1, spin_2, _ = component_masses_and_spins(
         gra.metadata, args.total_mass
     )
     _, _, _, chirp_time, extra_time, fraction = compute_conditioning_parameters(
-        dict(mass1=mass_1, mass2=mass_2, spin1z=spin_1z, spin2z=spin_2z, f_lower=f_min)
+        mass_1, mass_2, spin_1[2], spin_2[2], f_min
     )
     taper_length = fraction * chirp_time + extra_time
     start = record_start + taper_length + args.settle_cycles / f_min
