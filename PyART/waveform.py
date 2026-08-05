@@ -241,7 +241,7 @@ class Waveform(object):
             if None (default), the peak is searched on the amplitude of `mode`.
             if a list of (l,m), it is searched on the frame-invariant amplitude
             sqrt(sum_lm |h_lm|^2) instead, which is what LAL uses to define the
-            merger time. 
+            merger time.
         refine: bool
             if True, refine the peak to sub-sample accuracy with a local cubic
             spline (see utils.refine_extremum). The returned index, if
