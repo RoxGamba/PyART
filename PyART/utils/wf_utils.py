@@ -314,6 +314,83 @@ def Align(t, Tf, tau_max, t_a, phi_a, t_b, phi_b):
     return tau[imin], dphi[imin], chi2[imin]
 
 
+def Align_continuous(t, Tf, tau_max, t_a, phi_a, t_b, phi_b, n_scan=41, tau_tol=1e-6):
+    r"""
+    Align two waveforms in phase by minimizing the chi^2
+
+    chi^2 = \sum_{t_i=0}^{t_i < Tf} [phi_a(t_i + tau) - phi_b(t_i) - dphi]^2 dt
+
+    as a function of dphi and tau, as in Align, but with tau varying continuously
+    in [-tau_max, tau_max] rather than on multiples of the spacing of t.
+    For each tau the optimal dphi is computed analytically (align_phase), so
+    chi^2 is minimized only over tau: first on a coarse grid of n_scan points,
+    then with a bounded Brent minimization between the neighbours of the best
+    grid point.
+
+    * t          : time, must be equally spaced
+    * Tf         : final time
+    * tau_max    : maximum time shift
+    * t_a, phi_a : first phase evolution
+    * t_b, phi_b : second phase evolution
+
+    The two waveforms are re-sampled using the given time t
+
+    This function returns a tuple (tau_opt, dphi_opt, chi2_opt)
+
+    Parameters
+    ----------
+    t: ndarray
+        time array, must be equally spaced
+    Tf: float
+        final time
+    tau_max: float
+        maximum time shift
+    t_a: ndarray
+        time array for first phase evolution
+    phi_a: ndarray
+        first phase evolution
+    t_b: ndarray
+        time array for second phase evolution
+    phi_b: ndarray
+        second phase evolution
+    n_scan: int
+        number of points of the coarse grid in tau
+    tau_tol: float
+        absolute tolerance on tau for the Brent minimization
+    Returns
+    -------
+    out: (tau_opt, dphi_opt, chi2_opt)
+        optimal time shift, optimal phase shift, minimum chi^2
+    """
+    from scipy.optimize import minimize_scalar
+
+    dt = t[1] - t[0]
+    weight = np.double((t >= 0) & (t < Tf))
+
+    res_phi_b = np.interp(t, t_b, phi_b)
+
+    def chi2_dphi(tau):
+        res_phi_a_tau = np.interp(t, t_a + tau, phi_a)
+        dphi = align_phase(t, Tf, res_phi_a_tau, res_phi_b)
+        chi2 = np.sum(weight * (res_phi_a_tau - res_phi_b - dphi) ** 2) * dt
+        return chi2, dphi
+
+    tau_scan = np.linspace(-tau_max, tau_max, n_scan)
+    chi2_scan = [chi2_dphi(tau)[0] for tau in tau_scan]
+    imin = np.argmin(chi2_scan)
+    bounds = (tau_scan[max(imin - 1, 0)], tau_scan[min(imin + 1, n_scan - 1)])
+
+    res = minimize_scalar(
+        lambda tau: chi2_dphi(tau)[0],
+        bounds=bounds,
+        method="bounded",
+        options={"xatol": tau_tol},
+    )
+    tau_opt = res.x
+    chi2_opt, dphi_opt = chi2_dphi(tau_opt)
+    return tau_opt, dphi_opt, chi2_opt
+
+
 def remap(h_re, h_im):
     """
     Map (h_re, h_im) to (A, phi)
