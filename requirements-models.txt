@@ -17,7 +17,9 @@ teobresums @ git+https://bitbucket.org/teobresums/teobresums.git@Dali#subdirecto
 phenomxpy @ git+https://gitlab.com/imrphenom-dev/phenomxpy.git
 
 # SEOBNR (Spinning Effective One-Body) approximants
-pyseobnr
+# NOTE: pyseobnr currently pulls pygsl_lite, which fails to build on Python 3.12
+# in CI (TypeError in setuptools spawn signature). Keep it enabled on <3.12.
+pyseobnr; python_version < "3.12"
 
 # Other optional models (commented; uncomment to use)
 # gw-eccentricity>=1.0.4
