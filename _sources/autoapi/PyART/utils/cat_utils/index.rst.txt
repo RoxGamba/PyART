@@ -1,0 +1,70 @@
+PyART.utils.cat_utils
+=====================
+
+.. py:module:: PyART.utils.cat_utils
+
+.. autoapi-nested-parse::
+
+   Catalog utils
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   PyART.utils.cat_utils.KEYS
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.utils.cat_utils.errwarn
+   PyART.utils.cat_utils.check_metadata
+   PyART.utils.cat_utils.get_flags
+
+
+Module Contents
+---------------
+
+.. py:data:: KEYS
+   :value: ['name', 'ref_time', 'm1', 'm2', 'M', 'q', 'nu', 'S1', 'S2', 'chi1x', 'chi2x', 'chi1y', 'chi2y',...
+
+
+.. py:function:: errwarn(msg, raise_err=True)
+
+   Raise error or warning with given message
+
+   :param msg: Message to display
+   :type msg: str
+   :param raise_err: If True, raise RuntimeError. If False, issue a warning. Default is True.
+   :type raise_err: bool, optional
+
+
+.. py:function:: check_metadata(meta, raise_err=True)
+
+   Check that given metadata satisfies PyART-requirements
+
+   :param meta: Metadata dictionary to check
+   :type meta: dict
+   :param raise_err: If True, raise error on problems. If False, issue warnings. Default is True.
+   :type raise_err: bool, optional
+
+
+.. py:function:: get_flags(meta, thres_spin=1e-05, thres_q=0.001, thres_e0=0.001)
+
+   Get flags for given metadata
+
+   :param meta: Metadata dictionary to analyze
+   :type meta: dict
+   :param thres_spin: Threshold for spin to be considered zero (default is 1e-5)
+   :type thres_spin: float, optional
+   :param thres_q: Threshold for mass ratio to be considered equal mass (default is 1e-3)
+   :type thres_q: float, optional
+   :param thres_e0: Threshold for eccentricity to be considered quasi-circular (default is 1e-3)
+   :type thres_e0: float, optional
+
+
