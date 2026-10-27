@@ -1256,6 +1256,55 @@ def extract_value_from_str(string, key):
     return None
 
 
+def refine_extremum(x, y, idx, window=5, find_max=True):
+    """
+    Sub-sample refinement of the extremum of y located at index idx.
+
+    A cubic spline is fitted over [idx-window, idx+window] and the extremum is
+    taken at the root of its derivative. This is more accurate than the grid
+    point x[idx], whose error is O(dx), and it does not require x to be
+    uniformly spaced.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Abscissa (need not be uniformly spaced)
+    y : np.ndarray
+        Ordinate
+    idx : int
+        Index of the discrete extremum to refine
+    window : int, optional
+        Number of points on each side of idx used for the local spline
+        (default: 5)
+    find_max : bool, optional
+        If True refine a maximum, otherwise a minimum (default: True)
+
+    Returns
+    -------
+    out : (x_ref, y_ref)
+        Refined position and value. Falls back to (x[idx], y[idx]) when fewer
+        than 4 points are available or the spline derivative has no root inside
+        the window.
+    """
+    i1 = max(idx - window, 0)
+    i2 = min(idx + window + 1, len(x))
+    xloc = x[i1:i2]
+    yloc = y[i1:i2]
+
+    if len(xloc) < 4:  # need at least 4 points for cubic
+        return float(x[idx]), float(y[idx])
+
+    cs = interpolate.CubicSpline(xloc, yloc)
+    roots = cs.derivative().roots(extrapolate=False)
+    roots = roots[(roots >= xloc[0]) & (roots <= xloc[-1])]
+    if len(roots) == 0:
+        return float(x[idx]), float(y[idx])
+
+    vals = cs(roots)
+    i_best = np.argmax(vals) if find_max else np.argmin(vals)
+    return float(roots[i_best]), float(vals[i_best])
+
+
 def get_radial_turning_points(t, r, window=5):
     """
     Find apastra/periastra passages given time and radius.
@@ -1287,30 +1336,9 @@ def get_radial_turning_points(t, r, window=5):
     tpe = t[idxpe].astype(float)
 
     def refine_local(idx, find_max=True):
-        refined = []
-        for i in idx:
-            # local window around i
-            i1 = max(i - window, 0)
-            i2 = min(i + window + 1, len(t))
-            tloc = t[i1:i2]
-            rloc = r[i1:i2]
-
-            if len(tloc) < 4:  # need at least 4 points for cubic
-                refined.append(t[i])
-                continue
-            cs = interpolate.CubicSpline(tloc, rloc)
-            csd = cs.derivative()
-            roots = csd.roots(extrapolate=False)
-            roots = roots[(roots >= tloc[0]) & (roots <= tloc[-1])]
-            if len(roots) == 0:
-                refined.append(t[i])
-                continue
-            vals = cs(roots)
-            if find_max:
-                refined.append(roots[np.argmax(vals)])
-            else:
-                refined.append(roots[np.argmin(vals)])
-        return np.array(refined)
+        return np.array(
+            [refine_extremum(t, r, i, window=window, find_max=find_max)[0] for i in idx]
+        )
 
     tap = refine_local(idxap, find_max=True)
     tpe = refine_local(idxpe, find_max=False)

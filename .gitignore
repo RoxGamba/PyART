@@ -180,3 +180,6 @@ results/
 /RIT_BBH_*/
 /ICCUB-*/
 /PNPedia/
+
+# Data downloaded by the example scripts (NR simulations, figures)
+examples/local_data/
