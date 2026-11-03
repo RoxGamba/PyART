@@ -61,32 +61,21 @@ pip install ".[catalogs,models]"
 > This patches `pycbc`'s `events/threshold_cpu.py` and `filter/matchedfilter.py`
 > in-place. It is idempotent and safe to re-run after pycbc upgrades.
 
-
-
-
-
-> After installing, apply the one-time patch:
-> ```
-> python scripts/patch_pycbc_numpy2.py
-> ```
-> This patches `pycbc`'s `events/threshold_cpu.py` and `filter/matchedfilter.py`
-> in-place. It is idempotent and safe to re-run after pycbc upgrades.
-
 ## Citations
 
-PyART includes an interface to [https://github.com/davidtrestini/PNpedia](PNpedia). If you using this interface, please cite the original references presented in the metadata, as well as the ```PNpedia``` package itself:
-    ```bibtex
-    @software{Trestini_PNpedia_2025,
-        author  = {Trestini, David and others},
-        title   = {{PNpedia}},
-        year    = {2025},
-        month   = mar,
-        version = {1.0.0},
-        doi     = {10.5281/zenodo.15002834},
-        url     = {https://github.com/davidtrestini/PNpedia}
-    }
-    ```
-    
+PyART includes an interface to [PNpedia](https://github.com/davidtrestini/PNpedia). If you use this interface, please cite the original references given in the metadata, as well as the `PNpedia` package itself:
+
+```bibtex
+@software{Trestini_PNpedia_2025,
+    author  = {Trestini, David and others},
+    title   = {{PNpedia}},
+    year    = {2025},
+    month   = mar,
+    version = {1.0.0},
+    doi     = {10.5281/zenodo.15002834},
+    url     = {https://github.com/davidtrestini/PNpedia}
+}
+```
 ## For developers
 
 If you are a developer:
