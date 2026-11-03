@@ -1,4 +1,4 @@
-"""PNPedia catalog access with PNPedia-specific identifier normalization.
+"""PNPedia (https://github.com/davidtrestini/PNpedia) catalog access with PNPedia-specific identifier normalization.
 
 The shared Mathematica parser remains library-agnostic. PNPedia-specific
 identifier rewrites are defined here and applied before delegating generic

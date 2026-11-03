@@ -5,7 +5,7 @@ import pytest
 from PyART.analytic import MathematicaParser, pnpedia
 from PyART.analytic.expr import _get_x_exponent, _get_x_power_range
 
-# tests/PNPedia is a bundled clone of the PNPedia repo (3.4M, real content).
+# tests/PNPedia is a bundled clone (3.4M, real content) of the PNPedia repo (https://github.com/davidtrestini/PNpedia).
 # download_pnpedia() skips cloning when the path already exists, so pointing
 # at it means these tests neither hit the network nor write a fresh clone
 # into the repo root (the previous "./PNPedia" was relative to whatever the
