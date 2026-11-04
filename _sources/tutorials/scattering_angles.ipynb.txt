@@ -1,0 +1,238 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "1a2b3c4d",
+   "metadata": {},
+   "source": [
+    "# Scattering Angles from EOB Data\n",
+    "\n",
+    "This tutorial demonstrates how to compute scattering angles from hyperbolic encounters using Effective One Body (EOB) waveforms.\n",
+    "\n",
+    "In hyperbolic encounters, two compact objects approach each other with sufficient energy to scatter rather than merge. The scattering angle quantifies the deflection of the trajectory.\n",
+    "\n",
+    "## Setup\n",
+    "\n",
+    "First, we import the necessary modules:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5e6f7g8h",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "%config InlineBackend.figure_format = 'retina'\n",
+    "\n",
+    "import PyART.models.teob as teob\n",
+    "from PyART.analysis.scattering_angle import ScatteringAngle\n",
+    "import matplotlib.pyplot as plt \n",
+    "from PyART.utils.utils import D1\n",
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9i0j1k2l",
+   "metadata": {},
+   "source": [
+    "## Define Configurations\n",
+    "\n",
+    "We'll test several different impact parameters (b) to see how they affect the scattering angle. Each configuration has:\n",
+    "- **b**: impact parameter\n",
+    "- **chi1, chi2**: dimensionless spins\n",
+    "- **E0**: initial energy\n",
+    "- **p**: dimensionless momentum parameter"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "3m4n5o6p",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "configurations = [\n",
+    "    {'b': 9.678, 'chi1':0., 'chi2':0., 'E0':1.0226, 'p':0.11456439, 'eob':None, 'scat':None},\n",
+    "    {'b':10.000, 'chi1':0., 'chi2':0., 'E0':1.0226, 'p':0.11456439, 'eob':None, 'scat':None},\n",
+    "    {'b':11.000, 'chi1':0., 'chi2':0., 'E0':1.0226, 'p':0.11456439, 'eob':None, 'scat':None},\n",
+    "    {'b':12.000, 'chi1':0., 'chi2':0., 'E0':1.0226, 'p':0.11456439, 'eob':None, 'scat':None},\n",
+    "    {'b':13.000, 'chi1':0., 'chi2':0., 'E0':1.0226, 'p':0.11456439, 'eob':None, 'scat':None},\n",
+    "]\n",
+    "n_conf = len(configurations)\n",
+    "\n",
+    "# Initial separation and symmetric mass ratio\n",
+    "r0 = 100\n",
+    "nu = 0.25"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7q8r9s0t",
+   "metadata": {},
+   "source": [
+    "## Generate EOB Data and Compute Scattering Angles\n",
+    "\n",
+    "For each configuration, we:\n",
+    "1. Set up the EOB parameters\n",
+    "2. Generate the EOB waveform\n",
+    "3. Compute the scattering angle (if not a capture)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "1u2v3w4x",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "cutoff_min = 25\n",
+    "for i in range(n_conf):\n",
+    "    conf = configurations[i]\n",
+    "    J0 = conf['p']*conf['b']/nu\n",
+    "    \n",
+    "    eobpars = teob.CreateDict(r_hyp=r0, H_hyp=conf['E0'], J_hyp=J0, q=1, \n",
+    "                             chi1z=conf['chi1'], chi2z=conf['chi2'])\n",
+    "    eob = teob.Waveform_EOB(pars=eobpars)\n",
+    "    conf['eob']  = eob\n",
+    "    E_final = eob.dyn['E'][-1]\n",
+    "    \n",
+    "    print(f\"Configuration {i+1}:\")\n",
+    "    print(f\"  Impact parameter b = {conf['b']:.3f}\")\n",
+    "    print(f\"  E0, J0 = {conf['E0']:.5f}, {J0:.5f}\")\n",
+    "    print(f\"  Final energy = {E_final:.5f}\")\n",
+    "    \n",
+    "    if E_final > 1:\n",
+    "        # Scattering event (not a capture)\n",
+    "        scat = ScatteringAngle(puncts=eob.dyn, nmin=2, nmax=10, n_extract=None,\n",
+    "                               hypfit=True,\n",
+    "                               r_cutoff_in_low=cutoff_min,  r_cutoff_in_high=eob.dyn['r'][0],\n",
+    "                               r_cutoff_out_low=cutoff_min, r_cutoff_out_high=None, verbose=False)\n",
+    "        conf['scat'] = scat\n",
+    "        print(f\"  Scattering angle χ = {scat.chi:.2f}°\")\n",
+    "    else:\n",
+    "        print('  Result: Capture!')\n",
+    "    print()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5y6z7a8b",
+   "metadata": {},
+   "source": [
+    "## Visualize Results\n",
+    "\n",
+    "Now let's plot the results for all scattering configurations:\n",
+    "1. Real part of the (2,2) mode strain\n",
+    "2. The Weyl scalar ψ₄\n",
+    "3. Radial distance vs time\n",
+    "4. Trajectories in the x-y plane with scattering angles"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9c0d1e2f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(12,9))\n",
+    "\n",
+    "for conf in configurations:\n",
+    "    eob  = conf['eob']\n",
+    "    scat = conf['scat']\n",
+    "    \n",
+    "    if scat is None:\n",
+    "        continue\n",
+    "    \n",
+    "    # Plot waveform\n",
+    "    plt.subplot(2,2,1)\n",
+    "    plt.plot(eob.u, eob.hlm[(2,2)]['real'])\n",
+    "    plt.xlim([-100, 100])\n",
+    "    plt.xlabel('Time (M)')\n",
+    "    plt.ylabel(r'Re[$h_{22}$]')\n",
+    "    plt.title('Waveform (2,2) mode')\n",
+    "    plt.grid(True, alpha=0.3)\n",
+    "\n",
+    "    # Plot psi4\n",
+    "    dh   = D1(eob.hlm[(2,2)]['z'], eob.u, 4)\n",
+    "    psi4 = D1(dh, eob.u, 4)\n",
+    "    b      = conf['b']\n",
+    "    chi_BH = conf['chi1']\n",
+    "    \n",
+    "    plt.subplot(2,2,2)\n",
+    "    plt.plot(eob.u, -psi4.real, label=f'b={b:.3f}, χ={chi_BH}')\n",
+    "    plt.xlim([-100, 100])\n",
+    "    plt.xlabel('Time (M)')\n",
+    "    plt.ylabel(r'Re[$-\\psi_4$]')\n",
+    "    plt.title('Weyl scalar')\n",
+    "    plt.legend()\n",
+    "    plt.grid(True, alpha=0.3)\n",
+    "\n",
+    "    # Plot radial distance\n",
+    "    x = eob.dyn['r']*np.cos(eob.dyn['phi'])\n",
+    "    y = eob.dyn['r']*np.sin(eob.dyn['phi'])\n",
+    "    r = np.sqrt(x**2 + y**2)\n",
+    "    \n",
+    "    plt.subplot(2,2,3)\n",
+    "    plt.plot(eob.dyn['t'], r)\n",
+    "    plt.xlabel('Time (M)')\n",
+    "    plt.ylabel('Radial distance r (M)')\n",
+    "    plt.title('Radial distance vs time')\n",
+    "    plt.grid(True, alpha=0.3)\n",
+    "\n",
+    "    # Plot trajectory\n",
+    "    plt.subplot(2,2,4)\n",
+    "    plt.plot(x, y, label=f'χ={scat.chi:.2f}°')\n",
+    "    plt.xlabel('x (M)')\n",
+    "    plt.ylabel('y (M)')\n",
+    "    plt.title('Trajectories with scattering angles')\n",
+    "    plt.legend()\n",
+    "    plt.grid(True, alpha=0.3)\n",
+    "    plt.axis('equal')\n",
+    "\n",
+    "plt.tight_layout()\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3g4h5i6j",
+   "metadata": {},
+   "source": [
+    "## Summary\n",
+    "\n",
+    "This tutorial demonstrated:\n",
+    "- How to set up hyperbolic encounter parameters\n",
+    "- How to generate EOB waveforms for scattering scenarios\n",
+    "- How to compute scattering angles using the `ScatteringAngle` class\n",
+    "- How to visualize the waveforms and trajectories\n",
+    "\n",
+    "The scattering angle provides important information about the dynamics of hyperbolic encounters and can be used to validate EOB models against numerical relativity simulations."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

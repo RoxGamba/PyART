@@ -1,0 +1,413 @@
+PyART.analysis.scattering_angle
+===============================
+
+.. py:module:: PyART.analysis.scattering_angle
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analysis.scattering_angle.ScatteringAngle
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analysis.scattering_angle.ComputeChiFrom2Sims
+
+
+Module Contents
+---------------
+
+.. py:class:: ScatteringAngle(**kwargs)
+
+   Computes the scattering angle in a numerical relativity (NR) scattering simulation,
+   with error estimates related to uncertainties in extrapolation at infinity.
+
+   This class supports input data from both NR and effective-one-body (EOB) formats.
+   It provides methods for fitting, extrapolation, and visualization of the scattering
+   process, including polynomial and hyperbolic fits.
+
+   :param puncts: Input data containing puncture positions and/or EOB coordinates.
+   :type puncts: dict, optional
+   :param use_single_punct: Determines which puncture to use (None, 0, or 1).
+   :type use_single_punct: int or None, optional
+   :param verbose: Controls verbosity of output.
+   :type verbose: bool, optional
+   :param nmin: Minimum polynomial order for u-poly extrapolation.
+   :type nmin: int, optional
+   :param nmax: Maximum polynomial order for u-poly extrapolation.
+   :type nmax: int, optional
+   :param n_extract: Polynomial order to extract for final fit.
+   :type n_extract: int or None, optional
+   :param r_cutoff_in_low: Lower cutoff for 'in' region in radius.
+   :type r_cutoff_in_low: float, optional
+   :param r_cutoff_in_high: Upper cutoff for 'in' region in radius.
+   :type r_cutoff_in_high: float, optional
+   :param r_cutoff_out_low: Lower cutoff for 'out' region in radius.
+   :type r_cutoff_out_low: float, optional
+   :param r_cutoff_out_high: Upper cutoff for 'out' region in radius.
+   :type r_cutoff_out_high: float or None, optional
+   :param hypfit: If True, use hyperbolic fit instead of polynomial extrapolation.
+   :type hypfit: bool, optional
+
+   .. method:: get_xy()
+
+      Computes x and y coordinates based on puncture selection.
+
+   .. method:: to_commonformat()
+
+      Converts input data to a common format for analysis.
+
+   .. method:: compute_chi(verbose=None)
+
+      Computes the scattering angle and associated errors.
+
+   .. method:: compute_chi_from_fit(b_in, b_out, n)
+
+      Calculates scattering angle from fit coefficients.
+
+   .. method:: compute_chi_hypfit(verbose=None)
+
+      Computes scattering angle using hyperbolic fit.
+
+   .. method:: plot_hypfit(swap_ab_list=[True, True])
+
+      Plots the hyperbolic fit for both regions.
+
+   .. method:: save_plot(show=True, save=False, figname="plot.png")
+
+      Saves or displays the current plot.
+
+   .. method:: plot_summary(show=True, save=False, figname=None)
+
+      Plots a summary of the scattering process.
+
+   .. method:: plot_fit_diffs(xvar="r", show=True, save=False, figname=None)
+
+      Plots differences between fits and track.
+
+   .. method:: plot_fit_extrapolation(xvar="u", show=True, save=False, figname=False)
+
+      Plots fit extrapolation to infinity.
+
+   .. method:: plot_fit_chi(show=True, save=False, figname=False)
+
+      Plots scattering angle as a function of fit order.
+
+
+   :raises ValueError: If unknown options are passed or invalid values are encountered.
+   :raises RuntimeError: If input data format is invalid or unsupported.
+
+   .. rubric:: Notes
+
+   Instantiate with simulation data and optional parameters, then use provided methods
+   to compute and visualize the scattering angle and its uncertainty.
+
+
+   .. py:attribute:: puncts
+      :value: None
+
+
+
+   .. py:attribute:: use_single_punct
+      :value: None
+
+
+
+   .. py:attribute:: verbose
+      :value: True
+
+
+
+   .. py:attribute:: nmin
+      :value: 2
+
+
+
+   .. py:attribute:: nmax
+      :value: 10
+
+
+
+   .. py:attribute:: n_extract
+      :value: None
+
+
+
+   .. py:attribute:: r_cutoff_in_low
+      :value: 25
+
+
+
+   .. py:attribute:: r_cutoff_in_high
+      :value: 80
+
+
+
+   .. py:attribute:: r_cutoff_out_low
+      :value: 25
+
+
+
+   .. py:attribute:: r_cutoff_out_high
+      :value: None
+
+
+
+   .. py:attribute:: hypfit
+      :value: False
+
+
+
+   .. py:attribute:: nfits
+      :value: 9
+
+
+
+   .. py:method:: get_xy()
+
+      Computes the (x, y) coordinates for analysis based on the selected puncture.
+
+      :returns: **x, y** -- Computed coordinates for the selected puncture(s).
+      :rtype: array-like
+
+      :raises ValueError: If `use_single_punct` has an unknown value.
+
+      .. rubric:: Notes
+
+      - If `use_single_punct` is None, returns the difference between (x1, y1) and (x2, y2).
+      - If `use_single_punct` is 0, returns (x1, y1).
+      - If `use_single_punct` is 1, returns (x2, y2).
+      - Otherwise, raises a ValueError for unknown `use_single_punct` values.
+
+
+
+   .. py:method:: to_commonformat()
+
+      Converts input puncture data to a common coordinate format.
+
+      Supports:
+      - Numerical Relativity (NR): expects 't', 'x0', 'y0', 'x1', 'y1'.
+      - Effective-One-Body (EOB): expects 't', 'r', 'phi'.
+
+      Sets attributes: t, x, y, r, th, x1, y1, x2, y2 (NR only).
+
+      :returns: **t, x, y, r, th** -- Common-format coordinates.
+      :rtype: array-like
+
+      :raises RuntimeError: If input format is invalid.
+
+
+
+   .. py:method:: compute_chi(verbose=None)
+
+      Computes the scattering angle (chi) and related quantities using polynomial fits
+      to the input and output trajectory data.
+
+      Fits polynomials to the input (`r`, `th`) and output (`r`, `th`) data using the
+      specified fit orders and cutoff ranges, then calculates the scattering angle and
+      asymptotic angles for each fit order. Fit errors are estimated from the spread
+      of polynomial coefficients. If `hypfit` is enabled, also computes the scattering
+      angle using a hyperbolic fit.
+
+      :param verbose: If True, prints fit details. If None, uses the object's `verbose` attribute.
+      :type verbose: bool, optional
+
+      :returns: Results are stored in object attributes:
+                - chi : float
+                Scattering angle for the selected fit order.
+                - chi_array : ndarray
+                Scattering angles for all fit orders.
+                - fit_err : float
+                Estimated error in the scattering angle.
+                - th_inf_in, th_inf_out : float
+                Asymptotic angles for incoming and outgoing trajectories.
+                - t_in, r_in, u_in, th_in : ndarray
+                Masked input trajectory data.
+                - t_out, r_out, u_out, th_out : ndarray
+                Masked output trajectory data.
+                - p_in, b_in : list, ndarray
+                Input polynomial fits and coefficients.
+                - p_out, b_out : list, ndarray
+                Output polynomial fits and coefficients.
+                - chi_hypfit : float or None
+                Scattering angle from hyperbolic fit (if enabled).
+      :rtype: None
+
+
+
+   .. py:method:: compute_chi_from_fit(b_in, b_out, n)
+
+      Computes the scattering angle chi from fitted input and output angles.
+      :param b_in: Array containing the input angles for each order.
+      :type b_in: ndarray
+      :param b_out: Array containing the output angles for each order.
+      :type b_out: ndarray
+      :param n: Scattering order for which to compute chi.
+      :type n: int
+
+      :returns: * **chi** (*float*) -- The computed scattering angle chi for the given order.
+                * **th_inf_in** (*float*) -- The input angle (in degrees) for the given order.
+                * **th_inf_out** (*float*) -- The output angle (in degrees) for the given order.
+
+
+
+   .. py:method:: compute_chi_hypfit(verbose=None)
+
+      Computes the scattering angle (chi) using a hyperbolic fit to the input and output trajectories.
+      :param verbose: If True, prints the computed chi value. If None, uses the instance's verbose attribute.
+      :type verbose: bool, optional
+
+      :returns: * **chi_deg** (*float*) -- The computed scattering angle in degrees.
+                * **fits** (*dict*) -- Dictionary containing fit results for the input and output trajectories, including coordinates,
+                  radii, angles, canonical parameters, and quadratic coefficients.
+
+      .. rubric:: Notes
+
+      The function fits quadratic curves to the input and output trajectory points, converts them to canonical
+      form, and computes the asymptotic angles. The difference between these angles yields the scattering angle.
+
+
+
+   .. py:method:: plot_hypfit(swap_ab_list=[True, True])
+
+      Plots the hyperbolic fit results for each fit in the computed chi hyperbolic fit.
+      :param swap_ab_list: List indicating whether to swap the 'a' and 'b' axes for each fit. The length
+                           of the list should match the number of fits returned by `compute_chi_hypfit`.
+                           Default is [True, True].
+      :type swap_ab_list: list of bool, optional
+
+      .. rubric:: Notes
+
+      This function calls `plot_hypfit` for each fit, passing the corresponding
+      fit parameters and swap flag. The radial limit (`rlim`) is set to the maximum
+      value of the fit's 'r' array.
+
+
+
+   .. py:method:: save_plot(show=True, save=False, figname='plot.png')
+
+      Displays and/or saves the current plot.
+      :param show: If True, displays the plot using plt.show(). Default is True.
+      :type show: bool, optional
+      :param save: If True, saves the plot to a file specified by `figname`. Default is False.
+      :type save: bool, optional
+      :param figname: Filename for saving the plot. Default is 'plot.png'.
+      :type figname: str, optional
+
+      :rtype: None
+
+
+
+   .. py:method:: plot_summary(show=True, save=False, figname=None)
+
+      Plots a summary of the scattering analysis, including trajectory,
+      radial distance, and angle evolution.
+      :param show: If True, displays the plot. Default is True.
+      :type show: bool, optional
+      :param save: If True, saves the plot to a file. Default is False.
+      :type save: bool, optional
+      :param figname: Filename to save the plot. If None, defaults to 'plot_summary.png'.
+      :type figname: str or None, optional
+
+      :rtype: None
+
+
+
+   .. py:method:: plot_fit_diffs(xvar='r', show=True, save=False, figname=None)
+
+      Plots the differences between track and fit angles for both "in" and "out" cases.
+      :param xvar: Variable to use for the x-axis. Must be either "r" (radius) or "u" (another variable).
+                   Default is "r".
+      :type xvar: str, optional
+      :param show: If True, displays the plot. Default is True.
+      :type show: bool, optional
+      :param save: If True, saves the plot to a file. Default is False.
+      :type save: bool, optional
+      :param figname: Filename to save the plot. If None, a default name is used based on `xvar`.
+      :type figname: str or None, optional
+
+      :raises RuntimeError: If `xvar` is not "r" or "u".
+
+      :rtype: None
+
+
+
+   .. py:method:: plot_fit_extrapolation(xvar='u', show=True, save=False, figname=False)
+
+      Plots the fit extrapolation for the input and output tracks as a function of the specified variable.
+      :param xvar: Variable to use for the x-axis. Can be "u" or "r". Default is "u".
+      :type xvar: str, optional
+      :param show: If True, displays the plot. Default is True.
+      :type show: bool, optional
+      :param save: If True, saves the plot to a file. Default is False.
+      :type save: bool, optional
+      :param figname: Filename to save the plot. If None, a default name is used. Default is False.
+      :type figname: str or bool, optional
+
+      :rtype: None
+
+      :raises RuntimeError: If `xvar` is not "u" or "r".
+
+
+
+   .. py:method:: plot_fit_chi(show=True, save=False, figname=False)
+
+      Plots the fit chi values as a scatter plot against polynomial order.
+      :param show: If True, display the plot. Default is True.
+      :type show: bool, optional
+      :param save: If True, save the plot to file. Default is False.
+      :type save: bool, optional
+      :param figname: Filename to save the plot. If None, defaults to 'plot_fit_chi.png'.
+      :type figname: str or None, optional
+
+      :rtype: None
+
+
+
+.. py:function:: ComputeChiFrom2Sims(path_hres=None, path_lres=None, puncts_hres=None, puncts_lres=None, verbose=False, vverbose=False, **kwargs)
+
+   Computes the scattering angle (chi) and associated errors from two simulation datasets
+   with different resolutions (high and low).
+
+   This function creates two ScatteringAngle objects using the provided file paths and
+   puncture points for high-resolution and low-resolution simulations. It then calculates
+   the scattering angle from the high-resolution simulation and estimates the total error
+   by combining the fit error and the resolution error (difference between high and low
+   resolution results).
+
+   :param path_hres: Path to the high-resolution simulation data.
+   :type path_hres: str or None
+   :param path_lres: Path to the low-resolution simulation data.
+   :type path_lres: str or None
+   :param puncts_hres: Puncture points for the high-resolution simulation.
+   :type puncts_hres: array-like or None
+   :param puncts_lres: Puncture points for the low-resolution simulation.
+   :type puncts_lres: array-like or None
+   :param verbose: If True, prints summary information.
+   :type verbose: bool, optional
+   :param vverbose: If True, enables very verbose output (also sets verbose to True).
+   :type vverbose: bool, optional
+   :param \*\*kwargs: Additional keyword arguments passed to the ScatteringAngle constructor.
+
+   :returns: **out** --
+
+             Dictionary containing:
+                 - 'scat_lres': ScatteringAngle object for low-resolution simulation
+                 - 'scat_hres': ScatteringAngle object for high-resolution simulation
+                 - 'chi': Scattering angle from high-resolution simulation
+                 - 'err': Total estimated error (fit error and resolution error combined)
+                 - 'fit_err': Fit error from high-resolution simulation
+                 - 'res_err': Resolution error (absolute difference between high and low resolution chi)
+   :rtype: dict
+
+   .. rubric:: Notes
+
+   This function is marked as old and not properly tested.
+
+

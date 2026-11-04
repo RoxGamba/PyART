@@ -1,0 +1,500 @@
+PyART.analytic.expr
+===================
+
+.. py:module:: PyART.analytic.expr
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   PyART.analytic.expr.MathDispatcher
+   PyART.analytic.expr.AnalyticExpression
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   PyART.analytic.expr._is_sympy
+   PyART.analytic.expr._get_x_exponent
+   PyART.analytic.expr._get_x_power_range
+
+
+Module Contents
+---------------
+
+.. py:function:: _is_sympy(x)
+
+   Return whether an object contains SymPy-compatible symbolic values.
+
+   :param x: Object or nested container to inspect.
+   :type x: object
+
+   :returns: ``True`` when ``x`` or one of its elements is symbolic.
+   :rtype: bool
+
+
+.. py:function:: _get_x_exponent(term, x_symbol=None)
+
+   Return the exponent of a variable within a single expression term.
+
+   :param term: Expression term whose power of ``x_symbol`` should be measured.
+   :type term: sympy.Expr
+   :param x_symbol: Variable whose exponent should be extracted. Defaults to ``x``.
+   :type x_symbol: str or sympy.Symbol, optional
+
+   :returns: Exponent of ``x_symbol`` in ``term``.
+   :rtype: sympy.Expr
+
+   :raises TypeError: If ``x_symbol`` is neither a string nor a SymPy symbol.
+
+
+.. py:function:: _get_x_power_range(expr, x_symbol=None)
+
+   Return the minimum and maximum powers of a variable in an expression.
+
+   :param expr: Expression to inspect.
+   :type expr: sympy.Expr
+   :param x_symbol: Variable whose exponents should be measured. Defaults to ``x``.
+   :type x_symbol: str or sympy.Symbol, optional
+
+   :returns: Minimum and maximum exponents of ``x_symbol`` across the expanded
+             additive terms of ``expr``.
+   :rtype: tuple[sympy.Expr, sympy.Expr]
+
+
+.. py:class:: MathDispatcher(use_sympy)
+
+   Dispatch basic math operations to SymPy or NumPy.
+
+   :param use_sympy: If ``True``, symbolic SymPy operations are used. Otherwise NumPy
+                     numeric operations are used.
+   :type use_sympy: bool
+
+
+   .. py:attribute:: use_sympy
+
+
+   .. py:attribute:: sqrt
+
+
+   .. py:attribute:: log
+
+
+   .. py:attribute:: cos
+
+
+   .. py:attribute:: sin
+
+
+   .. py:attribute:: arctan2
+
+
+   .. py:method:: dot(a, b)
+
+      Return the dot product of two vectors.
+
+      :param a: First vector.
+      :type a: sequence
+      :param b: Second vector.
+      :type b: sequence
+
+      :returns: Dot product computed with the configured backend.
+      :rtype: sympy.Expr or float
+
+      :raises ValueError: If the input vectors do not have the same length.
+
+
+
+   .. py:method:: norm(v)
+
+      Return the Euclidean norm of a vector.
+
+      :param v: Vector whose norm should be computed.
+      :type v: sequence
+
+      :returns: Euclidean norm computed with the configured backend.
+      :rtype: sympy.Expr or float
+
+
+
+.. py:class:: AnalyticExpression(expr=None, var=None)
+
+   Bases: :py:obj:`object`
+
+
+   Wrap a SymPy expression with helpers for analysis and evaluation.
+
+   :param expr: Expression that can be converted to a SymPy object.
+   :type expr: object, optional
+   :param var: Variables used for numerical evaluation. When omitted, free symbols are
+               inferred from ``expr``.
+   :type var: str, sympy.Symbol, sequence, or None, optional
+
+
+   .. py:attribute:: expr
+      :value: None
+
+
+
+   .. py:attribute:: _compiled_func_cache
+
+
+   .. py:attribute:: _truncate_result_cache
+
+
+   .. py:attribute:: _truncate_term_cache
+
+
+   .. py:method:: _modules_cache_key(modules)
+      :staticmethod:
+
+
+      Return a hashable cache key for a lambdify backend selection.
+
+      :param modules: Backend specification forwarded to :func:`sympy.lambdify`.
+      :type modules: object
+
+      :returns: Hashable representation of ``modules`` suitable for caching.
+      :rtype: object
+
+
+
+   .. py:method:: _get_compiled_function(modules='numpy')
+
+      Return a cached lambdified function for the requested backend.
+
+      :param modules: Backend passed to :func:`sympy.lambdify`.
+      :type modules: str or sequence, optional
+
+      :returns: Cached compiled function for the requested backend.
+      :rtype: callable
+
+
+
+   .. py:method:: __call__(*args, **kwds)
+
+      Evaluate the expression numerically using cached lambdification.
+
+      :param \*args: Positional values corresponding to ``self.var`` in order.
+      :type \*args: tuple
+      :param \*\*kwds: Keyword values keyed by variable name.
+      :type \*\*kwds: dict
+
+      :returns: Numerical result returned by the compiled backend function.
+      :rtype: object
+
+      :raises ValueError: If the expression has no variables or the wrong number of
+          positional arguments is supplied.
+      :raises KeyError: If a required keyword argument is missing.
+
+
+
+   .. py:method:: _result_variables(expr)
+
+      Return an ordered variable tuple for a transformed expression.
+
+      :param expr: Result of a symbolic transformation.
+      :type expr: object
+
+      :returns: Variables aligned with the transformed expression, or ``None`` to
+                trigger automatic inference.
+      :rtype: tuple[sympy.Symbol, ...] or None
+
+
+
+   .. py:method:: _wrap_result(result)
+
+      Wrap a SymPy result back into ``AnalyticExpression`` when possible.
+
+      :param result: Result returned by a symbolic operation.
+      :type result: object
+
+      :returns: Wrapped analytic expression for SymPy results, otherwise the raw
+                result.
+      :rtype: object
+
+
+
+   .. py:method:: _apply_sympy_method(name, *args, **kwargs)
+
+      Call a SymPy expression method and preserve the wrapper.
+
+      :param name: Name of the SymPy expression method to invoke.
+      :type name: str
+      :param \*args: Positional arguments forwarded to the SymPy method.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to the SymPy method.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression when the SymPy method returns a
+                symbolic expression, otherwise the raw method result.
+      :rtype: object
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: derivative(var)
+
+      Differentiate the expression with respect to one variable.
+
+      :param var: Variable of differentiation.
+      :type var: str or sympy.Symbol
+
+      :returns: Wrapped derivative of the stored expression.
+      :rtype: AnalyticExpression
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: pn_order(var)
+
+      Return the highest power and PN span of an expansion variable.
+
+      :param var: Expansion variable to inspect.
+      :type var: str or sympy.Symbol
+
+      :returns: Highest exponent of ``var`` and the range between maximum and
+                minimum exponents.
+      :rtype: tuple[sympy.Expr, sympy.Expr]
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: _extract_truncation_terms(expr, variable)
+      :staticmethod:
+
+
+      Return termwise powers of ``variable`` for fast truncation.
+
+      :param expr: Expression to decompose into additive terms.
+      :type expr: sympy.Expr
+      :param variable: Expansion variable whose termwise exponent should be tracked.
+      :type variable: sympy.Symbol
+      :param The fast truncation path only works when ``expr`` can be treated as a:
+      :param sum of terms whose dependence on ``variable`` is a single:
+      :param overall power.:
+      :param For each additive term:
+      :param this helper computes that exponent and verifies:
+      :param that dividing the term by ``variable**exponent`` removes all remaining:
+      :param dependence on ``variable``.:
+
+      :returns: A list of ``(term, exponent)`` pairs when the expression is safe to
+                truncate by exponent filtering, or ``None`` when a term has a
+                symbolic exponent or retains non-factorable dependence on
+                ``variable``.
+      :rtype: list[tuple[sympy.Expr, sympy.Expr]] | None
+
+
+
+   .. py:method:: _build_truncation_terms(variable)
+
+      Prepare and cache the term data used by ``truncate``.
+
+      :param variable: Expansion variable used for truncation.
+      :type variable: sympy.Symbol
+      :param This helper first protects ``log(variable)`` factors with a temporary:
+      :param placeholder so logarithms are preserved while powers of:
+      :param ``variable`` are analyzed. It then tries to extract termwise:
+      :param exponents directly from the stored expression and:
+      :param if needed:
+      :param :
+      :param from an ``expand_mul`` view that only expands multiplicative:
+      :param structure.:
+
+      :returns: Cached ``(terms, log_placeholder)`` data for the fast truncation
+                path, or ``None`` if the expression must fall back to the slower
+                series-based path.
+      :rtype: tuple[list[tuple[sympy.Expr, sympy.Expr]], sympy.Symbol] | None
+
+
+
+   .. py:method:: truncate(var, max_order)
+
+      Truncate the expression by removing terms whose exponent in ``var``
+      is strictly greater than ``max_order``.
+
+      When the expression is already a sum of termwise powers in the target
+      variable, use cached exponent filtering. Fall back to SymPy series
+      expansion plus the same exponent filtering for non-termwise
+      expressions.
+
+      In the fast path, exact ``log(var)`` factors are temporarily replaced
+      by a placeholder symbol before exponent extraction. This makes
+      logarithms behave like coefficients for power counting, so terms such
+      as ``x**2 * log(x)`` and ``x**3 * log(x)**2`` are treated as orders
+      ``2`` and ``3`` respectively. More complicated logarithmic dependence,
+      such as ``log(1 + x)`` or ``log(x**2)``, is not normalized this way and
+      will typically force the slower series-based fallback.
+
+      :param var: Variable used to define the truncation order.
+      :type var: str or sympy.Symbol
+      :param max_order: Maximum power of ``var`` to retain.
+      :type max_order: object
+
+      :returns: Truncated analytic expression.
+      :rtype: AnalyticExpression
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: subs(*args, **kwargs)
+
+      Apply SymPy substitution and preserve the wrapper when possible.
+
+      :param \*args: Positional arguments forwarded to :meth:`sympy.Expr.subs`.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.subs`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw substitution result.
+      :rtype: object
+
+
+
+   .. py:method:: simplify(**kwargs)
+
+      Simplify the stored expression and preserve the wrapper.
+
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.simplify`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw simplification result.
+      :rtype: object
+
+
+
+   .. py:method:: expand(*args, **kwargs)
+
+      Expand the stored expression and preserve the wrapper.
+
+      :param \*args: Positional arguments forwarded to :meth:`sympy.Expr.expand`.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.expand`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw expansion result.
+      :rtype: object
+
+
+
+   .. py:method:: factor(*args, **kwargs)
+
+      Factor the stored expression and preserve the wrapper.
+
+      :param \*args: Positional arguments forwarded to :meth:`sympy.Expr.factor`.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.factor`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw factorization result.
+      :rtype: object
+
+
+
+   .. py:method:: collect(*args, **kwargs)
+
+      Collect like terms in the stored expression.
+
+      :param \*args: Positional arguments forwarded to :meth:`sympy.Expr.collect`.
+      :type \*args: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.collect`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the raw
+                collect result.
+      :rtype: object
+
+
+
+   .. py:method:: diff(*symbols, **kwargs)
+
+      Differentiate the stored expression and preserve the wrapper.
+
+      :param \*symbols: Differentiation variables and optional orders, as accepted by
+                        :meth:`sympy.Expr.diff`.
+      :type \*symbols: tuple
+      :param \*\*kwargs: Keyword arguments forwarded to :meth:`sympy.Expr.diff`.
+      :type \*\*kwargs: dict
+
+      :returns: Wrapped analytic expression for symbolic results, otherwise the
+                raw differentiation result.
+      :rtype: object
+
+
+
+   .. py:method:: to_latex()
+
+      Render the stored expression as a LaTeX string.
+
+      :returns: LaTeX representation of the stored expression.
+      :rtype: str
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: to_function(modules='numpy')
+
+      Compile the expression into a callable numerical function.
+
+      :param modules: Backend passed to :func:`sympy.lambdify`.
+      :type modules: str or sequence, optional
+
+      :returns: Compiled callable and the variable ordering it expects.
+      :rtype: tuple[callable, tuple[sympy.Symbol, ...]]
+
+      :raises ValueError: If no expression is stored.
+
+
+
+   .. py:method:: _sympy_()
+
+      Expose the wrapped SymPy expression to SymPy internals.
+
+      :returns: Stored SymPy expression.
+      :rtype: sympy.Expr
+
+
+
+   .. py:method:: __getattr__(name)
+
+
+   .. py:method:: __add__(other)
+
+
+   .. py:method:: __radd__(other)
+
+
+   .. py:method:: __sub__(other)
+
+
+   .. py:method:: __rsub__(other)
+
+
+   .. py:method:: __mul__(other)
+
+
+   .. py:method:: __rmul__(other)
+
+
+   .. py:method:: __truediv__(other)
+
+
+   .. py:method:: __rtruediv__(other)
+
+
+   .. py:method:: __pow__(other)
+
+
